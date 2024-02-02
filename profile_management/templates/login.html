@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+    <link rel="stylesheet" href="{% static 'css/login.css'%}">
+</head>
+<body>
+
+    <form class="login_block" method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <div class="login_field">
+            <input name="username" type="text" placeholder="логин">
+        </div>
+        <div class="login_field">
+            <input name="password" type="password" placeholder="пароль">
+        </div>
+        <button type="submit">Войти</button>
+
+    </form>
+
+
+
+
+</body>
+</html>

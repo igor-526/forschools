@@ -1,0 +1,38 @@
+:root {
+    --background-color: #003366;
+  }
+
+body {
+    background-color: var(--background-color);
+}
+
+.login_block{
+    background-color: #fff;
+    height: 230px;
+    width: 420px;
+    margin: 0 auto;
+    margin-top: 150px;
+    border-radius: 20px;
+    padding: 40px;
+}
+
+.login_field{
+    padding: 10px;
+}
+
+.login_field input{
+    width: 300px;
+    height: 35px;
+    padding-left: 15px;
+    border-radius: 5px;
+}
+
+button{
+    width: 200px;
+    height: 40px;
+    margin-left: 15px;
+    color: white;
+    background-color: var(--background-color);
+    border-radius: 15px;
+    border: 0;
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+    <link rel="stylesheet" href="{% static 'css/register.css'%}">
+</head>
+<body>
+        <form class="register_block" method="POST">
+            {% csrf_token %}
+            <h1>Регистрация пользователя</h1>
+            <div class="register_input">
+                {{ form.username.errors }}
+                {{ form.username.label_tag }} <br>
+                {{ form.username }}
+            </div>
+        <div class="register_input">
+                {{ form.password1.errors }}
+                {{ form.password1.label_tag }} <br>
+                {{ form.password1 }}
+            </div>
+        <div class="register_input">
+                {{ form.password2.errors }}
+                {{ form.password2.label_tag }} <br>
+                {{ form.password2 }}
+            </div>
+        <div class="register_input">
+                {{ form.first_name.errors }}
+                {{ form.first_name.label_tag }} <br>
+                {{ form.first_name }}
+            </div>
+        <div class="register_input">
+                {{ form.last_name.errors }}
+                {{ form.last_name.label_tag }} <br>
+                {{ form.last_name }}
+            </div>
+
+            <fieldset name="role">
+                <legend>Роль пользователя:</legend>
+                <div>
+                  <input name="role" type="radio" value="4" checked/>
+                  <label>ученик</label>
+                </div>
+                <div>
+                    <input name="role" type="radio" value="3"/>
+                    <label>преподаватель</label>
+                </div>
+                <div>
+                    <input name="role" type="radio" value="2"/>
+                    <label>методист</label>
+                </div>
+                <div>
+                    <input name="role" type="radio" value="1"/>
+                    <label>администратор</label>
+                </div>
+            </fieldset>
+            <button type="submit">Зарегистрировать</button>
+        </form>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль</title>
+</head>
+<body>
+    <h1>Вход успешен!</h1>
+    <h2>Пользователь: {{ request.user }}</h2>
+    <a href="{% url 'logout' %}">Выйти</a><br>
+    <a href="{% url 'register' %}">Регистрация нового профиля</a>
+</body>
+</html>
