@@ -1,0 +1,56 @@
+body {
+  margin: 20px;
+  background-color: #036;
+}
+
+.profile {
+  color: #fff;
+  /* padding-bottom: 30px; */
+  border-bottom: 2px solid #fff;
+}
+
+.profile__avatar {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.profile__btn > * {
+  margin-bottom: 10px;
+  background-color: transparent;
+  border: 0;
+}
+
+.menu__link {
+  color: #fff;
+}
+
+.last-changes {
+  background-color: #fff;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+
+.card {
+  background-color: #ebebeb;
+  border-radius: 20px;
+}
+
+.card__title-icon {
+  width: 70px;
+  height: 70px;
+  background-color: #ebebeb;
+  object-fit: contain;
+}
+
+.card__user-img {
+  margin-right: 20px;
+  padding: 0;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  overflow: hidden;
+  border-radius: 50%;
+}
