@@ -20,13 +20,6 @@ class MaterialForm(forms.ModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'material_input'
 
-    # def save(self, commit=True):
-    #     obj = super(MaterialForm, self).save(commit=False)
-    #     obj.owner = self.owner
-    #     if commit:
-    #         obj.save()
-    #     return obj
-
     class Meta:
         model = Material
         fields = ('name', 'category', 'file')

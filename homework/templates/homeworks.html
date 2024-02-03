@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Домашние задания</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+    <link rel="stylesheet" href="{% static 'css/homeworks.css'%}">
+</head>
+<body>
+    <a href="{% url 'homeworks_add' %}">Добавить ДЗ</a>
+    <h2>Домашние задания:</h2>
+    {% for hw in homeworks %}
+        <div class="hw_block">
+            Наименование: {{ hw.name }} <br>
+            Преподаватель: {{ hw.teacher }} <br>
+            Ученик: {{ hw.listener }} <br>
+            Описание: {{ hw.description }} <br>
+            Дэдлайн: {{ hw.deadline }}
+        </div>
+    {% endfor %}
+</body>
+</html>

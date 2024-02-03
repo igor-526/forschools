@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавление урока</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+    <link rel="stylesheet" href="{% static 'css/lessons_add.css'%}">
+</head>
+<body>
+    <form class="lesson_form" method="post" action="{% url 'lessons_add' %}">
+        {% csrf_token %}
+        <h2>Добавление урока</h2>
+        {{ form }}
+        <button type="submit">Добавить</button>
+
+    </form>
+</body>
+</html>

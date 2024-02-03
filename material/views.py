@@ -16,18 +16,17 @@ class MaterialPage(LoginRequiredMixin, TemplateView):    # страница ма
         return render(request, self.template_name, context)
 
 
-class MaterialAdd(LoginRequiredMixin, TemplateView):
+class MaterialAddPage(LoginRequiredMixin, TemplateView):    # страница добавления материала
     template_name = "material_add.html"
 
+    def get(self, request, *args, **kwargs):
+        form_mat = MaterialForm()
+        form_cat = MaterialCategoryForm()
+        return render(request, "material_add.html",
+                      {'form_mat': form_mat, 'form_cat': form_cat})
 
-def material_add_get(request, *args, **kwargs):
-    form_mat = MaterialForm()
-    form_cat = MaterialCategoryForm()
-    return render(request, "material_add.html",
-                  {'form_mat': form_mat, 'form_cat': form_cat})
 
-
-def material_add(request, *args, **kwargs):
+def material_add(request, *args, **kwargs):     # метод для добавления материала
     if request.method == "POST":
         form_mat = MaterialForm(request.POST, request.FILES, owner=request.user)
         if form_mat.is_valid():
@@ -41,7 +40,7 @@ def material_add(request, *args, **kwargs):
             return HttpResponse(form_mat.errors)
 
 
-def category_add(request, *args, **kwargs):
+def category_add(request, *args, **kwargs):     # метод для добавления категории материалов
     if request.method == "POST":
         form_cat = MaterialCategoryForm(request.POST)
         if form_cat.is_valid():

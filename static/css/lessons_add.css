@@ -1,0 +1,13 @@
+.lesson_form button{
+    margin-left: 25px;
+}
+
+.lesson_form{
+    width: 700px;
+    margin: 0 auto;
+}
+
+.lesson_field{
+    width: 650px;
+    margin: 10px auto;
+}

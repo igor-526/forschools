@@ -37,8 +37,8 @@ class Lesson(models.Model):
     homework = models.ForeignKey(Homework,
                                  verbose_name='Домашнее задание',
                                  on_delete=models.CASCADE,
-                                 null=False,
-                                 blank=False,
+                                 null=True,
+                                 blank=True,
                                  related_name='lesson',
                                  related_query_name='lesson_set')
     zoom_url = models.URLField(verbose_name='Ссылка Zoom',
