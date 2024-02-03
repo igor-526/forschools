@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import permission_required
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -15,6 +15,7 @@ def user_login(request):    # страница авторизации и лог�
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            return HttpResponseRedirect(reverse_lazy('profile'))
     return render(request, 'login.html')
 
 
