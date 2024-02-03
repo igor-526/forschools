@@ -23,7 +23,7 @@ class NewUser(AbstractUser):
         return self.first_name + ' ' + self.last_name
 
     def update_tg_code(self):
-        self.tg_code = randint(10000, 999999)
+        self.tg_code = randint(10000, 99999)
         super().save()
         return self.tg_code
 

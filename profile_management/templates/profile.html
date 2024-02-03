@@ -8,6 +8,7 @@
     <h1>Вход успешен!</h1>
     <h2>Пользователь: {{ request.user }}</h2>
     <a href="{% url 'logout' %}">Выйти</a><br>
-    <a href="{% url 'register' %}">Регистрация нового профиля</a>
+    <a href="{% url 'register' %}">Регистрация нового профиля</a><br>
+    <a href="{% url 'telegram' %}">Связать с Telegram</a>
 </body>
 </html>

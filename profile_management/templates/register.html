@@ -40,22 +40,30 @@
 
             <fieldset name="role">
                 <legend>Роль пользователя:</legend>
+                {% if perms.auth.register_listener %}
                 <div>
                   <input name="role" type="radio" value="4" checked/>
                   <label>ученик</label>
                 </div>
+                {% endif %}
+                {% if perms.auth.register_teacher %}
                 <div>
                     <input name="role" type="radio" value="3"/>
                     <label>преподаватель</label>
                 </div>
+                {% endif %}
+                {% if perms.auth.register_metodist %}
                 <div>
                     <input name="role" type="radio" value="2"/>
                     <label>методист</label>
                 </div>
+                {% endif %}
+                {% if perms.auth.register_admin %}
                 <div>
                     <input name="role" type="radio" value="1"/>
                     <label>администратор</label>
                 </div>
+                {% endif %}
             </fieldset>
             <button type="submit">Зарегистрировать</button>
         </form>

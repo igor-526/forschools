@@ -1,5 +1,5 @@
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -31,17 +31,8 @@ class ProfilePage(LoginRequiredMixin, TemplateView):    # страница пр�
         return render(request, self.template_name, context)
 
 
-class RegisterPage(LoginRequiredMixin, TemplateView):    # страница регистрации профиля
-    template_name = "register.html"
-
-    def get(self, request, *args, **kwargs):
-        context = {"reg_listener": True if request.user.role < 4 else False,
-                   "reg_metodist": True if request.user.role < 3 else False,
-                   "reg_admin": True if request.user.role < 2 else False}
-        return render(request, self.template_name, context)
-
-
-def register_view(request):
+@permission_required(perm='auth.register_listener', raise_exception=True)
+def register_view(request):     # Страница регистрации других профилей
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -49,5 +40,14 @@ def register_view(request):
             user.update_tg_code()
     else:
         form = SignUpForm()
-    return render(request, "register.html", {"form": form})
+        return render(request, "register.html", {"form": form})
 
+
+class TelegramPage(LoginRequiredMixin, TemplateView):    # страница привязки Telegram
+    template_name = "telegram.html"
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.tg_code:
+            request.user.update_tg_code()
+        context = {"code": request.user.tg_code}
+        return render(request, self.template_name, context)
