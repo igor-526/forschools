@@ -9,6 +9,7 @@
     <h2>Пользователь: {{ request.user }}</h2>
     <a href="{% url 'logout' %}">Выйти</a><br>
     <a href="{% url 'register' %}">Регистрация нового профиля</a><br>
-    <a href="{% url 'telegram' %}">Связать с Telegram</a>
+    <a href="{% url 'telegram' %}">Связать профиль с Telegram</a><br>
+    <a href="{% url 'materials' %}">Материалы</a>
 </body>
 </html>

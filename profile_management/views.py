@@ -40,7 +40,7 @@ def register_view(request):     # Страница регистрации дру
             user.update_tg_code()
     else:
         form = SignUpForm()
-        return render(request, "register.html", {"form": form})
+    return render(request, "register.html", {"form": form})
 
 
 class TelegramPage(LoginRequiredMixin, TemplateView):    # страница привязки Telegram

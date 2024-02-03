@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Материалы</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+    <link rel="stylesheet" href="{% static 'css/materials.css'%}">
+</head>
+<body>
+    <a href="{% url 'materials_add' %}">Добавить материал</a><br>
+    <h2>Материалы:</h2>
+    {% for mat in materials %}
+    <div class="material_block">
+        Наименование: {{ mat.name }} <br>
+        Владелец: {{ mat.owner }}
+    </div>
+    {% endfor %}
+</body>
+</html>

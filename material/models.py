@@ -4,7 +4,8 @@ from profile_management.models import NewUser
 
 
 class MaterialCategory(models.Model):
-    name = models.CharField(verbose_name='Наименование')
+    name = models.CharField(verbose_name='Наименование',
+                            unique=True)
 
     class Meta:
         verbose_name = 'Категория материалов'
@@ -72,6 +73,7 @@ class File(models.Model):
                               verbose_name='Владелец',
                               on_delete=models.CASCADE,
                               null=True,
+                              blank=True,
                               related_name='file',
                               related_query_name='file_set')
     uploaded_at = models.DateTimeField(verbose_name='Дата и время загрузки',
