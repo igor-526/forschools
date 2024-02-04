@@ -27,30 +27,19 @@ body {
   color: #fff;
 }
 
-.last-changes {
+.main-content {
   background-color: #fff;
-  border-top-left-radius: 20px;
-  border-bottom-left-radius: 20px;
-}
-
-.card {
-  background-color: #ebebeb;
   border-radius: 20px;
 }
 
-.card__title-icon {
-  width: 70px;
-  height: 70px;
-  background-color: #ebebeb;
-  object-fit: contain;
+.main-title{
+    font-size: 34px;
+    font-weight: 1000;
+    color: #808080;
 }
 
-.card__user-img {
-  margin-right: 20px;
-  padding: 0;
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  overflow: hidden;
-  border-radius: 50%;
+.secondary-title{
+    font-size: 24px;
+    font-weight: 600;
+    color: #656565;
 }

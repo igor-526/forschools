@@ -1,7 +1,11 @@
 .hw_block{
-    width: 80vw;
-    margin: 20px auto;
-    border: 1px solid black;
-    border-radius: 5px;
+    width: 80%;
+    margin: 0 auto;
     padding: 10px;
+}
+
+.card {
+  background-color: #e2e2e2;
+  border-radius: 20px;
+  border: 0;
 }

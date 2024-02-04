@@ -1,12 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Профиль</title>
-</head>
-<body>
-    <h1>Привязка профиля к Telegram</h1>
-    <h2>Если с телефона или компьютера с установленным Telegram:</h2>
-    <p>Перейдите по ссылке: <a href="https://t.me/dellindev_bot?start={{ code }}">тык</a></p>
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+{% block static %}
+    <link rel="stylesheet" href="{% static 'css/telegram.css'%}">
+{% endblock %}
+{% block content %}
+    <h2 class="main-title">Привязка профиля к Telegram</h2>
+    <p class="px-3">Это позволит получать уведомления о предстоящих уроках и удобно сдавать домашние
+    задания</p>
+    <h3>С устройства, на котором установлен Telegram:</h3>
+    <p class="px-3">Просто перейдите по <a href="https://t.me/dellindev_bot?start={{ code }}">этой ссылке</a></p>
+    <h3>Самостоятельно:</h3>
+    <ol class="px-5">
+        <li>Откройте приложение Telegram на любом устройстве</li>
+        <li>В поиске найдите бота "@ник бота" (без кавычек)</li>
+        <li>Отправьте сообщение "/start {{ code }}" (без кавычек)</li>
+    </ol>
+{% endblock %}

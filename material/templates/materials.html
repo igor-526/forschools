@@ -1,20 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Материалы</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+{% extends 'base.html' %}
+{% load static %}
+{% block static %}
     <link rel="stylesheet" href="{% static 'css/materials.css'%}">
-</head>
-<body>
+{% endblock %}
+{% block content %}
     <a href="{% url 'materials_add' %}">Добавить материал</a><br>
-    <h2>Материалы:</h2>
+    <h2 class="main-title">Материалы:</h2>
+    <p>Тут блоки материалов будут приведены в более компактный вид, в правой части будет поиск и фильтры.
+    На каждый материал можно будет нажать и перейти в его карточку, из которой можно будет поменять файл, переименовать,
+    удалить, предварительно посмотреть, быстро выслать пользователю с привязанным Telegram в мессенджер. У учеников
+    доступ будет только к тем материалам, которые предоставляют преподаватели. Доступ можно будет отозвать вручную
+    или на автоматической основе по датам</p>
     {% for mat in materials %}
     <div class="material_block">
-        Наименование: {{ mat.name }} <br>
-        Владелец: {{ mat.owner }}
+        <div class="lessons__card card col-11 p-3 mb-1">
+            <h3 class="secondary-title">{{ mat.name }}</h3>
+            <p>Категории:<br>
+            {% for cat in mat.category.all %}
+                {{ cat }}<br>
+            {% endfor %}
+            </p>
+            <p>Владелец: {{ mat.owner.first_name }} {{ mat.owner.last_name }}</p>
+        </div>
     </div>
     {% endfor %}
-</body>
-</html>
+{% endblock %}

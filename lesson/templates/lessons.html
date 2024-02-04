@@ -1,23 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Уроки</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+{% extends 'base.html' %}
+{% load static %}
+{% block static %}
     <link rel="stylesheet" href="{% static 'css/lessons.css'%}">
-</head>
-<body>
+{% endblock %}
+{% block content %}
     <a href="{% url 'lessons_add' %}">Добавить урок</a>
     <h2>Уроки:</h2>
     {% for lesson in lessons %}
     <div class="lesson_block">
+        <div class="lessons__card card col-11 p-3 mb-1">
         Наименование: {{ lesson.name }}<br>
         Дата: {{ lesson.start }}<br>
         Преподаватель: {{ lesson.teacher }}<br>
         Ученик: {{ lesson.listener }}<br>
         <a href="{{ lesson.zoom_url }}">Zoom</a>
+        </div>
     </div>
     {% endfor %}
-</body>
-</html>
+{% endblock %}

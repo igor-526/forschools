@@ -28,7 +28,7 @@ class ProfilePage(LoginRequiredMixin, TemplateView):    # страница пр�
     template_name = "profile.html"
 
     def get(self, request, *args, **kwargs):
-        context = {}
+        context = {'title': 'Профиль'}
         return render(request, self.template_name, context)
 
 

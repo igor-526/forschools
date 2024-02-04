@@ -1,32 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Добавление материала</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+{% extends 'base.html' %}
+{% load static %}
+{% block static %}
     <link rel="stylesheet" href="{% static 'css/materials_add.css'%}">
-</head>
-<body>
-
+{% endblock %}
+{% block content %}
     <form class="category_block" method="post" action="{% url 'add_category' %}">
         {% csrf_token %}
-        <h2>Добавление категории для материала</h2>
+        <h2 class="main-title">Добавление категории для материала</h2>
         <div class="cat_field">
             {{ form_cat }}
         </div>
         <button type="submit">Добавить</button>
     </form>
 
-    <form class="material_block" method="post" enctype="multipart/form-data" action="{% url 'add_material' %}">
+    <form class="material_block mt-5" method="post" enctype="multipart/form-data" action="{% url 'add_material' %}">
         {% csrf_token %}
-        <h2>Добавление материала</h2>
+        <h2 class="main-title">Добавление материала</h2>
         <div class="mat_field">
             {{ form_mat }}
         </div>
         <button type="submit">Добавить</button>
 
     </form>
-
-</body>
-</html>
+{% endblock %}

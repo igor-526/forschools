@@ -1,23 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Домашние задания</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/normalize.css'%}">
+{% extends 'base.html' %}
+{% load static %}
+{% block static %}
     <link rel="stylesheet" href="{% static 'css/homeworks.css'%}">
-</head>
-<body>
+{% endblock %}
+{% block content %}
     <a href="{% url 'homeworks_add' %}">Добавить ДЗ</a>
-    <h2>Домашние задания:</h2>
+    <h2 class="main-title">Домашние задания:</h2>
+    <p>Тут блоки ДЗ будут приведены в более компактный вид, в правой части будет поиск и фильтры.
+    На каждое ДЗ можно будет нажать и перейти в его карточку, из которой ученику можно будет сдать ДЗ методом прикре
+    пления файлов (например). С помощью бота Telegram ученик сможет сдать ДЗ удобней. Ученик будет получать уведомление
+    сразу о новом ДЗ и результате проверки преподавателем. Преподаватель сможет создать новое ДЗ к уроку. Согласно
+    расписанию уроков бот после урока спросит, был ли проведён урок, после чего предложит задать домашку. В случае с
+    групповыми уроками, будет создано 3 карточки ДЗ на каждого ученика. После выполнения ДЗ учеником преподаватель получит
+    уведомление об этом в Telegram, будет предложено сразу проверить его не выходя из мессенджера</p>
     {% for hw in homeworks %}
         <div class="hw_block">
-            Наименование: {{ hw.name }} <br>
-            Преподаватель: {{ hw.teacher }} <br>
-            Ученик: {{ hw.listener }} <br>
-            Описание: {{ hw.description }} <br>
-            Дэдлайн: {{ hw.deadline }}
+            <div class="lessons__card card col-11 p-3 mb-1">
+                Наименование: {{ hw.name }} <br>
+                Преподаватель: {{ hw.teacher }} <br>
+                Ученик: {{ hw.listener }} <br>
+                Описание: {{ hw.description }} <br>
+                Дэдлайн: {{ hw.deadline }}
+            </div>
         </div>
     {% endfor %}
-</body>
-</html>
+{% endblock %}

@@ -1,25 +1,16 @@
-.category_block{
-    width: 700px;
+.category_block,
+.material_block{
+    width: 80%;
     margin: 0 auto;
 }
 
-.cat_field{
-    width: 650px;
+.cat_field,
+.mat_field{
     margin: 5px auto;
 }
 
 .category_block button{
     margin-left: 25px;
-}
-
-.material_block{
-    width: 700px;
-    margin: 0 auto;
-}
-
-.mat_field{
-    width: 650px;
-    margin: 10px auto;
 }
 
 .material_block button{

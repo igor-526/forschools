@@ -1,17 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Профиль</title>
-</head>
-<body>
-    <h1>Вход успешен!</h1>
-    <h2>Пользователь: {{ request.user }}</h2>
-    <a href="{% url 'logout' %}">Выйти</a><br>
-    <a href="{% url 'register' %}">Регистрация нового профиля</a><br>
-    <a href="{% url 'telegram' %}">Связать профиль с Telegram</a><br>
-    <a href="{% url 'materials' %}">Материалы</a><br>
-    <a href="{% url 'lessons' %}">Уроки</a><br>
-    <a href="{% url 'homeworks' %}">Домашние задания</a>
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+{% block static %}
+    <link rel="stylesheet" href="{% static 'css/profile.css'%}">
+    <link rel="stylesheet" href="{% static 'css/rating.css'%}">
+{% endblock %}
+{% block content %}
+
+
+<div class="lessons col overflow-y-auto">
+<h2 class="lessons__title px-3 mb-3">Мои уроки</h2>
+
+<div class="lessons__card card col-11 p-3 mb-3">
+  <div class="card__title d-flex justify-content-between mb-2">
+    <h3 class="card__title-text text-center">Длинная тема урока, который уже состоялся</h3>
+    <img class="card__title-icon" src="{% static 'img/pngwing.com.png' %}" alt="">
+  </div>
+
+  <form class="card__rating d-flex justify-content-center">
+    <div class="form-group">
+      <div class="star-rating">
+        <div class="star-rating__wrap">
+          <input class="star-rating__input" id="star-5" type="radio" name="rating" value="5">
+          <label class="star-rating__ico fa fa-star-o fa-lg" for="star-5" title="Отлично"></label>
+          <input class="star-rating__input" id="star-4" type="radio" name="rating" value="4">
+          <label class="star-rating__ico fa fa-star-o fa-lg" for="star-4" title="Хорошо"></label>
+          <input class="star-rating__input" id="star-3" type="radio" name="rating" value="3">
+          <label class="star-rating__ico fa fa-star-o fa-lg" for="star-3" title="Удовлетворительно"></label>
+          <input class="star-rating__input" id="star-2" type="radio" name="rating" value="2">
+          <label class="star-rating__ico fa fa-star-o fa-lg" for="star-2" title="Плохо"></label>
+          <input class="star-rating__input" id="star-1" type="radio" name="rating" value="1">
+          <label class="star-rating__ico fa fa-star-o fa-lg" for="star-1" title="Ужасно"></label>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="card__user d-flex align-items-center mb-2">
+    <img class="card__user-img" src="{% static 'img/teacher.jpg' %}" alt="">
+    <p class="card__user-name">Дарья Иванова</p>
+  </div>
+
+  <div class="card__created d-flex align-items-center justify-content-between">
+    <div class="card__created-date">30.01.2024</div>
+    <div class="card__created-time">17:00 - 18:00</div>
+  </div>
+
+
+</div>
+</div>
+
+
+
+<div class="hometasks col overflow-y-auto">
+    <h2 class="hometasks__title px-3 mb-3">Домашние задания</h2>
+
+    <div class="lessons__card card col-11 p-3 mb-3">
+      <div class="card__title d-flex justify-content-between mb-2">
+        <h3 class="card__title-text text-center">Длинная тема урока, который уже состоялся</h3>
+        <img class="card__title-icon" src="{% static 'img/pngwing.com.png' %}" alt="">
+      </div>
+
+      <form class="card__rating d-flex justify-content-center">
+        <div class="form-group">
+          <div class="star-rating">
+            <div class="star-rating__wrap">
+              <input class="star-rating__input" id="star-5" type="radio" name="rating" value="5">
+              <label class="star-rating__ico fa fa-star-o fa-lg" for="star-5" title="Отлично"></label>
+              <input class="star-rating__input" id="star-4" type="radio" name="rating" value="4">
+              <label class="star-rating__ico fa fa-star-o fa-lg" for="star-4" title="Хорошо"></label>
+              <input class="star-rating__input" id="star-3" type="radio" name="rating" value="3">
+              <label class="star-rating__ico fa fa-star-o fa-lg" for="star-3" title="Удовлетворительно"></label>
+              <input class="star-rating__input" id="star-2" type="radio" name="rating" value="2">
+              <label class="star-rating__ico fa fa-star-o fa-lg" for="star-2" title="Плохо"></label>
+              <input class="star-rating__input" id="star-1" type="radio" name="rating" value="1">
+              <label class="star-rating__ico fa fa-star-o fa-lg" for="star-1" title="Ужасно"></label>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="card__user d-flex align-items-center mb-2">
+        <img class="card__user-img" src="{% static 'img/teacher.jpg' %}" alt="">
+        <p class="card__user-name">Дарья Иванова</p>
+      </div>
+
+      <div class="card__created d-flex align-items-center justify-content-between">
+        <div class="card__created-date">30.01.2024</div>
+        <div class="card__created-time">17:00 - 18:00</div>
+      </div>
+    </div>
+</div>
+
+{%  endblock %}
