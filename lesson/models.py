@@ -2,7 +2,6 @@ from django.db import models
 from django.utils import timezone
 from profile_management.models import NewUser
 from material.models import Material
-from homework.models import Homework
 
 
 class Lesson(models.Model):
@@ -34,13 +33,6 @@ class Lesson(models.Model):
                                        related_name='lesson',
                                        related_query_name='lesson_set',
                                        blank=True)
-    homework = models.ForeignKey(Homework,
-                                 verbose_name='Домашнее задание',
-                                 on_delete=models.CASCADE,
-                                 null=True,
-                                 blank=True,
-                                 related_name='lesson',
-                                 related_query_name='lesson_set')
     zoom_url = models.URLField(verbose_name='Ссылка Zoom',
                                null=False,
                                blank=False,

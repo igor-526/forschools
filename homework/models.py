@@ -1,7 +1,9 @@
 from django.db import models
-from datetime import datetime, timedelta
 from profile_management.models import NewUser
 from material.models import Material, File
+from lesson.models import Lesson
+from datetime import datetime, timedelta
+
 
 HOMEWORK_STATUS_CHOISES = (
     (1, 'Создано'),
@@ -17,6 +19,12 @@ class Homework(models.Model):
                             max_length=200,
                             null=False,
                             blank=False)
+    lesson = models.ForeignKey(Lesson,
+                               related_name='homeworks',
+                               verbose_name='Урок',
+                               blank=True,
+                               null=True,
+                               on_delete=models.CASCADE)
     teacher = models.ForeignKey(NewUser,
                                 verbose_name='Преподаватель',
                                 related_name='homeworks',
@@ -55,6 +63,9 @@ class Homework(models.Model):
     def __str__(self):
         return f'{self.name}'
 
+    def get_status(self):
+        return HomeworkLog.objects.filter(homework=self).first()
+
 
 class HomeworkLog(models.Model):
     homework = models.ForeignKey(Homework,
@@ -73,8 +84,7 @@ class HomeworkLog(models.Model):
                              related_query_name='hw_log_set')
     dt = models.DateTimeField(verbose_name='Дата и время',
                               auto_now_add=True,
-                              null=False,
-                              blank=False)
+                              null=False)
     files = models.ManyToManyField(File,
                                    verbose_name='Файлы',
                                    related_name='hw_log',
@@ -93,7 +103,9 @@ class HomeworkLog(models.Model):
     class Meta:
         verbose_name = 'Лог ДЗ'
         verbose_name_plural = 'Логи ДЗ',
-        ordering = ['dt']
+        ordering = ['-dt']
 
     def __str__(self):
         return f'{self.user} - {self.status}'
+
+

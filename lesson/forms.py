@@ -16,6 +16,5 @@ class LessonForm(forms.ModelForm):
                   'teacher',
                   'listener',
                   'materials',
-                  'homework',
                   'zoom_url',
                   )

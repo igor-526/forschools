@@ -1,10 +1,12 @@
 from django.core.management.base import BaseCommand, CommandError
+from tgbot.handlers import router as main_router
 from tgbot.create_bot import dp, bot
 import asyncio
 import logging
 
 
 async def start() -> None:
+    dp.include_routers(main_router)
     await dp.start_polling(bot)
 
 

@@ -39,11 +39,11 @@ class Telegram(models.Model):
                              related_query_name='telegram_set',
                              null=False,
                              blank=False)
-    tg_id = models.IntegerField(verbose_name='id',
-                                null=False,
-                                blank=False,
-                                default=0,
-                                unique=True)
+    tg_id = models.BigIntegerField(verbose_name='id',
+                                   null=False,
+                                   blank=False,
+                                   default=0,
+                                   unique=True)
     nickname = models.CharField(verbose_name='ник',
                                 null=True,
                                 blank=True)
@@ -55,6 +55,9 @@ class Telegram(models.Model):
 
     def __str__(self):
         return f'{str(self.user)} {self.nickname}'
+
+    async def get_user(self):
+        return self.user
 
 
 class UserLog(models.Model):

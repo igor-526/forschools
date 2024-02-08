@@ -54,6 +54,8 @@ services:
     depends_on:
       - dls_redis
       - dls_django
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     command: celery -A dls worker -l info
     networks:
       - dls_network
