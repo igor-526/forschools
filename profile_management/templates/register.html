@@ -37,25 +37,25 @@
                 <legend>Роль пользователя:</legend>
                 {% if perms.auth.register_listener %}
                 <div>
-                  <input name="role" type="radio" value="4" checked/>
+                  <input name="role" type="radio" value="Listener" checked/>
                   <label>ученик</label>
                 </div>
                 {% endif %}
                 {% if perms.auth.register_teacher %}
                 <div>
-                    <input name="role" type="radio" value="3"/>
+                    <input name="role" type="radio" value="Teacher"/>
                     <label>преподаватель</label>
                 </div>
                 {% endif %}
                 {% if perms.auth.register_metodist %}
                 <div>
-                    <input name="role" type="radio" value="2"/>
+                    <input name="role" type="radio" value="Metodist"/>
                     <label>методист</label>
                 </div>
                 {% endif %}
                 {% if perms.auth.register_admin %}
                 <div>
-                    <input name="role" type="radio" value="1"/>
+                    <input name="role" type="radio" value="Admin"/>
                     <label>администратор</label>
                 </div>
                 {% endif %}

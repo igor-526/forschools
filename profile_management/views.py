@@ -15,7 +15,7 @@ def user_login(request):    # страница авторизации и лог�
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse_lazy('profile'))
+            return HttpResponseRedirect(reverse_lazy('dashboard'))
     return render(request, 'login.html')
 
 
@@ -24,11 +24,11 @@ def user_logout(request):    # логаут
     return HttpResponseRedirect(reverse_lazy('login'))
 
 
-class ProfilePage(LoginRequiredMixin, TemplateView):    # страница профиля
-    template_name = "profile.html"
+class DashboardPage(LoginRequiredMixin, TemplateView):    # страница профиля
+    template_name = "dashboard_cards.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Профиль'}
+        context = {'title': 'Дэшборд'}
         return render(request, self.template_name, context)
 
 
@@ -39,6 +39,7 @@ def register_view(request):     # Страница регистрации дру
         if form.is_valid():
             user = form.save()
             user.update_tg_code()
+            user.set_group(request.POST.get('role'))
     else:
         form = SignUpForm()
     return render(request, "register.html", {"form": form})

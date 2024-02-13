@@ -1,0 +1,44 @@
+version: '3.9'
+
+networks:
+  dls_network:
+    driver: bridge
+
+volumes:
+  dls_pgdata:
+
+services:
+  dls_database:
+    image: postgres:latest
+    ports:
+      - "${PORT}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DB}
+      POSTGRES_HOST: localhost
+    networks:
+      - dls_network
+    volumes:
+      - dls_pgdata:/var/lib/postgresql/data
+    restart: always
+
+  dls_django:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      SECRET_KEY: ${SECRET_KEY}
+      DB_DB: ${DB_DB}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: dls_database
+      PORT: 5432
+      PYTHONUNBUFFERED: 1
+    entrypoint: bash -c  "python manage.py makemigrations && python manage.py migrate &&  python manage.py runserver 0.0.0.0:8080";
+    depends_on:
+      - dls_database
+    networks:
+      - dls_network
+    restart: always
