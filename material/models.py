@@ -3,6 +3,12 @@ from datetime import datetime
 from profile_management.models import NewUser
 
 
+MATERIAL_TYPE_CHOISES = (
+    (1, 'Общие материалы'),
+    (2, 'Индивидуальные материалы'),
+)
+
+
 class MaterialCategory(models.Model):
     name = models.CharField(verbose_name='Наименование',
                             unique=True)
@@ -23,28 +29,41 @@ class Material(models.Model):
                               related_name='material',
                               related_query_name='material_set',
                               null=False,
-                              blank=False)
+                              blank=True)
     name = models.CharField(verbose_name='Наименование',
                             max_length=200,
                             null=False,
                             blank=False,
                             unique=True)
+    description = models.CharField(verbose_name='Описание',
+                                   null=True,
+                                   blank=True)
     file = models.FileField(verbose_name='Файл',
-                            upload_to='materials/',
+                            upload_to='static/materials/',
                             null=False,
                             blank=False)
     uploaded_at = models.DateTimeField(verbose_name='Дата и время загрузки',
                                        auto_now_add=True,
                                        null=False,
-                                       blank=False)
+                                       blank=True)
     last_used_at = models.DateTimeField(verbose_name='Последнее использование',
                                         auto_now_add=True,
                                         null=False,
-                                        blank=False)
+                                        blank=True)
     category = models.ManyToManyField(MaterialCategory,
                                       verbose_name='Категория',
                                       related_name='material',
-                                      related_query_name='material_set')
+                                      related_query_name='material_set',
+                                      blank=True)
+    type = models.IntegerField(choices=MATERIAL_TYPE_CHOISES,
+                               verbose_name='Тип',
+                               null=False,
+                               blank=True,
+                               default=2)
+    visible = models.BooleanField(verbose_name='Видимость материала',
+                                  default=True,
+                                  null=False,
+                                  blank=True)
 
     class Meta:
         verbose_name = 'Материал'
@@ -56,6 +75,15 @@ class Material(models.Model):
 
     def update_last_used_at(self):
         self.last_used_at = datetime.now()
+
+    def set_category(self, categories: list):
+        if 'new' in categories:
+            categories.remove('new')
+        cat_list = []
+        for cat in categories:
+            cat_list.append(MaterialCategory.objects.get_or_create(name=cat)[0])
+        self.category.set(cat_list)
+
 
 
 class File(models.Model):
@@ -79,11 +107,11 @@ class File(models.Model):
     uploaded_at = models.DateTimeField(verbose_name='Дата и время загрузки',
                                        auto_now_add=True,
                                        null=False,
-                                       blank=False)
+                                       blank=True)
     last_used_at = models.DateTimeField(verbose_name='Последнее использование',
                                         auto_now_add=True,
                                         null=False,
-                                        blank=False)
+                                        blank=True)
 
     class Meta:
         verbose_name = 'Файл'

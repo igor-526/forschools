@@ -1,0 +1,68 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNewLesson">
+    <div class="offcanvas-header">
+        <h5 id="offcanvasNewLesson">Новый урок</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="formNewLesson">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="LessonNewNameField" class="form-label">Наименование</label>
+                <input name="name" type="text" class="form-control" id="LessonNewNameField">
+                <div class="form-text">Опишите урок кратко. Например, тема урока</div>
+                <div class="invalid-feedback" id="LessonNewNameError"></div>
+            </div>
+
+            <label for="LessonNewTeacherField" class="form-label">Преподаватель</label>
+            <input name="teacher" class="form-control mb-3" list="LessonNewTeacherOptions" id="LessonNewTeacherField" placeholder="Начните вводить..">
+            <div class="invalid-feedback" id="LessonNewTeacherError"></div>
+            <datalist id="LessonNewTeacherOptions"></datalist>
+
+            <label for="LessonNewListenerField" class="form-label">Ученик</label>
+            <input name="listener" class="form-control mb-3" list="LessonNewListenerOptions" id="LessonNewListenerField" placeholder="Начните вводить..">
+            <div class="invalid-feedback" id="LessonNewListenerError"></div>
+            <datalist id="LessonNewListenerOptions"></datalist>
+
+            <div class="mb-3">
+                <label for="LessonNewDateField" class="form-label">Дата</label>
+                <input name="date" type="date" class="form-control" id="LessonNewDateField">
+                <div class="invalid-feedback" id="LessonNewDateError"></div>
+            </div>
+
+            <div class="row g-3 align-items-center">
+                <div class="mb-3 col">
+                    <label for="LessonNewStartField" class="form-label">Начало</label>
+                    <input name="start" type="time" class="form-control" id="LessonNewStartField">
+                    <div class="invalid-feedback" id="LessonNewStartError"></div>
+                </div>
+
+                <div class="mb-3 col">
+                    <label for="LessonNewEndField" class="form-label">Окончание</label>
+                    <input name="end" type="time" class="form-control" id="LessonNewEndField">
+                    <div class="invalid-feedback" id="LessonNewEndError"></div>
+                </div>
+            </div>
+
+
+            <div class="mb-1">
+                <span class="mb-1">Место</span>
+                <select name="url" class="form-select" id="LessonNewPlaceSelect">
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <div id="LessonNewPlaceNewFieldset" class="input-group d-none">
+                    <input id="LessonNewPlaceNewNameField" name="newplace_name" type="text" aria-label="Наименование" class="form-control" placeholder="Наименование">
+                    <div class="invalid-feedback" id="LessonNewPlaceNewNameError"></div>
+                    <input id="LessonNewPlaceNewUrlField" name="newplace_url" type="url" aria-label="Ссылка" class="form-control" placeholder="Ссылка">
+                    <div class="invalid-feedback" id="LessonNewPlaceNewUrlError"></div>
+                </div>
+            </div>
+
+            <button id="LessonNewButtonSave" type="button" class="btn btn-primary">Сохранить</button>
+
+
+        </form>
+    </div>
+</div>

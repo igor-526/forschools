@@ -1,12 +1,31 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
-from .views import DashboardPage, user_login, user_logout, register_view, TelegramPage
+from .views import (DashboardPage,
+                    user_login,
+                    user_logout,
+                    register_view,
+                    UsersPage,
+                    UserListAPIView,
+                    UserAPIView,
+                    EngagementListAPIView,
+                    LevelListAPIView,
+                    ProgramListAPIView,
+                    UserPhotoApiView)
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='dashboard')),  # редирект на профиль
+    path('', RedirectView.as_view(url='dashboard')),  # редирект на дэшборд
     path('login', user_login, name='login'),    # страница авторизации
     path('logout', user_logout, name='logout'),  # логаут
-    path('dashboard', DashboardPage.as_view(), name='dashboard'),  # страница профиля
-    path('register', register_view, name='register'),  # страница регистрации профиля
-    path('profile/telegram', TelegramPage.as_view(), name='telegram'),  # страница привязки профиля к Telegram
+    path('register', register_view, name='register', ),  # API для регистрации пользователя
+    path('dashboard', DashboardPage.as_view(), name='dashboard'),  # страница Dashboard
+    path('administration/users', UsersPage.as_view(), name='users'),   # страница пользователей (администрирвоание)
+]
+
+apiv1patterns = [
+    path('', UserListAPIView.as_view()),  # API для вывода списка пользователей
+    path('<int:pk>/', UserAPIView.as_view()),     # API для вывода, изменения и удаления пользователя
+    path('engagement_channels/', EngagementListAPIView.as_view()),    # API для вывода каналов привлечения
+    path('programs/', ProgramListAPIView.as_view()),  # API для вывода программ обучения
+    path('levels/', LevelListAPIView.as_view()),  # API для вывода уровней
+    path('<int:pk>/photo/', UserPhotoApiView.as_view()),  # API для изменения фото профиля
 ]

@@ -1,0 +1,50 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNewMaterial">
+    <div class="offcanvas-header">
+        <h5 id="offcanvasNewMaterial">Новый материал</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="formNewMaterial">
+            {% csrf_token %}
+
+            <div class="btn-group mb-3" role="group">
+                <input type="radio" class="btn-check" name="type"  value=2 id="MaterialNewTypeMy" checked>
+                <label class="btn btn-outline-primary" for="MaterialNewTypeMy">Мой</label>
+
+                <input type="radio" class="btn-check" name="type" value=1 id="MaterialNewTypeGeneral">
+                <label class="btn btn-outline-primary" for="MaterialNewTypeGeneral">Общий</label>
+            </div>
+
+            <div class="mb-3">
+                <label for="MaterialNewFileField" class="form-label">Файл</label>
+                <input name="file" type="file" class="form-control" id="MaterialNewFileField" required>
+                <div class="form-text">Допустимы изображения, аудио, документы, архивы</div>
+                <div class="invalid-feedback" id="MaterialNewFileError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="MaterialNewNameField" class="form-label">Наименование</label>
+                <input name="name" type="text" class="form-control" id="MaterialNewNameField" required>
+                <div class="form-text">Под каким наименованием будет сохранён файл</div>
+                <div class="invalid-feedback" id="MaterialNewNameError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="MaterialNewDescriptionField" class="form-label">Описание</label>
+                <textarea name="description" class="form-control" id="MaterialNewDescriptionField" rows="7"></textarea>
+            </div>
+
+            <div class="mb-1">
+                <span class="mb-1">Категория</span>
+                <select name="cat" class="form-select" id="MaterialNewCatInput" multiple size="7">
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <input name="cat" type="text" class="form-control d-none" id="MaterialNewCatNewInput" placeholder="Новая категория материалов">
+            </div>
+
+            <button class="btn btn-primary" id="MaterialNewSubmitButton" type="button">Добавить</button>
+        </form>
+    </div>
+</div>

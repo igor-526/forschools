@@ -1,0 +1,130 @@
+{% load static %}
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUser" aria-labelledby="offcanvasUserLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasUserLabel">Пользователь</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form class="form-user-photo">
+            <div class="text-center" id="UserShowPhotoField">
+                <img src="" alt="Фото профиля" class="base-profile-photo" id="UserShowPhotoImage">
+                <div class="dropdown-menu" id="UserShowPhotoDropdown">
+                    <form>
+                        <div class="input-group">
+                            <input name="photo" type="file" class="form-control" id="UserShowPhotoChangeField">
+                            <button class="btn btn-outline-secondary" type="button" id="UserShowPhotoDelButton">Удалить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </form>
+
+        <form class="form-user-details">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="UserShowUsernameField" class="form-label">Username</label>
+                <input name="username" type="text" class="form-control" id="UserShowUsernameField">
+                <div id="UserShowUsernameHelper" class="form-text">Нужен для входа в профиль</div>
+                <div id="UserShowUsernameErrors" class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="UserShowLastNameField" class="form-label">Фамилия</label>
+                <input name="last_name" type="text" class="form-control" id="UserShowLastNameField">
+            </div>
+
+            <div class="mb-3">
+                <label for="UserShowFirstNameField" class="form-label">Имя</label>
+                <input name="first_name" type="text" class="form-control" id="UserShowFirstNameField">
+            </div>
+
+            <div class="mb-3">
+                <label for="UserShowEmailField" class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" id="UserShowEmailField">
+            </div>
+
+            <div class="mb-3">
+                <span class="form-label">Роль</span>
+                <select name="role" class="form-select mb-3" id="UserShowRoleField">
+                    <option value="Listener">Ученик</option>
+                    <option value="Teacher">Преподаватель</option>
+                    <option value="Metodist">Методист</option>
+                    <option value="Admin">Администратор</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="UserShowBdateField" class="form-label">Дата рождения</label>
+                <input name="bdate" type="date" class="form-control" id="UserShowBDateField">
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input name="private_lessons" class="form-check-input" type="checkbox" role="switch" id="UserShowPrivateLessonsField">
+                    <label class="form-check-label" for="UserShowPrivateLessonsField">Индивидуальные занятия</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input name="group_lessons" class="form-check-input" type="checkbox" role="switch" id="UserShowGroupLessonsField">
+                    <label class="form-check-label" for="UserShowGroupLessonsField">Групповые занятия</label>
+                </div>
+            </div>
+
+            <div class="mb-1">
+                <span class="mb-1">Программы</span>
+                <select name="prog" class="form-select" id="UserShowProgramsField" multiple size="10">
+                </select>
+            </div>
+            <div class="mb-3">
+                <input name="prog_new" type="text" class="form-control d-none" id="UserNewProgramField" placeholder="Новая программа работы">
+            </div>
+
+            <div class="mb-3">
+                <label for="UserShowProgressField" class="form-label">Прогресс</label>
+                <textarea name="progress" class="form-control" id="UserShowProgressField" rows="3"></textarea>
+            </div>
+
+            <div class="form-floating">
+                <select name="lvl" class="form-select" id="UserShowLevelField">
+                    <option disabled selected> Выберите </option>
+                </select>
+                <label for="UserShowLevelField">Уровень</label>
+            </div>
+            <div class="mb-3">
+                <input name="lvl_new" type="text" class="form-control d-none" id="UserNewLevelField" placeholder="Новый уровень">
+            </div>
+
+            <div class="mb-3">
+                <label for="UserShowWorkExperienceField" class="form-label">Опыт работы</label>
+                <textarea name="work_experience" class="form-control" id="UserShowWorkExperienceField" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="UserShowNoteField" class="form-label">Примечания</label>
+                <textarea name="note" class="form-control" id="UserShowNoteField" rows="3"></textarea>
+            </div>
+
+            <div class="form-floating">
+                <select name="eng_channel" class="form-select" id="UserShowEngagementChannelField">
+                    <option disabled selected> Выберите </option>
+                </select>
+                <label for="UserShowEngagementChannelField">Канал привлечения</label>
+            </div>
+            <div class="mb-3">
+                <input name="eng_channel_new" type="text" class="form-control d-none" id="UserNewEngagementChannelField" placeholder="Новый канал привлечения" required>
+            </div>
+
+            <div class="mb-3">
+                <button id="UserShowSaveButton" type="button" class="btn btn-success">Сохранить</button>
+                <button id="UserShowDeleteButton" type="button" class="btn btn-danger">Удалить профиль</button>
+            </div>
+
+            <div class="mb-3">
+                <button id="UserShowDeactivateButton" type="button" class="btn btn-warning">Деактивировать</button>
+                <button id="UserShowTelegramButton" type="button" class="btn btn-primary">Telegram</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>

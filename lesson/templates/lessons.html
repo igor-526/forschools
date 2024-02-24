@@ -1,20 +1,50 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block static %}
-    <link rel="stylesheet" href="{% static 'css/lessons.css'%}">
-{% endblock %}
 {% block content %}
-    <a href="{% url 'lessons_add' %}">Добавить урок</a>
-    <h2>Уроки:</h2>
-    {% for lesson in lessons %}
-    <div class="lesson_block">
-        <div class="lessons__card card col-11 p-3 mb-1">
-        Наименование: {{ lesson.name }}<br>
-        Дата: {{ lesson.start }}<br>
-        Преподаватель: {{ lesson.teacher }}<br>
-        Ученик: {{ lesson.listener }}<br>
-        <a href="{{ lesson.zoom_url }}">Zoom</a>
+    <div class="container-xxl mt-4 mb-3">
+        <div class="row row justify-content-between">
+            <div class="col-auto">
+                <h1>Уроки</h1>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary mt-1"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewLesson" role="button" aria-controls="offcanvasRegister"><i class="fa-solid fa-plus"></i></button>
+                {% include 'offcanvas_new_lesson.html' %}
+            </div>
         </div>
     </div>
-    {% endfor %}
+
+    <div class="container-xxl">
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" id="LessonsTabUncoming">Предстоящие</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="LessonsTabPassed">Проведённые</a>
+            </li>
+        </ul>
+
+        <div class="container-xxl">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Наименование</th>
+                    <th scope="col">Дата и время</th>
+                    <th scope="col">Преподаватель</th>
+                    <th scope="col">Ученик</th>
+                    <th scope="col">Действие</th>
+                </tr>
+                </thead>
+                <tbody id="LessonTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+{% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        var csrftoken = '{{ csrf_token }}';
+    </script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/lessons/lessons.js' %}"></script>
 {% endblock %}

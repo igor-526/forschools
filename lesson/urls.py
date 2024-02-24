@@ -1,7 +1,11 @@
 from django.urls import path
-from .views import LessonPage, LessonAddPage
+from .views import LessonPage, LessonListView, LessonPlaceView
 
 urlpatterns = [
     path('', LessonPage.as_view(), name='lessons'),    # страница с материалами
-    path('add', LessonAddPage.as_view(), name='lessons_add'),   # страница для добавления материала и категории
+]
+
+apiv1patterns = [
+    path('', LessonListView.as_view()),
+    path('places', LessonPlaceView.as_view())
 ]

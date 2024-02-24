@@ -1,10 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
-from django.urls import reverse_lazy
 from django.views.generic import TemplateView
-from .models import Lesson
-from .forms import LessonForm
+from rest_framework.generics import ListCreateAPIView, ListAPIView
+from .serializers import LessonSerializer, PlaceSerializer
+from .models import Lesson, Place
 
 
 class LessonPage(LoginRequiredMixin, TemplateView):  # страница уроков
@@ -16,18 +15,11 @@ class LessonPage(LoginRequiredMixin, TemplateView):  # страница урок
         return render(request, self.template_name, context)
 
 
-class LessonAddPage(LoginRequiredMixin, TemplateView):  # страница добавления урока
-    template_name = "lessons_add.html"
+class LessonListView(LoginRequiredMixin, ListCreateAPIView):    # API для вывода и добавления уроков
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
 
-    def get(self, request, *args, **kwargs):
-        form = LessonForm()
-        return render(request, self.template_name, {'form': form})
 
-    def post(self, request, *args, **kwargs):
-        form = LessonForm(request.POST)
-        if form.is_valid():
-            lesson = form.save()
-            lesson.materials.set(request.POST.getlist('materials'))
-            return HttpResponseRedirect(reverse_lazy('lessons'))
-        else:
-            return HttpResponse(form.errors)
+class LessonPlaceView(LoginRequiredMixin, ListAPIView):  # API для вывода ссылок Zoom
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer

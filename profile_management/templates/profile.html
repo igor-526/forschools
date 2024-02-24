@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block static %}
+    <link rel="stylesheet" href="{% static 'css/profile.css'%}">
+{% endblock %}
+{% block content %}
+
+<h2 class="main-title">{{ user.first_name }}</h2>
+<h2 class="main-title">{{ user.last_name }}</h2>
+
+{% endblock %}

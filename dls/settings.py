@@ -9,7 +9,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '80.87.192.255']
+ALLOWED_HOSTS = ['localhost', '80.87.192.255', '0.0.0.0']
 
 
 INSTALLED_APPS = [
@@ -21,8 +21,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',   # фреймворк для RestAPI
-    'celery',
-    'django_celery_results',
+    'django_filters',   # фильтрация данных для RestFramework
+    'celery',   # создание задач
+    'django_celery_results',    # результат выполнения задач
 
     'tgbot',
     'profile_management',   # профиль, логин, регистрация, выход, логирование действий
@@ -66,11 +67,11 @@ WSGI_APPLICATION = 'dls.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_DB'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('PORT')
+        'NAME': os.environ.get('DB_DB', 'kitaischool'),
+        'USER': os.environ.get('DB_USER', 'su'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', '3611810700'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('PORT', '5428')
     }
 }
 AUTH_USER_MODEL = 'profile_management.NewUser'
@@ -92,6 +93,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}
 
 
 LANGUAGE_CODE = 'ru-ru'

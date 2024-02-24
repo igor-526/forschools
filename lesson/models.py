@@ -4,19 +4,33 @@ from profile_management.models import NewUser
 from material.models import Material
 
 
+class Place(models.Model):
+    name = models.CharField(verbose_name='Наименование',
+                            max_length=200,
+                            null=False,
+                            blank=False,
+                            unique=True)
+    url = models.URLField(verbose_name='Ссылка',
+                          null=False,
+                          blank=False,
+                          unique=True)
+
+
 class Lesson(models.Model):
     name = models.CharField(verbose_name='Наименование',
                             max_length=200,
                             null=False,
                             blank=False)
-    start = models.DateField(verbose_name='Начало урока',
+    start = models.TimeField(verbose_name='Начало урока',
                              null=False,
-                             blank=False,
-                             default=timezone.now)
-    end = models.DateField(verbose_name='Окончание урока',
+                             blank=False)
+    end = models.TimeField(verbose_name='Окончание урока',
                            null=False,
-                           blank=False,
-                           default=timezone.now)
+                           blank=False)
+    date = models.DateField(verbose_name='Дата урока',
+                            null=False,
+                            blank=False,
+                            default=timezone.now)
     teacher = models.ForeignKey(NewUser,
                                 verbose_name='Преподаватель',
                                 on_delete=models.CASCADE,
@@ -33,10 +47,11 @@ class Lesson(models.Model):
                                        related_name='lesson',
                                        related_query_name='lesson_set',
                                        blank=True)
-    zoom_url = models.URLField(verbose_name='Ссылка Zoom',
-                               null=False,
-                               blank=False,
-                               default='https://')
+    place = models.ForeignKey(Place,
+                              verbose_name='Место урока',
+                              null=True,
+                              blank=True,
+                              on_delete=models.DO_NOTHING)
     evaluation = models.IntegerField(verbose_name='Оценка урока',
                                      null=True,
                                      blank=True)
@@ -51,7 +66,7 @@ class Lesson(models.Model):
     completed = models.BooleanField(verbose_name='Урок проведён',
                                     default=False,
                                     null=False,
-                                    blank=False)
+                                    blank=True)
 
     class Meta:
         verbose_name = 'Урок'

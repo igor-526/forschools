@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4">
+        <div class="row row justify-content-between">
+            <div class="col-auto">
+                <h1>Пользователи</h1>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasRegister" role="button" aria-controls="offcanvasRegister">Зарегистрировать пользователя</button>
+                {% include 'offcanvas_register.html' %}
+            </div>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Username</th>
+            <th scope="col">Фамилия и имя</th>
+            <th scope="col">Роль</th>
+        </tr>
+        </thead>
+        <tbody class="usertable">
+        </tbody>
+    </table>
+
+    {% include 'offcanvas_user.html' %}
+    {% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        var csrftoken = '{{ csrf_token }}';
+    </script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/users/users.js' %}"></script>
+{% endblock %}

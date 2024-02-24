@@ -1,0 +1,41 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRegister" aria-labelledby="offcanvasRegisterLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRegisterLabel">Новый пользователь</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form class="form-registration">
+            {% csrf_token %}
+
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="RegisterUserUsername">Username</span>
+                <input id="RegisterUserUsernameField" name="username" type="text" class="form-control" aria-label="Username" aria-describedby="RegisterUserUsername" placeholder="i.ivanov">
+                <div id="RegisterUserUsernameErrors" class="invalid-feedback">
+                </div>
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="RegisterUserName">ФИ</span>
+                <input name="last_name" type="text" class="form-control" aria-label="Фамилия" aria-describedby="RegisterUserName" placeholder="Иванов">
+                <input name="first_name" type="text" class="form-control" aria-label="Имя" aria-describedby="RegisterUserName" placeholder="Иван">
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="ShowUserLastName">Пароль</span>
+                <input  id="RegisterUserPasswordField" name="password1" type="text" class="form-control" aria-label="Пароль" aria-describedby="RegisterUserPassword">
+                <div id="RegisterUserPasswordErrors" class="invalid-feedback">
+                </div>
+            </div>
+
+            <select name="role" class="form-select mb-3" aria-label="">
+                <option value="Listener" selected>Ученик</option>
+                <option value="Teacher">Преподаватель</option>
+                <option value="Metodist">Методист</option>
+                <option value="Admin">Администратор</option>
+            </select>
+
+            <button id="UserRegistrationButton" type="button" class="btn btn-primary">Зарегистрировать</button>
+
+        </form>
+    </div>
+</div>

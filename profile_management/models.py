@@ -13,7 +13,7 @@ class Programs(models.Model):
         verbose_name = 'Программа работы',
         verbose_name_plural = 'Программы работы',
         ordering = ['name']
-
+ 
     def __str__(self):
         return self.name
 
@@ -62,7 +62,10 @@ class EngagementChannel(models.Model):
 
 class NewUser(AbstractUser):
     photo = models.ImageField(verbose_name='Фотография профиля',
-                              upload_to='profile_pictures/')
+                              upload_to='static/img/profile_pictures/',
+                              null=False,
+                              blank=True,
+                              default='static/img/profile_pictures/base_avatar.png')
     last_activity = models.DateTimeField(verbose_name='Последняя активность',
                                          null=False,
                                          auto_now_add=True)
@@ -90,9 +93,11 @@ class NewUser(AbstractUser):
     note = models.TextField(verbose_name='Примечание',
                             null=True,
                             blank=True)
-    level = models.ManyToManyField(Level,
-                                   verbose_name='Уровень',
-                                   blank=True)
+    level = models.ForeignKey(Level,
+                              verbose_name='Уровень',
+                              blank=True,
+                              null=True,
+                              on_delete=models.SET_NULL)
     progress = models.CharField(verbose_name='Прогресс',
                                 null=True,
                                 blank=True)
@@ -100,7 +105,7 @@ class NewUser(AbstractUser):
                                            verbose_name='Канал привлечения',
                                            blank=True,
                                            null=True,
-                                           on_delete=models.DO_NOTHING)
+                                           on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -122,6 +127,32 @@ class NewUser(AbstractUser):
         group_obj = Group.objects.filter(name=group).first()
         self.groups.set([group_obj])
 
+    def set_engagement_channel(self, eng_ch: str):
+        eng_channel = EngagementChannel.objects.get_or_create(name=eng_ch)
+        self.engagement_channel = eng_channel[0]
+        self.save()
+
+    def set_level(self, level: str):
+        level_obj = Level.objects.get_or_create(name=level)
+        self.level = level_obj[0]
+        self.save()
+
+    def set_programs(self, programslist, new=None):
+        all_progs = []
+        for prog in programslist:
+            all_progs.append(Programs.objects.get_or_create(name=prog)[0])
+        if new:
+            all_progs.append(Programs.objects.get_or_create(name=new)[0])
+        self.programs.set(all_progs)
+
+    def set_lessons_type(self, private, group):
+        self.private_lessons = True if private else False
+        self.group_lessons = True if group else False
+        self.save()
+
+    def delete_photo(self):
+        self.photo = 'static/img/profile_pictures/base_avatar.png'
+        self.save()
 
 
 class Telegram(models.Model):

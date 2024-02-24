@@ -1,10 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
-from django.urls import reverse_lazy
 from django.views.generic import TemplateView
-from .forms import MaterialForm, MaterialCategoryForm
-from .models import Material
+from rest_framework.response import Response
+
+from .models import Material, MaterialCategory
+from rest_framework.generics import ListCreateAPIView, ListAPIView
+from .serializers import MaterialSerializer, MaterialCategorySerializer
 
 
 class MaterialPage(LoginRequiredMixin, TemplateView):    # страница матриалов
@@ -16,35 +17,24 @@ class MaterialPage(LoginRequiredMixin, TemplateView):    # страница ма
         return render(request, self.template_name, context)
 
 
-class MaterialAddPage(LoginRequiredMixin, TemplateView):    # страница добавления материала
-    template_name = "material_add.html"
+class MaterialListView(LoginRequiredMixin, ListCreateAPIView):  # API для просмотра и добавления материалов
+    queryset = Material.objects.all()
+    serializer_class = MaterialSerializer
 
-    def get(self, request, *args, **kwargs):
-        form_mat = MaterialForm()
-        form_cat = MaterialCategoryForm()
-        return render(request, "material_add.html",
-                      {'form_mat': form_mat, 'form_cat': form_cat})
+    def get_queryset(self):
+        param_type = self.request.query_params.get('type')
+        if not param_type or param_type == '2':
+            return Material.objects.filter(type=2)
+        elif param_type == "1":
+            return Material.objects.filter(type=1, owner=self.request.user)
 
-
-def material_add(request, *args, **kwargs):     # метод для добавления материала
-    if request.method == "POST":
-        form_mat = MaterialForm(request.POST, request.FILES, owner=request.user)
-        if form_mat.is_valid():
-            mat = form_mat.save(commit=False)
-            mat.owner = request.user
-            mat.save()
-            mat.category.set(request.POST.getlist('category'))
-            mat.save()
-            return HttpResponseRedirect(reverse_lazy('materials'))
-        else:
-            return HttpResponse(form_mat.errors)
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
-def category_add(request, *args, **kwargs):     # метод для добавления категории материалов
-    if request.method == "POST":
-        form_cat = MaterialCategoryForm(request.POST)
-        if form_cat.is_valid():
-            form_cat.save()
-            return HttpResponseRedirect(reverse_lazy('materials'))
-        else:
-            return HttpResponse("Ошибка")
+class MaterialCategoryView(LoginRequiredMixin, ListAPIView):    # API для вывода категорий
+    queryset = MaterialCategory.objects.all()
+    serializer_class = MaterialCategorySerializer
+
