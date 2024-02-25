@@ -2,6 +2,6 @@ venv/
 __pycache__/
 .idea/
 .env
-profile_pictures/*
-materials/*
 */migrations/*
+static/materials/*
+static/img/profile_pictures/*

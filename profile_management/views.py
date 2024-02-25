@@ -9,6 +9,7 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
+from dls.utils import get_menu
 
 from .forms import SignUpForm
 from .models import (NewUser,
@@ -55,7 +56,7 @@ class DashboardPage(LoginRequiredMixin, TemplateView):    # главная ст�
     template_name = "profile.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Дэшборд'}
+        context = {'title': 'Дэшборд', 'menu': get_menu(request.user)}
         return render(request, self.template_name, context)
 
 
@@ -154,3 +155,7 @@ class ProgramListAPIView(LoginRequiredMixin, ListAPIView):  # API для выв�
         queryset = self.get_queryset()
         serializer = ProgramSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class CollectionPageView(LoginRequiredMixin, TemplateView):
+    pass

@@ -1,52 +1,49 @@
 <!doctype html>
 <html lang="ru">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ title }}</title>
-        {% load static %}
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-        {% block static_css %} {% endblock %}
-    </head>
-    <body>
-        
-        <div class="container-xxl mt-4">
-            <div class="row">
-                <div class="col-2">
-                    <div class="text-center" id="UserShowPhotoField">
-                        <img src="/{{ request.user.photo }}" alt="Фото профиля" class="base-profile-photo">
-                    </div>
-                    
-                    <div class="mb-3 base-name">{{ request.user }}</div>
-
-                    <div class="list-group base-menu">
-                        <a href="{% url 'dashboard' %}" class="list-group-item list-group-item-action active" aria-current="true">
-                          Главная
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">Материлы</a>
-                        <a href="#" class="list-group-item list-group-item-action">Домашние задания</a>
-                            <div class="dropdown dropend">
-                                <a class="list-group-item list-group-item-action dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                                  Инструменты
-                                </a>
-                                <ul class="dropdown-menu base-menu" aria-labelledby="dropdownMenuLink">
-                                  <li><a class="dropdown-item base-menu" href="#">Пользователи</a></li>
-                                  <li><a class="dropdown-item base-menu" href="#">Статистика</a></li>
-                                </ul>
-                              </div>
-                        <a href="#" class="list-group-item list-group-item-action">Настройки профиля</a>
-                        <a href="{% url 'logout' %}" class="list-group-item list-group-item-action">Выйти</a>
-                      </div>
-
-                </div>
-                <div class="col-10 p-3 base-content">
-                    {% block content %} {% endblock %}
-                </div>
-              </div>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% block static_css %} {% endblock %}
+</head>
+<body>
+<div class="container-xxl mt-4">
+    <div class="row">
+        <div class="col-2">
+            <div class="text-center" id="UserShowPhotoField">
+                <img src="/{{ request.user.photo }}" alt="Фото профиля" class="base-profile-photo">
+            </div>
+            <div class="mb-3 base-name">{{ request.user }}</div>
+            <div class="list-group base-menu">
+                {% for item in menu %}
+                    {% if item.type == 'main' %}
+                        <a href="{{ item.url }}" class="list-group-item list-group-item-action">{{ item.name }}</a>
+                    {% endif %}
+                    {% if item.type == 'dropdown' %}
+                        <div class="dropdown dropend">
+                            <a class="list-group-item list-group-item-action dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ item.name }}
+                            </a>
+                            <ul class="dropdown-menu base-menu" aria-labelledby="dropdownMenuLink">
+                                {% for ditem in item.menu %}
+                                    <li><a class="dropdown-item base-menu" href="{{ ditem.url }}">{{ ditem.name }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-        <script src="https://kit.fontawesome.com/7817088a53.js" crossorigin="anonymous"></script>
-        {% block static_js %} {% endblock %}
-    </body>
-    </html>
+        <div class="col-10 p-3 base-content">
+            {% block content %} {% endblock %}
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script src="https://kit.fontawesome.com/7817088a53.js" crossorigin="anonymous"></script>
+{% block static_js %} {% endblock %}
+</body>
+</html>

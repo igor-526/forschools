@@ -10,7 +10,8 @@ from .views import (DashboardPage,
                     EngagementListAPIView,
                     LevelListAPIView,
                     ProgramListAPIView,
-                    UserPhotoApiView)
+                    UserPhotoApiView,
+                    CollectionPageView)
 
 urlpatterns = [
     path('', RedirectView.as_view(url='dashboard')),  # редирект на дэшборд
@@ -18,7 +19,10 @@ urlpatterns = [
     path('logout', user_logout, name='logout'),  # логаут
     path('register', register_view, name='register', ),  # API для регистрации пользователя
     path('dashboard', DashboardPage.as_view(), name='dashboard'),  # страница Dashboard
-    path('administration/users', UsersPage.as_view(), name='users'),   # страница пользователей (администрирвоание)
+    path('administration/users', UsersPage.as_view(),
+         name='admin_users'),   # страница пользователей (администрирование)
+    path('administration/collections', CollectionPageView.as_view(),
+         name='admin_collections'),     # коллекция данных (администрирование)
 ]
 
 apiv1patterns = [
