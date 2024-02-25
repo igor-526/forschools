@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block static_css %}
+    <link href="{% static 'css/collections.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+    <div class="container-xxl mt-4">
+        <h1>Коллекции данных</h1>
+    </div>
+    <div class="container-xxl mt-4">
+        <div class="d-flex align-items-start">
+            <div class="nav flex-column nav-pills me-3 collections-tablist" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active" id="CollectionsTabLevels" data-bs-toggle="pill"  type="button" role="tab" aria-selected="true">Уровни</button>
+                <button class="nav-link" id="CollectionsTabMaterialCategories" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Категории материалов</button>
+                <button class="nav-link" id="CollectionsTabLearningPrograms" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Программы обучения</button>
+                <button class="nav-link" id="CollectionsTabEngagementChannels" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Каналы привлечения</button>
+                <button class="nav-link" id="CollectionsTabPlaces" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Места проведения уроков</button>
+            </div>
+            <div class="tab-content collections-content" id="v-pills-tabContent">
+                <table class="table table-hover">
+                    <thead id="CollectionsTableHead">
+                    </thead>
+                    <tbody id="CollectionsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        var csrftoken = '{{ csrf_token }}';
+    </script>
+    <script src="{% static 'js/collections/collections.js' %}"></script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+{% endblock %}

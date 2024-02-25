@@ -4,14 +4,14 @@ from django.views.generic import TemplateView
 from rest_framework.generics import ListCreateAPIView, ListAPIView
 from .serializers import LessonSerializer, PlaceSerializer
 from .models import Lesson, Place
+from dls.utils import get_menu
 
 
 class LessonPage(LoginRequiredMixin, TemplateView):  # страница уроков
     template_name = "lessons.html"
 
     def get(self, request, *args, **kwargs):
-        data = Lesson.objects.all()
-        context = {"lessons": data}
+        context = {'title': 'Уроки', 'menu': get_menu(request.user)}
         return render(request, self.template_name, context)
 
 

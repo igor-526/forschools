@@ -1,0 +1,7 @@
+.collections-tablist {
+    width: 250px;
+}
+
+.collections-content {
+    width: calc(100% - 270px);
+}

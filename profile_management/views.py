@@ -64,7 +64,15 @@ class UsersPage(LoginRequiredMixin, TemplateView):  # страница поль�
     template_name = "users.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Пользователи'}
+        context = {'title': 'Пользователи', 'menu': get_menu(request.user)}
+        return render(request, self.template_name, context)
+
+
+class CollectionPageView(LoginRequiredMixin, TemplateView):
+    template_name = "collections.html"
+
+    def get(self, request, *args, **kwargs):
+        context = {'title': 'Коллекции данных', 'menu': get_menu(request.user)}
         return render(request, self.template_name, context)
 
 
@@ -155,7 +163,3 @@ class ProgramListAPIView(LoginRequiredMixin, ListAPIView):  # API для выв�
         queryset = self.get_queryset()
         serializer = ProgramSerializer(queryset, many=True)
         return Response(serializer.data)
-
-
-class CollectionPageView(LoginRequiredMixin, TemplateView):
-    pass

@@ -49,7 +49,7 @@ class LessonSerializer(serializers.ModelSerializer):
             data.pop('newplace_name')
             data['place'] = place
         else:
-            data['place'] = Place.objects.get(name=self.context['request'].data.get('url'))[0]
+            data['place'] = Place.objects.get(name=self.context['request'].data.get('url'))
         return data
 
     def create(self, validated_data):

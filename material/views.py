@@ -6,14 +6,14 @@ from rest_framework.response import Response
 from .models import Material, MaterialCategory
 from rest_framework.generics import ListCreateAPIView, ListAPIView
 from .serializers import MaterialSerializer, MaterialCategorySerializer
+from dls.utils import get_menu
 
 
 class MaterialPage(LoginRequiredMixin, TemplateView):    # страница матриалов
     template_name = "materials.html"
 
     def get(self, request, *args, **kwargs):
-        data = Material.objects.all()
-        context = {'materials': data}
+        context = {'title': 'Материалы', 'menu': get_menu(request.user)}
         return render(request, self.template_name, context)
 
 

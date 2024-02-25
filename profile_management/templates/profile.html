@@ -1,13 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block static %}
+{% block static_css %}
 {% endblock %}
 {% block content %}
 
-<h2 class="main-title">{{ user.first_name }}</h2>
-<h2 class="main-title">{{ user.last_name }}</h2>
-    {% for item in menu %}
-        {{ item.name }} - {{ item.url }} <br>
-    {% endfor %}
+    <div class="container-xxl mt-4">
+        <h1>ТУТ БУДЕТ ДЭШБОРД</h1>
+    </div>
 
 {% endblock %}
