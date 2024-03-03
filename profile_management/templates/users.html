@@ -8,8 +8,8 @@
             </div>
             <div class="col-auto">
                 <button type="button" class="btn btn-primary mt-1"><i class="fa-solid fa-magnifying-glass"></i></button>
-                {% if perms.auth.register_users %}
-                <button type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasRegister" role="button"><i class="fa-solid fa-plus"></i></button>
+                {% if "auth.register_users" in perms %}
+                    <button type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasRegister" role="button"><i class="fa-solid fa-plus"></i></button>
                 {% endif %}
                 {% include 'offcanvas_register.html' %}
             </div>

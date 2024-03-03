@@ -22,7 +22,7 @@ function showUsers(list = userSet){
 }
 
 async function setEngagementChannels(){
-    formUserEditEngagementChannelSelect.innerHTML = ''
+    formUserEditEngagementChannelSelect.innerHTML = '<option disabled selected> Выберите </option>'
     await fetch("/api/v1/users/engagement_channels")
         .then(async response => await response.json())
         .then(content => content.map(function (channel) {
