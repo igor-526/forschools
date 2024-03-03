@@ -3,7 +3,7 @@
         <img src="https://img.shields.io/badge/разработчик-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
     </a>
     <a href="http://80.87.192.255:8080">
-        <img src="https://img.shields.io/badge/попробовать-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=0078D7" alt="Telegram Badge"/>
+        <img src="https://img.shields.io/badge/попробовать-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=white" alt="Telegram Badge"/>
     </a>
 </div>
 <h1>Описание проекта</h1>
