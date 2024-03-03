@@ -10,6 +10,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
 from dls.utils import get_menu
+from json import dumps
+from django.http import Http404
 
 from .forms import SignUpForm
 from .models import (NewUser,
@@ -17,7 +19,6 @@ from .models import (NewUser,
                      Level,
                      Programs)
 from .serializers import (NewUserSerializer,
-                          NewUserProfileSerializer,
                           EngagementChannelSerializer,
                           ProgramSerializer,
                           LevelSerializer)
@@ -53,10 +54,74 @@ def register_view(request):     # API для регистрации пользо
 
 
 class DashboardPage(LoginRequiredMixin, TemplateView):    # главная страница Dashboard
-    template_name = "profile.html"
+    template_name = "dashboard.html"
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Дэшборд', 'menu': get_menu(request.user)}
+        return render(request, self.template_name, context)
+
+
+class ProfilePage(LoginRequiredMixin, TemplateView):
+    template_name = "profile.html"
+
+    def get(self, request, *args, **kwargs):
+        user_object = {
+            'first_name': None,
+            'last_name': None,
+            'photo': None,
+            'role': None,
+            'last_activity': None,
+            'date_joined': None,
+            'bdate': None,
+            'private_lessons': None,
+            'group_lessons': None,
+            'note': None,
+            'progress': None,
+            'level': None,
+            'age': None,
+            'id': None,
+            'tg': False
+        }
+        puser = NewUser.objects.filter(id=self.kwargs.get('pk')).first()
+        if puser:
+            user_object['first_name'] = puser.first_name
+            user_object['last_name'] = puser.last_name
+            user_object['photo'] = puser.photo.url
+            user_object['last_activity'] = puser.last_login
+            user_object['date_joined'] = puser.date_joined
+            user_object['id'] = puser.id
+            role = puser.groups.first().name
+            perms = request.user.get_all_permissions()
+            if role == 'Admin':
+                user_object['role'] = 'Администратор'
+                if 'auth.see_moreinfo_admin' in perms:
+                    user_object['note'] = puser.note
+            if role == 'Metodist':
+                user_object['role'] = 'Методист'
+                if 'auth.see_moreinfo_metodist' in perms:
+                    user_object['note'] = puser.note
+            if role == 'Teacher':
+                user_object['role'] = 'Преподаватель'
+                user_object['private_lessons'] = True if puser.private_lessons else False
+                user_object['group_lessons'] = True if puser.group_lessons else False
+                user_object['level'] = puser.level
+                if 'auth.see_moreinfo_teacher' in perms:
+                    user_object['note'] = puser.note
+            if role == 'Listener':
+                user_object['role'] = 'Ученик'
+                user_object['private_lessons'] = True if puser.private_lessons else False
+                user_object['group_lessons'] = True if puser.group_lessons else False
+                user_object['level'] = puser.level
+                if 'auth.see_moreinfo_listener' in perms:
+                    user_object['note'] = puser.note
+                    user_object['progress'] = puser.progress
+        else:
+            raise Http404
+
+        context = {'title': f"Профиль: {puser}",
+                   'menu': get_menu(request.user),
+                   'puser': user_object,
+                   'self': puser == request.user}
         return render(request, self.template_name, context)
 
 
@@ -64,7 +129,9 @@ class UsersPage(LoginRequiredMixin, TemplateView):  # страница поль�
     template_name = "users.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Пользователи', 'menu': get_menu(request.user)}
+        context = {'title': 'Пользователи',
+                   'menu': get_menu(request.user),
+                   'perms': dumps({'permissions': list(request.user.get_all_permissions())})}
         return render(request, self.template_name, context)
 
 
@@ -97,7 +164,7 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
 
 class UserAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):    # API для вывода, изменения и удаления пользователя
     queryset = NewUser.objects.all()
-    serializer_class = NewUserProfileSerializer
+    serializer_class = NewUserSerializer
 
     def patch(self, request, *args, **kwargs):
         data = request.data
@@ -117,7 +184,7 @@ class UserAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):    # API д
         return super(UserAPIView, self).patch(request, *args, **kwargs)
 
 
-class UserPhotoApiView(APIView):    # API для получения, изменения и обновления фото
+class UserPhotoApiView(LoginRequiredMixin, APIView):    # API для получения, изменения и обновления фото
     def get(self, request, *args, **kwargs):
         user = NewUser.objects.get(pk=kwargs.get('pk'))
         return JsonResponse({'photo': user.photo.url})

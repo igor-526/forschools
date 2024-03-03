@@ -5,7 +5,7 @@
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form class="form-user-photo">
+        <form id="formUserPhoto">
             <div class="text-center" id="UserShowPhotoField">
                 <img src="" alt="Фото профиля" class="base-profile-photo" id="UserShowPhotoImage">
                 <div class="dropdown-menu" id="UserShowPhotoDropdown">
@@ -20,7 +20,7 @@
 
         </form>
 
-        <form class="form-user-details">
+        <form id="formUserEdit">
             {% csrf_token %}
             <div class="mb-3">
                 <label for="UserShowUsernameField" class="form-label">Username</label>
@@ -32,21 +32,24 @@
             <div class="mb-3">
                 <label for="UserShowLastNameField" class="form-label">Фамилия</label>
                 <input name="last_name" type="text" class="form-control" id="UserShowLastNameField">
+                <div id="UserShowLastNameErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
                 <label for="UserShowFirstNameField" class="form-label">Имя</label>
                 <input name="first_name" type="text" class="form-control" id="UserShowFirstNameField">
+                <div id="UserShowFirstNameErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
                 <label for="UserShowEmailField" class="form-label">Email</label>
                 <input name="email" type="email" class="form-control" id="UserShowEmailField">
+                <div id="UserShowEmailErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
                 <span class="form-label">Роль</span>
-                <select name="role" class="form-select mb-3" id="UserShowRoleField">
+                <select name="role" class="form-select mb-3" id="UserShowRoleSelect">
                     <option value="Listener">Ученик</option>
                     <option value="Teacher">Преподаватель</option>
                     <option value="Metodist">Методист</option>
@@ -60,63 +63,62 @@
             </div>
 
             <div class="mb-3">
-                <div class="form-check form-switch">
+                <div class="form-check form-switch" id="UserShowPrivateLessonsBlock">
                     <input name="private_lessons" class="form-check-input" type="checkbox" role="switch" id="UserShowPrivateLessonsField">
                     <label class="form-check-label" for="UserShowPrivateLessonsField">Индивидуальные занятия</label>
                 </div>
-                <div class="form-check form-switch">
+                <div class="form-check form-switch" id="UserShowGroupLessonsBlock">
                     <input name="group_lessons" class="form-check-input" type="checkbox" role="switch" id="UserShowGroupLessonsField">
                     <label class="form-check-label" for="UserShowGroupLessonsField">Групповые занятия</label>
                 </div>
             </div>
 
-            <div class="mb-1">
+            <div class="mb-1 UserShowProgramsBlock">
                 <span class="mb-1">Программы</span>
                 <select name="prog" class="form-select" id="UserShowProgramsField" multiple size="10">
                 </select>
             </div>
-            <div class="mb-3">
+            <div class="mb-3 UserShowProgramsBlock">
                 <input name="prog_new" type="text" class="form-control d-none" id="UserNewProgramField" placeholder="Новая программа работы">
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 UserShowProgressBlock">
                 <label for="UserShowProgressField" class="form-label">Прогресс</label>
                 <textarea name="progress" class="form-control" id="UserShowProgressField" rows="3"></textarea>
             </div>
 
-            <div class="form-floating">
+            <div class="form-floating UserShowLevelBlock">
                 <select name="lvl" class="form-select" id="UserShowLevelField">
                     <option disabled selected> Выберите </option>
                 </select>
                 <label for="UserShowLevelField">Уровень</label>
             </div>
-            <div class="mb-3">
+            <div class="mb-3 UserShowLevelBlock">
                 <input name="lvl_new" type="text" class="form-control d-none" id="UserNewLevelField" placeholder="Новый уровень">
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 UserShowWorkExperienceBlock">
                 <label for="UserShowWorkExperienceField" class="form-label">Опыт работы</label>
                 <textarea name="work_experience" class="form-control" id="UserShowWorkExperienceField" rows="3"></textarea>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 UserShowNoteBlock">
                 <label for="UserShowNoteField" class="form-label">Примечания</label>
                 <textarea name="note" class="form-control" id="UserShowNoteField" rows="3"></textarea>
             </div>
 
-            <div class="form-floating">
+            <div class="form-floating UserShowEngagementChannelBlock">
                 <select name="eng_channel" class="form-select" id="UserShowEngagementChannelField">
                     <option disabled selected> Выберите </option>
                 </select>
                 <label for="UserShowEngagementChannelField">Канал привлечения</label>
             </div>
-            <div class="mb-3">
+            <div class="mb-3 UserShowEngagementChannelBlock">
                 <input name="eng_channel_new" type="text" class="form-control d-none" id="UserNewEngagementChannelField" placeholder="Новый канал привлечения" required>
             </div>
 
             <div class="mb-3">
                 <button id="UserShowSaveButton" type="button" class="btn btn-success">Сохранить</button>
-                <button id="UserShowDeleteButton" type="button" class="btn btn-danger">Удалить профиль</button>
             </div>
 
             <div class="mb-3">

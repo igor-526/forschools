@@ -7,7 +7,10 @@
                 <h1>Пользователи</h1>
             </div>
             <div class="col-auto">
-                <button type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasRegister" role="button" aria-controls="offcanvasRegister">Зарегистрировать пользователя</button>
+                <button type="button" class="btn btn-primary mt-1"><i class="fa-solid fa-magnifying-glass"></i></button>
+                {% if perms.auth.register_users %}
+                <button type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasRegister" role="button"><i class="fa-solid fa-plus"></i></button>
+                {% endif %}
                 {% include 'offcanvas_register.html' %}
             </div>
         </div>
@@ -21,7 +24,7 @@
             <th scope="col">Роль</th>
         </tr>
         </thead>
-        <tbody class="usertable">
+        <tbody id="UsersTableBody">
         </tbody>
     </table>
 
@@ -31,7 +34,12 @@
 {% block static_js %}
     <script>
         var csrftoken = '{{ csrf_token }}';
+        const userPermissions = JSON.parse("{{ perms|escapejs }}")
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/users/users.js' %}"></script>
+    <script src="{% static 'js/users/registration.js' %}"></script>
+    <script src="{% static 'js/users/telegram.js' %}"></script>
+    <script src="{% static 'js/users/photo.js' %}"></script>
+    <script src="{% static 'js/users/edit.js' %}"></script>
 {% endblock %}

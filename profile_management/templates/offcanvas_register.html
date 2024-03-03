@@ -4,20 +4,20 @@
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form class="form-registration">
+        <form id="formRegistration">
             {% csrf_token %}
 
-            <div class="input-group mb-3">
-                <span class="input-group-text" id="RegisterUserUsername">Username</span>
-                <input id="RegisterUserUsernameField" name="username" type="text" class="form-control" aria-label="Username" aria-describedby="RegisterUserUsername" placeholder="i.ivanov">
-                <div id="RegisterUserUsernameErrors" class="invalid-feedback">
-                </div>
+            <div class="mb-3">
+                <label for="RegisterUserUsernameField" class="form-label">username/логин</label>
+                <input name="username" type="text" class="form-control" id="RegisterUserUsernameField">
+                <div class="form-text">Нужен для входа пользователя в систему</div>
+                <div class="invalid-feedback" id="RegisterUserUsernameError"></div>
             </div>
 
             <div class="input-group mb-3">
-                <span class="input-group-text" id="RegisterUserName">ФИ</span>
-                <input name="last_name" type="text" class="form-control" aria-label="Фамилия" aria-describedby="RegisterUserName" placeholder="Иванов">
-                <input name="first_name" type="text" class="form-control" aria-label="Имя" aria-describedby="RegisterUserName" placeholder="Иван">
+                <input id="RegisterUserLastNameField" name="last_name" type="text" class="form-control" aria-label="Фамилия" aria-describedby="RegisterUserName" placeholder="Фамилия">
+                <input id="RegisterUserFirstNameField" name="first_name" type="text" class="form-control" aria-label="Имя" aria-describedby="RegisterUserName" placeholder="Имя">
+                <div class="invalid-feedback" id="RegisterUserNameField"></div>
             </div>
 
             <div class="input-group mb-3">

@@ -1,11 +1,93 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block static_css %}
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 {% endblock %}
 {% block content %}
-
     <div class="container-xxl mt-4">
-        <h1>ТУТ БУДЕТ ДЭШБОРД</h1>
-    </div>
 
+        <div class="row">
+            <div class="col-auto">
+                <div class="text-center">
+                    <img src="{{ puser.photo }}" alt="Фото профиля" class="page-profile-photo">
+                    <h3>
+                        {{ puser.role }}
+                    </h3>
+                    <div class="mb-2">
+                        <button type="button" class="btn btn-primary">Написать</button>
+                    </div>
+                    {% if self %}
+                        <div class="mb-2">
+                            <button type="button" class="btn btn-warning">Редактировать</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-auto">
+                <div class="profile-name mb-4">{{ puser.first_name }} {{ puser.last_name }}</div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Профиль</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% if puser.bdate %}
+                                <li class="list-group-item">День рождения: {{ puser.bdate }}</li>
+                                <li class="list-group-item">Возраст: {{ puser.age }}</li>
+                            {% endif %}
+
+                            {% if puser.group_lessons == True %}
+                                <li class="list-group-item">Групповые занятия <i class="fa-solid fa-check"></i></li>
+                            {% endif %}
+                            {% if puser.group_lessons == False %}
+                                <li class="list-group-item">Групповые занятия <i class="fa-solid fa-xmark"></i></li>
+                            {% endif %}
+                            {% if puser.private_lessons == True %}
+                                <li class="list-group-item">Индивидуальные занятия <i class="fa-solid fa-check"></i></li>
+                            {% endif %}
+                            {% if puser.private_lessons == False %}
+                                <li class="list-group-item">Индивидуальные занятия <i class="fa-solid fa-xmark"></i></li>
+                            {% endif %}
+
+                            {% if puser.level %}
+                                <li class="list-group-item">Уровень: {{ puser.level }}</li>
+                            {% endif %}
+                            {% if puser.progress %}
+                                <li class="list-group-item">Прогресс: {{ puser.progress }}</li>
+                            {% endif %}
+
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Активность</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% if puser.last_activity %}
+                                <li class="list-group-item">Последняя активность: {{ puser.last_activity|date:'Y-m-d H:i' }}</li>
+                            {% else %}
+                                <li class="list-group-item">Последняя активность: не было</li>
+                            {% endif %}
+                            <li class="list-group-item">Регистрация: {{ puser.date_joined|date:'Y-m-d H:i' }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Другое</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% if puser.note %}
+                            <li class="list-group-item">Примечание: {{ puser.note }}</li>
+                            {% endif %}
+                            <li class="list-group-item">ID: {{ puser.id }}</li>
+                            <li class="list-group-item">TG: {{ puser.tg }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
 {% endblock %}

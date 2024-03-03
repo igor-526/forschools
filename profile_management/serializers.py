@@ -9,14 +9,6 @@ class NewUserGroupSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 
-class NewUserSerializer(serializers.ModelSerializer):
-    groups = NewUserGroupSerializer(many=True)
-
-    class Meta:
-        model = NewUser
-        fields = ['id', 'username', 'first_name', 'last_name', 'groups']
-
-
 class EngagementChannelSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -36,7 +28,7 @@ class ProgramSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class NewUserProfileSerializer(serializers.ModelSerializer):
+class NewUserSerializer(serializers.ModelSerializer):
     groups = NewUserGroupSerializer(many=True)
     engagement_channel = EngagementChannelSerializer()
     level = LevelSerializer()

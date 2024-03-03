@@ -67,9 +67,9 @@ WSGI_APPLICATION = 'dls.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_DB', 'kitaischool'),
-        'USER': os.environ.get('DB_USER', 'su'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', '3611810700'),
+        'NAME': os.environ.get('DB_DB'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('PORT', '5428')
     }
