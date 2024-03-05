@@ -1,5 +1,5 @@
 function formUserEditClientValidation(){
-    let validationStatus = false
+    let validationStatus = true
 
     formUserEditUsernameField.classList.remove("is-invalid")
     formUserEditLastNameField.classList.remove("is-invalid")
@@ -49,6 +49,12 @@ async function saveUser() {
     if (validationStatus){
         const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
         const formData = new FormData(formUserEdit);
+        if (formData.get("eng_channel") === "new" || formData.get("eng_channel") == null){
+            formData.delete("eng_channel")
+        }
+        if (formData.get("lvl") === "new" || formData.get("lvl") == null){
+            formData.delete("lvl")
+        }
         const response = await fetch(`/api/v1/users/${userID}/`, {
             method: 'patch',
             credentials: 'same-origin',

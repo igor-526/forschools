@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 from django.contrib.auth import authenticate, login, logout
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
@@ -162,7 +162,7 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
         return Response(serializer.data)
 
 
-class UserAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):    # API для вывода, изменения и удаления пользователя
+class UserAPIView(LoginRequiredMixin, RetrieveUpdateAPIView):    # API для вывода, изменения и удаления пользователя
     queryset = NewUser.objects.all()
     serializer_class = NewUserSerializer
 

@@ -128,20 +128,25 @@ class NewUser(AbstractUser):
         self.groups.set([group_obj])
 
     def set_engagement_channel(self, eng_ch: str):
-        eng_channel = EngagementChannel.objects.get_or_create(name=eng_ch)
-        self.engagement_channel = eng_channel[0]
-        self.save()
+        if eng_ch and not eng_ch.strip(" ") == "":
+            eng_channel = EngagementChannel.objects.get_or_create(name=eng_ch)
+            self.engagement_channel = eng_channel[0]
+            self.save()
 
     def set_level(self, level: str):
-        level_obj = Level.objects.get_or_create(name=level)
-        self.level = level_obj[0]
-        self.save()
+        if level and not level.strip(" ") == "":
+            level_obj = Level.objects.get_or_create(name=level)
+            self.level = level_obj[0]
+            self.save()
 
-    def set_programs(self, programslist, new=None):
+    def set_programs(self, programslist: list, new=None):
         all_progs = []
+        if "new" in programslist:
+            programslist.remove("new")
         for prog in programslist:
-            all_progs.append(Programs.objects.get_or_create(name=prog)[0])
-        if new:
+            if not prog.strip(" ") == "":
+                all_progs.append(Programs.objects.get_or_create(name=prog)[0])
+        if new and new.strip(" ") != "":
             all_progs.append(Programs.objects.get_or_create(name=new)[0])
         self.programs.set(all_progs)
 
