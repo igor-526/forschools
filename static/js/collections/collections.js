@@ -1,125 +1,3 @@
-async function getLevels(){
-    await fetch('/api/v1/users/levels')
-        .then(async response => await response.json())
-        .then(set => levelsSet = set)
-}
-
-async function getMaterialCategories(){
-    await fetch('/api/v1/materials/category')
-        .then(async response => await response.json())
-        .then(set => materialCategoriesSet = set)
-}
-
-async function getLearningPrograms(){
-    await fetch('/api/v1/users/programs')
-        .then(async response => await response.json())
-        .then(set => learningProgramsSet = set)
-}
-
-async function getEngagementChannels(){
-    await fetch('/api/v1/users/engagement_channels')
-        .then(async response => await response.json())
-        .then(set => engagementChannelsSet = set)
-}
-
-async function getLessonPlaces(){
-    await fetch('/api/v1/lessons/places')
-        .then(async response => await response.json())
-        .then(set => lessonPlacesSet = set)
-}
-
-function setLevels(){
-    tableHead.innerHTML = `<tr>
-                        <th scope="col">Уровень</th>
-                        <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = ''
-    levelsSet.map(function (item) {
-        tableBody.insertAdjacentHTML("beforeend", `
-                                <td>${item.name}</td>
-                                <td>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-trash-can"></i></button>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-pen-to-square"></i></button>
-                                </td>
-        `)
-    })
-}
-
-function setMaterialCategories(){
-    tableHead.innerHTML = `<tr>
-                        <th scope="col">Категория</th>
-                        <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = ''
-    materialCategoriesSet.map(function (item) {
-        tableBody.insertAdjacentHTML("beforeend", `
-                                <td>${item.name}</td>
-                                <td>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-trash-can"></i></button>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-pen-to-square"></i></button>
-                                </td>
-        `)
-    })
-}
-
-function setLearningPrograms(){
-    tableHead.innerHTML = `<tr>
-                        <th scope="col">Программа обучения</th>
-                        <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = ''
-    learningProgramsSet.map(function (item) {
-        tableBody.insertAdjacentHTML("beforeend", `
-                                <td>${item.name}</td>
-                                <td>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-trash-can"></i></button>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-pen-to-square"></i></button>
-                                </td>
-        `)
-    })
-}
-
-function setEngagementChannels(){
-    tableHead.innerHTML = `<tr>
-                        <th scope="col">Канал привлечения</th>
-                        <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = ''
-    engagementChannelsSet.map(function (item) {
-        tableBody.insertAdjacentHTML("beforeend", `
-                                <td>${item.name}</td>
-                                <td>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-trash-can"></i></button>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-pen-to-square"></i></button>
-                                </td>
-        `)
-    })
-}
-
-function setLessonPlaces(){
-    tableHead.innerHTML = `<tr>
-                        <th scope="col">Название</th>
-                        <th scope="col">Ссылка</th>
-                        <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = ''
-    lessonPlacesSet.map(function (item) {
-        tableBody.insertAdjacentHTML("beforeend", `
-                                <td>${item.name}</td>
-                                <td>${item.url}</td>
-                                <td>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-trash-can"></i></button>
-                                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                                <i class="fa-regular fa-pen-to-square"></i></button>
-                                </td>
-        `)
-    })
-}
-
 async function main(){
     await getLevels()
     await getMaterialCategories()
@@ -133,6 +11,14 @@ async function main(){
     tabPlaces.addEventListener('click', setLessonPlaces)
     setLevels()
 }
+
+//Bootstrap Elements
+const modalEditName = document.querySelector("#ModalCollectionEditName")
+const bsModalEditName = new bootstrap.Modal(modalEditName)
+const modalDelete = document.querySelector("#ModalCollectionDelete")
+const bsModalDelete = new bootstrap.Modal(modalDelete)
+const modalEditPlace = document.querySelector("#ModalCollectionEditPlace")
+const bsModalEditPlace = new bootstrap.Modal(modalEditPlace)
 
 //Collections Sets
 let levelsSet
@@ -151,5 +37,28 @@ const tabPlaces = document.querySelector("#CollectionsTabPlaces")
 //Table
 const tableHead = document.querySelector("#CollectionsTableHead")
 const tableBody = document.querySelector("#CollectionsTableBody")
+
+//Modal Edit Name
+const modalEditNameForm = modalEditName.querySelector('#ModalCollectionEditNameForm')
+const modalEditNameLabel = modalEditName.querySelector('#ModalCollectionEditNameLabel')
+const modalEditNameNameField = modalEditName.querySelector('#ModalCollectionEditNameNameField')
+const modalEditNameNameHelp = modalEditName.querySelector('#ModalCollectionEditNameNameHelp')
+const modalEditNameNameError = modalEditName.querySelector('#ModalCollectionEditNameNameError')
+const modalEditNameSaveButton = modalEditName.querySelector('#ModalCollectionEditNameSaveButton')
+
+//Modal Edit Place
+const modalEditPlaceForm = modalEditPlace.querySelector("#ModalCollectionEditPlaceForm")
+const modalEditPlaceLabel = modalEditPlace.querySelector("#ModalCollectionEditPlaceLabel")
+const modalEditPlaceNameField = modalEditPlace.querySelector("#ModalCollectionEditPlaceNameField")
+const modalEditPlaceNameHelp = modalEditPlace.querySelector("#ModalCollectionEditPlaceNameHelp")
+const modalEditPlaceNameError = modalEditPlace.querySelector("#ModalCollectionEditPlaceNameError")
+const modalEditPlaceURLField = modalEditPlace.querySelector("#ModalCollectionEditPlaceURLField")
+const modalEditPlaceURLHelp = modalEditPlace.querySelector("#ModalCollectionEditPlaceURLHelp")
+const modalEditPlaceURLError = modalEditPlace.querySelector("#ModalCollectionEditPlaceURLError")
+const modalEditPlaceSaveButton = modalEditPlace.querySelector("#ModalCollectionEditPlaceSaveButton")
+
+//Modal Delete
+const modalDeleteBody = modalDelete.querySelector("#ModalCollectionDeleteBody")
+const modalDeleteButton = modalDelete.querySelector("#ModalCollectionDeleteButton")
 
 main()

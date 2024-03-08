@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
-from datetime import datetime
 from random import randint
+from django.utils import timezone
 
 
 class Programs(models.Model):
@@ -121,7 +121,8 @@ class NewUser(AbstractUser):
         return self.tg_code
 
     def update_last_activity(self):
-        self.last_activity = datetime.now()
+        self.last_activity = timezone.localtime(timezone.now())
+        super().save()
 
     def set_group(self, group: str):
         group_obj = Group.objects.filter(name=group).first()
@@ -165,7 +166,6 @@ class Telegram(models.Model):
                              verbose_name='Пользователь',
                              on_delete=models.CASCADE,
                              related_name='telegram',
-                             related_query_name='telegram_set',
                              null=False,
                              blank=False)
     tg_id = models.BigIntegerField(verbose_name='id',
@@ -194,7 +194,6 @@ class UserLog(models.Model):
                              verbose_name='Пользователь',
                              on_delete=models.CASCADE,
                              related_name='log',
-                             related_query_name='log_set',
                              null=False,
                              blank=False)
     dt = models.DateTimeField(verbose_name='Дата и время',

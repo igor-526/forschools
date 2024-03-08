@@ -5,7 +5,6 @@
 {% endblock %}
 {% block content %}
     <div class="container-xxl mt-4">
-
         <div class="row">
             <div class="col-auto">
                 <div class="text-center">
@@ -13,12 +12,18 @@
                     <h3>
                         {{ puser.role }}
                     </h3>
-                    <div class="mb-2">
-                        <button type="button" class="btn btn-primary">Написать</button>
-                    </div>
                     {% if self %}
                         <div class="mb-2">
-                            <button type="button" class="btn btn-warning">Редактировать</button>
+                            <button id="ProfileEditButton" type="button" class="btn btn-warning">Редактировать</button>
+                        </div>
+                        <div class="mb-2">
+                            <button id="ProfileTelegramButton" type="button" class="btn btn-primary">Telegram</button>
+                        </div>
+                        {% include 'profile/profile_offcanvas_edit.html' %}
+                        {% include 'users/modal_telegram.html' %}
+                    {% else %}
+                        <div class="mb-2">
+                            <button id="ProfileMessageButton" type="button" class="btn btn-primary">Написать</button>
                         </div>
                     {% endif %}
                 </div>
@@ -78,16 +83,35 @@
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
                             {% if puser.note %}
-                            <li class="list-group-item">Примечание: {{ puser.note }}</li>
+                                <li class="list-group-item">Примечание: {{ puser.note }}</li>
                             {% endif %}
                             <li class="list-group-item">ID: {{ puser.id }}</li>
                             <li class="list-group-item">TG: {{ puser.tg }}</li>
                         </ul>
                     </div>
                 </div>
-
             </div>
         </div>
-
     </div>
+    {% include 'toast.html' %}
+    {% include 'users/users_modal_change_password.html' %}
+{% endblock %}
+{% block static_js %}
+    {% if self %}
+        <script src="{% static 'js/users/profile/profile_edit.js' %}"></script>
+        <script src="{% static 'js/users/profile/profile_photo.js' %}"></script>
+        <script src="{% static 'js/users/users_change_password.js' %}"></script>
+        <script src="{% static 'js/users/telegram.js' %}"></script>
+    {% endif %}
+    <script>
+        var csrftoken = '{{ csrf_token }}';
+        {% if self %}
+            const userSelf = true
+        {% else %}
+            const userSelf = false
+        {% endif %}
+        const userID = {{ puser.id }}
+    </script>
+    <script src="{% static 'js/users/profile/profile.js' %}"></script>
+    <script src="{% static 'js/toasts.js' %}"></script>
 {% endblock %}

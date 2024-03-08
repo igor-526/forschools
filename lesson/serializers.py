@@ -8,7 +8,7 @@ from django.db.models import Q
 class PlaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Place
-        fields = ['name', 'url']
+        fields = "__all__"
 
 
 class LessonSerializer(serializers.ModelSerializer):

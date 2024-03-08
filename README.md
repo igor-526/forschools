@@ -3,7 +3,7 @@
         <img src="https://img.shields.io/badge/разработчик-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
     </a>
     <a href="http://80.87.192.255:8080">
-        <img src="https://img.shields.io/badge/попробовать-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=white" alt="Telegram Badge"/>
+        <img src="https://img.shields.io/badge/попробовать-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=white" alt="Site Badge"/>
     </a>
 </div>
 <h1>Описание проекта</h1>
@@ -25,12 +25,12 @@
             <li>Добавление новых уровней</li>
             <li>Добавление новых каналов привлечения</li>
             <li>Фильтрация профилей</li>
-            <li>(в разработке) Редактирование своего профиля</li>
-            <li>(в разработке) Смена фотографии своего профиля</li>
-            <li>(в разработке) Привязка/отвязка своего Telegram к профилю</li>
-            <li>(в разработке) Инструкция для привязки/отвязка чужого Telegram к профилю</li>
-            <li>(в разработке) Последняя активность</li>
-            <li>(в разработке) Управление коллекциями данных</li>
+            <li>Редактирование своего профиля</li>
+            <li>Смена фотографии своего профиля</li>
+            <li>Привязка/отвязка своего Telegram к профилю</li>
+            <li>Инструкция для привязки/отвязка чужого Telegram к профилю</li>
+            <li>Последняя активность</li>
+            <li>Управление коллекциями данных</li>
             <li>(отложено) Чаты между пользователями</li>
         </ul>
     <li><span><b>(в разработке)Материалы и файлы</b></span></li>

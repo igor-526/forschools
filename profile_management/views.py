@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.password_validation import validate_password
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 from django.contrib.auth import authenticate, login, logout
+from django.core.exceptions import ValidationError
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,11 +19,13 @@ from .forms import SignUpForm
 from .models import (NewUser,
                      EngagementChannel,
                      Level,
-                     Programs)
+                     Programs,
+                     )
 from .serializers import (NewUserSerializer,
                           EngagementChannelSerializer,
                           ProgramSerializer,
-                          LevelSerializer)
+                          LevelSerializer,
+                          )
 
 
 def user_login(request):    # страница авторизации и логин
@@ -53,6 +57,41 @@ def register_view(request):     # API для регистрации пользо
             return JsonResponse(form.errors, status=400)
 
 
+class DeactivateUserView(LoginRequiredMixin, APIView):
+    def patch(self, request, *args, **kwargs):
+        try:
+            user = NewUser.objects.get(pk=kwargs.get('pk'))
+            user.is_active = False
+            user.save()
+            return JsonResponse({'status': 'success'}, status=200)
+        except Exception as ex:
+            return JsonResponse({'status': 'error', 'errors': ex}, status=400)
+
+
+class ActivateUserView(LoginRequiredMixin, APIView):
+    def patch(self, request, *args, **kwargs):
+        try:
+            user = NewUser.objects.get(pk=kwargs.get('pk'))
+            user.is_active = True
+            user.save()
+            return JsonResponse({'status': 'success'}, status=200)
+        except Exception as ex:
+            return JsonResponse({'status': 'error', 'errors': ex}, status=400)
+
+
+class ChangePasswordView(LoginRequiredMixin, APIView):
+    def patch(self, request, *args, **kwargs):
+        new_password = request.data.get('password')
+        try:
+            validate_password(new_password)
+            user = NewUser.objects.get(pk=kwargs.get('pk'))
+            user.set_password(new_password)
+            user.save()
+            return JsonResponse({'status': 'success'}, status=200)
+        except ValidationError as ex:
+            return JsonResponse({'status': 'error', 'password': ex.messages}, status=400)
+
+
 class DashboardPage(LoginRequiredMixin, TemplateView):    # главная страница Dashboard
     template_name = "dashboard.html"
 
@@ -62,7 +101,7 @@ class DashboardPage(LoginRequiredMixin, TemplateView):    # главная ст�
 
 
 class ProfilePage(LoginRequiredMixin, TemplateView):
-    template_name = "profile.html"
+    template_name = "profile/profile.html"
 
     def get(self, request, *args, **kwargs):
         user_object = {
@@ -80,16 +119,22 @@ class ProfilePage(LoginRequiredMixin, TemplateView):
             'level': None,
             'age': None,
             'id': None,
+            'email': None,
             'tg': False
         }
-        puser = NewUser.objects.filter(id=self.kwargs.get('pk')).first()
+        if self.kwargs.get('pk'):
+            puser = NewUser.objects.filter(id=self.kwargs.get('pk')).first()
+        else:
+            puser = request.user
         if puser:
             user_object['first_name'] = puser.first_name
             user_object['last_name'] = puser.last_name
             user_object['photo'] = puser.photo.url
-            user_object['last_activity'] = puser.last_login
+            user_object['last_activity'] = puser.last_activity
             user_object['date_joined'] = puser.date_joined
             user_object['id'] = puser.id
+            user_object['bdate'] = puser.bdate
+            user_object['email'] = puser.email
             role = puser.groups.first().name
             perms = request.user.get_all_permissions()
             if role == 'Admin':
@@ -126,20 +171,12 @@ class ProfilePage(LoginRequiredMixin, TemplateView):
 
 
 class UsersPage(LoginRequiredMixin, TemplateView):  # страница пользователей (администрирование)
-    template_name = "users.html"
+    template_name = "users/users.html"
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Пользователи',
                    'menu': get_menu(request.user),
                    'perms': dumps({'permissions': list(request.user.get_all_permissions())})}
-        return render(request, self.template_name, context)
-
-
-class CollectionPageView(LoginRequiredMixin, TemplateView):
-    template_name = "collections.html"
-
-    def get(self, request, *args, **kwargs):
-        context = {'title': 'Коллекции данных', 'menu': get_menu(request.user)}
         return render(request, self.template_name, context)
 
 
@@ -169,18 +206,22 @@ class UserAPIView(LoginRequiredMixin, RetrieveUpdateAPIView):    # API для в
     def patch(self, request, *args, **kwargs):
         data = request.data
         user = self.get_object()
-        user.set_group(data.get('role'))
-        en_ch = data.get('eng_channel_new') if data.get(
-            'eng_channel_new') else data.get('eng_channel')
-        lvl = data.get('lvl_new') if data.get('lvl_new') else data.get('lvl')
-        user.set_engagement_channel(en_ch)
-        if lvl:
+        if data.get('role'):
+            user.set_group(data.get('role'))
+        if data.get('eng_channel_new') or data.get('eng_channel'):
+            en_ch = data.get('eng_channel_new') if data.get(
+                'eng_channel_new') else data.get('eng_channel')
+            user.set_engagement_channel(en_ch)
+        if data.get('lvl_new') or data.get('lvl_new'):
+            lvl = data.get('lvl_new') if data.get('lvl_new') else data.get('lvl')
             user.set_level(lvl)
-        user.set_programs(data.getlist('prog'), data.get('prog_new'))
-        user.set_lessons_type(
-            data.get('private_lessons'),
-            data.get('group_lessons')
-        )
+        if data.get('prog') or data.get('prog_new'):
+            user.set_programs(data.getlist('prog'), data.get('prog_new'))
+        if data.get('private_lessons') or data.get('group_lessons'):
+            user.set_lessons_type(
+                data.get('private_lessons'),
+                data.get('group_lessons')
+            )
         return super(UserAPIView, self).patch(request, *args, **kwargs)
 
 
@@ -230,3 +271,23 @@ class ProgramListAPIView(LoginRequiredMixin, ListAPIView):  # API для выв�
         queryset = self.get_queryset()
         serializer = ProgramSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class TelegramAPIView(LoginRequiredMixin, APIView):  # API для регистрации пользователей
+    def delete(self, request, *args, **kwargs):
+        try:
+            telegram = NewUser.objects.get(id=kwargs.get('pk')).telegram.first()
+            telegram.delete()
+            return JsonResponse({"status": "success"}, status=200)
+        except Exception as ex:
+            return JsonResponse({"status": "error", "errors": ex}, status=400)
+
+    def get(self, request, *args, **kwargs):
+        user = NewUser.objects.get(id=kwargs.get('pk'))
+        if user.telegram.first():
+            return JsonResponse({"status": "connected"}, status=204)
+        else:
+            return JsonResponse({"status": "disconnected",
+                                 "code": user.tg_code},
+                                status=200)
+

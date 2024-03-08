@@ -7,13 +7,24 @@ async function getUsers(){
 function showUsers(list = userSet){
     usersTableBody.innerHTML =  ``
     list.map(function (user){
-        usersTableBody.insertAdjacentHTML("beforeend", `
-        <tr data-user-id = ${user.id} id="UsersTableRow">
+
+        if (user.is_active) {
+            usersTableBody.insertAdjacentHTML("beforeend", `
+        <tr data-user-id=${user.id} id="UsersTableRow">
           <th scope="row">${user.id}</th>
           <td>${user.username}</td>
           <td>${user.last_name} ${user.first_name}</td>
           <td>${user.groups[0].name}</td>
         </tr>`)
+        } else {
+            usersTableBody.insertAdjacentHTML("beforeend", `
+        <tr data-user-id=${user.id} id="UsersTableRow" class="table-danger">
+          <th scope="row">${user.id}</th>
+          <td>${user.username}</td>
+          <td>${user.last_name} ${user.first_name}</td>
+          <td>${user.groups[0].name}</td>
+        </tr>`)
+        }
     })
     usersTableBody.querySelectorAll("#UsersTableRow")
         .forEach(row => {

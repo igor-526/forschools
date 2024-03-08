@@ -6,7 +6,7 @@ from profile_management.models import NewUser
 class MaterialCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MaterialCategory
-        fields = ['name']
+        fields = "__all__"
 
 
 class OwnerSerializer(serializers.ModelSerializer):

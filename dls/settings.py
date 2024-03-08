@@ -25,11 +25,12 @@ INSTALLED_APPS = [
     'celery',   # создание задач
     'django_celery_results',    # результат выполнения задач
 
-    'tgbot',
+    'tgbot',    # пользовательский бот Telegram
     'profile_management',   # профиль, логин, регистрация, выход, логирование действий
     'material',    # материалы для обучения, прикреплённые файлы
     'lesson',   # уроки
-    'homework'  # домашние задания
+    'homework',  # домашние задания
+    'data_collections',  # управление коллекциями данных
 ]
 
 MIDDLEWARE = [
@@ -40,6 +41,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'profile_management.middleware.LastActivityMiddleware',
 ]
 
 ROOT_URLCONF = 'dls.urls'
@@ -70,8 +72,8 @@ DATABASES = {
         'NAME': os.environ.get('DB_DB'),
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('PORT', '5428')
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('PORT')
     }
 }
 AUTH_USER_MODEL = 'profile_management.NewUser'
@@ -101,7 +103,7 @@ REST_FRAMEWORK = {
 
 LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 

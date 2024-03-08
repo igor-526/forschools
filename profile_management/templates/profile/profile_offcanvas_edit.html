@@ -1,0 +1,63 @@
+{% load static %}
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasProfileEdit" aria-labelledby="offcanvasUserLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasProfileLabel">Редактирование профиля</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body mb-3">
+        <form id="formProfilePhoto">
+            <div class="text-center mb-3" id="ProfileEditPhotoField">
+                <img src="{{ puser.photo }}" alt="Фото профиля" class="base-profile-photo" id="ProfileEditPhotoImage">
+            </div>
+
+            <div class="collapse mb-3" id="ProfileEditPhotoCollapse">
+                <div class="card card-body">
+                    <div class="input-group">
+                        <input name="photo" type="file" class="form-control" id="ProfileEditPhotoChangeField">
+                        <button class="btn btn-outline-secondary" type="button" id="ProfileEditPhotoDelButton">Удалить</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+        <form id="formProfileEdit">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="ProfileEditFirstNameField" class="form-label">Имя</label>
+                <input name="first_name" type="text" class="form-control" id="ProfileEditFirstNameField" value="{{ puser.first_name }}">
+                <div id="ProfileEditFirstNameErrors" class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="ProfileEditLastNameField" class="form-label">Фамилия</label>
+                <input name="last_name" type="text" class="form-control" id="ProfileEditLastNameField" value="{{ puser.last_name }}">
+                <div id="ProfileEditLastNameErrors" class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="ProfileEditEmailField" class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" id="ProfileEditEmailField" value="{{ puser.email }}">
+                <div id="ProfileEditEmailErrors" class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="ProfileEditBdateField" class="form-label">Дата рождения</label>
+                {% if puser.bdate %}
+                    <input name="bdate" type="date" class="form-control" id="ProfileEditBDateField" value="{{ puser.bdate|date:'Y-m-d' }}">
+                {% else %}
+                    <input name="bdate" type="date" class="form-control" id="ProfileEditBDateField">
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <button id="ProfileEditSaveButton" type="button" class="btn btn-success">Сохранить</button>
+            </div>
+            <div class="mb-3">
+                <button id="ProfileEditChangePasswordButton" type="button" class="btn btn-warning">Сменить пароль</button>
+            </div>
+        </form>
+
+    </div>
+</div>

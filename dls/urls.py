@@ -7,6 +7,8 @@ from material.urls import (urlpatterns as material_urlpatterns,
 from lesson.urls import (urlpatterns as lesson_urlpatterns,
                          apiv1patterns as lesson_apiv1patterns)
 from homework.urls import urlpatterns as homework_urlpatterns
+from data_collections.urls import (urlpatterns as data_collections_urlpatterns,
+                                   apiv1patterns as data_collections_apiv1patterns)
 
 urlpatterns = [
     path('admin/', admin.site.urls),    # страницы администрирования
@@ -14,7 +16,9 @@ urlpatterns = [
     path('materials/', include(material_urlpatterns)),  # страницы материалов
     path('lessons/', include(lesson_urlpatterns)),   # страницы уроков
     path('homeworks/', include(homework_urlpatterns)),   # страницы домашних заданий
+    path('', include(data_collections_urlpatterns)),  # страницы коллекций данных
     path('api/v1/users/', include(profile_apiv1patterns)),
     path('api/v1/materials/', include(material_apiv1patterns)),
-    path('api/v1/lessons/', include(lesson_apiv1patterns))
+    path('api/v1/lessons/', include(lesson_apiv1patterns)),
+    path('api/v1/', include(data_collections_apiv1patterns)),
 ]

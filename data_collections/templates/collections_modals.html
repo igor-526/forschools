@@ -1,0 +1,71 @@
+<div class="modal fade" id="ModalCollectionEditName" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ModalCollectionEditNameLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ModalCollectionEditNameForm">
+                    <div class="mb-3">
+                        <label for="ModalCollectionEditNameNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="ModalCollectionEditNameNameField">
+                        <div id="ModalCollectionEditNameNameHelp" class="form-text"></div>
+                        <div id="ModalCollectionEditNameNameError" class="invalid-feedback"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
+                <button type="button" class="btn btn-primary" id="ModalCollectionEditNameSaveButton" data-col-id="" data-col-name="">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalCollectionEditPlace" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ModalCollectionEditPlaceLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ModalCollectionEditPlaceForm">
+                    <div class="mb-3">
+                        <label for="ModalCollectionEditPlaceNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="ModalCollectionEditPlaceNameField">
+                        <div id="ModalCollectionEditPlaceNameHelp" class="form-text"></div>
+                        <div id="ModalCollectionEditPlaceNameError" class="invalid-feedback"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ModalCollectionEditPlaceURLField" class="form-label">Ссылка</label>
+                        <input name="url" type="url" class="form-control" id="ModalCollectionEditPlaceURLField">
+                        <div id="ModalCollectionEditPlaceURLHelp" class="form-text"></div>
+                        <div id="ModalCollectionEditPlaceURLError" class="invalid-feedback"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
+                <button type="button" class="btn btn-primary" id="ModalCollectionEditPlaceSaveButton" data-col-id="" data-col-name="">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalCollectionDelete" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Удаление</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="ModalCollectionDeleteBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-danger" id="ModalCollectionDeleteButton" data-col-id="" data-col-name="">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>

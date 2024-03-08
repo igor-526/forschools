@@ -177,6 +177,13 @@ async function showUser(){
     formUserEdit.reset()
     const userId = this.attributes.getNamedItem('data-user-id').value
     const userObj = userSet.find(u => u.id === Number(userId))
+    if (userObj.is_active === true){
+        formUserEditDeactivateButton.classList.remove("d-none")
+        formUserEditActivateButton.classList.add("d-none")
+    } else {
+        formUserEditDeactivateButton.classList.add("d-none")
+        formUserEditActivateButton.classList.remove("d-none")
+    }
     setupPerms(userObj.groups[0].name)
     bsOffcanvasUser.show()
     if (userObj.engagement_channel){
@@ -203,6 +210,48 @@ async function showUser(){
     })
 
     formUserEdit.setAttribute('data-user-id', userObj.id)
+    formUserEditTelegramButton.setAttribute('data-user-id', userObj.id)
+
+}
+
+async function deactivateUser(){
+    const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
+    const response = await fetch(`/api/v1/users/${userID}/deactivate/`, {
+        method: 'patch',
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        }
+    })
+    if (response.status === 200){
+        bsOffcanvasUser.hide()
+        showToast("Изменение пользователя", "Пользователь успешно деактивирован")
+        await getUsers()
+        showUsers()
+    } else {
+        bsOffcanvasUser.hide()
+        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+    }
+}
+
+async function activateUser(){
+    const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
+    const response = await fetch(`/api/v1/users/${userID}/activate/`, {
+        method: 'patch',
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        }
+    })
+    if (response.status === 200){
+        bsOffcanvasUser.hide()
+        showToast("Изменение пользователя", "Пользователь успешно активирован")
+        await getUsers()
+        showUsers()
+    } else {
+        bsOffcanvasUser.hide()
+        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+    }
 }
 
 //  Forms (EditUser)
@@ -238,10 +287,15 @@ const formUserEditEngagementChannelInput = formUserEdit.querySelector("#UserNewE
 const formUserEditEngagementChannelBlock = formUserEdit.querySelector(".UserShowEngagementChannelBlock")
 const formUserEditSaveButton = formUserEdit.querySelector("#UserShowSaveButton")
 const formUserEditDeactivateButton = formUserEdit.querySelector("#UserShowDeactivateButton")
+const formUserEditActivateButton = formUserEdit.querySelector("#UserShowActivateButton")
+const formUserEditChangePasswordButton = formUserEdit.querySelector("#UserShowChangePasswordButton")
 const formUserEditTelegramButton = formUserEdit.querySelector("#UserShowTelegramButton")
 
 
 formUserEditSaveButton.addEventListener('click', saveUser)
+formUserEditTelegramButton.addEventListener('click', showTelegramOptions)
+formUserEditDeactivateButton.addEventListener('click', deactivateUser)
+formUserEditActivateButton.addEventListener('click', activateUser)
 
 formUserEditProgramSelect.addEventListener('change', function () {
     if (this.value === 'new'){
@@ -263,4 +317,8 @@ formUserEditLevelSelect.addEventListener('change', function () {
     } else {
         formUserEditLevelInput.classList.add('d-none')
     }
+})
+formUserEditChangePasswordButton.addEventListener('click', function (){
+    const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
+    changePasswordShow(userID)
 })
