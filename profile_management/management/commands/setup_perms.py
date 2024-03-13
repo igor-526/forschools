@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
+from material.models import Material
 
 
 class Command(BaseCommand):
@@ -13,6 +14,7 @@ class Command(BaseCommand):
             gr_teacher = Group.objects.get_or_create(name="Teacher")[0]
             gr_listener = Group.objects.get_or_create(name="Listener")[0]
             content_type = ContentType.objects.get_for_model(User)
+            content_type_materials = ContentType.objects.get_for_model(Material)
             register_admin = Permission.objects.get_or_create(codename="register_admin",
                                                               name="Регистрация администраторов",
                                                               content_type=content_type)[0]
@@ -64,6 +66,34 @@ class Command(BaseCommand):
             see_moreinfo_listener = Permission.objects.get_or_create(codename="see_moreinfo_listener",
                                                                      name="Доп. информация ученика",
                                                                      content_type=content_type)[0]
+
+            add_general = Permission.objects.get_or_create(codename="add_general",
+                                                           name="Добавление общего материала",
+                                                           content_type=content_type_materials[0])
+            add_personal = Permission.objects.get_or_create(codename="add_personal",
+                                                            name="Добавление личного материала",
+                                                            content_type=content_type_materials[0])
+            add_new_cat = Permission.objects.get_or_create(codename="add_new_cat",
+                                                           name="Добавление новой категории материалов",
+                                                           content_type=content_type_materials[0])
+            see_all_general = Permission.objects.get_or_create(codename="see_all_general",
+                                                               name="Просмотр общих материалов",
+                                                               content_type=content_type_materials[0])
+            send_to_moderate = Permission.objects.get_or_create(codename="send_to_moderate",
+                                                                name="Отправка материалов на модерацию",
+                                                                content_type=content_type_materials[0])
+            moderate = Permission.objects.get_or_create(codename="moderate",
+                                                        name="Модерация материалов",
+                                                        content_type=content_type_materials[0])
+            see_all_general = Permission.objects.get_or_create(codename="see_all_general",
+                                                               name="Просмотр оьщих материалов",
+                                                               content_type=content_type_materials[0])
+            see_not_own = Permission.objects.get_or_create(codename="see_not_own",
+                                                           name="Просмотр чужих личных материалов",
+                                                           content_type=content_type_materials[0])
+            send_telegram = Permission.objects.get_or_create(codename="send_telegram",
+                                                             name="Отправка материалов в Telegram ученикам",
+                                                             content_type=content_type_materials[0])
 
             admin_perms = (register_users,
                            register_admin,

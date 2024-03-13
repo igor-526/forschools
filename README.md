@@ -27,13 +27,38 @@
             <li>Фильтрация профилей</li>
             <li>Редактирование своего профиля</li>
             <li>Смена фотографии своего профиля</li>
-            <li>Привязка/отвязка своего Telegram к профилю</li>
-            <li>Инструкция для привязки/отвязка чужого Telegram к профилю</li>
+            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
+                Привязка/отвязка своего Telegram к профилю</li>
+            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
+                Инструкция для привязки/отвязка чужого Telegram к профилю</li>
             <li>Последняя активность</li>
             <li>Управление коллекциями данных</li>
             <li>(отложено) Чаты между пользователями</li>
         </ul>
-    <li><span><b>(в разработке)Материалы и файлы</b></span></li>
+    <li><span><b>Материалы и файлы</b></span></li>
+        <ul>
+            <li>(в разработке)Просмотр материалов</li>
+            <li>(в разработке)Поиск / фильтрация материалов</li>
+            <li>(в разработке)Добавление личного / общего материала</li>
+            <li>(в разработке)Редактирование материала</li>
+            <li>(в разработке)Отправка материала на модерацию</li>
+            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
+                (в разработке)Отправка материала в Telegram себе</li>
+            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
+                (в разработке)Отправка материала в Telegram ученику</li>
+            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
+                (в разработке)Добавление материала из меню материалов (+ пересланное сообщение)</li>
+            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
+                (в разработке)Добавление материала из главного меню (+ пересланное сообщение)</li>
+            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
+                (в разработке)Отправка материала в Telegram ученику</li>
+            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
+                (в разработке)Поиск материалов</li>
+            <li>(в разработке)Просмотр PDF без скачивания (отложено)</li>
+            <li>(в разработке)Просмотр изображения без скачивания</li>
+            <li>(в разработке)Просмотр GIF без скачивания</li>
+            <li>(в разработке)Прослушивание аудио без скачивания (отложено)</li>
+        </ul>
     <li><span><b>(в разработке)Уроки</b></span></li>
     <li><span><b>(в разработке)Домашние задания</b></span></li>
     <li><span><b>(в разработке)Дополнительные функции бота</b></span></li>
