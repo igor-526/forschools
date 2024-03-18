@@ -60,6 +60,10 @@ class Material(models.Model):
                                null=False,
                                blank=True,
                                default=2)
+    moderated = models.BooleanField(verbose_name='Отмодерированный',
+                                    default=True,
+                                    null=True,
+                                    blank=True)
     visible = models.BooleanField(verbose_name='Видимость материала',
                                   default=True,
                                   null=False,
@@ -81,9 +85,9 @@ class Material(models.Model):
             categories.remove('new')
         cat_list = []
         for cat in categories:
-            cat_list.append(MaterialCategory.objects.get_or_create(name=cat)[0])
+            if cat.strip(" ") != "":
+                cat_list.append(MaterialCategory.objects.get_or_create(name=cat)[0])
         self.category.set(cat_list)
-
 
 
 class File(models.Model):

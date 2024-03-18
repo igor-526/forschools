@@ -21,7 +21,7 @@ class MaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Material
-        fields = "__all__"
+        fields = ['id', 'name', 'category', 'owner', 'visible', 'file']
         read_only_fields = ['category', 'owner']
 
     def create(self, validated_data):

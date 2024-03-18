@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <h1>{{ material.name }}</h1>
+        <div class="row row justify-content-between">
+            <div class="col-8">
+                Сам материал
+            </div>
+            <div class="col-4">
+                <div class="card mb-3">
+                    <div class="card-header">Данные</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Владелец:</li>
+                            <li class="list-group-item">Дата загрузки</li>
+                            <li class="list-group-item">Последнее использование</li>
+                            <li class="list-group-item">Категория</li>
+                                                        <li class="list-group-item"><button type="button" class="btn btn-primary">Скачать</button></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mb-2">
+
+                </div>
+                <div class="mb-2">
+                    <button type="button" class="btn btn-primary">Отправить в Telegram</button>
+                </div>
+                <div class="mb-2">
+                    <button type="button" class="btn btn-primary">Редактировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        var csrftoken = '{{ csrf_token }}'
+        const userPermissions = JSON.parse("{{ userperms|escapejs }}")
+    </script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+{% endblock %}

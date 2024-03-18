@@ -1,0 +1,22 @@
+<div class="modal" tabindex="-1" id="MaterialsModalTelegram">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Отправка в Telegram</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input id="MaterialsModalTelegramSearchField" type="text" class="form-control" placeholder="Поиск: " aria-label="Поиск">
+                    <button class="btn btn-primary" type="button" id="MaterialsModalTelegramSearchClean"><i class="fa-solid fa-eraser"></i></button>
+                </div>
+                <div class="list-group" id="MaterialsModalTelegramList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="MaterialsModalTelegramSendButton" type="button" class="btn btn-warning" data-confirmed="false">Отправить (0)</button>
+                <button id="MaterialsModalTelegramSelfSendButton" type="button" class="btn btn-primary" data-user-id="0" disabled>Себе</button>
+            </div>
+        </div>
+    </div>
+</div>

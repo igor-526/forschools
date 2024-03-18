@@ -69,31 +69,31 @@ class Command(BaseCommand):
 
             add_general = Permission.objects.get_or_create(codename="add_general",
                                                            name="Добавление общего материала",
-                                                           content_type=content_type_materials[0])
+                                                           content_type=content_type_materials)[0]
             add_personal = Permission.objects.get_or_create(codename="add_personal",
                                                             name="Добавление личного материала",
-                                                            content_type=content_type_materials[0])
+                                                            content_type=content_type_materials)[0]
             add_new_cat = Permission.objects.get_or_create(codename="add_new_cat",
                                                            name="Добавление новой категории материалов",
-                                                           content_type=content_type_materials[0])
-            see_all_general = Permission.objects.get_or_create(codename="see_all_general",
-                                                               name="Просмотр общих материалов",
-                                                               content_type=content_type_materials[0])
+                                                           content_type=content_type_materials)[0]
             send_to_moderate = Permission.objects.get_or_create(codename="send_to_moderate",
                                                                 name="Отправка материалов на модерацию",
-                                                                content_type=content_type_materials[0])
+                                                                content_type=content_type_materials)[0]
             moderate = Permission.objects.get_or_create(codename="moderate",
                                                         name="Модерация материалов",
-                                                        content_type=content_type_materials[0])
+                                                        content_type=content_type_materials)[0]
             see_all_general = Permission.objects.get_or_create(codename="see_all_general",
                                                                name="Просмотр оьщих материалов",
-                                                               content_type=content_type_materials[0])
+                                                               content_type=content_type_materials)[0]
             see_not_own = Permission.objects.get_or_create(codename="see_not_own",
                                                            name="Просмотр чужих личных материалов",
-                                                           content_type=content_type_materials[0])
+                                                           content_type=content_type_materials)[0]
+            see_listener_mat = Permission.objects.get_or_create(codename="see_listener_mat",
+                                                                name="Просмотр материалов ученика",
+                                                                content_type=content_type_materials)[0]
             send_telegram = Permission.objects.get_or_create(codename="send_telegram",
                                                              name="Отправка материалов в Telegram ученикам",
-                                                             content_type=content_type_materials[0])
+                                                             content_type=content_type_materials)[0]
 
             admin_perms = (register_users,
                            register_admin,
@@ -111,7 +111,17 @@ class Command(BaseCommand):
                            see_moreinfo_admin,
                            see_moreinfo_metodist,
                            see_moreinfo_teacher,
-                           see_moreinfo_listener,)
+                           see_moreinfo_listener,
+
+                           add_general,
+                           add_personal,
+                           add_new_cat,
+                           see_all_general,
+                           see_not_own,
+                           moderate,
+                           send_telegram,
+                           see_listener_mat,
+                           )
 
             metodist_perms = (register_users,
                               register_teacher,
@@ -120,14 +130,36 @@ class Command(BaseCommand):
                               edit_listener,
                               deactivate_listener,
                               see_moreinfo_teacher,
-                              see_moreinfo_listener,)
+                              see_moreinfo_listener,
+
+                              add_general,
+                              add_personal,
+                              add_new_cat,
+                              see_all_general,
+                              see_not_own,
+                              moderate,
+                              send_telegram,
+                              see_listener_mat,
+                              )
 
             teacher_perms = (edit_listener,
-                             see_moreinfo_listener,)
+                             see_moreinfo_listener,
+
+                             add_personal,
+                             see_all_general,
+                             send_to_moderate,
+                             send_telegram,
+                             see_listener_mat,
+                             )
+
+            listener_perms = (
+                see_listener_mat,
+                              )
 
             gr_admin.permissions.set(admin_perms)
             gr_metodist.permissions.set(metodist_perms)
             gr_teacher.permissions.set(teacher_perms)
+            gr_listener.permissions.set(listener_perms)
 
             print("Setup complete")
         except Exception as ex:

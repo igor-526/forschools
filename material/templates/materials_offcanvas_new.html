@@ -8,11 +8,14 @@
             {% csrf_token %}
 
             <div class="btn-group mb-3" role="group">
-                <input type="radio" class="btn-check" name="type"  value=2 id="MaterialNewTypeMy" checked>
+                {% if perms.material.add_personal %}
+                <input type="radio" class="btn-check" name="type"  value=1 id="MaterialNewTypeMy" checked>
                 <label class="btn btn-outline-primary" for="MaterialNewTypeMy">Мой</label>
-
-                <input type="radio" class="btn-check" name="type" value=1 id="MaterialNewTypeGeneral">
+                {% endif %}
+                {% if perms.material.add_general %}
+                <input type="radio" class="btn-check" name="type" value=2 id="MaterialNewTypeGeneral">
                 <label class="btn btn-outline-primary" for="MaterialNewTypeGeneral">Общий</label>
+                {% endif %}
             </div>
 
             <div class="mb-3">
@@ -38,6 +41,7 @@
                 <span class="mb-1">Категория</span>
                 <select name="cat" class="form-select" id="MaterialNewCatInput" multiple size="7">
                 </select>
+                <div class="form-text">Зажмите CTRL для добавления нескольких</div>
             </div>
 
             <div class="mb-3">

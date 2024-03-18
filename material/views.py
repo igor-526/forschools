@@ -1,6 +1,9 @@
+from json import dumps
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from .models import Material, MaterialCategory
@@ -10,10 +13,14 @@ from dls.utils import get_menu
 
 
 class MaterialPage(LoginRequiredMixin, TemplateView):    # страница матриалов
-    template_name = "materials.html"
+    template_name = "materials_main.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Материалы', 'menu': get_menu(request.user)}
+        perms = request.user.get_group_permissions()
+        filtered_perms = [perm for perm in perms if "material." in perm]
+        context = {'title': 'Материалы',
+                   'menu': get_menu(request.user),
+                   'userperms': dumps(filtered_perms)}
         return render(request, self.template_name, context)
 
 
@@ -24,7 +31,10 @@ class MaterialListView(LoginRequiredMixin, ListCreateAPIView):  # API для п�
     def get_queryset(self):
         param_type = self.request.query_params.get('type')
         if not param_type or param_type == '2':
-            return Material.objects.filter(type=2)
+            if self.request.user.has_perm('material.see_all_general'):
+                return Material.objects.filter(type=2)
+            else:
+                raise PermissionDenied
         elif param_type == "1":
             return Material.objects.filter(type=1, owner=self.request.user)
 
@@ -37,4 +47,20 @@ class MaterialListView(LoginRequiredMixin, ListCreateAPIView):  # API для п�
 class MaterialCategoryView(LoginRequiredMixin, ListAPIView):    # API для вывода категорий
     queryset = MaterialCategory.objects.all()
     serializer_class = MaterialCategorySerializer
+
+
+class MaterialItemPage(LoginRequiredMixin, TemplateView):    # страница матриала
+    template_name = "materials_item/materials_item_main.html"
+
+    def get(self, request, *args, **kwargs):
+        perms = request.user.get_group_permissions()
+        filtered_perms = [perm for perm in perms if "material." in perm]
+
+        material = Material.objects.get(pk=kwargs.get("pk"))
+
+        context = {'title': material.name,
+                   'material': material,
+                   'menu': get_menu(request.user),
+                   'userperms': dumps(filtered_perms)}
+        return render(request, self.template_name, context)
 

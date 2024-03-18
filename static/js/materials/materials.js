@@ -1,58 +1,85 @@
 async function main(){
-    await getMaterials()
-    materialsTabGeneral.addEventListener('click', function () {
-        getMaterials(2)
-        this.classList.add('active')
-        materialsTabMy.classList.remove('active')
-    })
+    if (!userPermissions.includes("material.see_all_general")){
+        materialsTabGeneral.classList.remove("active")
+        materialsTabGeneral.classList.add("disabled")
+        materialsTabMy.classList.add("active")
+        await getMaterials(1)
+    } else {
+        materialsTabGeneral.addEventListener('click', function () {
+            getMaterials(2)
+            this.classList.add('active')
+            materialsTabMy.classList.remove('active')
+        })
+        await getMaterials(2)
+    }
+
     materialsTabMy.addEventListener('click', function () {
         getMaterials(1)
         this.classList.add('active')
         materialsTabGeneral.classList.remove('active')
     })
-    formMaterialNewSubmitButton.addEventListener('click', createMaterial)
-}
 
-async function createMaterial() {
-    let formData = new FormData(formNewMaterial)
-    let response = await fetch('/api/v1/materials/', {
-        method: "post",
-        credentials: 'same-origin',
-        headers:{
-            "X-CSRFToken": csrftoken,
-        },
-        body: formData
+
+    formMaterialNewFileField.addEventListener('change', function () {
+        const filename = formMaterialNewFileField.value.split(/([\\./])/g)
+        formMaterialNewNameField.value = filename[filename.length-3]
     })
-    if (response.status === 201){
-        bsOffcanvasNewMaterial.hide()
-        showToast("Добавление материала", "Материал успешно добавлен")
-        await getMaterials()
-    } else {
-        let x = await response.json()
-        console.log(x)
-    }
+    formMaterialNewSubmitButton.addEventListener('click', createMaterial)
 }
 
 async function getMaterials(type=2){
     let response = await fetch(`/api/v1/materials?type=${type}`)
-    material_set = await response.json()
-    showMaterials(material_set)
-    await set_category()
+    if (response.status === 200) {
+        material_set = await response.json()
+        showMaterials()
+        await set_category()
+    } else {
+        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+    }
 }
 
-function showMaterials(list){
+function getMaterialType(format){
+    format = format.toLowerCase()
+    if (imageFormats.includes(format)){
+        return 'Изображение'
+    }
+    if (videoFormats.includes(format)){
+        return 'Видео'
+    }
+    if (archiveFormats.includes(format)){
+        return 'Архив'
+    }
+    switch (format) {
+        case 'gif':
+            return 'Анимация'
+        case 'pdf':
+            return 'Документ PDF'
+        default:
+            return ''
+    }
+}
+
+function showMaterials(list = material_set){
     tableBody.innerHTML = ''
     list.map(function (material) {
+        let categoryHTML = ''
+        material.category.map(function (category) {
+            if (category.name === material.category[0].name){
+                categoryHTML += `${category.name}`
+            } else {
+                categoryHTML += `<br>${category.name}`
+            }
+        })
         const splittedFile = material.file.split('.')
         tableBody.insertAdjacentHTML("beforeend", `
         <tr data-material-id="${material.id}">
-            <td style="max-width: 300px;">${material.name}</td>
-            <td>Категория 1</td>
-            <td>${splittedFile[splittedFile.length - 1]}</td>
+            <td style="max-width: 300px;"><a href="/materials/${material.id}" style="color: #003366; text-decoration: none;"> ${material.name}</a></td>
+            <td>${categoryHTML}</td>
+            <td>${getMaterialType(splittedFile[splittedFile.length - 1])}</td>
             <td>${material.owner.first_name} ${material.owner.last_name}</td>
             <td>
-                <button type="button" class="btn btn-primary" id="TableButtonDownload">
-                    <i class="fa-solid fa-download"></i></button>
+                <a href="${material.file}" download=""><button type="button" class="btn btn-primary" id="TableButtonDownload">
+                    <i class="fa-solid fa-download"></i></button></a>
                 <button type="button" class="btn btn-primary" id="TableButtonTelegram" data-material-id="${material.id}">
                     <i class="fa-brands fa-telegram"></i></button>
             </td>
@@ -62,12 +89,14 @@ function showMaterials(list){
     tableButtonTelegram.forEach(button => {
         button.addEventListener('click', function () {
             bsModalTelegram.show()
+            materialsTelegramMain()
         })
     })
 }
 
 async function set_category(){
     formMaterialNewCategorySelect.innerHTML = '<option value="new">Новая категория</option>'
+    materialsCollapseSearchCategory.innerHTML = '<option selected value="none">Категория</option>'
     formMaterialNewCategorySelect.addEventListener('change', function () {
         if (formMaterialNewCategorySelect.value === 'new'){
             formMaterialNewCategoryField.classList.remove('d-none')
@@ -78,14 +107,13 @@ async function set_category(){
     const response = await fetch('/api/v1/materials/category')
     await response.json().then(json => {json.map(function (category) {
         formMaterialNewCategorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`
+        materialsCollapseSearchCategory.innerHTML += `<option value="${category.id}">${category.name}</option>`
     })})
 }
 
 //Bootstrap Elements
 const bsOffcanvasNewMaterial = new bootstrap
     .Offcanvas(document.querySelector("#offcanvasNewMaterial"))
-const bsModalTelegram = new bootstrap
-    .Modal(document.querySelector("#modalTelegram"))
 
 //Tabs
 const materialsTabGeneral = document.querySelector("#MaterialsTabGeneral")
@@ -93,22 +121,10 @@ const materialsTabMy = document.querySelector("#MaterialsTabMy")
 
 //Table
 const tableBody = document.querySelector("#MaterialTableBody")
-const tableButtonDownload = tableBody.querySelector("#TableButtonDownload")
 
-//Forms
-const formNewMaterial = document.querySelector("#formNewMaterial")
-
-//Form New Material
-const formMaterialNewTypeMy = formNewMaterial.querySelector("#MaterialNewTypeMy")
-const formMaterialNewTypeGeneral = formNewMaterial.querySelector("#MaterialNewTypeGeneral")
-const formMaterialNewFileField = formNewMaterial.querySelector("#MaterialNewFileField")
-const formMaterialNewFileError = formNewMaterial.querySelector("#MaterialNewFileError")
-const formMaterialNewNameField = formNewMaterial.querySelector("#MaterialNewNameField")
-const formMaterialNewNameError = formNewMaterial.querySelector("#MaterialNewNameError")
-const formMaterialNewDescriptionField = formNewMaterial.querySelector("#MaterialNewDescriptionField")
-const formMaterialNewCategorySelect = formNewMaterial.querySelector("#MaterialNewCatInput")
-const formMaterialNewCategoryField = formNewMaterial.querySelector("#MaterialNewCatNewInput")
-const formMaterialNewSubmitButton = formNewMaterial.querySelector("#MaterialNewSubmitButton")
+const imageFormats = ['bmp', 'jpg', 'jpeg', 'png']
+const videoFormats = ['webm', 'mkv', 'avi', 'mov', 'wmv', 'mp4', 'm4p', 'mpg', 'mpeg', 'm4v']
+const archiveFormats = ['rar', 'zip', '7z']
 
 let material_set = []
 main()

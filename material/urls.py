@@ -1,8 +1,12 @@
 from django.urls import path
-from .views import MaterialPage, MaterialListView, MaterialCategoryView
+from .views import (MaterialPage,
+                    MaterialListView,
+                    MaterialCategoryView,
+                    MaterialItemPage)
 
 urlpatterns = [
     path('', MaterialPage.as_view(), name='materials'),    # страница с материалами
+    path('<int:pk>', MaterialItemPage.as_view())    # страница материала
 ]
 
 apiv1patterns = [
