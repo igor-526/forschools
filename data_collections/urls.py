@@ -9,7 +9,9 @@ from .views import (CollectionPageView,
                     EngagementChannelListAPIView,
                     EngagementChannelAPIView,
                     PlaceListAPIView,
-                    PlaceAPIView,)
+                    PlaceAPIView,
+                    MaterialLevelListAPIView,
+                    MaterialLevelAPIView)
 
 urlpatterns = [
     path('administration/collections', CollectionPageView.as_view(),
@@ -27,4 +29,6 @@ apiv1patterns = [
     path("collections/eng_channels/<int:pk>", EngagementChannelAPIView.as_view()),
     path("collections/lesson_places/", PlaceListAPIView.as_view()),
     path("collections/lesson_places/<int:pk>", PlaceAPIView.as_view()),
+    path("collections/mat_levels/", MaterialLevelListAPIView.as_view()),
+    path("collections/mat_levels/<int:pk>", MaterialLevelAPIView.as_view()),
 ]

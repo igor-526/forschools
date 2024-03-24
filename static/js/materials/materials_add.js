@@ -32,8 +32,8 @@ function validateMaterialClient(){
 
 async function createMaterial() {
     if (validateMaterialClient()){
-        let formData = new FormData(formNewMaterial)
-        let response = await fetch('/api/v1/materials/', {
+        const formData = new FormData(formNewMaterial)
+        const response = await fetch('/api/v1/materials/', {
             method: "post",
             credentials: 'same-origin',
             headers:{
@@ -63,3 +63,5 @@ const formMaterialNewDescriptionField = formNewMaterial.querySelector("#Material
 const formMaterialNewCategorySelect = formNewMaterial.querySelector("#MaterialNewCatInput")
 const formMaterialNewCategoryField = formNewMaterial.querySelector("#MaterialNewCatNewInput")
 const formMaterialNewSubmitButton = formNewMaterial.querySelector("#MaterialNewSubmitButton")
+const formMaterialNewLvlSelect = formNewMaterial.querySelector("#MaterialNewLvlInput")
+const formMaterialNewLvlNewInput = formNewMaterial.querySelector("#MaterialNewLvlNewInput")

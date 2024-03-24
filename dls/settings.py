@@ -9,7 +9,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '80.87.192.255', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '80.87.192.255', '0.0.0.0', '192.168.0.65']
 
 
 INSTALLED_APPS = [
@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'lesson',   # уроки
     'homework',  # домашние задания
     'data_collections',  # управление коллекциями данных
+    'pdfviewer'     # просмотр PDF файлов
 ]
 
 MIDDLEWARE = [
@@ -69,11 +70,11 @@ WSGI_APPLICATION = 'dls.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_DB', 'kitaischool'),
-        'USER': os.environ.get('DB_USER', 'su'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', '3611810700'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('PORT', '5428')
+        'NAME': os.environ.get('DB_DB'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('PORT')
     }
 }
 AUTH_USER_MODEL = 'profile_management.NewUser'
@@ -114,6 +115,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
   os.path.join(BASE_DIR, "static"),
 ]
+MEDIA_ROOT = f'{BASE_DIR}/media'
+MEDIA_URL = '/media/'
 # STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 
@@ -133,3 +136,11 @@ CACHES = {
         'LOCATION': 'redis://dls_redis:6379/1'
     }
 }
+
+MATERIAL_FORMATS = {'image_formats': ['bmp', 'jpg', 'jpeg', 'png'],
+                    'video_formats': ['webm', 'mkv', 'avi', 'mov', 'wmv', 'mp4', 'm4p', 'mpg', 'mpeg', 'm4v'],
+                    'animation_formats': ['gif'],
+                    'archive_formats': ['rar', 'zip', '7z'],
+                    'pdf_formats': ['pdf']}
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'

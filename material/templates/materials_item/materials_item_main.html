@@ -5,30 +5,57 @@
         <h1>{{ material.name }}</h1>
         <div class="row row justify-content-between">
             <div class="col-8">
-                Сам материал
+                {% if material_type == 'image_formats' %}
+                    <img src="/media/{{ material.file }}" class="img-fluid" alt="Изображение">
+                {% endif %}
+                {% if material_type == 'animation_formats' %}
+                    <img src="/media/{{ material.file }}" class="img-fluid" alt="Изображение">
+                {% endif %}
+                {% if material_type == 'pdf_formats' %}
+                    <img src="/{{ preview_dir }}" class="img-fluid" alt="Изображение">
+                {% endif %}
             </div>
             <div class="col-4">
                 <div class="card mb-3">
                     <div class="card-header">Данные</div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Владелец:</li>
-                            <li class="list-group-item">Дата загрузки</li>
-                            <li class="list-group-item">Последнее использование</li>
-                            <li class="list-group-item">Категория</li>
-                                                        <li class="list-group-item"><button type="button" class="btn btn-primary">Скачать</button></li>
+                            <li class="list-group-item">Описание:
+                                {% if material.description %}
+                                    {{ material.description }}
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item">Владелец: <a href="/profile/{{ material.owner.id }}">{{ material.owner }}</a></li>
+                            <li class="list-group-item">Дата загрузки: {{ material.uploaded_at|date:'d.m.Y' }}</li>
+                            <li class="list-group-item">Последнее использование: {{ material.last_used_at|date:'d.m.Y' }}</li>
+                            <li class="list-group-item">Категория:
+                                {% for cat in material.category.all %}
+                                    {{ cat.name }}<br>
+                                {% endfor %}
+                            </li>
+                            <li class="list-group-item">Уровень:
+                                {% for level in material.level.all %}
+                                    {{ level.name }}<br>
+                                {% endfor %}
+                            </li>
+                            <li class="list-group-item">
+                                <a href="{{ material.file.url }}" download=""><button type="button" class="btn btn-primary mb-1">Скачать</button></a>
+                                {% if perms.materials.send_telegram %}
+                                    <button id="MaterialsItemTelegramButton" type="button" class="btn btn-primary mb-1">Отправить в TG</button>
+                                    {% include 'materials_modal_telegram.html' %}
+                                {% endif %}
+                                {% if can_edit %}
+                                    <button id="MaterialItemEditButton" type="button" class="btn btn-warning mb-1">Редактировать</button>
+                                    <button id="MaterialItemDeleteButton" type="button" class="btn btn-danger mb-1">Удалить</button>
+                                    {% include 'materials_offcanvas_new.html' %}
+                                {% endif %}
+                            </li>
                         </ul>
                     </div>
                 </div>
-                <div class="mb-2">
-
-                </div>
-                <div class="mb-2">
-                    <button type="button" class="btn btn-primary">Отправить в Telegram</button>
-                </div>
-                <div class="mb-2">
-                    <button type="button" class="btn btn-primary">Редактировать</button>
-                </div>
+                {% if material_type == 'pdf_formats' %}
+                    <a href="/pdfviewer/material/{{ material.id }}"><button type="button" class="btn btn-primary mb-1">Открыть в браузере</button></a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -36,8 +63,19 @@
 {% endblock %}
 {% block static_js %}
     <script>
-        var csrftoken = '{{ csrf_token }}'
+        const csrftoken = '{{ csrf_token }}'
         const userPermissions = JSON.parse("{{ userperms|escapejs }}")
+        const material_id = {{ material.id }}
+        const user_id = {{ request.user.id }}
+        const user_perm_can_edit = "{{ can_edit }}"
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
+    {% if perms.materials.send_telegram %}
+        <script src="{% static 'js/telegram/telegram_main.js' %}"></script>
+        <script src="{% static 'js/materials/materials_telegram.js' %}"></script>
+    {% endif %}
+    {% if can_edit %}
+        <script src="{% static 'js/materials/materials_item_edit.js' %}"></script>
+    {% endif %}
+    <script src="{% static 'js/materials/materials_item.js' %}"></script>
 {% endblock %}

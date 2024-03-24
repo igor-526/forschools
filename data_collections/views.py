@@ -5,14 +5,17 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIV
 from dls.utils import get_menu
 from profile_management.models import (EngagementChannel,
                                        Level,
-                                       Programs,)
-from material.models import MaterialCategory
+                                       Programs,
+                                       )
+from material.models import MaterialCategory, MaterialLevel
 from lesson.models import Place
 from .serializers import (LevelSerializer,
                           MaterialCategorySerializer,
                           ProgramSerializer,
                           EngagementChannelSerializer,
-                          PlaceSerializer,)
+                          PlaceSerializer,
+                          MaterialLevelSerializer,
+                          )
 
 
 class CollectionPageView(LoginRequiredMixin, TemplateView):
@@ -71,3 +74,13 @@ class PlaceListAPIView(LoginRequiredMixin, ListCreateAPIView):
 class PlaceAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     queryset = Place.objects.all()
     serializer_class = PlaceSerializer
+
+
+class MaterialLevelListAPIView(LoginRequiredMixin, ListCreateAPIView):
+    queryset = MaterialLevel.objects.all()
+    serializer_class = MaterialLevelSerializer
+
+
+class MaterialLevelAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+    queryset = MaterialLevel.objects.all()
+    serializer_class = MaterialLevelSerializer

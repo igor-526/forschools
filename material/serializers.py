@@ -1,12 +1,7 @@
 from rest_framework import serializers
-from .models import Material, File, MaterialCategory
+from .models import Material, File
 from profile_management.models import NewUser
-
-
-class MaterialCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MaterialCategory
-        fields = "__all__"
+from data_collections.serializers import MaterialLevelSerializer, MaterialCategorySerializer
 
 
 class OwnerSerializer(serializers.ModelSerializer):
@@ -17,12 +12,16 @@ class OwnerSerializer(serializers.ModelSerializer):
 
 class MaterialSerializer(serializers.ModelSerializer):
     category = MaterialCategorySerializer(many=True, required=False)
+    level = MaterialLevelSerializer(many=True, required=False)
     owner = OwnerSerializer(required=False)
 
     class Meta:
         model = Material
-        fields = ['id', 'name', 'category', 'owner', 'visible', 'file']
-        read_only_fields = ['category', 'owner']
+        fields = ['id', 'name', 'category', 'owner', 'visible', 'file', 'level', 'description']
+        read_only_fields = ['category', 'owner', 'level']
+
+    def validate_visible(self, value):
+        return True
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -31,4 +30,10 @@ class MaterialSerializer(serializers.ModelSerializer):
             **validated_data
         )
         material.set_category(self.context['request'].data.getlist('cat'))
+        material.set_level(self.context['request'].data.getlist('lvl'))
         return material
+
+    def update(self, instance, validated_data):
+        instance.set_category(self.context['request'].data.getlist('cat'))
+        instance.set_level(self.context['request'].data.getlist('lvl'))
+        return super(MaterialSerializer, self).update(instance, validated_data)

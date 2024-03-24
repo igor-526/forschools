@@ -7,6 +7,7 @@ function materialTelegramCheckUser(user){
         telegramUserCheckedSet.splice(telegramUserCheckedSet.indexOf(user.attributes.getNamedItem("data-user-id").value))
     }
     materialsModalTelegramSendButton.innerHTML = `Отправить (${telegramUserCheckedSet.length})`
+    materialsModalTelegramSendButton.disabled = telegramUserCheckedSet.length === 0
 }
 
 function resetMaterialTelegramModal(){
@@ -18,13 +19,37 @@ function resetMaterialTelegramModal(){
     materialsModalTelegramSendButton.innerHTML = "Отправить (0)"
 }
 
-async function sendMaterialTelegram(list = telegramUserCheckedSet){}
+async function sendMaterialTelegram(list = telegramUserCheckedSet){
+    const response = await fetch("/api/v1/telegram/sendmaterial/", {
+        method: 'post',
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            users: list,
+            mat_id: material_id
+        })
+    })
+    if (response.status === 200){
+        bsModalTelegram.hide()
+        showToast("Отправка", "Материал успешно отправлен")
+    } else {
+        bsModalTelegram.hide()
+        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+    }
+}
 
 async function materialsTelegramMain(){
     resetMaterialTelegramModal()
     telegramUsersSet = await getTelegramUsers()
     if (telegramUsersSet !== 'error'){
+        bsModalTelegram.show()
         showMaterialsTelegramUsers()
+    } else {
+        showToast("На сервере произошла ошибка. Попробуйте обновить страницу или позже")
     }
 }
 
@@ -57,8 +82,7 @@ function showMaterialsTelegramUsers(list = telegramUsersSet){
 
 function filterMaterialsTelegramUsers(user){
     const query = new RegExp(materialsModalTelegramSearchField.value.toLowerCase())
-    const result = query.test(`${user.first_name.toLowerCase()} ${user.last_name.toLowerCase()}`)
-    return result
+    return query.test(`${user.first_name.toLowerCase()} ${user.last_name.toLowerCase()}`)
 }
 
 function searchMaterialsTelegramUsers(){
@@ -92,6 +116,10 @@ materialsModalTelegramSendButton.addEventListener("click", function () {
     } else if (status === "true"){
         sendMaterialTelegram()
     }
+})
+
+materialsModalTelegramSelfSendButton.addEventListener("click", function () {
+    sendMaterialTelegram([user_id])
 })
 
 materialsModalTelegramSearchClean.addEventListener("click", function () {

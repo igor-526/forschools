@@ -22,12 +22,15 @@ class MaterialCategory(models.Model):
         return self.name
 
 
+class MaterialLevel(models.Model):
+    name = models.CharField(verbose_name='Наименование')
+
+
 class Material(models.Model):
     owner = models.ForeignKey(NewUser,
                               verbose_name='Владелец',
                               on_delete=models.CASCADE,
-                              related_name='material',
-                              related_query_name='material_set',
+                              related_name='material_owner',
                               null=False,
                               blank=True)
     name = models.CharField(verbose_name='Наименование',
@@ -39,7 +42,7 @@ class Material(models.Model):
                                    null=True,
                                    blank=True)
     file = models.FileField(verbose_name='Файл',
-                            upload_to='static/materials/',
+                            upload_to='materials/',
                             null=False,
                             blank=False)
     uploaded_at = models.DateTimeField(verbose_name='Дата и время загрузки',
@@ -55,19 +58,28 @@ class Material(models.Model):
                                       related_name='material',
                                       related_query_name='material_set',
                                       blank=True)
+    level = models.ManyToManyField(MaterialLevel,
+                                   related_name='material_level',
+                                   blank=True)
     type = models.IntegerField(choices=MATERIAL_TYPE_CHOISES,
                                verbose_name='Тип',
                                null=False,
                                blank=True,
                                default=2)
     moderated = models.BooleanField(verbose_name='Отмодерированный',
-                                    default=True,
                                     null=True,
                                     blank=True)
     visible = models.BooleanField(verbose_name='Видимость материала',
                                   default=True,
                                   null=False,
                                   blank=True)
+    access = models.ManyToManyField(NewUser,
+                                    related_name='material_access',
+                                    verbose_name='Доступ',
+                                    blank=True)
+    tg_url = models.CharField(verbose_name="ID файла в Telegram",
+                              null=True,
+                              blank=True)
 
     class Meta:
         verbose_name = 'Материал'
@@ -88,6 +100,15 @@ class Material(models.Model):
             if cat.strip(" ") != "":
                 cat_list.append(MaterialCategory.objects.get_or_create(name=cat)[0])
         self.category.set(cat_list)
+
+    def set_level(self, levels: list):
+        if 'new' in levels:
+            levels.remove('new')
+        level_list = []
+        for level in levels:
+            if level.strip(" ") != "":
+                level_list.append(MaterialLevel.objects.get_or_create(name=level)[0])
+        self.level.set(level_list)
 
 
 class File(models.Model):

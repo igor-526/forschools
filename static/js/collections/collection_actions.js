@@ -17,6 +17,13 @@
                     editMatCat(colID)
                 }
                 break
+            case "matLevel":
+                if (colID === "0"){
+                    addMatLevel()
+                } else {
+                    editMatLevel(colID)
+                }
+                break
             case "learnProg":
                 if (colID === "0"){
                     addLearnProg()
@@ -53,6 +60,9 @@ modalDeleteButton.addEventListener("click", function () {
             break
         case "matCat":
             deleteMatCat(colID)
+            break
+        case "matLevel":
+            deleteMatLevel(colID)
             break
         case "learnProg":
             deleteLearnProg(colID)

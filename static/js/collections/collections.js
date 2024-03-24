@@ -1,6 +1,7 @@
 async function main(){
     await getLevels()
     await getMaterialCategories()
+    await getMaterialLevels()
     await getLearningPrograms()
     await getEngagementChannels()
     await getLessonPlaces()
@@ -9,6 +10,7 @@ async function main(){
     tabLearningPrograms.addEventListener('click', setLearningPrograms)
     tabEngagementChannels.addEventListener('click', setEngagementChannels)
     tabPlaces.addEventListener('click', setLessonPlaces)
+    tabMaterialLevels.addEventListener('click', setMaterialLevels)
     setLevels()
 }
 
@@ -26,6 +28,7 @@ let materialCategoriesSet
 let learningProgramsSet
 let engagementChannelsSet
 let lessonPlacesSet
+let materialLevelsSet
 
 //Tabs
 const tabLevels = document.querySelector("#CollectionsTabLevels")
@@ -33,6 +36,7 @@ const tabMaterialCategories = document.querySelector("#CollectionsTabMaterialCat
 const tabLearningPrograms = document.querySelector("#CollectionsTabLearningPrograms")
 const tabEngagementChannels = document.querySelector("#CollectionsTabEngagementChannels")
 const tabPlaces = document.querySelector("#CollectionsTabPlaces")
+const tabMaterialLevels = document.querySelector("#CollectionsTabMaterialLevels")
 
 //Table
 const tableHead = document.querySelector("#CollectionsTableHead")

@@ -37,26 +37,24 @@
         </ul>
     <li><span><b>Материалы и файлы</b></span></li>
         <ul>
-            <li>(в разработке)Просмотр материалов</li>
+            <li>Просмотр материалов</li>
             <li>Поиск / фильтрация материалов</li>
-            <li>(в разработке)Добавление личного / общего материала</li>
-            <li>(в разработке)Редактирование материала</li>
+            <li>Добавление личного / общего материала</li>
+            <li>Редактирование материала</li>
             <li>(в разработке)Отправка материала на модерацию</li>
             <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                (в разработке)Отправка материала в Telegram себе</li>
+                Отправка материала в Telegram себе</li>
             <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                (в разработке)Отправка материала в Telegram ученику</li>
+                Отправка материала в Telegram ученику</li>
             <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
                 (в разработке)Добавление материала из меню материалов (+ пересланное сообщение)</li>
             <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                (в разработке)Добавление материала из главного меню (+ пересланное сообщение)</li>
+                Отправка материала в Telegram ученику</li>
             <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                (в разработке)Отправка материала в Telegram ученику</li>
-            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                (в разработке)Поиск материалов</li>
-            <li>(в разработке)Просмотр PDF без скачивания (отложено)</li>
-            <li>(в разработке)Просмотр изображения без скачивания</li>
-            <li>(в разработке)Просмотр GIF без скачивания</li>
+                Поиск материалов</li>
+            <li>Просмотр PDF без скачивания</li>
+            <li>Просмотр изображения без скачивания</li>
+            <li>Просмотр GIF без скачивания</li>
             <li>(в разработке)Прослушивание аудио без скачивания (отложено)</li>
         </ul>
     <li><span><b>(в разработке)Уроки</b></span></li>

@@ -3,6 +3,7 @@ from aiogram.fsm.context import FSMContext
 from tgbot.finite_states.menu import MenuFSM
 from tgbot.funcs.add_lesson import ask_lesson_name
 from tgbot.funcs.add_homework import ask_hw_name
+from tgbot.funcs.materials import get_materials
 
 router = Router(name=__name__)
 
@@ -17,6 +18,11 @@ async def h_add_hw(message: types, state: FSMContext) -> None:
     await ask_hw_name(message, state)
 
 
+@router.message(filters.StateFilter(MenuFSM), F.text == "Материалы")
+async def h_menu_materials(message: types, state: FSMContext) -> None:
+    await get_materials(message, state)
+
+
 @router.message(filters.StateFilter(MenuFSM))
-async def h_error(message: types) -> None:
+async def h_menu_error(message: types) -> None:
     await message.answer(text="Пожалуйста, выберите действие из меню:")

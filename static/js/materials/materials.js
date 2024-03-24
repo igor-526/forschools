@@ -33,6 +33,7 @@ async function getMaterials(type=2){
         material_set = await response.json()
         showMaterials()
         await set_category()
+        await set_levels()
     } else {
         showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
     }
@@ -63,6 +64,7 @@ function showMaterials(list = material_set){
     tableBody.innerHTML = ''
     list.map(function (material) {
         let categoryHTML = ''
+        let levelHTML = ''
         material.category.map(function (category) {
             if (category.name === material.category[0].name){
                 categoryHTML += `${category.name}`
@@ -70,11 +72,19 @@ function showMaterials(list = material_set){
                 categoryHTML += `<br>${category.name}`
             }
         })
+        material.level.map(function (level) {
+            if (level.name === material.level[0].name){
+                levelHTML += `${level.name}`
+            } else {
+                levelHTML += `<br>${level.name}`
+            }
+        })
         const splittedFile = material.file.split('.')
         tableBody.insertAdjacentHTML("beforeend", `
         <tr data-material-id="${material.id}">
             <td style="max-width: 300px;"><a href="/materials/${material.id}" style="color: #003366; text-decoration: none;"> ${material.name}</a></td>
             <td>${categoryHTML}</td>
+            <td>${levelHTML}</td>
             <td>${getMaterialType(splittedFile[splittedFile.length - 1])}</td>
             <td>${material.owner.first_name} ${material.owner.last_name}</td>
             <td>
@@ -87,8 +97,8 @@ function showMaterials(list = material_set){
     })
     const tableButtonTelegram = tableBody.querySelectorAll("#TableButtonTelegram")
     tableButtonTelegram.forEach(button => {
-        button.addEventListener('click', function () {
-            bsModalTelegram.show()
+        button.addEventListener('click', function (material_item) {
+            material_id = this.attributes.getNamedItem("data-material-id").value
             materialsTelegramMain()
         })
     })
@@ -104,10 +114,27 @@ async function set_category(){
             formMaterialNewCategoryField.classList.add('d-none')
         }
     })
-    const response = await fetch('/api/v1/materials/category')
+    const response = await fetch('/api/v1/collections/mat_cats/')
     await response.json().then(json => {json.map(function (category) {
         formMaterialNewCategorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`
         materialsCollapseSearchCategory.innerHTML += `<option value="${category.id}">${category.name}</option>`
+    })})
+}
+
+async function set_levels(){
+    formMaterialNewLvlSelect.innerHTML = '<option value="new">Новый уровень</option>'
+    materialsCollapseSearchLevel.innerHTML = '<option selected value="none">Уровень</option>'
+    formMaterialNewLvlSelect.addEventListener('change', function () {
+        if (formMaterialNewLvlSelect.value === 'new'){
+            formMaterialNewLvlNewInput.classList.remove('d-none')
+        } else {
+            formMaterialNewLvlNewInput.classList.add('d-none')
+        }
+    })
+    const response = await fetch('/api/v1/collections/mat_levels/')
+    await response.json().then(json => {json.map(function (level) {
+        formMaterialNewLvlSelect.innerHTML += `<option value="${level.name}">${level.name}</option>`
+        materialsCollapseSearchLevel.innerHTML += `<option value="${level.id}">${level.name}</option>`
     })})
 }
 

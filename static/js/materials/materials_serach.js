@@ -36,11 +36,13 @@ function filterMaterial(material, formData){
     const owner = new RegExp(formData.get("owner").toLowerCase())
     const type = formData.get("type").toLowerCase()
     const category = formData.get("category")
+    const level = formData.get("level")
 
     let statusName
     let statusOwner
     let statusType
     let statusCategory
+    let statusLevel
 
     if (formData.get("name") !== ""){
         statusName = name.test(material.name.toLowerCase())
@@ -92,13 +94,25 @@ function filterMaterial(material, formData){
         statusCategory = true
     }
 
-    return statusName && statusOwner && statusType && statusCategory
+    if (formData.get("level") !== "none"){
+        let levelIDs = []
+        material.level.forEach(function (lvl) {
+            levelIDs.push(Number(lvl.id))
+        })
+        statusLevel = levelIDs.includes(Number(level))
+    } else {
+        statusLevel = true
+    }
+
+    return statusName && statusOwner && statusType && statusCategory && statusLevel
 }
 
 function searchMaterials(){
+    console.log("dfs")
     const formData = new FormData(materialsCollapseSearchForm)
     if (formData.get("name") !== "" ||
         formData.get("category") !== "none" ||
+        formData.get("level") !== "none" ||
         formData.get("owner") !== "" ||
         formData.get("type") !== "none"){
         materialFilteredSet = material_set.filter(m => filterMaterial(m, formData))
@@ -117,6 +131,7 @@ const materialsCollapseSearchName = materialsCollapseSearchForm.querySelector("#
 const materialsCollapseSearchCategory = materialsCollapseSearchForm.querySelector("#MaterialsCollapseSearchCategory")
 const materialsCollapseSearchOwner = materialsCollapseSearchForm.querySelector("#MaterialsCollapseSearchOwner")
 const materialsCollapseSearchType =  materialsCollapseSearchForm.querySelector("#MaterialsCollapseSearchType")
+const materialsCollapseSearchLevel =  materialsCollapseSearchForm.querySelector("#MaterialsCollapseSearchLevel")
 
 //Buttons
 const materialsCollapseSearchButton = document.querySelector("#MaterialsCollapseSearchButton")
@@ -131,14 +146,22 @@ const materialsSearchFields = [
     materialsCollapseSearchName,
     materialsCollapseSearchCategory,
     materialsCollapseSearchOwner,
-    materialsCollapseSearchType]
+    materialsCollapseSearchType,
+    materialsCollapseSearchLevel]
+
+const clearButtons = [
+    materialsCollapseSearchButton,
+    materialsCollapseSearchClearButton
+]
 
 materialsSearchFields.forEach(function (field) {
     field.addEventListener("input", searchMaterials)
 })
 
-materialsCollapseSearchClearButton.addEventListener("click", function () {
-    materialsCollapseSearchForm.reset()
-    materialFilteredSet = []
-    showMaterials()
+clearButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+        materialsCollapseSearchForm.reset()
+        materialFilteredSet = []
+        showMaterials()
+    })
 })

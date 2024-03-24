@@ -1,20 +1,20 @@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNewMaterial">
     <div class="offcanvas-header">
         <h5 id="offcanvasNewMaterial">Новый материал</h5>
-        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body">
         <form id="formNewMaterial">
             {% csrf_token %}
 
-            <div class="btn-group mb-3" role="group">
+            <div class="btn-group mb-3" role="group" id="MaterialNewType">
                 {% if perms.material.add_personal %}
-                <input type="radio" class="btn-check" name="type"  value=1 id="MaterialNewTypeMy" checked>
-                <label class="btn btn-outline-primary" for="MaterialNewTypeMy">Мой</label>
+                    <input type="radio" class="btn-check" name="type"  value=1 id="MaterialNewTypeMy" checked>
+                    <label class="btn btn-outline-primary" for="MaterialNewTypeMy">Мой</label>
                 {% endif %}
                 {% if perms.material.add_general %}
-                <input type="radio" class="btn-check" name="type" value=2 id="MaterialNewTypeGeneral">
-                <label class="btn btn-outline-primary" for="MaterialNewTypeGeneral">Общий</label>
+                    <input type="radio" class="btn-check" name="type" value=2 id="MaterialNewTypeGeneral">
+                    <label class="btn btn-outline-primary" for="MaterialNewTypeGeneral">Общий</label>
                 {% endif %}
             </div>
 
@@ -48,7 +48,18 @@
                 <input name="cat" type="text" class="form-control d-none" id="MaterialNewCatNewInput" placeholder="Новая категория материалов">
             </div>
 
-            <button class="btn btn-primary" id="MaterialNewSubmitButton" type="button">Добавить</button>
+            <div class="mb-1">
+                <span class="mb-1">Уровень</span>
+                <select name="lvl" class="form-select" id="MaterialNewLvlInput" multiple size="7">
+                </select>
+                <div class="form-text">Зажмите CTRL для добавления нескольких</div>
+            </div>
+
+            <div class="mb-3">
+                <input name="lvl" type="text" class="form-control d-none" id="MaterialNewLvlNewInput" placeholder="Новый уровень материалов">
+            </div>
+
+            <button class="btn btn-primary" id="MaterialNewSubmitButton" type="button">Сохранить</button>
         </form>
     </div>
 </div>

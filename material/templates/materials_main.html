@@ -25,8 +25,11 @@
                     <div class="col-md-4">
                         <select name="category" id="MaterialsCollapseSearchCategory" class="form-select"></select>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-5">
                         <input name="owner" id="MaterialsCollapseSearchOwner" type="text" class="form-control" placeholder="Владелец">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="level" id="MaterialsCollapseSearchLevel" class="form-select"></select>
                     </div>
                     <div class="col-md-3">
                         <select name="type" id="MaterialsCollapseSearchType" class="form-select">
@@ -62,6 +65,7 @@
                 <tr>
                     <th scope="col">Наименование<button id="MaterialTableSortNameButton" type="button" class="btn btn-outline-primary btn-sm ms-2" data-sorted="asc"><i class="fa-solid fa-sort"></i></button></th>
                     <th scope="col">Категория</th>
+                    <th scope="col">Уровень</th>
                     <th scope="col">Тип</th>
                     <th scope="col">Владелец</th>
                     <th scope="col">Действие</th>
@@ -79,6 +83,8 @@
     <script>
         var csrftoken = '{{ csrf_token }}'
         const userPermissions = JSON.parse("{{ userperms|escapejs }}")
+        const user_id = {{ request.user.id }}
+        let material_id
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/telegram/telegram_main.js' %}"></script>

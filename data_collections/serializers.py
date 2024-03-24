@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from profile_management.models import Level, Programs, EngagementChannel
-from material.models import MaterialCategory
+from material.models import MaterialCategory, MaterialLevel
 from lesson.models import Place
 
 
@@ -31,4 +31,10 @@ class PlaceSerializer(serializers.ModelSerializer):
 class MaterialCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MaterialCategory
+        fields = "__all__"
+
+
+class MaterialLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaterialLevel
         fields = "__all__"
