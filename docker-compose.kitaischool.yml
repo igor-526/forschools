@@ -1,15 +1,15 @@
-version: '3.9'
-
 networks:
-  dls_network:
+  kitaischool_network:
     driver: bridge
 
 volumes:
-  dls_pgdata:
-  dls_media:
+  kitaischool_pgdata:
+  kitaischool_media:
 
 services:
-  dls_database:
+  kitaischool_database:
+    env_file:
+      - kitaischool.env
     image: postgres:latest
     ports:
       - "${PORT}:5432"
@@ -19,12 +19,14 @@ services:
       POSTGRES_DB: ${DB_DB}
       POSTGRES_HOST: localhost
     networks:
-      - dls_network
+      - kitaischool_network
     volumes:
-      - dls_pgdata:/var/lib/postgresql/data
+      - kitaischool_pgdata:/var/lib/postgresql/data
     restart: always
 
-  dls_django:
+  kitaischool_django:
+    env_file:
+      - kitaischool.env
     build: .
     ports:
       - "5001:5000"
@@ -34,35 +36,39 @@ services:
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: dls_database
+      DB_HOST: kitaischool_database
       PORT: 5432
       PYTHONUNBUFFERED: 1
     entrypoint: bash -c  "python manage.py collectstatic --noinput &&  python manage.py makemigrations && python manage.py migrate &&  gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
     depends_on:
-      - dls_database
+      - kitaischool_database
     networks:
-      - dls_network
+      - kitaischool_network
     volumes:
-      - dls_media:/src/media
+      - kitaischool_media:/src/media
     restart: always
 
-  dls_redis:
+  kitaischool_redis:
     image: redis:latest
     restart: always
     networks:
-      - dls_network
+      - kitaischool_network
 
-  dls_celery:
+  kitaischool_celery:
+    env_file:
+      - kitaischool.env
     build: .
     depends_on:
-      - dls_redis
-      - dls_django
+      - kitaischool_redis
+      - kitaischool_django
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     command: celery -A dls worker -l info
     networks:
-      - dls_network
-  dls_bot:
+      - kitaischool_network
+  kitaischool_bot:
+    env_file:
+      - kitaischool.env
     build: .
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
@@ -70,12 +76,12 @@ services:
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: dls_database
+      DB_HOST: kitaischool_database
       PORT: 5432
       PYTHONUNBUFFERED: 1
     entrypoint: bash -c  "python manage.py runbot";
     depends_on:
-      - dls_celery
+      - kitaischool_celery
     networks:
-      - dls_network
+      - kitaischool_network
     restart: always
