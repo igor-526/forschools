@@ -4,12 +4,9 @@ networks:
 
 volumes:
   kitaischool_pgdata:
-  kitaischool_media:
 
 services:
   kitaischool_database:
-    env_file:
-      - kitaischool.env
     image: postgres:latest
     ports:
       - "${PORT}:5432"
@@ -25,8 +22,6 @@ services:
     restart: always
 
   kitaischool_django:
-    env_file:
-      - kitaischool.env
     build: .
     ports:
       - "5001:5000"
@@ -45,7 +40,7 @@ services:
     networks:
       - kitaischool_network
     volumes:
-      - kitaischool_media:/src/media
+      - /home/sdo/media/kitaischool:/src/media
     restart: always
 
   kitaischool_redis:
@@ -55,8 +50,6 @@ services:
       - kitaischool_network
 
   kitaischool_celery:
-    env_file:
-      - kitaischool.env
     build: .
     depends_on:
       - kitaischool_redis
@@ -67,8 +60,6 @@ services:
     networks:
       - kitaischool_network
   kitaischool_bot:
-    env_file:
-      - kitaischool.env
     build: .
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
