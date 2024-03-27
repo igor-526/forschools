@@ -6,6 +6,7 @@ networks:
 
 volumes:
   dls_pgdata:
+  dls_media:
 
 services:
   dls_database:
@@ -26,7 +27,7 @@ services:
   dls_django:
     build: .
     ports:
-      - "8080:8080"
+      - "8088:5000"
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       SECRET_KEY: ${SECRET_KEY}
@@ -36,11 +37,13 @@ services:
       DB_HOST: dls_database
       PORT: 5432
       PYTHONUNBUFFERED: 1
-    entrypoint: bash -c  "python manage.py makemigrations && python manage.py migrate &&  python manage.py runserver 0.0.0.0:8080";
+    entrypoint: bash -c  "python manage.py collectstatic --noinput &&  python manage.py makemigrations && python manage.py migrate &&  gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
     depends_on:
       - dls_database
     networks:
       - dls_network
+    volumes:
+      - dls_media:/src/media
     restart: always
 
   dls_redis:

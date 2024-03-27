@@ -62,10 +62,10 @@ class EngagementChannel(models.Model):
 
 class NewUser(AbstractUser):
     photo = models.ImageField(verbose_name='Фотография профиля',
-                              upload_to='static/img/profile_pictures/',
+                              upload_to='profile_pictures/',
                               null=False,
                               blank=True,
-                              default='static/img/profile_pictures/base_avatar.png')
+                              default='profile_pictures/base_avatar.png')
     last_activity = models.DateTimeField(verbose_name='Последняя активность',
                                          null=False,
                                          auto_now_add=True)
@@ -157,7 +157,7 @@ class NewUser(AbstractUser):
         self.save()
 
     def delete_photo(self):
-        self.photo = 'static/img/profile_pictures/base_avatar.png'
+        self.photo = 'profile_pictures/base_avatar.png'
         self.save()
 
 
