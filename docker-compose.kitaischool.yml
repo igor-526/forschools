@@ -40,7 +40,7 @@ services:
     networks:
       - kitaischool_network
     volumes:
-      - /home/sdo/media/kitaischool:/src/media
+      - /home/sdo/kitaischool/media:/src/media
     restart: always
 
   kitaischool_redis:
