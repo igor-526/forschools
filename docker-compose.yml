@@ -27,7 +27,7 @@ services:
   dls_django:
     build: .
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       SECRET_KEY: ${SECRET_KEY}
