@@ -43,3 +43,9 @@ class NewUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewUser
         fields = '__all__'
+
+
+class NewUserNameOnlyListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewUser
+        fields = ['id', 'first_name', 'last_name']

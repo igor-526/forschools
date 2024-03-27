@@ -37,3 +37,9 @@ class MaterialSerializer(serializers.ModelSerializer):
         instance.set_category(self.context['request'].data.getlist('cat'))
         instance.set_level(self.context['request'].data.getlist('lvl'))
         return super(MaterialSerializer, self).update(instance, validated_data)
+
+
+class MaterialListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Material
+        fields = ['id', 'name']

@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django_filters',   # фильтрация данных для RestFramework
     'celery',   # создание задач
     'django_celery_results',    # результат выполнения задач
+    'learning_plan',     # менеджмент планов обучения
 
     'tgbot',    # пользовательский бот Telegram
     'profile_management',   # профиль, логин, регистрация, выход, логирование действий

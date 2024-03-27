@@ -1,7 +1,6 @@
 from django.db import models
 from profile_management.models import NewUser
 from material.models import Material, File
-from lesson.models import Lesson
 from datetime import datetime, timedelta
 
 
@@ -19,12 +18,6 @@ class Homework(models.Model):
                             max_length=200,
                             null=False,
                             blank=False)
-    lesson = models.ForeignKey(Lesson,
-                               related_name='homeworks',
-                               verbose_name='Урок',
-                               blank=True,
-                               null=True,
-                               on_delete=models.CASCADE)
     teacher = models.ForeignKey(NewUser,
                                 verbose_name='Преподаватель',
                                 related_name='homeworks',
@@ -41,18 +34,13 @@ class Homework(models.Model):
                                        related_name='homework',
                                        related_query_name='homework_set',
                                        blank=True)
-    files = models.ManyToManyField(File,
-                                   verbose_name='Файлы',
-                                   related_name='homework',
-                                   related_query_name='homework_set',
-                                   blank=True,)
     description = models.TextField(verbose_name='Описание',
                                    null=True,
                                    blank=True,
                                    max_length=2000)
     deadline = models.DateField(verbose_name='Срок',
-                                null=False,
-                                blank=False,
+                                null=True,
+                                blank=True,
                                 default=datetime.now() + timedelta(days=1))
 
     class Meta:
