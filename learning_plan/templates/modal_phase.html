@@ -1,0 +1,32 @@
+<div class="modal" id="PlansItemPhaseModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="PlansItemPhaseModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="PlansItemPhaseModalForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="PlansItemPhaseModalNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="PlansItemPhaseModalNameField">
+                        <div class="form-text">Наименование для этапа обучения. Должно быть уникальным</div>
+                        <div id="PlansItemPhaseModalNameError" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="PlansItemPhaseModalPurposeField" class="form-label">Цель</label>
+                        <input name="purpose" type="text" class="form-control" id="PlansItemPhaseModalPurposeField">
+                        <div class="form-text">Цель, которая ставится этапом обучения</div>
+                        <div id="PlansItemPhaseModalPurposeError" class="invalid-feedback"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="PlansItemPhaseModalSaveButton" data-phase-id="">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>

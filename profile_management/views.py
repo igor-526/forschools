@@ -8,24 +8,15 @@ from django.views.generic import TemplateView
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
-from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Q
 from dls.utils import get_menu
 from json import dumps
 from django.http import Http404
 
 from .forms import SignUpForm
-from .models import (NewUser,
-                     EngagementChannel,
-                     Level,
-                     Programs,
-                     )
-from .serializers import (NewUserSerializer,
-                          EngagementChannelSerializer,
-                          ProgramSerializer,
-                          LevelSerializer,
-                          )
+from .models import NewUser
+from .serializers import (NewUserDetailSerializer,
+                          NewUserListSerializer)
 
 
 def user_login(request):    # страница авторизации и логин
@@ -181,7 +172,7 @@ class UsersPage(LoginRequiredMixin, TemplateView):  # страница поль�
 
 
 class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для вывода списка пользователей
-    serializer_class = NewUserSerializer
+    serializer_class = NewUserListSerializer
 
     def get_queryset(self):
         group = self.request.query_params.get('group')
@@ -190,39 +181,12 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
         elif group == 'listeners':
             return NewUser.objects.filter(groups__name='Listener')
         elif group == 'teachers':
-            return NewUser.objects.filter(
-                Q(groups__name='Teacher') | Q(groups__name='Metodist') | Q(groups__name='Admin'))
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = NewUserSerializer(queryset, many=True)
-        return Response(serializer.data)
+            return NewUser.objects.filter(groups__name='Teacher')
 
 
-class UserAPIView(LoginRequiredMixin, RetrieveUpdateAPIView):    # API для вывода, изменения и удаления пользователя
+class UserDetailAPIView(LoginRequiredMixin, RetrieveUpdateAPIView):    # API для вывода/изменения/удаления пользователя
     queryset = NewUser.objects.all()
-    serializer_class = NewUserSerializer
-
-    def patch(self, request, *args, **kwargs):
-        data = request.data
-        user = self.get_object()
-        if data.get('role'):
-            user.set_group(data.get('role'))
-        if data.get('eng_channel_new') or data.get('eng_channel'):
-            en_ch = data.get('eng_channel_new') if data.get(
-                'eng_channel_new') else data.get('eng_channel')
-            user.set_engagement_channel(en_ch)
-        if data.get('lvl_new') or data.get('lvl_new'):
-            lvl = data.get('lvl_new') if data.get('lvl_new') else data.get('lvl')
-            user.set_level(lvl)
-        if data.get('prog') or data.get('prog_new'):
-            user.set_programs(data.getlist('prog'), data.get('prog_new'))
-        if data.get('private_lessons') or data.get('group_lessons'):
-            user.set_lessons_type(
-                data.get('private_lessons'),
-                data.get('group_lessons')
-            )
-        return super(UserAPIView, self).patch(request, *args, **kwargs)
+    serializer_class = NewUserDetailSerializer
 
 
 class UserPhotoApiView(LoginRequiredMixin, APIView):    # API для получения, изменения и обновления фото
@@ -241,36 +205,6 @@ class UserPhotoApiView(LoginRequiredMixin, APIView):    # API для получ�
         user = NewUser.objects.get(pk=kwargs.get('pk'))
         user.delete_photo()
         return JsonResponse({"status": "success"})
-
-
-class EngagementListAPIView(LoginRequiredMixin, ListAPIView):   # API для вывода каналов привлечения
-    queryset = EngagementChannel.objects.all()
-    serializer_class = EngagementChannelSerializer
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = EngagementChannelSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-class LevelListAPIView(LoginRequiredMixin, ListAPIView):    # API для вывода уровней
-    queryset = Level.objects.all()
-    serializer_class = LevelSerializer
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = LevelSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-class ProgramListAPIView(LoginRequiredMixin, ListAPIView):  # API для вывода программ обучения
-    queryset = Programs.objects.all()
-    serializer_class = ProgramSerializer
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = ProgramSerializer(queryset, many=True)
-        return Response(serializer.data)
 
 
 class TelegramAPIView(LoginRequiredMixin, APIView):  # API для регистрации пользователей

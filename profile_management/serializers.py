@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import NewUser, EngagementChannel, Level, Programs, Telegram
+from .models import NewUser, Telegram
 from django.contrib.auth.models import Group
+from data_collections.serializers import EngagementChannelSerializer, LevelSerializer, ProgramSerializer
 
 
 class TelegramSerializer(serializers.ModelSerializer):
@@ -15,25 +16,7 @@ class NewUserGroupSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 
-class EngagementChannelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EngagementChannel
-        fields = '__all__'
-
-
-class LevelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Level
-        fields = '__all__'
-
-
-class ProgramSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Programs
-        fields = '__all__'
-
-
-class NewUserSerializer(serializers.ModelSerializer):
+class NewUserDetailSerializer(serializers.ModelSerializer):
     groups = NewUserGroupSerializer(many=True)
     engagement_channel = EngagementChannelSerializer()
     level = LevelSerializer()
@@ -42,7 +25,15 @@ class NewUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewUser
-        fields = '__all__'
+        exclude = ['password']
+
+
+class NewUserListSerializer(serializers.ModelSerializer):
+    groups = NewUserGroupSerializer(many=True)
+
+    class Meta:
+        model = NewUser
+        fields = ['id', 'first_name', 'last_name', 'username', 'groups', 'is_active']
 
 
 class NewUserNameOnlyListSerializer(serializers.ModelSerializer):

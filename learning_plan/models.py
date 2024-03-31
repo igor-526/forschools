@@ -50,7 +50,7 @@ class LearningPlan(models.Model):
                                blank=True,
                                null=True)
     phases = models.ManyToManyField(LearningPhases,
-                                    verbose_name="Этапы оубчения",
+                                    verbose_name="Этапы обучения",
                                     blank=True)
     deadline = models.DateTimeField(verbose_name="Срок",
                                     blank=True,

@@ -15,9 +15,9 @@ async function openProfileTelegramModal() {
         usersShowTelegramConnectedWindows.classList.add("d-none")
         usersShowTelegramNotConnectedWindows.classList.remove("d-none")
         await response.json().then(resp => {
-            userShowTelegramURL.innerHTML = `https://t.me/dellindev_bot?start=${resp.code}`
+            userShowTelegramURL.innerHTML = `https://t.me/kitai_school_study_bot?start=${resp.code}`
             userShowTelegramCode.innerHTML = `${resp.code}`
-            userShowTelegramURL.href = `https://t.me/dellindev_bot?start=${resp.code}`
+            userShowTelegramURL.href = `https://t.me/kitai_school_study_bot?start=${resp.code}`
             usersShowTelegramButtonDisconnect.classList.add("d-none")
         })
         bsTelegramModal.show()
@@ -34,9 +34,9 @@ function showTelegramOptions(){
         usersShowTelegramConnectedWindows.classList.add("d-none")
         usersShowTelegramNotConnectedWindows.classList.remove("d-none")
         usersShowTelegramButtonDisconnect.classList.add("d-none")
-        userShowTelegramURL.innerHTML = `https://t.me/dellindev_bot?start=${userObj.tg_code}`
+        userShowTelegramURL.innerHTML = `https://t.me/kitai_school_study_bot?start=${userObj.tg_code}`
         userShowTelegramCode.innerHTML = `${userObj.tg_code}`
-        userShowTelegramURL.href = `https://t.me/dellindev_bot?start=${userObj.tg_code}`
+        userShowTelegramURL.href = `https://t.me/kitai_school_study_bot?start=${userObj.tg_code}`
     } else {
         usersShowTelegramConnectedWindows.classList.remove("d-none")
         usersShowTelegramNotConnectedWindows.classList.add("d-none")

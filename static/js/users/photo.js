@@ -16,6 +16,7 @@ async function updatePhoto(){
     const userID = formUser.attributes.getNamedItem('data-user-id').value
     const response = await fetch(`/api/v1/users/${userID}/photo/`)
     const content = await response.json()
+    console.log(content.photo)
     photoImage.src = content.photo
 }
 

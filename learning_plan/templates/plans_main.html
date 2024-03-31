@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <div class="row row justify-content-between">
+            <div class="col-auto">
+                <h1>Планы обучения</h1>
+            </div>
+            <div class="col-auto">
+                <button id="PlansCollapseSearchButton" type="button" class="btn btn-primary mt-1"><i class="fa-solid fa-magnifying-glass"></i></button>
+                {% if perms.lesson.edit_plans_self %}
+                    <button id="PlansAddButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" role="button"><i class="fa-solid fa-plus"></i></button>
+                    {% include 'plans_offcanvas_new.html' %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="container-xxl">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col">Наименование</th>
+                <th scope="col">Преподаватель</th>
+                <th scope="col">Ученики</th>
+                <th scope="col">Действие</th>
+            </tr>
+            </thead>
+            <tbody id="PlansTableBody"></tbody>
+        </table>
+    </div>
+    {% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        var csrftoken = '{{ csrf_token }}'
+        const userPermissions = JSON.parse("{{ userperms|escapejs }}")
+        const user_id = {{ request.user.id }}
+        let material_id
+    </script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+    {% if perms.lesson.edit_plans_self %}
+        <script src="{% static 'js/plans/plans_add/plans_add_validation.js' %}"></script>
+        <script src="{% static 'js/plans/plans_add/plans_add_set.js' %}"></script>
+        <script src="{% static 'js/plans/plans_add/plans_add.js' %}"></script>
+    {% endif %}
+    <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/plans/plans_main.js' %}"></script>
+{% endblock %}

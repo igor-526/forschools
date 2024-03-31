@@ -1,5 +1,5 @@
 async function getLearningPrograms(){
-    await fetch('/api/v1/users/programs')
+    await fetch('/api/v1/collections/learn_progs')
         .then(async response => await response.json())
         .then(set => learningProgramsSet = set)
 }

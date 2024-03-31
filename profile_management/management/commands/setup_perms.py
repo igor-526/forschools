@@ -184,6 +184,10 @@ class Command(BaseCommand):
             gr_teacher = Group.objects.get_or_create(name="Teacher")[0]
             gr_listener = Group.objects.get_or_create(name="Listener")[0]
 
+            self.add_auth_perms()
+            self.add_material_perms()
+            self.add_lesson_perms()
+
             gr_admin.permissions.set(self.admin_perms)
             gr_metodist.permissions.set(self.metodist_perms)
             gr_teacher.permissions.set(self.teacher_perms)

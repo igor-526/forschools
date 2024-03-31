@@ -1,0 +1,59 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNewPlan">
+    <div class="offcanvas-header">
+        <h5 id="offcanvasNewMaterial">Новый план обучения</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="formNewPlan">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="PlanNewNameField" class="form-label">Наименование</label>
+                <input name="name" type="text" class="form-control" id="PlanNewNameField">
+                <div class="form-text">Наименование плана. Должно быть уникальным</div>
+                <div class="invalid-feedback" id="PlanNewNameError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="PlanNewTeacherField" class="form-label">Преподаватель</label>
+                <input name="teacher" class="form-control" list="PlanNewTeacherFieldOptions" id="PlanNewTeacherField" placeholder="Введите преподавателя">
+                <div class="form-text">Начните вводить и выберите..</div>
+                <div class="invalid-feedback" id="PlanNewTeacherError"></div>
+                <datalist id="PlanNewTeacherFieldOptions">
+                    <option value="Преподаватель 1">
+                    <option value="Преподаватель 2">
+                    <option value="Преподаватель 3">
+                    <option value="Преподаватель 4">
+                    <option value="Преподаватель 5">
+                </datalist>
+            </div>
+
+            <div class="mb-3">
+                <label for="PlanNewPurposeField" class="form-label">Цель плана</label>
+                <input name="purpose" type="text" class="form-control" id="PlanNewPurposeField">
+                <div class="form-text">Каких результатов необходимо достичь<br>Необязательно к заполнению</div>
+                <div class="invalid-feedback" id="PlanNewPurposeError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="PlanNewDeadlineField" class="form-label">Сроки</label>
+                <input name="deadline" type="date" class="form-control" id="PlanNewDeadlineField">
+                <div class="form-text">За какой срок необходимо выполнить план<br>Необязательно к заполнению</div>
+                <div class="invalid-feedback" id="PlanNewDeadlineError"></div>
+            </div>
+
+            <div>
+                <label for="PlanNewListenersSearchField" class="form-label">Ученики</label>
+                <input type="text" class="form-control" id="PlanNewListenersSearchField" placeholder="Поиск по ученикам:">
+            </div>
+            <div class="mb-3">
+                <select id="PlanNewListenersSelect" name="listeners" class="form-select" multiple></select>
+                <div class="form-text">Зажмите CTRL для выбора нескольких</div>
+                <div class="invalid-feedback" id="PlanNewListenersError"></div>
+            </div>
+
+            <button class="btn btn-primary" id="PlanNewSubmitAndGoButton" type="button">Сохранить и перейти</button>
+            <button class="btn btn-primary" id="PlanNewSubmitButton" type="button">Сохранить</button>
+        </form>
+    </div>
+</div>

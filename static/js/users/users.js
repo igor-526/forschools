@@ -34,7 +34,7 @@ function showUsers(list = userSet){
 
 async function setEngagementChannels(){
     formUserEditEngagementChannelSelect.innerHTML = '<option disabled selected> Выберите </option>'
-    await fetch("/api/v1/users/engagement_channels")
+    await fetch("/api/v1/collections/eng_channels")
         .then(async response => await response.json())
         .then(content => content.map(function (channel) {
             formUserEditEngagementChannelSelect.innerHTML += `
@@ -45,7 +45,7 @@ async function setEngagementChannels(){
 
 async function setLevels(){
     formUserEditLevelSelect.innerHTML = '<option disabled selected> Выберите </option>'
-    await fetch("/api/v1/users/levels")
+    await fetch("/api/v1/collections/levels")
         .then(async response => await response.json())
         .then(content => content.map(function (level) {
             formUserEditLevelSelect.innerHTML += `
@@ -57,7 +57,7 @@ async function setLevels(){
 
 async function setPrograms(){
     formUserEditProgramSelect.innerHTML = ''
-    await fetch('/api/v1/users/programs')
+    await fetch('/api/v1/collections/learn_progs')
         .then(async response => await response.json())
         .then(content => content.map(function (program){
             formUserEditProgramSelect.innerHTML += `

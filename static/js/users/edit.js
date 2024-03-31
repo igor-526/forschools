@@ -36,7 +36,6 @@ function formUserEditClientValidation(){
             validationStatus = false
         }
     }
-
     return validationStatus
 }
 
@@ -49,12 +48,12 @@ async function saveUser() {
     if (validationStatus){
         const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
         const formData = new FormData(formUserEdit);
-        if (formData.get("eng_channel") === "new" || formData.get("eng_channel") == null){
-            formData.delete("eng_channel")
-        }
-        if (formData.get("lvl") === "new" || formData.get("lvl") == null){
-            formData.delete("lvl")
-        }
+        // if (formData.get("eng_channel") === "new" || formData.get("eng_channel") == null){
+        //     formData.delete("eng_channel")
+        // }
+        // if (formData.get("lvl") === "new" || formData.get("lvl") == null){
+        //     formData.delete("lvl")
+        // }
         const response = await fetch(`/api/v1/users/${userID}/`, {
             method: 'patch',
             credentials: 'same-origin',
@@ -65,6 +64,7 @@ async function saveUser() {
         })
         if (response.status === 200){
             bsOffcanvasUser.hide()
+            console.log(await response.json())
             showToast("Изменение пользователя", "Пользователь успешно изменён")
             await getUsers()
             showUsers()
@@ -176,7 +176,11 @@ function setupPerms(group){
 async function showUser(){
     formUserEdit.reset()
     const userId = this.attributes.getNamedItem('data-user-id').value
-    const userObj = userSet.find(u => u.id === Number(userId))
+    let userObj = await fetch(`/api/v1/users/${userId}`)
+    userObj = await userObj.json()
+
+    console.log(userObj)
+
     if (userObj.is_active === true){
         formUserEditDeactivateButton.classList.remove("d-none")
         formUserEditActivateButton.classList.add("d-none")
@@ -186,28 +190,28 @@ async function showUser(){
     }
     setupPerms(userObj.groups[0].name)
     bsOffcanvasUser.show()
-    if (userObj.engagement_channel){
-        formUserEditEngagementChannelSelect.value = userObj.engagement_channel.name
-    }
-    if (userObj.level){
-        formUserEditLevelSelect.value = userObj.level.name
-    }
-    formUserEditUsernameField.value = userObj.username
+    // if (userObj.engagement_channel){
+    //     formUserEditEngagementChannelSelect.value = userObj.engagement_channel.name
+    // }
+    // if (userObj.level){
+    //     formUserEditLevelSelect.value = userObj.level.name
+    // }
+    // formUserEditUsernameField.value = userObj.username
     formUserEditLastNameField.value = userObj.last_name
     formUserEditFirstNameField.value = userObj.first_name
     formUserEditRole.value = userObj.groups[0].name
-    formUserEditEmailField.value = userObj.email
-    formUserEditBDate.value = userObj.bdate
-    formUserEditProgress.value = userObj.progress
-    formUserEditWorkExperience.value = userObj.work_experience
-    formUserEditPrivateLessons.checked = userObj.private_lessons
-    formUserEditGroupLessons.checked = userObj.group_lessons
-    formUserEditNote.value = userObj.note
-    photoImage.src = userObj.photo
-    userObj.programs.map(program => {
-        const option = formUserEditProgramSelect.querySelector(`[value="${program.name}"]`)
-        option.selected = true
-    })
+    // formUserEditEmailField.value = userObj.email
+    // formUserEditBDate.value = userObj.bdate
+    // formUserEditProgress.value = userObj.progress
+    // formUserEditWorkExperience.value = userObj.work_experience
+    // formUserEditPrivateLessons.checked = userObj.private_lessons
+    // formUserEditGroupLessons.checked = userObj.group_lessons
+    // formUserEditNote.value = userObj.note
+    // photoImage.src = userObj.photo
+    // userObj.programs.map(program => {
+    //     const option = formUserEditProgramSelect.querySelector(`[value="${program.name}"]`)
+    //     option.selected = true
+    // })
 
     formUserEdit.setAttribute('data-user-id', userObj.id)
     formUserEditTelegramButton.setAttribute('data-user-id', userObj.id)

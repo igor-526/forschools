@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <h1>{{ title }}</h1>
+    </div>
+    <div class="container-xxl">
+        <div class="row">
+            <div class="col-6">
+                <div class="card mb-3">
+                    <div class="card-header">План обучения</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% if plan.purpose %}
+                                <li class="list-group-item">Цель: {{ plan.purpose }}</li>
+                            {% else %}
+                                <li class="list-group-item">Цель: отсутсвует</li>
+                            {% endif %}
+                            {% if plan.deadline %}
+                                <li class="list-group-item">Срок: {{ plan.deadline }}</li>
+                            {% else %}
+                                <li class="list-group-item">Срок: не установлен</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Статистика</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Этапов всего: {{ plan.phases.count }}</li>
+                            <li class="list-group-item">Этапов пройдено:</li>
+                            <li class="list-group-item">Уроков всего:</li>
+                            <li class="list-group-item">Уроков пройдено:</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card mb-3">
+                    <div class="card-header">Преподаватель</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Ученики</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for listener in plan.listeners.all %}
+                                <li class="list-group-item"><a href="/profile/{{ listener.id }}">{{ listener }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="my-3">
+                <h1>Этапы:</h1>
+            </div>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Наименование</th>
+                    <th scope="col">Цель</th>
+                    <th scope="col">Действие</th>
+                </tr>
+                </thead>
+                <tbody id="PlansItemTableBody"></tbody>
+            </table>
+        </div>
+    {% include 'modal_phase.html' %}
+    </div>
+    {% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        const csrftoken = '{{ csrf_token }}'
+        const userPermissions = JSON.parse("{{ userperms|escapejs }}")
+        const planID = {{ plan.id }}
+    </script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/plans/plans_item/plans_item_main.js' %}"></script>
+{% endblock %}

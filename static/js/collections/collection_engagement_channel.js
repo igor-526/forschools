@@ -1,5 +1,5 @@
 async function getEngagementChannels(){
-    await fetch('/api/v1/users/engagement_channels')
+    await fetch('/api/v1/collections/eng_channels')
         .then(async response => await response.json())
         .then(set => engagementChannelsSet = set)
 }

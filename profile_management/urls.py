@@ -1,21 +1,12 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
-from .views import (DashboardPage,
-                    user_login,
-                    user_logout,
-                    register_view,
-                    UsersPage,
-                    UserListAPIView,
-                    UserAPIView,
-                    EngagementListAPIView,
-                    LevelListAPIView,
-                    ProgramListAPIView,
-                    UserPhotoApiView,
-                    ProfilePage,
-                    TelegramAPIView,
-                    DeactivateUserView,
-                    ActivateUserView,
-                    ChangePasswordView)
+from .views import (DashboardPage, user_login,
+                    user_logout, register_view,
+                    UsersPage, UserListAPIView,
+                    UserDetailAPIView,
+                    UserPhotoApiView, ProfilePage,
+                    TelegramAPIView, DeactivateUserView,
+                    ActivateUserView, ChangePasswordView)
 
 urlpatterns = [
     path('', RedirectView.as_view(url='dashboard')),  # редирект на дэшборд
@@ -31,10 +22,7 @@ urlpatterns = [
 
 apiv1patterns = [
     path('', UserListAPIView.as_view()),  # API для вывода списка пользователей
-    path('<int:pk>/', UserAPIView.as_view()),     # API для вывода, изменения и удаления пользователя
-    path('engagement_channels/', EngagementListAPIView.as_view()),    # API для вывода каналов привлечения
-    path('programs/', ProgramListAPIView.as_view()),  # API для вывода программ обучения
-    path('levels/', LevelListAPIView.as_view()),  # API для вывода уровней
+    path('<int:pk>/', UserDetailAPIView.as_view()),     # API для вывода, изменения и удаления пользователя
     path('<int:pk>/photo/', UserPhotoApiView.as_view()),  # API для изменения фото профиля
     path('<int:pk>/disconnect_telegram/', TelegramAPIView.as_view()),     # API для удаления привязки Telegram
     path('<int:pk>/deactivate/', DeactivateUserView.as_view()),     # API для деактивации пользователя
