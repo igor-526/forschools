@@ -34,7 +34,7 @@ services:
       DB_HOST: kitaischool_database
       PORT: 5432
       PYTHONUNBUFFERED: 1
-    entrypoint: bash -c  "python manage.py collectstatic --noinput &&  python manage.py makemigrations && python manage.py migrate &&  gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
+    entrypoint: bash -c  "python manage.py collectstatic --noinput &&  gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
     depends_on:
       - kitaischool_database
     networks:
