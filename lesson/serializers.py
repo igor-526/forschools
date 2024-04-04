@@ -4,6 +4,8 @@ from profile_management.serializers import NewUserNameOnlyListSerializer
 from material.serializers import MaterialListSerializer
 from homework.serializers import HomeworkListSerializer
 from data_collections.serializers import PlaceSerializer
+from lesson.models import Place
+from learning_plan.models import LearningPhases
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -18,8 +20,18 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class LessonListSerializer(serializers.ModelSerializer):
-    place = PlaceSerializer()
+    place = PlaceSerializer(required=False)
 
     class Meta:
         model = Lesson
-        fields = ["id", "name", "start_time", "end_time", "date", "place", "status"]
+        exclude = ['materials', 'homeworks', 'evaluation', 'note_teacher', 'note_listener']
+
+    def create(self, validated_data):
+        lesson = Lesson.objects.create(**validated_data)
+        place = self.context.get('request').POST.get("place")
+        if place:
+            lesson.place = Place.objects.get(pk=place)
+            lesson.save()
+        phase = LearningPhases.objects.get(pk=self.context.get('phase_pk'))
+        phase.lessons.add(lesson)
+        return lesson

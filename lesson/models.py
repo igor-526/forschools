@@ -29,14 +29,14 @@ class Lesson(models.Model):
                             null=False,
                             blank=False)
     start_time = models.TimeField(verbose_name='Начало урока',
-                                  null=False,
-                                  blank=False)
+                                  null=True,
+                                  blank=True)
     end_time = models.TimeField(verbose_name='Окончание урока',
-                                null=False,
-                                blank=False)
+                                null=True,
+                                blank=True)
     date = models.DateField(verbose_name='Дата урока',
-                            null=False,
-                            blank=False,
+                            null=True,
+                            blank=True,
                             default=timezone.now)
     description = models.TextField(verbose_name='Описание урока',
                                    null=True,

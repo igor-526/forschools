@@ -9,6 +9,8 @@ async function planItemMain(){
             planItemEditPhase(phaseID)
         }
     })
+    await plansItemLessonMain()
+
 }
 
 async function planItemGetPhases() {
@@ -19,19 +21,85 @@ async function planItemGetPhases() {
 
 function planItemShowPhases(list = phases_set) {
     plansItemTableBody.innerHTML = ''
-
     list.map(phase => {
+        let lessonsHTML = ""
+        phase.lessons.map(lesson => {
+            let date = "-"
+            let time = "-"
+            if (lesson.date !== null){
+                const dateObj = new Date(lesson.date)
+                date = `${dateObj.getDay()}.${dateObj.getMonth()}.${dateObj.getFullYear()}`
+            }
+            if (lesson.start_time !== null){
+                const timeStartObj = new Date()
+                timeStartObj.setHours(lesson.start_time.split(":")[0],
+                    lesson.start_time.split(":")[1], 0)
+                const timeEndObj = new Date()
+                timeStartObj.setHours(lesson.end_time.split(":")[0],
+                    lesson.end_time.split(":")[1], 0)
+
+                time = `${timeStartObj.getHours()}:${timeStartObj.getMinutes()} - ${timeEndObj.getHours()}:${timeEndObj.getMinutes()}`
+            }
+
+            lessonsHTML += `
+            <tr>
+                <td>${lesson.name}</td>
+                <td>${date}</td>
+                <td>${time}</td>
+                <td>
+                    <button type="button" class="btn btn-primary" id="PlansItemLessonEditButton" data-lesson-id="${lesson.id}" data-phase-id="${phase.id}">
+                    <i class="fa-solid fa-pen-to-square"></i></button>
+                    <a href="/lessons/${lesson.id}"><button type="button" class="btn btn-primary">
+                    <i class="fa-solid fa-chevron-right"></i></button></a>
+                </td>
+            </tr> 
+            `
+        })
         plansItemTableBody.insertAdjacentHTML('beforeend', `
-        <tr>
+        <tr data-phase-id="${phase.id}">
             <td style="max-width: 300px;">${phase.name}</td>
             <td>${phase.purpose}</td>
             <td>
                 <button type="button" class="btn btn-primary" id="PlansItemTableEditButton" data-phase-id="${phase.id}">
                     <i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button type="button" class="btn btn-primary" id="PlansItemTableLessonsButton" data-phase-id="${phase.id}">
+                <button type="button" class="btn btn-primary"  data-phase-id="${phase.id}" data-bs-toggle="collapse" data-bs-target="#PlansItemTablePhaseCollapse${phase.id}">
                     <i class="fa-solid fa-chevron-right"></i></button>
             </td>
-        </tr>`)
+        </tr>
+        
+        <tr>
+            <td colspan="4">
+            
+            <div class="collapse ms-3" id="PlansItemTablePhaseCollapse${phase.id}">
+                <div class="card card-body">
+                <h4>Уроки этапа "${phase.name}":</h4>
+                <table class="table table-hover mb-3" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th scope="col">Наименование</th>
+                            <th scope="col">Дата</th>
+                            <th scope="col">Время</th>
+                            <th scope="col">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${lessonsHTML}
+                        <tr>
+                            <td colspan="3">Добавить урок</td>
+                            <td>
+                                <button type="button" class="btn btn-primary" id="PlansItemLessonTableAddButton" 
+                                data-phase-id="${phase.id}" data-lesson-id="0"><i class="fa-solid fa-plus"></i></button>
+                            </td>
+                        </tr>                               
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            </td>
+        </tr>
+
+
+`)
     })
 
     plansItemTableBody.querySelectorAll("#PlansItemTableEditButton")
@@ -47,7 +115,7 @@ function planItemShowPhases(list = phases_set) {
             <td></td>
             <td>
                 <button type="button" class="btn btn-primary" id="PlansItemTableAddButton">
-                    <i class="fa-solid fa-plus"></i></button>
+                <i class="fa-solid fa-plus"></i></button>
             </td>
         </tr>`)
     plansItemTableBody.querySelector("#PlansItemTableAddButton")
@@ -56,117 +124,10 @@ function planItemShowPhases(list = phases_set) {
         })
 }
 
-function planItemClientValidation(){
-    plansItemPhaseModalNameField.classList.remove("is-invalid")
-    plansItemPhaseModalPurposeField.classList.remove("is-invalid")
-    plansItemPhaseModalNameError.innerHTML = ''
-    plansItemPhaseModalPurposeError.innerHTML = ''
-
-    let validationStatus = true
-
-    if (plansItemPhaseModalNameField.value === ""){
-        plansItemPhaseModalNameField.classList.add("is-invalid")
-        plansItemPhaseModalNameError.innerHTML = "Поле не может быть пустым"
-        validationStatus = false
-    }
-
-    if (plansItemPhaseModalPurposeField.value === ""){
-        plansItemPhaseModalPurposeField.classList.add("is-invalid")
-        plansItemPhaseModalPurposeError.innerHTML = "Поле не может быть пустым"
-        validationStatus = false
-    }
-
-    return validationStatus
-}
-
-function planItemServerValidation(errors){
-    plansItemPhaseModalNameField.classList.add("is-invalid")
-    plansItemPhaseModalNameError.innerHTML = errors.name
-}
-
-async function planItemAddPhase() {
-    if (planItemClientValidation()) {
-        const formData = new FormData(plansItemPhaseModalForm)
-        const response = await fetch(`/api/v1/learning_plans/${planID}/phases/`, {
-            method: "post",
-            credentials: 'same-origin',
-            headers:{
-                "X-CSRFToken": csrftoken,
-            },
-            body: formData
-        })
-        if (response.status === 201){
-            bsPlansItemPhaseModal.hide()
-            showToast("Успешно", "Этап успешно добавлен")
-            await planItemGetPhases()
-            planItemShowPhases()
-        } else if (response.status === 400){
-            planItemServerValidation(await response.json())
-        } else {
-            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-        }
-    }
-}
-
-function planItemAddModalPhase(phaseID = 0) {
-    plansItemPhaseModalSaveButton.attributes
-        .getNamedItem("data-phase-id").value=`${phaseID}`
-    if (phaseID === 0){
-        plansItemPhaseModalTitle.innerHTML = "Новый этап обучения"
-        plansItemPhaseModalNameField.value = ""
-        plansItemPhaseModalPurposeField.value = ""
-    } else {
-        const phase = phases_set.find(phase => phase.id === phaseID)
-        plansItemPhaseModalTitle.innerHTML = "Редактирование"
-        plansItemPhaseModalNameField.value = phase.name
-        plansItemPhaseModalPurposeField.value = phase.purpose
-    }
-    bsPlansItemPhaseModal.show()
-}
-
-async function planItemEditPhase(phaseID) {
-    if (planItemClientValidation()) {
-        const formData = new FormData(plansItemPhaseModalForm)
-        const response = await fetch(`/api/v1/learning_plans/${planID}/phases/${phaseID}`, {
-            method: "patch",
-            credentials: 'same-origin',
-            headers:{
-                "X-CSRFToken": csrftoken,
-            },
-            body: formData
-        })
-        console.log(response.status)
-        console.log(await response.json())
-        // if (response.status === 201){
-        //     bsPlansItemPhaseModal.hide()
-        //     showToast("Успешно", "Этап успешно добавлен")
-        //     await planItemGetPhases()
-        //     planItemShowPhases()
-        // } else if (response.status === 400){
-        //     planItemServerValidation(await response.json())
-        // } else {
-        //     showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-        // }
-    }
-}
-
 //Sets
 let phases_set = []
 
-//BootStrap Elements
-const plansItemPhaseModal = document.querySelector("#PlansItemPhaseModal")
-const bsPlansItemPhaseModal = new bootstrap.Modal(plansItemPhaseModal)
-
 //Tables
 const plansItemTableBody = document.querySelector("#PlansItemTableBody")
-const plansItemPhaseModalTitle = plansItemPhaseModal.querySelector("#PlansItemPhaseModalTitle")
-
-//Forms
-const plansItemPhaseModalForm = plansItemPhaseModal.querySelector("#PlansItemPhaseModalForm")
-const plansItemPhaseModalNameField = plansItemPhaseModalForm.querySelector("#PlansItemPhaseModalNameField")
-const plansItemPhaseModalNameError = plansItemPhaseModalForm.querySelector("#PlansItemPhaseModalNameError")
-const plansItemPhaseModalPurposeField = plansItemPhaseModalForm.querySelector("#PlansItemPhaseModalPurposeField")
-const plansItemPhaseModalPurposeError = plansItemPhaseModalForm.querySelector("#PlansItemPhaseModalPurposeError")
-const plansItemPhaseModalSaveButton = plansItemPhaseModal.querySelector("#PlansItemPhaseModalSaveButton")
 
 planItemMain()
