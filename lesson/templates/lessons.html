@@ -7,9 +7,7 @@
                 <h1>Уроки</h1>
             </div>
             <div class="col-auto">
-                <button type="button" class="btn btn-primary mt-1"><i class="fa-solid fa-magnifying-glass"></i></button>
-                <button type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewLesson" role="button" aria-controls="offcanvasRegister"><i class="fa-solid fa-plus"></i></button>
-                {% include 'offcanvas_new_lesson.html' %}
+                <a href="{% url 'learning_plans' %}"><button type="button" class="btn btn-primary mt-1">Планы обучения</button></a>
             </div>
         </div>
     </div>
