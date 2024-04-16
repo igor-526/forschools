@@ -1,19 +1,14 @@
 from rest_framework import serializers
 from .models import Material, File
-from profile_management.models import NewUser
+from .utils.get_type import get_type
 from data_collections.serializers import MaterialLevelSerializer, MaterialCategorySerializer
-
-
-class OwnerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NewUser
-        fields = ['last_name', 'first_name']
+from profile_management.serializers import NewUserNameOnlyListSerializer
 
 
 class MaterialSerializer(serializers.ModelSerializer):
     category = MaterialCategorySerializer(many=True, required=False)
     level = MaterialLevelSerializer(many=True, required=False)
-    owner = OwnerSerializer(required=False)
+    owner = NewUserNameOnlyListSerializer(required=False)
 
     class Meta:
         model = Material
@@ -43,3 +38,15 @@ class MaterialListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Material
         fields = ['id', 'name']
+
+
+class FileSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = File
+        fields = '__all__'
+
+    def get_type(self, obj):
+        filetype = get_type(obj.path.path.split('.')[-1])
+        return filetype

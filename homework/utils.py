@@ -1,16 +1,16 @@
-import async_to_sync as sync
-from tgbot.create_bot import bot
+statuses = {
+    1: 'Создано',
+    2: 'Открыто',
+    3: 'На проверке',
+    4: 'Принято',
+    5: 'На доработке',
+    6: 'Отменено',
+}
 
 
-class AiogramFuncs:
-    async def send_homework(self,
-                            tg_id: int,
-                            text: str,
-                            keys=None):
-        await bot.send_message(chat_id=tg_id,
-                               text=text,
-                               reply_markup=keys)
-
-
-async_objects = AiogramFuncs()
-telegram = sync.methods(async_objects)
+def status_code_to_string(status_code):
+    try:
+        st = int(status_code)
+        return statuses.get(st)
+    except Exception as e:
+        return None

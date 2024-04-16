@@ -2,14 +2,16 @@ from django.db import models
 from profile_management.models import NewUser
 from material.models import Material, File
 from datetime import datetime, timedelta
+from django.db.models.signals import post_save
 
 
 HOMEWORK_STATUS_CHOISES = (
     (1, 'Создано'),
-    (2, 'На проверке'),
-    (3, 'Принято'),
-    (4, 'На доработке'),
-    (5, 'Отменено'),
+    (2, 'Открыто'),
+    (3, 'На проверке'),
+    (4, 'Принято'),
+    (5, 'На доработке'),
+    (6, 'Отменено'),
 )
 
 
@@ -54,6 +56,22 @@ class Homework(models.Model):
     def get_status(self):
         return HomeworkLog.objects.filter(homework=self).first()
 
+    async def aget_status(self):
+        status = await HomeworkLog.objects.filter(homework=self).select_related("user").afirst()
+        return status
+
+    async def aopen(self):
+        await HomeworkLog.objects.acreate(homework=self,
+                                          user=self.listener,
+                                          status=2,
+                                          comment="Домашнее задание открыто")
+
+    def open(self):
+        HomeworkLog.objects.create(homework=self,
+                                   user=self.listener,
+                                   status=2,
+                                   comment="Домашнее задание открыто")
+
 
 class HomeworkLog(models.Model):
     homework = models.ForeignKey(Homework,
@@ -97,3 +115,12 @@ class HomeworkLog(models.Model):
         return f'{self.user} - {self.status}'
 
 
+def homework_new_log(sender, instance, created, **kwargs):
+    if created:
+        HomeworkLog.objects.create(homework=instance,
+                                   user=instance.teacher,
+                                   comment="Домашнее задание создано",
+                                   status=1)
+
+
+post_save.connect(homework_new_log, sender=Homework)

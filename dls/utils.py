@@ -2,7 +2,7 @@ from profile_management.models import NewUser, Telegram
 from django.urls import reverse
 
 
-def get_tg_id(user: NewUser) -> int | None:
+def get_tg_id_sync(user: NewUser) -> int | None:
     tg = Telegram.objects.filter(user=user).first()
     if tg:
         return tg.tg_id

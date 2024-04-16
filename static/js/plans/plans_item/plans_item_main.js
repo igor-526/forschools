@@ -28,17 +28,16 @@ function planItemShowPhases(list = phases_set) {
             let time = "-"
             if (lesson.date !== null){
                 const dateObj = new Date(lesson.date)
-                date = `${dateObj.getDay()}.${dateObj.getMonth()}.${dateObj.getFullYear()}`
+                date = `${dateObj.toLocaleDateString()}`
             }
             if (lesson.start_time !== null){
-                const timeStartObj = new Date()
-                timeStartObj.setHours(lesson.start_time.split(":")[0],
-                    lesson.start_time.split(":")[1], 0)
-                const timeEndObj = new Date()
-                timeStartObj.setHours(lesson.end_time.split(":")[0],
-                    lesson.end_time.split(":")[1], 0)
-
-                time = `${timeStartObj.getHours()}:${timeStartObj.getMinutes()} - ${timeEndObj.getHours()}:${timeEndObj.getMinutes()}`
+                const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
+                const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
+                const stH = st.getHours().toString().padStart(2, "0")
+                const stM = st.getMinutes().toString().padStart(2, "0")
+                const etH = et.getHours().toString().padStart(2, "0")
+                const etM = et.getMinutes().toString().padStart(2, "0")
+                time = `${stH}:${stM} - ${etH}:${etM}`
             }
 
             lessonsHTML += `

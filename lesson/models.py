@@ -52,6 +52,10 @@ class Lesson(models.Model):
                                        related_name='lesson',
                                        related_query_name='lesson_set',
                                        blank=True)
+    materials_access = models.BooleanField(verbose_name="Видимость материалов",
+                                           null=False,
+                                           default=False,
+                                           blank=True)
     homeworks = models.ManyToManyField(Homework,
                                        verbose_name='Домашние задания',
                                        blank=True)
@@ -80,7 +84,18 @@ class Lesson(models.Model):
     class Meta:
         verbose_name = 'Урок'
         verbose_name_plural = 'Уроки'
-        ordering = ['date']
+        ordering = ['date', 'pk']
 
     def __str__(self):
         return f'{self.name} - {self.date}'
+
+    def get_teacher(self):
+        if self.replace_teacher:
+            return self.replace_teacher
+        else:
+            return self.learningphases_set.first().learningplan_set.first().teacher
+
+    def get_listeners(self):
+        return self.learningphases_set.first().learningplan_set.first().listeners.all()
+
+

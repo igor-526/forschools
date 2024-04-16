@@ -2,8 +2,8 @@
     <a href="https://t.me/devil_on_the_wheel">
         <img src="https://img.shields.io/badge/разработчик-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
     </a>
-    <a href="http://80.87.192.255:8080">
-        <img src="https://img.shields.io/badge/попробовать-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=white" alt="Site Badge"/>
+    <a href="https://forschools.ru">
+        <img src="https://img.shields.io/badge/сайт-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=white" alt="Site Badge"/>
     </a>
 </div>
 <h1>Описание проекта</h1>
@@ -13,71 +13,59 @@
 <h1>Возможности</h1>
 <ol>
     <li><b>Профили</b></li>
-        <ul>
-            <li>Авторизация пользователей по логину / паролю</li>
-            <li>Показ всех профилей</li>
-            <li>Редактирование чужого профиля на основе доступа</li>
-            <li>Регистрация других пользователей на основе доступа</li>
-            <li>Смена фотографии чужого профиля</li>
-            <li>Просмотр других профилей</li>
-            <li>Вывод меню на основе доступа</li>
-            <li>Добавление новых программ обучения</li>
-            <li>Добавление новых уровней</li>
-            <li>Добавление новых каналов привлечения</li>
-            <li>Фильтрация профилей</li>
-            <li>Редактирование своего профиля</li>
-            <li>Смена фотографии своего профиля</li>
-            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                Привязка/отвязка своего Telegram к профилю</li>
-            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                Инструкция для привязки/отвязка чужого Telegram к профилю</li>
-            <li>Последняя активность</li>
-            <li>Управление коллекциями данных</li>
-            <li>(отложено) Чаты между пользователями</li>
-        </ul>
-    <li><span><b>Материалы и файлы</b></span></li>
-        <ul>
-            <li>Просмотр материалов</li>
-            <li>Поиск / фильтрация материалов</li>
-            <li>Добавление личного / общего материала</li>
-            <li>Редактирование материала</li>
-            <li>(в разработке)Отправка материала на модерацию</li>
-            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                Отправка материала в Telegram себе</li>
-            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                Отправка материала в Telegram ученику</li>
-            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                (в разработке)Добавление материала из меню материалов (+ пересланное сообщение)</li>
-            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                Отправка материала в Telegram ученику</li>
-            <li><img src="https://img.shields.io/badge/TG-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Badge"/>
-                Поиск материалов</li>
-            <li>Просмотр PDF без скачивания</li>
-            <li>Просмотр изображения без скачивания</li>
-            <li>Просмотр GIF без скачивания</li>
-            <li>(в разработке)Прослушивание аудио без скачивания (отложено)</li>
-        </ul>
-    <li><span><b>(в разработке)Уроки</b></span></li>
-    <li><span><b>(в разработке)Домашние задания</b></span></li>
-    <li><span><b>(в разработке)Дополнительные функции бота</b></span></li>
-    <li><span><b>(в разработке)Модуль статистики (административные функции)</b></span></li>
-    <li><span><b>(в разработке)Финансовый модуль (административные функции)</b></span></li>
+        <p>
+Система менеджмента профилей предполагает 4 роли: Администратор, методист, 
+преподаватель и ученик. На основе этих ролей выстроена система взаимодействия уроков, 
+домашних заданий, материалов и тд. Помимо браузерного взаимодействия с системой, есть система 
+привязки аккаунтов мессенджера Telegram к аккаунтам системы, что позволяет оперативно 
+использовать некоторый функционал, а также получать информативные уведомления о предстоящих 
+и новых событиях
+        </p>
+    <li><b>Материалы и файлы</b></li>
+        <p>
+Сервис поддерживает следуюзие типы материалов: изображения, PDF-документы, анимации, архивы, 
+видео. Материалы делятся на личные и общие. Материалы могут быть прикреплены к урокам и 
+домашним заданиям, а также оперативно присланы ученику посредством мессенджера Telegram<br>
+Файлы - всё, что передаётся между преподавателем и учеником в процессе проверки домашнего 
+задания. На данный момент поддерживаются изображения и голосовые сообщения (отправка только 
+через Telegram)
+        </p>
+    <li><b>Планы обучения, этапы и уроки</b></li>
+        <p>
+Всё расписание уроков строится на плане обучения, его сроках и этапах. 
+При составлении преподавателем или методистом плана обучения автоматизируется создание 
+уроков, к которым можно прикрепить необходимые материалы. Ученик не сможет сразу увидеть 
+весь план обучения и материалы, что позволяет избежать преждевременного несанкционированного 
+прохождения программы учеником
+        </p>
+    <li><b>Домашние задания</b></li>
+        <p>
+Домашние задания создаются на основе урока. К нему можно прикрепить материалы, которыми 
+ученик может воспользоваться при его решении. К домашнему заданию ученик получает доступ 
+только после урока. После создания домашнего задания (или после урока, в случае, если оно 
+было задано заранее) ученику в Telegram приходит уведомление. Дальнейшее взаимодействие с 
+этим домашним заданием возможно исключительно посредством мессенджера Telegram
+        </p>
 </ol>
 
 ---
-<h1>Баги</h1>
-<ol>
-    <li><b>Профили</b></li>
-        <ul>
-            <li>На странице администрирования пользователей сервер отправляет слишком много лишних данных не по доступам</li>
-            <li>Есть возможность обхода ограничений путём смены CSS свойств полей</li>
-            <li>На административную страницу пользователей могут попасть все зарегистрированные пользователи</li>
-        </ul>
-    <li><span><b>Материалы и файлы</b></span></li>
-    <li><span><b>Уроки</b></span></li>
-    <li><span><b>Домашние задания</b></span></li>
-    <li><span><b>Дополнительные функции бота</b></span></li>
-    <li><span><b>Модуль статистики (административные функции)</b></span></li>
-    <li><span><b>Финансовый модуль (административные функции)</b></span></li>
-</ol>
+<h1>Задействованные технологии</h1>
+
+![python](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![django](https://img.shields.io/badge/django-092E20?style=for-the-badge&logo=django&logoColor=white)
+![postgresql](https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![aiogram](https://img.shields.io/badge/aiogram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)
+![linux](https://img.shields.io/badge/linux-FCC624?style=for-the-badge&logo=linux&logoColor=white)
+![docker](https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![nginx](https://img.shields.io/badge/nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![html5](https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![bootstrap](https://img.shields.io/badge/bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![js](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white)
+
+---
+<h1>История изменений</h1>
+<h3>v. 16042024a</h3>
+<ul>
+    <li><b>Релиз продукта</b></li>
+</ul><br>
 

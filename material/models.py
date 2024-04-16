@@ -116,7 +116,7 @@ class File(models.Model):
                             max_length=200,
                             null=False,
                             blank=False,
-                            unique=True)
+                            unique=False)
     path = models.FileField(verbose_name='Путь',
                             upload_to='files/',
                             null=False,
@@ -137,6 +137,9 @@ class File(models.Model):
                                         auto_now_add=True,
                                         null=False,
                                         blank=True)
+    tg_url = models.CharField(verbose_name="ID файла в Telegram",
+                              null=True,
+                              blank=True)
 
     class Meta:
         verbose_name = 'Файл'

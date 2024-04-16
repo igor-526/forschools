@@ -1,0 +1,28 @@
+<div class="modal" tabindex="-1" id="HWItemSendModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Отправка решения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="HWItemSendModalForm">
+                    <div class="mb-3">
+                        <label for="HWItemSendModalFormCommentField" class="form-label">Комментарий</label>
+                        <textarea name="comment" type="text" rows="5" class="form-control" id="HWItemSendModalFormCommentField"></textarea>
+                        <div class="form-text">Опишите, что вы сделали. При необходимости приложите изображения</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="HWItemSendModalFormFileField" class="form-label">Файлы</label>
+                        <input multiple name="files" type="file" class="form-control" id="HWItemSendModalFormFileField">
+                        <div class="form-text">Вы можете прикрепить несколько файлов<br>Для этого на компьютере при выборе файла зажмите клавишу CTRL</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="HWItemSendModalSendButton" type="button" class="btn btn-primary">Отправить решение</button>
+            </div>
+        </div>
+    </div>
+</div>

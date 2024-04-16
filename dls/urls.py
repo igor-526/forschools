@@ -9,7 +9,8 @@ from material.urls import (urlpatterns as material_urlpatterns,
                            apiv1patterns as material_apiv1patterns)
 from lesson.urls import (urlpatterns as lesson_urlpatterns,
                          apiv1patterns as lesson_apiv1patterns)
-from homework.urls import urlpatterns as homework_urlpatterns
+from homework.urls import (urlpatterns as homework_urlpatterns,
+                           apiv1patterns as homework_apiv1patterns)
 from data_collections.urls import (urlpatterns as data_collections_urlpatterns,
                                    apiv1patterns as data_collections_apiv1patterns)
 from learning_plan.urls import (urlpatterns as learning_plan_urlpatterns,
@@ -32,6 +33,7 @@ urlpatterns = [
     path('api/v1/materials/', include(material_apiv1patterns)),
     path('api/v1/lessons/', include(lesson_apiv1patterns)),
     path('api/v1/telegram/', include(tgbot_apiv1patterns)),
+    path('api/v1/homeworks/', include(homework_apiv1patterns)),
     path('api/v1/', include(data_collections_apiv1patterns)),
 ]
 

@@ -1,13 +1,11 @@
 from json import dumps
 from pdf2image import convert_from_path
 import os
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-
 from .models import Material, MaterialCategory
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from .serializers import MaterialSerializer, MaterialCategorySerializer
@@ -91,4 +89,3 @@ class MaterialItemPage(LoginRequiredMixin, TemplateView):    # страница 
             context['preview_dir'] = preview_dir
 
         return render(request, self.template_name, context)
-

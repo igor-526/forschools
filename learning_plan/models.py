@@ -49,6 +49,12 @@ class LearningPlan(models.Model):
     purpose = models.CharField(verbose_name="Цель",
                                blank=True,
                                null=True)
+    show_lessons = models.IntegerField(verbose_name="Видимость уроков",
+                                       blank=True,
+                                       null=True)
+    show_materials = models.IntegerField(verbose_name="Видимость материалов",
+                                         blank=True,
+                                         null=True)
     phases = models.ManyToManyField(LearningPhases,
                                     verbose_name="Этапы обучения",
                                     blank=True)

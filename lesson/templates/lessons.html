@@ -15,7 +15,7 @@
     <div class="container-xxl">
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
-                <a class="nav-link active" href="#" id="LessonsTabUncoming">Предстоящие</a>
+                <a class="nav-link active" href="#" id="LessonsTabUpcoming">Предстоящие</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#" id="LessonsTabPassed">Проведённые</a>
@@ -33,7 +33,7 @@
                     <th scope="col">Действие</th>
                 </tr>
                 </thead>
-                <tbody id="LessonTableBody"></tbody>
+                <tbody id="LessonsTableBody"></tbody>
             </table>
         </div>
     </div>
@@ -41,8 +41,8 @@
 {% endblock %}
 {% block static_js %}
     <script>
-        var csrftoken = '{{ csrf_token }}';
+        const csrftoken = '{{ csrf_token }}';
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/lessons/lessons.js' %}"></script>
+    <script src="{% static 'js/lessons/lessons_main.js' %}"></script>
 {% endblock %}

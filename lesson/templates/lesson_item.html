@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <h1>{{ lesson.name }}</h1>
+    </div>
+
+    <div class="container-xxl">
+        <div class="row">
+            <div class="col-6">
+                <div class="card mb-3">
+                    <div class="card-header">Урок</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% if lesson.description %}
+                                <li class="list-group-item">Описание: {{ lesson.description }}</li>
+                            {% endif %}
+                            {% if lesson.date %}
+                                <li class="list-group-item">Дата: {{ lesson.date }}</li>
+                            {% else %}
+                                <li class="list-group-item">Дата: не установлена</li>
+                            {% endif %}
+                            {% if lesson.start_time %}
+                                <li class="list-group-item">Время: {{ lesson.start_time }}-{{ lesson.end_time }}</li>
+                            {% else %}
+                                <li class="list-group-item">Время: не установлено</li>
+                            {% endif %}
+                            {% if lesson.status == 0 %}
+                                <li class="list-group-item list-group-item-warning">Урок не проведён</li>
+                            {% endif %}
+                            {% if lesson.status == 1 %}
+                                <li class="list-group-item list-group-item-success">Урок проведён</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Участники</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Преподаватель: <a href="/profile/{{ lesson.get_teacher.id }}">{{ lesson.get_teacher }}</a></li>
+                            {% for listener in lesson.get_listeners %}
+                                <li class="list-group-item">Ученик: <a href="/profile/{{ listener.id }}">{{ listener }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card mb-3">
+                    <div class="card-header">Материалы
+                        <button id="LessonItemAddMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="fa-solid fa-plus"></i></button>
+                        {% include "materials_embed_modal.html" %}
+                        <button id="LessonItemSendMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2"><i class="fa-brands fa-telegram"></i></button>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for material in lesson.materials.all %}
+                                <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2"><i class="fa-solid fa-trash"></i></button>
+                                    <a href="/materials/{{ material.id }}">{{ material.name }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Домашние задания
+                        <button id="LessonItemNewHWButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNewHW"><i class="fa-solid fa-plus"></i></button></div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for hw in lesson.homeworks.all %}
+                                <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2"><i class="fa-solid fa-trash"></i></button>
+                                    <a href="/homeworks/{{ hw.id }}">{{ hw.name }}</a>
+                                </li>
+                            {% endfor %}
+                            {% include "offcanvas_lesson_new_HW.html" %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        const csrftoken = '{{ csrf_token }}';
+        const lessonID = '{{ lesson.id }}'
+        let materialEmbedAction
+    </script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    <script src="{% static 'js/lessons/lesson_item.js' %}"></script>
+    <script src="{% static 'js/lessons/lesson_item_homeworks.js' %}"></script>
+    <script src="{% static 'js/materials/materials_api.js' %}"></script>
+    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+    <script src="{% static 'js/materials/materials_embed.js' %}"></script>
+{% endblock %}

@@ -1,28 +1,29 @@
-from aiogram import types, Router, filters, F
+from aiogram import types, Router, F
+from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from tgbot.finite_states.menu import MenuFSM
-from tgbot.funcs.add_lesson import ask_lesson_name
-from tgbot.funcs.add_homework import ask_hw_name
-from tgbot.funcs.materials import get_materials
+from tgbot.funcs.menu import send_menu
+from tgbot.funcs.homeworks import show_homework_queryset
 
 router = Router(name=__name__)
 
 
-@router.message(filters.StateFilter(MenuFSM), F.text == "Создать урок")
-async def h_add_lesson(message: types, state: FSMContext) -> None:
-    await ask_lesson_name(message, state)
+@router.message(StateFilter(MenuFSM.main_menu),
+                F.text == "Материалы")
+async def h_mainmenu_materials(message: types.Message, state: FSMContext) -> None:
+    await message.answer("На данный момент функция находится в разработке")
+    await message.delete()
 
 
-@router.message(filters.StateFilter(MenuFSM), F.text == "Создать ДЗ")
-async def h_add_hw(message: types, state: FSMContext) -> None:
-    await ask_hw_name(message, state)
+@router.message(StateFilter(MenuFSM.main_menu),
+                F.text == "Домашние задания")
+async def h_mainmenu_homeworks(message: types.Message, state: FSMContext) -> None:
+    await show_homework_queryset(message)
 
 
-@router.message(filters.StateFilter(MenuFSM), F.text == "Материалы")
-async def h_menu_materials(message: types, state: FSMContext) -> None:
-    await get_materials(message, state)
+@router.message(StateFilter(MenuFSM.main_menu))
+async def h_mainmenu_invalid(message: types.Message, state: FSMContext) -> None:
+    await message.answer("Я Вас не понял :(\n"
+                         "Выберите действие на клавиатуре")
+    await send_menu(message, state)
 
-
-@router.message(filters.StateFilter(MenuFSM))
-async def h_menu_error(message: types) -> None:
-    await message.answer(text="Пожалуйста, выберите действие из меню:")

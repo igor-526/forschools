@@ -1,11 +1,62 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block static_css %}
-{% endblock %}
 {% block content %}
-
-    <div class="container-xxl mt-4">
-        <h1>Домашние задания</h1>
+    <div class="container-xxl mt-4 mb-3">
+        <div class="row row justify-content-between">
+            <div class="col-auto">
+                <h1>Домашние задания</h1>
+            </div>
+            <div class="col-auto">
+                <button id="HomeworksCollapseSearchButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="collapse" data-bs-target="#HomeworksCollapseSearch"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </div>
     </div>
 
+    <div class="collapse mb-3" id="HomeworksCollapseSearch">
+        <div class="card card-body">
+            <form id="HomeworksCollapseSearchForm">
+                <div class="row">
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container-xxl">
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="HomeworksTabDoing">Ожидают выполнения</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="HomeworksTabChecking">Ожидают проверки</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="HomeworksTabClosed">Завершены</a>
+            </li>
+        </ul>
+
+        <div class="container-xxl">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Наименование</th>
+                    <th scope="col">Преподаватель</th>
+                    <th scope="col">Ученик</th>
+                    <th scope="col">Срок</th>
+                </tr>
+                </thead>
+                <tbody id="HomeworksTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    {% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        const csrftoken = '{{ csrf_token }}'
+        const userGroup = '{{ request.user.groups.first.name }}'
+    </script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    <script src="{% static 'js/homework/homeworks.js' %}"></script>
 {% endblock %}
