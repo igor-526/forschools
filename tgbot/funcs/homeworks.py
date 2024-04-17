@@ -109,6 +109,13 @@ async def show_log_item(callback: CallbackQuery, log_id: int):
                     album_builder.add_photo(media=file.tg_url)
                 else:
                     album_builder.add_photo(media=types.FSInputFile(file.path.path))
+            elif file_type == "audio_formats":
+                if file.tg_url:
+                    await bot.send_audio(chat_id=callback.from_user.id,
+                                         audio=file.tg_url)
+                else:
+                    await bot.send_audio(chat_id=callback.from_user.id,
+                                         audio=types.FSInputFile(file.path.path))
             elif file_type == "voice_formats":
                 if file.tg_url:
                     await bot.send_voice(chat_id=callback.from_user.id,
@@ -134,14 +141,15 @@ async def send_hw_answer(callback: CallbackQuery,
     if gp['group'] == 'Listener' and hw_status.status in [1, 2, 5]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие решение домашнего задания, "
-                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии и "
-                                    "голосовые сообщения",
+                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии, аудио "
+                                    "или голосовые сообщения",
                                reply_markup=ready_cancel_keyboard)
         await state.set_state(HomeworkFSM.send_hw_files)
         await state.update_data({'files': {
             'text': [],
             'photo': [],
-            'voice': []
+            'voice': [],
+            'audio': [],
         }, 'action': 'send',
             'hw_id': callback_data.hw_id})
     else:
@@ -161,14 +169,15 @@ async def send_hw_check(callback: CallbackQuery,
     if gp['group'] == 'Teacher' and hw_status.status in [3]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие проверку домашнего задания, "
-                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографию и "
-                                    "голосовые сообщения",
+                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии, аудио "
+                                    "или голосовые сообщения",
                                reply_markup=ready_cancel_keyboard)
         await state.set_state(HomeworkFSM.send_hw_files)
         await state.update_data({'files': {
             'text': [],
             'photo': [],
-            'voice': []
+            'voice': [],
+            'audio': [],
         }, 'action': callback_data.action,
             'hw_id': callback_data.hw_id})
     else:
@@ -186,12 +195,16 @@ async def add_files(message: types.Message, state: FSMContext):
         data.get('files').get('voice').append(message.voice.file_id)
     if message.photo:
         data.get("files").get('photo').append(message.photo[-1].file_id)
+    if message.audio:
+        data.get("files").get('audio').append({'file_id': message.audio.file_id,
+                                               'format': message.audio.file_name.split(".")[-1]})
 
 
 async def filedownloader(data, owner) -> dict:
     photos = data.get("files").get("photo")
     voices = data.get("files").get("voice")
     text = data.get("files").get('text')
+    audio = data.get("files").get('audio')
     comment = ""
     if not text:
         comment = "-"
@@ -215,6 +228,14 @@ async def filedownloader(data, owner) -> dict:
                                           tg_url=voice,
                                           owner=owner)
         files_db.append(file)
+    for aud in audio:
+        await bot.download(file=aud.get("file_id"),
+                           destination=f"media/files/{aud.get('file_id')}.{aud.get('format')}")
+        file = await File.objects.acreate(name="ДЗ",
+                                          path=f"files/{aud.get('file_id')}.{aud.get('format')}",
+                                          tg_url=aud.get('file_id'),
+                                          owner=owner)
+        files_db.append(file)
     return {'files_db': files_db,
             'comment': comment}
 
@@ -223,7 +244,8 @@ def filechecker(data) -> bool:
     photos = data.get("files").get("photo")
     voices = data.get("files").get("voice")
     text = data.get("files").get('text')
-    return len(photos) + len(voices) + len(text) != 0
+    audio = data.get("files").get('audio')
+    return len(photos) + len(voices) + len(text) + len(audio) != 0
 
 
 async def hw_send_confirmation(message: types.Message, state: FSMContext):
@@ -234,7 +256,8 @@ async def hw_send_confirmation(message: types.Message, state: FSMContext):
     await bot.send_message(message.from_user.id,
                            text=f"{text}\n"
                                 f"+{len(data.get('files').get('photo'))} фотографий\n"
-                                f"+{len(data.get('files').get('voice'))} голосовых\n\n"
+                                f"+{len(data.get('files').get('audio'))} аудио\n"
+                                f"+{len(data.get('files').get('voice'))} голосовых сообщений\n\n"
                                 f"Всё верно?",
                            reply_markup=yes_cancel_keyboard)
     await state.set_state(HomeworkFSM.send_hw_accept)
@@ -243,8 +266,8 @@ async def hw_send_confirmation(message: types.Message, state: FSMContext):
 async def hw_send(message: types.Message, state: FSMContext):
     data = await state.get_data()
     if not filechecker(data):
-        await message.answer("Вы не можете отправить путой ответ. Пожалуйста, пришлите или текст, или фотографии, "
-                             "или голосовые сообщения")
+        await message.answer("Вы не можете отправить путой ответ. Пожалуйста, пришлите мне текст, фотографии, "
+                             "аудио или голосовые сообщения")
         return
     hw = await (Homework.objects.select_related("teacher")
                 .select_related("listener").aget(pk=data.get("hw_id")))

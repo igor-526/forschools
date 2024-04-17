@@ -127,7 +127,7 @@ function homeworkItemLogShowModal(logID) {
         HWItemLogModalComment.innerHTML = log.comment
     }
     HWItemLogModalFilesImages.innerHTML = ""
-    HWItemLogModalFilesVoices.innerHTML = ""
+    HWItemLogModalFilesAudio.innerHTML = ""
     log.files.map(file => {
         if (file.type === "image_formats"){
             HWItemLogModalFilesImages.insertAdjacentHTML("beforeend", `
@@ -135,9 +135,16 @@ function homeworkItemLogShowModal(logID) {
                 <img alt="file" src="${file.path}" class="col-6 mb-3" style="object-fit: contain;"></a>
             `)
         } else if (file.type === "voice_formats"){
-            HWItemLogModalFilesVoices.insertAdjacentHTML("beforeend", `
+            HWItemLogModalFilesAudio.insertAdjacentHTML("beforeend", `
                 <figure>
                     <figcaption>Голосовое сообщение:</figcaption>
+                    <audio controls src="${file.path}"></audio>
+                </figure>
+            `)
+        } else if (file.type === "audio_formats"){
+            HWItemLogModalFilesAudio.insertAdjacentHTML("beforeend", `
+                <figure>
+                    <figcaption>Аудио:</figcaption>
                     <audio controls src="${file.path}"></audio>
                 </figure>
             `)
@@ -200,6 +207,6 @@ const HWItemLogModalTitle = HWItemLogModal.querySelector("#HWItemLogModalTitle")
 const HWItemLogModalComment = HWItemLogModal.querySelector("#HWItemLogModalComment")
 
 const HWItemLogModalFilesImages = HWItemLogModal.querySelector("#HWItemLogModalFilesImages")
-const HWItemLogModalFilesVoices = HWItemLogModal.querySelector("#HWItemLogModalFilesVoices")
+const HWItemLogModalFilesAudio = HWItemLogModal.querySelector("#HWItemLogModalFilesAudio")
 
 homeworkItemMain()
