@@ -1,39 +1,40 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-
+from .permissions import CanSeePlansPageMixin, can_edit_plan
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer
-
 from dls.utils import get_menu
-from json import dumps
 
 
-class PlansPageView(LoginRequiredMixin, TemplateView):
+class PlansPageView(CanSeePlansPageMixin, TemplateView):
     template_name = 'plans_main.html'
 
+    def get_teacher_set_permission(self):
+        usergroups = [group.name for group in self.request.user.groups.all()]
+        if ("Admin" in usergroups) or ("Metodist" in usergroups):
+            return True
+        return False
+
     def get(self, request, *args, **kwargs):
-        perms = request.user.get_group_permissions()
-        filtered_perms = [perm for perm in perms if "lesson." in perm]
         context = {'title': 'Планы обучения',
                    'menu': get_menu(request.user),
-                   'userperms': dumps(filtered_perms)}
+                   'can_set_teacher': self.get_teacher_set_permission()}
         return render(request, self.template_name, context)
 
 
-class PlansItemPageView(LoginRequiredMixin, TemplateView):
+class PlansItemPageView(CanSeePlansPageMixin, TemplateView):
     template_name = 'plans_item.html'
 
     def get(self, request, *args, **kwargs):
-        perms = request.user.get_group_permissions()
-        filtered_perms = [perm for perm in perms if "lesson." in perm]
         plan = LearningPlan.objects.get(pk=kwargs.get("pk"))
         context = {'title': plan.name,
                    'menu': get_menu(request.user),
-                   'userperms': dumps(filtered_perms),
-                   'plan': plan}
+                   'plan': plan,
+                   'can_edit_plan': can_edit_plan(request, plan)}
         return render(request, self.template_name, context)
 
 
@@ -41,8 +42,14 @@ class PlansListView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = LearningPlanListSerializer
 
     def get_queryset(self):
+        usergroups = [group.name for group in self.request.user.groups.all()]
         queryset = LearningPlan.objects.all()
-        return queryset
+        if ("Admin" in usergroups) or ("Metodist" in usergroups):
+            return queryset
+        if "Teacher" in usergroups:
+            return queryset.filter(teacher=self.request.user)
+        if "Listener" in usergroups:
+            return None
 
 
 class PlanPhasesAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -58,13 +65,20 @@ class PlanPhasesAPIView(LoginRequiredMixin, ListCreateAPIView):
         return JsonResponse(serializer.data, status=200, safe=False)
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data,
-                                         context={"plan_pk": kwargs.get("plan_pk")})
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
+        try:
+            plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
+        except LearningPlan.DoesNotExist:
+            raise Http404
+        if can_edit_plan(request, plan=plan):
+            serializer = self.get_serializer(data=request.data,
+                                             context={"plan": plan})
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return JsonResponse(serializer.data, status=201)
+            else:
+                return JsonResponse(serializer.data, status=400)
         else:
-            return JsonResponse(serializer.data, status=400)
+            raise PermissionDenied
 
 
 class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
@@ -75,11 +89,18 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
         return obj
 
     def patch(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data,
-                                         instance=self.get_object(phase_pk=kwargs.get("pk")),
-                                         context={"plan_pk": kwargs.get("plan_pk")})
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
+        try:
+            phase = self.get_object(phase_pk=kwargs.get("pk"))
+        except LearningPhases.DoesNotExist:
+            raise Http404
+        if can_edit_plan(request, phase=phase):
+            serializer = self.get_serializer(data=request.data,
+                                             instance=phase,
+                                             context={"plan": phase.learningplan_set.first()})
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return JsonResponse(serializer.data, status=201)
+            else:
+                return JsonResponse(serializer.data, status=400)
         else:
-            return JsonResponse(serializer.data, status=400)
+            raise PermissionDenied

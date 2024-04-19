@@ -7,17 +7,20 @@ from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
 from rest_framework.views import APIView
-
-from .models import Lesson, Place
+from learning_plan.permissions import plans_button
+from .models import Lesson
 from dls.utils import get_menu
-from .serializers import LessonSerializer, LessonListSerializer
+from .serializers import LessonListSerializer
+from .permissions import replace_teacher_button, CanReplaceTeacherMixin
 
 
 class LessonPage(LoginRequiredMixin, TemplateView):  # страница уроков
     template_name = "lessons.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Уроки', 'menu': get_menu(request.user)}
+        context = {'title': 'Уроки',
+                   'menu': get_menu(request.user),
+                   'plans_button': plans_button(request),}
         return render(request, self.template_name, context)
 
 
@@ -26,7 +29,12 @@ class LessonItemPage(LoginRequiredMixin, TemplateView):  # страница ур
 
     def get(self, request, *args, **kwargs):
         lesson = Lesson.objects.get(pk=kwargs.get("pk"))
-        context = {'title': lesson.name, 'menu': get_menu(request.user), 'lesson': lesson}
+        context = {'title': lesson.name,
+                   'menu': get_menu(request.user),
+                   'lesson': lesson,
+                   'can_set_replace': replace_teacher_button(request),
+                   'can_edit_materials': True,
+                   'can_add_hw': True}
         return render(request, self.template_name, context)
 
 
@@ -76,3 +84,16 @@ class LessonAddMaterials(LoginRequiredMixin, APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return JsonResponse({'status': 'ok'})
+
+
+class LessonReplaceTeacher(CanReplaceTeacherMixin, APIView):
+    def patch(self, request, *args, **kwargs):
+        try:
+            lesson = Lesson.objects.get(pk=kwargs.get("pk"))
+            lesson.replace_teacher_id = request.data.get('teacher_id')
+            lesson.save()
+            return JsonResponse({'status': 'ok'}, status=status.HTTP_200_OK)
+        except Lesson.DoesNotExist:
+            return JsonResponse({'error': 'Урок не найден'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

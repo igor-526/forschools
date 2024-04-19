@@ -7,7 +7,9 @@
                 <h1>Уроки</h1>
             </div>
             <div class="col-auto">
+                {% if plans_button %}
                 <a href="{% url 'learning_plans' %}"><button type="button" class="btn btn-primary mt-1">Планы обучения</button></a>
+                {% endif %}
             </div>
         </div>
     </div>

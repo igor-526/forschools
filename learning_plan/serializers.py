@@ -1,6 +1,8 @@
 from django.utils import timezone
 
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
+
 from .models import LearningPlan, LearningPhases
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
@@ -9,30 +11,58 @@ from lesson.serializers import LessonListSerializer
 
 class LearningPlanListSerializer(serializers.ModelSerializer):
     teacher = NewUserNameOnlyListSerializer(read_only=True)
+    default_hw_teacher = NewUserNameOnlyListSerializer(read_only=True)
     listeners = NewUserNameOnlyListSerializer(many=True, read_only=True)
 
     class Meta:
         model = LearningPlan
-        fields = ['id', 'name', 'listeners', 'teacher', 'purpose', 'deadline']
+        fields = ['id', 'name', 'listeners',
+                  'teacher', 'purpose', 'deadline',
+                  'show_lessons', 'show_materials',
+                  'default_hw_teacher']
 
     def validate_deadline(self, value):
         if value and value <= timezone.now():
             raise serializers.ValidationError("Срок плана не может быть раньше сегодняшнего дня")
         return value
 
+    def validate_teacher(self, request, usergroups):
+        req_teacher = request.POST.get('teacher')
+        if ("Admin" in usergroups) or ("Metodist" in usergroups):
+            if req_teacher == "":
+                raise serializers.ValidationError({"teacher": "Поле не может быть пустым"})
+            try:
+                teacher = NewUser.objects.get(groups__name="Teacher",
+                                              pk=req_teacher)
+                return teacher
+            except Exception:
+                raise serializers.ValidationError({"teacher": "Преподаватель не найден"})
+        if "Teacher" in usergroups:
+            return request.user
+        if "Listener" in usergroups:
+            raise PermissionDenied("Вы не можете добалять планы обучения")
+
+    def validate_default_hw_teacher(self, request, usergroups):
+        req_teacher_hw = request.POST.get('default_hw_teacher')
+        if ("Admin" in usergroups) or ("Metodist" in usergroups):
+            if req_teacher_hw == "":
+                raise serializers.ValidationError({"default_hw_teacher": "Поле не может быть пустым"})
+            try:
+                teacher = NewUser.objects.get(groups__name="Teacher",
+                                              pk=req_teacher_hw)
+                return teacher
+            except Exception:
+                raise serializers.ValidationError({"default_hw_teacher": "Преподаватель не найден"})
+        if "Teacher" in usergroups:
+            return request.user
+        if "Listener" in usergroups:
+            raise PermissionDenied("Вы не можете добалять планы обучения")
+
     def create(self, validated_data):
         request = self.context.get('request')
-
-        req_teacher = request.POST.get('teacher')
-        if req_teacher == "":
-            raise serializers.ValidationError({"teacher": "Поле не может быть пустым"})
-        try:
-            teacher = NewUser.objects.get(groups__name="Teacher",
-                                          first_name=req_teacher.split(" ")[0],
-                                          last_name=req_teacher.split(" ")[1])
-            validated_data['teacher'] = teacher
-        except Exception:
-            raise serializers.ValidationError({"teacher": "Преподаватель не найден"})
+        usergroups = [group.name for group in request.user.groups.all()]
+        validated_data['teacher'] = self.validate_teacher(request, usergroups)
+        validated_data['default_hw_teacher'] = self.validate_default_hw_teacher(request, usergroups)
         listeners = request.POST.getlist('listeners')
         plan_obj = LearningPlan.objects.create(**validated_data)
         plan_obj.listeners.set(listeners)
@@ -47,14 +77,14 @@ class LearningPhasesListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'purpose', 'status', 'lessons']
 
     def validate_name(self, value):
-        non_unique = LearningPlan.objects.get(pk=self.context.get('plan_pk')).phases.filter(name=value).first()
+        non_unique = self.context.get('plan').phases.filter(name=value).first()
         if non_unique and non_unique != self.instance:
             raise serializers.ValidationError("Данный этап уже существует")
         return value
 
     def create(self, validated_data):
         phase = LearningPhases.objects.create(**validated_data)
-        plan = LearningPlan.objects.get(pk=self.context.get('plan_pk'))
+        plan = self.context.get('plan')
         plan.phases.add(phase)
         plan.save()
         return phase

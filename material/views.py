@@ -50,7 +50,6 @@ class MaterialAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = MaterialSerializer
 
     def delete(self, request, *args, **kwargs):
-        print("slkfv")
         material = self.get_object()
         material.visible = False
         material.save()

@@ -3,7 +3,7 @@ async function plans_add_main(){
     await plans_add_set_listeners()
     planNewSubmitButton.addEventListener('click', plans_add_post)
     planNewSubmitAndGoButton.addEventListener('click', function () {
-        plans_add_post(go=true)
+        plans_add_post(true)
     })
     planNewListenersSearchField.addEventListener('input', plans_add_listener_serach)
 }
@@ -64,8 +64,13 @@ const formNewPlan = offcanvasNewPlan.querySelector("#formNewPlan")
 const planNewNameField = formNewPlan.querySelector("#PlanNewNameField")
 const planNewNameError = formNewPlan.querySelector("#PlanNewNameError")
 const planNewTeacherField = formNewPlan.querySelector("#PlanNewTeacherField")
-const planNewTeacherFieldOptions = formNewPlan.querySelector("#PlanNewTeacherFieldOptions")
 const planNewTeacherError = formNewPlan.querySelector("#PlanNewTeacherError")
+
+const planNewHWTeacherField = formNewPlan.querySelector("#PlanNewHWTeacherField")
+const planNewHWTeacherError = formNewPlan.querySelector("#PlanNewHWTeacherError")
+const planNewShLessonsField = formNewPlan.querySelector("#PlanNewShLessonsField")
+const planNewShMaterialsField = formNewPlan.querySelector("#PlanNewShMaterialsField")
+
 const planNewDeadlineField = formNewPlan.querySelector("#PlanNewDeadlineField")
 const planNewDeadlineError = formNewPlan.querySelector("#PlanNewDeadlineError")
 const planNewListenersSearchField = formNewPlan.querySelector("#PlanNewListenersSearchField")

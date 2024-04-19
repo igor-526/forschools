@@ -1,32 +1,19 @@
 async function plansItemLessonMain(){
     await plansItemLessonSetPlaces()
-    plansItemTableBody.querySelectorAll("#PlansItemLessonTableAddButton, #PlansItemLessonEditButton")
-        .forEach(button => {
-            button.addEventListener("click", function () {
-                phaseItemAddModalLesson(Number(this.attributes.getNamedItem("data-phase-id").value),
-                    Number(this.attributes.getNamedItem("data-lesson-id").value))
-            })
-        })
-    plansItemPhaseLessonModalSaveButton.addEventListener("click", function () {
-        if (this.attributes.getNamedItem("data-lesson-id").value === "0"){
-            phaseItemLessonAdd(this.attributes.getNamedItem("data-phase-id").value)
-        } else {
-            phaseItemLessonEdit(this.attributes.getNamedItem("data-phase-id").value,
-                this.attributes.getNamedItem("data-lesson-id").value)
-        }
-    })
+    plansItemListenersLessonsAddEdit()
 }
 
 
 async function plansItemLessonSetPlaces(){
-    plansItemPhaseLessonModalPlaceField.innerHTML = '<option value="">Выберите</option>'
-    await fetch("/api/v1/collections/lesson_places/")
-        .then(async reponse => await reponse.json())
-        .then(places => places.map(place => {
+    const request = await collectionsGetLessonPlaces()
+    if (request.status === 200){
+        plansItemPhaseLessonModalPlaceField.innerHTML = '<option value="">Выберите</option>'
+        request.response.map(place => {
             plansItemPhaseLessonModalPlaceField.insertAdjacentHTML("beforeend", `
             <option value="${place.id}">${place.name}</option>
             `)
-        }))
+        })
+    }
 }
 
 
@@ -99,8 +86,7 @@ async function phaseItemLessonAdd(phaseID){
         if (response.status === 201){
             bsPlansItemPhaseLessonModal.hide()
             showToast("Урок", "Урок успешно создан")
-            await planItemGetPhases()
-            planItemShowPhases()
+            await planItemMain()
         } else if (response.status === 400) {
             phaseItemLessonServerValidation(await response.json())
         } else {
@@ -129,3 +115,5 @@ const plansItemPhaseLessonModalStartField = plansItemPhaseLessonModalForm.queryS
 const plansItemPhaseLessonModalEndField = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalEndField")
 const plansItemPhaseLessonModalPlaceField = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalPlaceField")
 const plansItemPhaseLessonModalSaveButton = plansItemPhaseLessonModal.querySelector("#PlansItemPhaseLessonModalSaveButton")
+
+plansItemListenersLessonModalSave()

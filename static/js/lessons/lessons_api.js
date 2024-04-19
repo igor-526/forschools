@@ -16,3 +16,19 @@ async function lessonsAPIAddMaterials(formData, lesson){
         return {status: response.status}
     }
 }
+
+async function lessonsAPIReplaceTeacher(teacherID, lesson){
+    const request = await fetch(`/api/v1/lessons/${lesson}/rt/`, {
+        method: "patch",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body:JSON.stringify({
+            teacher_id: teacherID
+        })
+    })
+    return await APIPatchToObject(request)
+}

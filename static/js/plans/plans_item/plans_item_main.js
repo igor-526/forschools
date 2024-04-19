@@ -1,60 +1,70 @@
 async function planItemMain(){
-    await planItemGetPhases()
-    planItemShowPhases()
-    plansItemPhaseModalSaveButton.addEventListener("click", function () {
-        const phaseID = Number(this.attributes.getNamedItem("data-phase-id").value)
-        if (phaseID === 0){
-            planItemAddPhase()
-        } else {
-            planItemEditPhase(phaseID)
+    const request = await planItemGetPhases()
+    if (request.status === 200){
+        phasesArray = request.response
+        planItemShowPhases()
+        if (canEditPlan){
+            await plansItemLessonMain()
+            plansItemListenersPhaseModal()
         }
-    })
-    await plansItemLessonMain()
-
+    }
 }
 
-async function planItemGetPhases() {
-    await fetch(`/api/v1/learning_plans/${planID}/phases/`)
-        .then(async response => await response.json())
-        .then(phases => phases_set = phases)
-}
-
-function planItemShowPhases(list = phases_set) {
-    plansItemTableBody.innerHTML = ''
-    list.map(phase => {
-        let lessonsHTML = ""
-        phase.lessons.map(lesson => {
-            let date = "-"
-            let time = "-"
-            if (lesson.date !== null){
-                const dateObj = new Date(lesson.date)
-                date = `${dateObj.toLocaleDateString()}`
-            }
-            if (lesson.start_time !== null){
-                const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
-                const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
-                const stH = st.getHours().toString().padStart(2, "0")
-                const stM = st.getMinutes().toString().padStart(2, "0")
-                const etH = et.getHours().toString().padStart(2, "0")
-                const etM = et.getMinutes().toString().padStart(2, "0")
-                time = `${stH}:${stM} - ${etH}:${etM}`
-            }
-
+function planItemGetLessonHTML(lessons, phaseID){
+    let lessonsHTML = ""
+    lessons.map(lesson => {
+        let date = "-"
+        let time = "-"
+        if (lesson.date !== null){
+            const dateObj = new Date(lesson.date)
+            date = `${dateObj.toLocaleDateString()}`
+        }
+        if (lesson.start_time !== null){
+            const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
+            const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
+            const stH = st.getHours().toString().padStart(2, "0")
+            const stM = st.getMinutes().toString().padStart(2, "0")
+            const etH = et.getHours().toString().padStart(2, "0")
+            const etM = et.getMinutes().toString().padStart(2, "0")
+            time = `${stH}:${stM} - ${etH}:${etM}`
+        }
+        if (canEditPlan){
             lessonsHTML += `
             <tr>
                 <td>${lesson.name}</td>
                 <td>${date}</td>
                 <td>${time}</td>
                 <td>
-                    <button type="button" class="btn btn-primary" id="PlansItemLessonEditButton" data-lesson-id="${lesson.id}" data-phase-id="${phase.id}">
+                    <button type="button" class="btn btn-primary" id="PlansItemLessonEditButton" data-lesson-id="${lesson.id}" data-phase-id="${phaseID}">
                     <i class="fa-solid fa-pen-to-square"></i></button>
                     <a href="/lessons/${lesson.id}"><button type="button" class="btn btn-primary">
                     <i class="fa-solid fa-chevron-right"></i></button></a>
                 </td>
             </tr> 
             `
-        })
-        plansItemTableBody.insertAdjacentHTML('beforeend', `
+        } else {
+            lessonsHTML += `
+            <tr>
+                <td>${lesson.name}</td>
+                <td>${date}</td>
+                <td>${time}</td>
+                <td>
+                    <a href="/lessons/${lesson.id}"><button type="button" class="btn btn-primary">
+                    <i class="fa-solid fa-chevron-right"></i></button></a>
+                </td>
+            </tr> 
+            `
+        }
+
+    })
+    return lessonsHTML
+}
+
+function planItemGetPhaseHTML(phase){
+    let phaseHTML
+    const lessonsHTML = planItemGetLessonHTML(phase.lessons, phase.id)
+    if (canEditPlan){
+        phaseHTML = `
         <tr data-phase-id="${phase.id}">
             <td style="max-width: 300px;">${phase.name}</td>
             <td>${phase.purpose}</td>
@@ -65,10 +75,8 @@ function planItemShowPhases(list = phases_set) {
                     <i class="fa-solid fa-chevron-right"></i></button>
             </td>
         </tr>
-        
         <tr>
             <td colspan="4">
-            
             <div class="collapse ms-3" id="PlansItemTablePhaseCollapse${phase.id}">
                 <div class="card card-body">
                 <h4>Уроки этапа "${phase.name}":</h4>
@@ -96,19 +104,51 @@ function planItemShowPhases(list = phases_set) {
             </div>
             </td>
         </tr>
+`
+    } else {
+        phaseHTML = `
+        <tr data-phase-id="${phase.id}">
+            <td style="max-width: 300px;">${phase.name}</td>
+            <td>${phase.purpose}</td>
+            <td>
+                <button type="button" class="btn btn-primary"  data-phase-id="${phase.id}" data-bs-toggle="collapse" data-bs-target="#PlansItemTablePhaseCollapse${phase.id}">
+                    <i class="fa-solid fa-chevron-right"></i></button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+            <div class="collapse ms-3" id="PlansItemTablePhaseCollapse${phase.id}">
+                <div class="card card-body">
+                <h4>Уроки этапа "${phase.name}":</h4>
+                <table class="table table-hover mb-3" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th scope="col">Наименование</th>
+                            <th scope="col">Дата</th>
+                            <th scope="col">Время</th>
+                            <th scope="col">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${lessonsHTML}                             
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            </td>
+        </tr>
+`
+    }
+    return phaseHTML
+}
 
-
-`)
+function planItemShowPhases(list = phasesArray) {
+    plansItemTableBody.innerHTML = ''
+    list.map(phase => {
+        plansItemTableBody.insertAdjacentHTML('beforeend', planItemGetPhaseHTML(phase))
     })
-
-    plansItemTableBody.querySelectorAll("#PlansItemTableEditButton")
-        .forEach(button => {
-            button.addEventListener('click', function () {
-                planItemAddModalPhase(Number(this.attributes.getNamedItem("data-phase-id").value))
-            })
-        })
-
-    plansItemTableBody.insertAdjacentHTML('beforeend', `
+    if (canEditPlan){
+        plansItemTableBody.insertAdjacentHTML('beforeend', `
         <tr data-phase-id="0">
             <td style="max-width: 300px;">Добавить этап</td>
             <td></td>
@@ -117,14 +157,12 @@ function planItemShowPhases(list = phases_set) {
                 <i class="fa-solid fa-plus"></i></button>
             </td>
         </tr>`)
-    plansItemTableBody.querySelector("#PlansItemTableAddButton")
-        .addEventListener('click', function () {
-            planItemAddModalPhase(0)
-        })
+        plansItemListenersPhaseEdit()
+    }
 }
 
 //Sets
-let phases_set = []
+let phasesArray = []
 
 //Tables
 const plansItemTableBody = document.querySelector("#PlansItemTableBody")

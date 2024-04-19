@@ -51,10 +51,16 @@ class LearningPlan(models.Model):
                                null=True)
     show_lessons = models.IntegerField(verbose_name="Видимость уроков",
                                        blank=True,
-                                       null=True)
+                                       null=True,
+                                       default=7)
     show_materials = models.IntegerField(verbose_name="Видимость материалов",
                                          blank=True,
                                          null=True)
+    default_hw_teacher = models.ForeignKey(NewUser,
+                                           blank=True,
+                                           null=True,
+                                           on_delete=models.SET_NULL,
+                                           related_name="hw_teacher")
     phases = models.ManyToManyField(LearningPhases,
                                     verbose_name="Этапы обучения",
                                     blank=True)

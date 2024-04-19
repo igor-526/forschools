@@ -39,11 +39,16 @@
             </div>
             <div class="col-6">
                 <div class="card mb-3">
-                    <div class="card-header">Преподаватель</div>
+                    <div class="card-header">Преподаватели</div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
+                            <li class="list-group-item"><b>Уроки: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
                         </ul>
+                        {% if plan.default_hw_teacher %}
+                            <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.default_hw_teacher.id }}">{{ plan.default_hw_teacher }}</a></li>
+                        {% else %}
+                            <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -57,6 +62,21 @@
                         </ul>
                     </div>
                 </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Настройки</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Уроки видны ученику за <b>{{ plan.show_lessons }}</b> дней</li>
+                            {% if plan.show_materials %}
+                                <li class="list-group-item">Материалы видны ученику за <b>{{ plan.show_materials }}</b> дней</li>
+                            {% else %}
+                                <li class="list-group-item">Материалы видны ученику по факту начала урока</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+
             </div>
         </div>
         <div class="row">
@@ -75,18 +95,33 @@
             </table>
         </div>
     </div>
-    {% include 'modal_phase.html' %}
-    {% include 'modal_lesson.html' %}
-    {% include 'toast.html' %}
+    {% if can_edit_plan %}
+        {% include 'modal_phase.html' %}
+        {% include 'modal_lesson.html' %}
+        {% include 'toast.html' %}
+    {% endif %}
 {% endblock %}
 {% block static_js %}
     <script>
         const csrftoken = '{{ csrf_token }}'
-        const userPermissions = JSON.parse("{{ userperms|escapejs }}")
         const planID = {{ plan.id }}
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/plans/plans_item/plans_item_phase.js' %}"></script>
-    <script src="{% static 'js/plans/plans_item/plans_item_lesson.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
+
+    {% if can_edit_plan %}
+        <script>
+            const canEditPlan = true
+        </script>
+        <script src="{% static 'js/collections/collections_api.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_listeners.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_phase.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_lesson.js' %}"></script>
+    {% else %}
+        <script>
+            const canEditPlan = false
+        </script>
+    {% endif %}
+    <script src="{% static 'js/plans/plans_api.js' %}"></script>
     <script src="{% static 'js/plans/plans_item/plans_item_main.js' %}"></script>
 {% endblock %}

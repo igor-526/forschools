@@ -32,17 +32,24 @@
 {% endblock %}
 {% block static_js %}
     <script>
-        var csrftoken = '{{ csrf_token }}'
-        const userPermissions = JSON.parse("{{ userperms|escapejs }}")
-        const user_id = {{ request.user.id }}
-        let material_id
+        const csrftoken = '{{ csrf_token }}'
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
     {% if perms.lesson.edit_plans_self %}
+        {% if can_set_teacher %}
+            <script>const plansAddCanSetTeacher = true</script>
+        {% else %}
+            <script>
+                const plansAddCanSetTeacher = false
+                const plansAddTeacher = {id: {{ request.user.id }},
+                    name: "{{ request.user.first_name }} {{ request.user.last_name }}"}
+            </script>
+        {% endif %}
         <script src="{% static 'js/plans/plans_add/plans_add_validation.js' %}"></script>
         <script src="{% static 'js/plans/plans_add/plans_add_set.js' %}"></script>
         <script src="{% static 'js/plans/plans_add/plans_add.js' %}"></script>
     {% endif %}
     <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/plans/plans_api.js' %}"></script>
     <script src="{% static 'js/plans/plans_main.js' %}"></script>
 {% endblock %}

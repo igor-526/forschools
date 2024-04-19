@@ -14,7 +14,12 @@
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">Описание:<br>
                                 {{ hw.description }}</li>
-                            <li class="list-group-item">Проверяющий: <a href="/profile/{{ hw.teacher.id }}">{{ hw.teacher }}</a></li>
+                            <li class="list-group-item">Проверяющий: <a href="/profile/{{ hw.teacher.id }}">{{ hw.teacher }}</a>
+                                {% if can_set_replace %}
+                                    <button id="LessonItemReplaceTeacherButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#LessonItemReplaceTeacherModal"><i class="fa-solid fa-retweet"></i></button>
+                                    {% include "modal_set_replace.html" %}
+                                {% endif %}
+                            </li>
                             <li class="list-group-item">Ученик: <a href="/profile/{{ hw.listener.id }}">{{ hw.listener }}</a></li>
                             <li class="list-group-item">Выполнить до: {{ hw.deadline }}</li>
                             <li class="list-group-item">Статус:</li>
@@ -66,7 +71,16 @@
         const csrftoken = '{{ csrf_token }}'
         const hwID = {{ hw.id }}
     </script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    {% if can_set_replace %}
+        <script>
+            let replaceAction = "homework"
+            const userID = {{ request.user.id }}
+        </script>
+        <script src="{% static 'js/users/users_api.js' %}"></script>
+        <script src="{% static 'js/lessons/lesson_hw_replace_teacher.js' %}"></script>
+    {% endif %}
     <script src="{% static 'js/homework/homework_item.js' %}"></script>
 {% endblock %}

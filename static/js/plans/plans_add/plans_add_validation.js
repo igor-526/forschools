@@ -19,12 +19,6 @@ function plans_add_client_validation(){
         planNewTeacherField.classList.add("is-invalid")
         planNewTeacherError.innerHTML = "Поле не может быть пустым"
         validationStatus = false
-    } else {
-        if (!plans_add_teachers.includes(planNewTeacherField.value)){
-            planNewTeacherField.classList.add("is-invalid")
-            planNewTeacherError.innerHTML = "Преподаватель не найден. Начните вводить фамилию или имя и выберите"
-            validationStatus = false
-        }
     }
 
     if (planNewDeadlineField.value !== ''){

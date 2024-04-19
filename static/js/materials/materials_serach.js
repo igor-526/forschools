@@ -108,7 +108,6 @@ function filterMaterial(material, formData){
 }
 
 function searchMaterials(){
-    console.log("dfs")
     const formData = new FormData(materialsCollapseSearchForm)
     if (formData.get("name") !== "" ||
         formData.get("category") !== "none" ||

@@ -1,5 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404
+from django.http import Http404, JsonResponse
+from rest_framework.views import APIView
+
+from lesson.permissions import CanReplaceTeacherMixin, replace_teacher_button
 from material.models import File
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -71,7 +74,8 @@ class HomeworkItemPage(LoginRequiredMixin, TemplateView):
                    'menu': get_menu(request.user),
                    "hw": hw,
                    "can_send": (status == 1 or status == 2 or status == 5) and hw.listener == request.user,
-                   "can_check": status == 3 and hw.teacher == request.user}
+                   "can_check": status == 3 and hw.teacher == request.user,
+                   "can_set_replace": replace_teacher_button(request)}
         return render(request, self.template_name, context)
 
 
@@ -104,3 +108,16 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class HomeworkReplaceTeacher(CanReplaceTeacherMixin, APIView):
+    def patch(self, request, *args, **kwargs):
+        try:
+            hw = Homework.objects.get(pk=kwargs.get("pk"))
+            hw.teacher_id = request.data.get('teacher_id')
+            hw.save()
+            return JsonResponse({'status': 'ok'}, status=status.HTTP_200_OK)
+        except Homework.DoesNotExist:
+            return JsonResponse({'error': 'ДЗ не найдено'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

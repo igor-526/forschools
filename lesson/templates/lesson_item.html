@@ -21,7 +21,7 @@
                                 <li class="list-group-item">Дата: не установлена</li>
                             {% endif %}
                             {% if lesson.start_time %}
-                                <li class="list-group-item">Время: {{ lesson.start_time }}-{{ lesson.end_time }}</li>
+                                <li class="list-group-item">Время: {{ lesson.start_time }} - {{ lesson.end_time }}</li>
                             {% else %}
                                 <li class="list-group-item">Время: не установлено</li>
                             {% endif %}
@@ -39,7 +39,12 @@
                     <div class="card-header">Участники</div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Преподаватель: <a href="/profile/{{ lesson.get_teacher.id }}">{{ lesson.get_teacher }}</a></li>
+                            <li class="list-group-item">Преподаватель: <a href="/profile/{{ lesson.get_teacher.id }}">{{ lesson.get_teacher }}</a>
+                                {% if can_set_replace %}
+                                    <button id="LessonItemReplaceTeacherButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#LessonItemReplaceTeacherModal"><i class="fa-solid fa-retweet"></i></button>
+                                    {% include "modal_set_replace.html" %}
+                                {% endif %}
+                            </li>
                             {% for listener in lesson.get_listeners %}
                                 <li class="list-group-item">Ученик: <a href="/profile/{{ listener.id }}">{{ listener }}</a></li>
                             {% endfor %}
@@ -90,11 +95,21 @@
         const lessonID = '{{ lesson.id }}'
         let materialEmbedAction
     </script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
-    <script src="{% static 'js/lessons/lesson_item.js' %}"></script>
-    <script src="{% static 'js/lessons/lesson_item_homeworks.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+    {% if can_set_replace %}
+        <script>
+            let replaceAction = "lesson"
+            const userID = {{ request.user.id }}
+        </script>
+        <script src="{% static 'js/users/users_api.js' %}"></script>
+        <script src="{% static 'js/lessons/lesson_hw_replace_teacher.js' %}"></script>
+    {% endif %}
+
     <script src="{% static 'js/materials/materials_embed.js' %}"></script>
+    <script src="{% static 'js/lessons/lesson_item.js' %}"></script>
+    <script src="{% static 'js/lessons/lesson_item_homeworks.js' %}"></script>
 {% endblock %}

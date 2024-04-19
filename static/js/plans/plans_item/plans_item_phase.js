@@ -40,8 +40,7 @@ async function planItemAddPhase() {
         if (response.status === 201){
             bsPlansItemPhaseModal.hide()
             showToast("Успешно", "Этап успешно добавлен")
-            await planItemGetPhases()
-            planItemShowPhases()
+            await planItemMain()
         } else if (response.status === 400){
             planItemServerValidation(await response.json())
         } else {
@@ -58,7 +57,7 @@ function planItemAddModalPhase(phaseID = 0) {
         plansItemPhaseModalNameField.value = ""
         plansItemPhaseModalPurposeField.value = ""
     } else {
-        const phase = phases_set.find(phase => phase.id === phaseID)
+        const phase = phasesArray.find(phase => phase.id === phaseID)
         plansItemPhaseModalTitle.innerHTML = "Редактирование"
         plansItemPhaseModalNameField.value = phase.name
         plansItemPhaseModalPurposeField.value = phase.purpose

@@ -1,17 +1,14 @@
 async function plans_main(){
-    await plans_get()
+    const request = await plansGet()
+    if (request.status === 200){
+        plansArray = request.response
+    }
     plans_show()
 }
 
-async function plans_get(){
-    await fetch("/api/v1/learning_plans/")
-        .then(async response => await response.json())
-        .then(plans => plans_array = plans)
-}
-
-function plans_show(list = plans_array){
+function plans_show(list = plansArray){
     plansTableBody.innerHTML = ''
-    plans_array.map(plan => {
+    plansArray.map(plan => {
             let listenersHTML = ''
         plan.listeners.map(listener => {
             listenersHTML += `<a href="/profile/${listener.id}">${listener.first_name} ${listener.last_name}<br></a>`
@@ -29,7 +26,7 @@ function plans_show(list = plans_array){
     })
 }
 
-let plans_array = []
+let plansArray = []
 const plansTableBody = document.querySelector("#PlansTableBody")
 
 plans_main()

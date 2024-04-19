@@ -1,39 +1,39 @@
-{% extends 'base.html' %}
-{% load static %}
-{% block content %}
-    <div class="container-xxl mt-4 mb-3">
-        <div class="row row justify-content-between">
-            <div class="col-auto">
-                <h1>{{ phase.name }}</h1>
-            </div>
-            <div class="col-auto">
-                <button type="button" class="btn btn-primary mt-1" role="button" ><i class="fa-solid fa-plus"></i></button>
-
-            </div>
-        </div>
-    </div>
-
-    <div class="container-xxl">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th scope="col">Наименование</th>
-                    <th scope="col">Дата</th>
-                    <th scope="col">Время</th>
-                    <th scope="col">Преподаватель</th>
-                    <th scope="col">Действие</th>
-                </tr>
-            </thead>
-            <tbody id="PhaseLessonsTableBody"></tbody>
-        </table>
-    </div>
-{% include 'toast.html' %}
-{% endblock %}
-{% block static_js %}
-    <script>
-        const csrftoken = '{{ csrf_token }}'
-        const phaseID = {{ phase.id }}
-    </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/lessons/lessons_main.js' %}"></script>
-{% endblock %}
+{#{% extends 'base.html' %}#}
+{#{% load static %}#}
+{#{% block content %}#}
+{#    <div class="container-xxl mt-4 mb-3">#}
+{#        <div class="row row justify-content-between">#}
+{#            <div class="col-auto">#}
+{#                <h1>{{ phase.name }}</h1>#}
+{#            </div>#}
+{#            <div class="col-auto">#}
+{#                <button type="button" class="btn btn-primary mt-1" role="button" ><i class="fa-solid fa-plus"></i></button>#}
+{##}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{##}
+{#    <div class="container-xxl">#}
+{#        <table class="table table-hover">#}
+{#            <thead>#}
+{#                <tr>#}
+{#                    <th scope="col">Наименование</th>#}
+{#                    <th scope="col">Дата</th>#}
+{#                    <th scope="col">Время</th>#}
+{#                    <th scope="col">Преподаватель</th>#}
+{#                    <th scope="col">Действие</th>#}
+{#                </tr>#}
+{#            </thead>#}
+{#            <tbody id="PhaseLessonsTableBody"></tbody>#}
+{#        </table>#}
+{#    </div>#}
+{#{% include 'toast.html' %}#}
+{#{% endblock %}#}
+{#{% block static_js %}#}
+{#    <script>#}
+{#        const csrftoken = '{{ csrf_token }}'#}
+{#        const phaseID = {{ phase.id }}#}
+{#    </script>#}
+{#    <script src="{% static 'js/toasts.js' %}"></script>#}
+{#    <script src="{% static 'js/lessons/lessons_main.js' %}"></script>#}
+{#{% endblock %}#}

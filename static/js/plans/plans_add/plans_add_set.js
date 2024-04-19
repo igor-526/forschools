@@ -11,11 +11,25 @@ async function plans_add_set_listeners(){
 }
 
 async function plans_add_set_teachers(){
-    await fetch("/api/v1/users?group=teachers")
-        .then(async resp => await resp.json())
-        .then(result => result.map(teacher => plans_add_teachers.push(`${teacher.first_name} ${teacher.last_name}`)))
-    planNewTeacherFieldOptions.innerHTML = ''
-    plans_add_teachers.map(teacher => planNewTeacherFieldOptions.insertAdjacentHTML('beforeend', `
-    <option value="${teacher}">
-    `))
+    if ((plansAddCanSetTeacher)){
+        await fetch("/api/v1/users?group=teachers")
+            .then(async resp => await resp.json())
+            .then(result => plans_add_teachers = result)
+        planNewTeacherField.innerHTML = '<option value="">Выберите преподавателя</option>'
+        planNewHWTeacherField.innerHTML = '<option value="">Совпадает с преподавателем</option>'
+        plans_add_teachers.map(teacher => {
+            planNewTeacherField.insertAdjacentHTML("beforeend", `
+        <option value="${teacher.id}">${teacher.first_name} ${teacher.last_name}</option>
+        `)
+            planNewHWTeacherField.insertAdjacentHTML("beforeend", `
+        <option value="${teacher.id}">${teacher.first_name} ${teacher.last_name}</option>
+        `)
+        })
+        dselect(planNewTeacherField)
+        dselect(planNewHWTeacherField)
+    } else {
+        planNewTeacherField.innerHTML = `<option value="${plansAddTeacher.id}" selected>${plansAddTeacher.name}</option>`
+        planNewHWTeacherField.innerHTML = `<option value="${plansAddTeacher.id}" selected>${plansAddTeacher.name}</option>`
+    }
+
 }
