@@ -30,5 +30,5 @@ async function lessonsAPIReplaceTeacher(teacherID, lesson){
             teacher_id: teacherID
         })
     })
-    return await APIPatchToObject(request)
+    return await APIPostPatchToObject(request)
 }

@@ -2,7 +2,6 @@ from django.urls import path
 from .views import (MaterialPage,
                     MaterialListView,
                     MaterialAPIView,
-                    MaterialCategoryView,
                     MaterialItemPage)
 
 urlpatterns = [
@@ -12,6 +11,5 @@ urlpatterns = [
 
 apiv1patterns = [
     path('', MaterialListView.as_view()),
-    path('category', MaterialCategoryView.as_view()),
     path('<int:pk>', MaterialAPIView.as_view()),
 ]

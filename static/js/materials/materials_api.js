@@ -1,10 +1,44 @@
 async function materialsAPIGetAll(type=2){
-    let response = await fetch(`/api/v1/materials?type=${type}`)
-    if (response.status === 200) {
-        return {status: response.status,
-            response: await response.json()}
-    } else {
-        return {status: response.status,
-            response: []}
-    }
+    const request = await fetch(`/api/v1/materials?type=${type}`)
+    return await APIGetToObject(request)
+}
+
+async function materialsAPIGet(matID){
+    const request = await fetch(`/api/v1/materials/${matID}`)
+    return await APIGetToObject(request)
+}
+
+async function materialsAPICreate(formData){
+    const request = await fetch('/api/v1/materials/', {
+        method: "post",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: formData
+    })
+    return await APIPostPatchToObject(request)
+}
+
+async function materialsAPIEdit(formData, matID){
+    const request = await fetch(`/api/v1/materials/${matID}`, {
+        method: "patch",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: formData
+    })
+    return await APIPostPatchToObject(request)
+}
+
+async function materialsAPIDelete(matID){
+    const request = await fetch(`/api/v1/materials/${matID}`, {
+        method: "delete",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+    })
+    return await APIGetToObject(request)
 }

@@ -9,7 +9,9 @@
             <div class="col-auto">
                 <button id="MaterialsCollapseSearchButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="collapse" data-bs-target="#MaterialsCollapseSearch"><i class="fa-solid fa-magnifying-glass"></i></button>
                 {% if perms.material.add_personal %}
-                    <button type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewMaterial" role="button"><i class="fa-solid fa-plus"></i></button>
+                    <button id="offcanvasNewMaterialButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewMaterial" role="button"><i class="fa-solid fa-plus"></i></button>
+                    {% include 'materials_offcanvas_new.html' %}
+                    {% include 'materials_modal_text.html' %}
                 {% endif %}
             </div>
         </div>
@@ -37,8 +39,11 @@
                             <option value="pdf">PDF документ</option>
                             <option value="gif">Анимация</option>
                             <option value="archive">Архив</option>
+                            <option value="audio">Аудио</option>
                             <option value="video">Видео</option>
                             <option value="image">Изображение</option>
+                            <option value="presentation">Презентации</option>
+                            <option value="text">Текст</option>
                         </select>
                     </div>
                     <div class="col-md-1">
@@ -77,16 +82,35 @@
     </div>
     {% include 'toast.html' %}
     {% include 'materials_modal_telegram.html' %}
-    {% include 'materials_offcanvas_new.html' %}
+
 {% endblock %}
 {% block static_js %}
     <script>
-        var csrftoken = '{{ csrf_token }}'
-        const userPermissions = JSON.parse("{{ userperms|escapejs }}")
+        const csrftoken = '{{ csrf_token }}'
         const user_id = {{ request.user.id }}
+        const add_personal = {% if perms.material.add_personal %}true{% else %}false{% endif %}
+        const add_general = {% if perms.material.add_general %}true{% else %}false{% endif %}
+        const send_tg = {% if perms.material.send_telegram %}true{% else %}false{% endif %}
+        const see_general = {% if perms.material.see_all_general %}true{% else %}false{% endif %}
+        const new_lvl_cat = {% if perms.material.add_new_cat %}true{% else %}false{% endif %}
+        const mediaFormats = {
+            imageFormats: {{ material_formats.image_formats | safe }},
+            videoFormats: {{ material_formats.video_formats | safe }},
+            animationFormats: {{ material_formats.animation_formats | safe }},
+            archiveFormats: {{ material_formats.archive_formats | safe }},
+            pdfFormats: {{ material_formats.pdf_formats | safe }},
+            voiceFormats: {{ material_formats.voice_formats | safe }},
+            audioFormats: {{ material_formats.audio_formats | safe }},
+            textFormats: {{ material_formats.text_formats | safe }},
+            presentationFormats: {{ material_formats.presentation_formats | safe }}
+        }
         let material_id
+        const materialAction = 'add'
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/collections/collections_api.js' %}"></script>
+    <script src="{% static 'js/materials/materials_api.js' %}"></script>
     <script src="{% static 'js/telegram/telegram_main.js' %}"></script>
     <script src="{% static 'js/materials/materials_add.js' %}"></script>
     <script src="{% static 'js/materials/materials_serach.js' %}"></script>

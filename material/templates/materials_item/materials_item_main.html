@@ -5,15 +5,46 @@
         <h1>{{ material.name }}</h1>
         <div class="row row justify-content-between">
             <div class="col-8">
-                {% if material_type == 'image_formats' %}
-                    <img src="/media/{{ material.file }}" class="img-fluid" alt="Изображение">
-                {% endif %}
-                {% if material_type == 'animation_formats' %}
-                    <img src="/media/{{ material.file }}" class="img-fluid" alt="Изображение">
+                {% if material_type == 'image_formats' or material_type == 'animation_formats' %}
+                    <img src="{{ material.file.url }}" class="img-fluid" alt="Изображение">
                 {% endif %}
                 {% if material_type == 'pdf_formats' %}
-                    <img src="/{{ preview_dir }}" class="img-fluid" alt="Изображение">
+                    <div class="row row justify-content-between">
+                        <embed src="{{ material.file.url }}" type="application/pdf" width="100%" height="1200px">
+                    </div>
                 {% endif %}
+                {% if material_type == 'voice_formats' or material_type == 'audio_formats'%}
+                    <div class="card">
+                        <h5 class="card-header">Аудиозапись</h5>
+                        <div class="card-body">
+                            <figure>
+                                <audio controls src="{{ material.file.url }}"></audio>
+                            </figure>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if material_type == 'text_formats' %}
+                    <div class="card">
+                        <h5 class="card-header">Текстовый файл</h5>
+                        <div class="card-body">
+                            {% for p in text %}
+                                <p>{{ p }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if material_type == 'video_formats' %}
+                    <div class="card">
+                        <h5 class="card-header">Видео</h5>
+                        <div class="card-body">
+                            <video controls src="{{ material.file.url }}"></video>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if material_type == 'archive_formats' or material_type == 'presentation_formats' %}
+                    <h2>К сожалению, оторбражение такого формата пока что не поддерживается :(</h2>
+                {% endif %}
+
             </div>
             <div class="col-4">
                 <div class="card mb-3">
@@ -45,17 +76,16 @@
                                     {% include 'materials_modal_telegram.html' %}
                                 {% endif %}
                                 {% if can_edit %}
-                                    <button id="MaterialItemEditButton" type="button" class="btn btn-warning mb-1">Редактировать</button>
-                                    <button id="MaterialItemDeleteButton" type="button" class="btn btn-danger mb-1">Удалить</button>
+                                    <button id="MaterialItemEditButton" type="button" class="btn btn-warning mb-1" data-bs-toggle="offcanvas" href="#offcanvasNewMaterial">Редактировать</button>
+                                    <button id="MaterialItemDeleteButton" type="button" class="btn btn-danger mb-1" data-bs-toggle="modal" href="#MaterialsItemModalDelete">Удалить</button>
                                     {% include 'materials_offcanvas_new.html' %}
+                                    {% include 'materials_modal_text.html' %}
+                                    {% include 'materials_item/materials_item_modal_delete.html' %}
                                 {% endif %}
                             </li>
                         </ul>
                     </div>
                 </div>
-                {% if material_type == 'pdf_formats' %}
-                    <a href="/pdfviewer/material/{{ material.id }}"><button type="button" class="btn btn-primary mb-1">Открыть в браузере</button></a>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -64,18 +94,47 @@
 {% block static_js %}
     <script>
         const csrftoken = '{{ csrf_token }}'
-        const userPermissions = JSON.parse("{{ userperms|escapejs }}")
         const material_id = {{ material.id }}
+        const materialAction = 'edit'
         const user_id = {{ request.user.id }}
-        const user_perm_can_edit = "{{ can_edit }}"
+        const new_lvl_cat = {% if perms.material.add_new_cat %}true{% else %}false{% endif %}
+        const mediaFormats = {
+            imageFormats: {{ material_formats.image_formats | safe }},
+            videoFormats: {{ material_formats.video_formats | safe }},
+            animationFormats: {{ material_formats.animation_formats | safe }},
+            archiveFormats: {{ material_formats.archive_formats | safe }},
+            pdfFormats: {{ material_formats.pdf_formats | safe }},
+            voiceFormats: {{ material_formats.voice_formats | safe }},
+            audioFormats: {{ material_formats.audio_formats | safe }},
+            textFormats: {{ material_formats.text_formats | safe }},
+            presentationFormats: {{ material_formats.presentation_formats | safe }}
+        }
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/collections/collections_api.js' %}"></script>
+    <script src="{% static 'js/materials/materials_api.js' %}"></script>
     {% if perms.materials.send_telegram %}
+        <script>
+            const can_send_tg = true
+        </script>
         <script src="{% static 'js/telegram/telegram_main.js' %}"></script>
         <script src="{% static 'js/materials/materials_telegram.js' %}"></script>
+    {% else %}
+        <script>
+            const can_send_tg = false
+        </script>
     {% endif %}
     {% if can_edit %}
-        <script src="{% static 'js/materials/materials_item_edit.js' %}"></script>
+        <script>
+            const can_edit = true
+        </script>
+        <script src="{% static 'js/materials/materials_add.js' %}"></script>
+        <script src="{% static 'js/materials/materials_item_delete.js' %}"></script>
+    {% else %}
+        <script>
+            const can_edit = false
+        </script>
     {% endif %}
     <script src="{% static 'js/materials/materials_item.js' %}"></script>
 {% endblock %}

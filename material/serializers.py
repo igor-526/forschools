@@ -12,16 +12,25 @@ class MaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Material
-        fields = ['id', 'name', 'category', 'owner', 'visible', 'file', 'level', 'description']
-        read_only_fields = ['category', 'owner', 'level']
+        fields = ['id', 'name', 'category', 'owner', 'visible', 'file', 'level', 'description', 'type']
+        read_only_fields = ['category', 'owner', 'level', 'file']
 
     def validate_visible(self, value):
         return True
 
     def create(self, validated_data):
-        user = self.context['request'].user
+        request = self.context.get('request')
+        user = request.user
+        textfile = request.POST.get('file_text')
+        if textfile:
+            file = f"materials/{request.POST.get('name')}.txt"
+            with open(f"media/{file}", 'w') as f:
+                f.write(textfile)
+        else:
+            file = request.FILES.get('file')
         material = Material.objects.create(
             owner=user,
+            file=file,
             **validated_data
         )
         material.set_category(self.context['request'].data.getlist('cat'))
@@ -29,8 +38,9 @@ class MaterialSerializer(serializers.ModelSerializer):
         return material
 
     def update(self, instance, validated_data):
-        instance.set_category(self.context['request'].data.getlist('cat'))
-        instance.set_level(self.context['request'].data.getlist('lvl'))
+        request = self.context.get('request')
+        instance.set_category(request.data.getlist('cat'))
+        instance.set_level(request.data.getlist('lvl'))
         return super(MaterialSerializer, self).update(instance, validated_data)
 
 

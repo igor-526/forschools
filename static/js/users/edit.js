@@ -178,9 +178,6 @@ async function showUser(){
     const userId = this.attributes.getNamedItem('data-user-id').value
     let userObj = await fetch(`/api/v1/users/${userId}`)
     userObj = await userObj.json()
-
-    console.log(userObj)
-
     if (userObj.is_active === true){
         formUserEditDeactivateButton.classList.remove("d-none")
         formUserEditActivateButton.classList.add("d-none")

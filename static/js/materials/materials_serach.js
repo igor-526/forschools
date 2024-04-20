@@ -62,20 +62,28 @@ function filterMaterial(material, formData){
         const fileFormat = splttedFilePath[splttedFilePath.length - 1]
         switch (type){
             case "pdf":
-                statusType = fileFormat === "pdf";
-                console.log(statusType)
+                statusType = mediaFormats.pdfFormats.includes(fileFormat)
                 break
             case "gif":
-                statusType = fileFormat === "gif";
+                statusType = mediaFormats.animationFormats.includes(fileFormat)
                 break
             case "archive":
-                statusType = archiveFormats.includes(fileFormat)
+                statusType = mediaFormats.archiveFormats.includes(fileFormat)
                 break
             case "video":
-                statusType = videoFormats.includes(fileFormat)
+                statusType = mediaFormats.videoFormats.includes(fileFormat)
                 break
             case "image":
-                statusType = imageFormats.includes(fileFormat)
+                statusType = mediaFormats.imageFormats.includes(fileFormat)
+                break
+            case "audio":
+                statusType = mediaFormats.voiceFormats.includes(fileFormat) || mediaFormats.audioFormats.includes(fileFormat)
+                break
+            case "text":
+                statusType = mediaFormats.textFormats.includes(fileFormat)
+                break
+            case "presentation":
+                statusType = mediaFormats.presentationFormats.includes(fileFormat)
                 break
             default:
                 statusType = true

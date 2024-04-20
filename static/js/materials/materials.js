@@ -1,39 +1,31 @@
-async function main(){
-    if (!userPermissions.includes("material.see_all_general")){
-        materialsTabGeneral.classList.remove("active")
-        materialsTabGeneral.classList.add("disabled")
-        materialsTabMy.classList.add("active")
-        await getMaterials(1)
-    } else {
+async function materialsMain(){
+    if (see_general){
         materialsTabGeneral.addEventListener('click', function () {
-            getMaterials(2)
+            getMaterials(1)
             this.classList.add('active')
             materialsTabMy.classList.remove('active')
         })
+        await getMaterials(1)
+    } else {
+        materialsTabGeneral.classList.remove("active")
+        materialsTabGeneral.classList.add("disabled")
+        materialsTabMy.classList.add("active")
         await getMaterials(2)
     }
-
     materialsTabMy.addEventListener('click', function () {
-        getMaterials(1)
-        this.classList.add('active')
+        getMaterials(2)
+        materialsTabMy.classList.add('active')
         materialsTabGeneral.classList.remove('active')
     })
-
-
-    formMaterialNewFileField.addEventListener('change', function () {
-        const filename = formMaterialNewFileField.value.split(/([\\./])/g)
-        formMaterialNewNameField.value = filename[filename.length-3]
-    })
-    formMaterialNewSubmitButton.addEventListener('click', createMaterial)
 }
 
 async function getMaterials(type=2){
-    let response = await fetch(`/api/v1/materials?type=${type}`)
-    if (response.status === 200) {
-        material_set = await response.json()
+    const request = await materialsAPIGetAll(type)
+    if (request.status === 200) {
+        material_set = request.response
         showMaterials()
-        await set_category()
-        await set_levels()
+        await materialsSetCategories()
+        await materialsSetLevels()
     } else {
         showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
     }
@@ -41,52 +33,57 @@ async function getMaterials(type=2){
 
 function getMaterialType(format){
     format = format.toLowerCase()
-    if (imageFormats.includes(format)){
+    if (mediaFormats.imageFormats.includes(format)){
         return 'Изображение'
-    }
-    if (videoFormats.includes(format)){
+    } else if (mediaFormats.videoFormats.includes(format)) {
         return 'Видео'
-    }
-    if (archiveFormats.includes(format)){
+    } else if (mediaFormats.animationFormats.includes(format)) {
+        return 'Анмиация'
+    } else if (mediaFormats.archiveFormats.includes(format)) {
         return 'Архив'
+    } else if (mediaFormats.pdfFormats.includes(format)) {
+        return 'PDF-документ'
+    } else if (mediaFormats.voiceFormats.includes(format)) {
+        return 'Голосовое сообщение'
+    } else if (mediaFormats.audioFormats.includes(format)) {
+        return 'Аудио'
+    } else if (mediaFormats.textFormats.includes(format)) {
+        return 'Текст'
+    }else if (mediaFormats.presentationFormats.includes(format)) {
+        return 'Презентация'
     }
-    switch (format) {
-        case 'gif':
-            return 'Анимация'
-        case 'pdf':
-            return 'Документ PDF'
-        default:
-            return ''
-    }
+}
+
+function materialsShowCategoryHTML(categories){
+    let categoryHTML = ''
+    categories.map(category => {
+        categoryHTML += `${category.name}<br>`
+    })
+    return categoryHTML
+}
+
+function materialsShowLevelHTML(levels){
+    let levelHTML = ''
+    levels.map(level => {
+        levelHTML += `${level.name}<br>`
+    })
+    return levelHTML
 }
 
 function showMaterials(list = material_set){
     tableBody.innerHTML = ''
     list.map(function (material) {
-        let categoryHTML = ''
-        let levelHTML = ''
-        material.category.map(function (category) {
-            if (category.name === material.category[0].name){
-                categoryHTML += `${category.name}`
-            } else {
-                categoryHTML += `<br>${category.name}`
-            }
-        })
-        material.level.map(function (level) {
-            if (level.name === material.level[0].name){
-                levelHTML += `${level.name}`
-            } else {
-                levelHTML += `<br>${level.name}`
-            }
-        })
+        const categoryHTML = materialsShowCategoryHTML(material.category)
+        let levelHTML = materialsShowLevelHTML(material.level)
         const splittedFile = material.file.split('.')
-        tableBody.insertAdjacentHTML("beforeend", `
+        if (send_tg){
+            tableBody.insertAdjacentHTML("beforeend", `
         <tr data-material-id="${material.id}">
             <td style="max-width: 300px;"><a href="/materials/${material.id}" style="color: #003366; text-decoration: none;"> ${material.name}</a></td>
             <td>${categoryHTML}</td>
             <td>${levelHTML}</td>
             <td>${getMaterialType(splittedFile[splittedFile.length - 1])}</td>
-            <td>${material.owner.first_name} ${material.owner.last_name}</td>
+            <td><a href="/profile/${material.owner.id}">${material.owner.first_name} ${material.owner.last_name}</a></td>
             <td>
                 <a href="${material.file}" download=""><button type="button" class="btn btn-primary" id="TableButtonDownload">
                     <i class="fa-solid fa-download"></i></button></a>
@@ -94,53 +91,76 @@ function showMaterials(list = material_set){
                     <i class="fa-brands fa-telegram"></i></button>
             </td>
         </tr>`)
+            tableBody.querySelectorAll("#TableButtonTelegram")
+                .forEach(button => {
+                    button.addEventListener('click', function (material_item) {
+                        material_id = this.attributes.getNamedItem("data-material-id").value
+                        materialsTelegramMain()
+                    })
+                })
+        } else {
+            tableBody.insertAdjacentHTML("beforeend", `
+        <tr data-material-id="${material.id}">
+            <td style="max-width: 300px;"><a href="/materials/${material.id}" style="color: #003366; text-decoration: none;"> ${material.name}</a></td>
+            <td>${categoryHTML}</td>
+            <td>${levelHTML}</td>
+            <td>${getMaterialType(splittedFile[splittedFile.length - 1])}</td>
+            <td><a href="/profile/${material.owner.id}">${material.owner.first_name} ${material.owner.last_name}</a></td>
+            <td>
+                <a href="${material.file}" download=""><button type="button" class="btn btn-primary" id="TableButtonDownload">
+                    <i class="fa-solid fa-download"></i></button></a>
+            </td>
+        </tr>`)
+        }
     })
-    const tableButtonTelegram = tableBody.querySelectorAll("#TableButtonTelegram")
-    tableButtonTelegram.forEach(button => {
-        button.addEventListener('click', function (material_item) {
-            material_id = this.attributes.getNamedItem("data-material-id").value
-            materialsTelegramMain()
+}
+
+async function materialsSetCategories(){
+    if (new_lvl_cat){
+        formMaterialNewCategorySelect.innerHTML = '<option value="new">Новая категория</option>'
+        formMaterialNewCategorySelect.addEventListener('change', function () {
+            if (formMaterialNewCategorySelect.value === 'new'){
+                formMaterialNewCategoryField.classList.remove('d-none')
+            } else {
+                formMaterialNewCategoryField.classList.add('d-none')
+            }
         })
-    })
-}
-
-async function set_category(){
-    formMaterialNewCategorySelect.innerHTML = '<option value="new">Новая категория</option>'
+    } else {
+        formMaterialNewCategorySelect.innerHTML = ''
+    }
     materialsCollapseSearchCategory.innerHTML = '<option selected value="none">Категория</option>'
-    formMaterialNewCategorySelect.addEventListener('change', function () {
-        if (formMaterialNewCategorySelect.value === 'new'){
-            formMaterialNewCategoryField.classList.remove('d-none')
-        } else {
-            formMaterialNewCategoryField.classList.add('d-none')
-        }
-    })
-    const response = await fetch('/api/v1/collections/mat_cats/')
-    await response.json().then(json => {json.map(function (category) {
-        formMaterialNewCategorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`
-        materialsCollapseSearchCategory.innerHTML += `<option value="${category.id}">${category.name}</option>`
-    })})
+
+    const request = await collectionsGetMatCats()
+    if (request.status === 200){
+        request.response.map(category => {
+            formMaterialNewCategorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`
+            materialsCollapseSearchCategory.innerHTML += `<option value="${category.id}">${category.name}</option>`
+        })
+    }
 }
 
-async function set_levels(){
-    formMaterialNewLvlSelect.innerHTML = '<option value="new">Новый уровень</option>'
+async function materialsSetLevels(){
+    if (new_lvl_cat){
+        formMaterialNewLvlSelect.innerHTML = '<option value="new">Новый уровень</option>'
+        formMaterialNewLvlSelect.addEventListener('change', function () {
+            if (formMaterialNewLvlSelect.value === 'new'){
+                formMaterialNewLvlNewInput.classList.remove('d-none')
+            } else {
+                formMaterialNewLvlNewInput.classList.add('d-none')
+            }
+        })
+    } else {
+        formMaterialNewLvlSelect.innerHTML = ''
+    }
     materialsCollapseSearchLevel.innerHTML = '<option selected value="none">Уровень</option>'
-    formMaterialNewLvlSelect.addEventListener('change', function () {
-        if (formMaterialNewLvlSelect.value === 'new'){
-            formMaterialNewLvlNewInput.classList.remove('d-none')
-        } else {
-            formMaterialNewLvlNewInput.classList.add('d-none')
-        }
-    })
-    const response = await fetch('/api/v1/collections/mat_levels/')
-    await response.json().then(json => {json.map(function (level) {
-        formMaterialNewLvlSelect.innerHTML += `<option value="${level.name}">${level.name}</option>`
-        materialsCollapseSearchLevel.innerHTML += `<option value="${level.id}">${level.name}</option>`
-    })})
+    const request = await collectionsGetMatLevels()
+    if (request.status === 200){
+        request.response.map(level => {
+            formMaterialNewLvlSelect.innerHTML += `<option value="${level.name}">${level.name}</option>`
+            materialsCollapseSearchLevel.innerHTML += `<option value="${level.id}">${level.name}</option>`
+        })
+    }
 }
-
-//Bootstrap Elements
-const bsOffcanvasNewMaterial = new bootstrap
-    .Offcanvas(document.querySelector("#offcanvasNewMaterial"))
 
 //Tabs
 const materialsTabGeneral = document.querySelector("#MaterialsTabGeneral")
@@ -149,9 +169,5 @@ const materialsTabMy = document.querySelector("#MaterialsTabMy")
 //Table
 const tableBody = document.querySelector("#MaterialTableBody")
 
-const imageFormats = ['bmp', 'jpg', 'jpeg', 'png']
-const videoFormats = ['webm', 'mkv', 'avi', 'mov', 'wmv', 'mp4', 'm4p', 'mpg', 'mpeg', 'm4v']
-const archiveFormats = ['rar', 'zip', '7z']
-
 let material_set = []
-main()
+materialsMain()

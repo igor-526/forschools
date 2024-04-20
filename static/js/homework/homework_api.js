@@ -64,5 +64,5 @@ async function homeworkAPIReplaceTeacher(teacherID, homework){
             teacher_id: teacherID
         })
     })
-    return await APIPatchToObject(request)
+    return await APIPostPatchToObject(request)
 }

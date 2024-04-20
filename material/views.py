@@ -1,27 +1,29 @@
-from json import dumps
+from django.http import Http404
 from pdf2image import convert_from_path
-import os
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from .models import Material, MaterialCategory
-from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
-from .serializers import MaterialSerializer, MaterialCategorySerializer
+from .models import Material
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from .serializers import MaterialSerializer
 from dls.utils import get_menu
 from .utils.get_type import get_type
+from dls.settings import MATERIAL_FORMATS
+from .permissions import CanSeeMaterialMixin
 
 
 class MaterialPage(LoginRequiredMixin, TemplateView):    # страница матриалов
     template_name = "materials_main.html"
 
     def get(self, request, *args, **kwargs):
-        perms = request.user.get_group_permissions()
-        filtered_perms = [perm for perm in perms if "material." in perm]
-        context = {'title': 'Материалы',
-                   'menu': get_menu(request.user),
-                   'userperms': dumps(filtered_perms)}
+        context = {
+            'title': 'Материалы',
+            'menu': get_menu(request.user),
+            'material_formats': MATERIAL_FORMATS
+        }
         return render(request, self.template_name, context)
 
 
@@ -53,38 +55,24 @@ class MaterialAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
         material = self.get_object()
         material.visible = False
         material.save()
-        return Response({"status": 'success'})
+        return Response({"status": 'success'}, status=status.HTTP_200_OK)
 
 
-class MaterialCategoryView(LoginRequiredMixin, ListAPIView):    # API для вывода категорий
-    queryset = MaterialCategory.objects.all()
-    serializer_class = MaterialCategorySerializer
-
-
-class MaterialItemPage(LoginRequiredMixin, TemplateView):    # страница матриала
+class MaterialItemPage(CanSeeMaterialMixin, TemplateView):    # страница материала
     template_name = "materials_item/materials_item_main.html"
 
     def get(self, request, *args, **kwargs):
-        perms = request.user.get_group_permissions()
-        filtered_perms = [perm for perm in perms if "material." in perm]
-
         material = Material.objects.get(pk=kwargs.get("pk"))
         material_type = get_type(material.file.name.split('.')[-1])
-
         can_edit = material.owner == request.user or request.user.has_perm('material.add_general')
 
         context = {'title': material.name,
                    'material': material,
                    'menu': get_menu(request.user),
-                   'userperms': dumps(filtered_perms),
                    'material_type': material_type,
-                   'can_edit': can_edit}
-
-        if material_type == "pdf_formats":
-            preview_dir = f'media/materials/pdfpreview/{material.id}.jpg'
-            if not os.path.exists(preview_dir):
-                pages = convert_from_path(material.file.path, 300, first_page=0, last_page=1)
-                pages[0].save(preview_dir, 'JPEG')
-            context['preview_dir'] = preview_dir
-
+                   'can_edit': can_edit,
+                   'material_formats': MATERIAL_FORMATS}
+        if material_type == "text_formats":
+            with open(material.file.path, 'r') as f:
+                context['text'] = f.readlines()
         return render(request, self.template_name, context)

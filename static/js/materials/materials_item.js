@@ -1,9 +1,4 @@
-console.log(userPermissions)
-
-if (userPermissions.includes("material.send_telegram")){
+if (can_send_tg){
     document.querySelector("#MaterialsItemTelegramButton")
         .addEventListener("click", materialsTelegramMain)
-}
-if (user_perm_can_edit){
-    materialsEditMain()
 }

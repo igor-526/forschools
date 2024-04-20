@@ -7,7 +7,7 @@ async function APIGetToObject(request){
     }
 }
 
-async function APIPatchToObject(request){
+async function APIPostPatchToObject(request){
     return {status: request.status,
         response: await request.json()}
 }
