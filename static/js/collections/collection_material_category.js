@@ -1,5 +1,5 @@
 async function getMaterialCategories(){
-    await fetch('/api/v1/materials/category')
+    await fetch('/api/v1/collections/mat_cats')
         .then(async response => await response.json())
         .then(set => materialCategoriesSet = set)
 }
