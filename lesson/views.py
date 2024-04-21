@@ -5,13 +5,15 @@ from django.views.generic import TemplateView
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import Q
-from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView
 from rest_framework.views import APIView
 from learning_plan.permissions import plans_button
 from .models import Lesson
 from dls.utils import get_menu
 from .serializers import LessonListSerializer
-from .permissions import replace_teacher_button, CanReplaceTeacherMixin
+from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
+                          replace_teacher_button, can_edit_lesson_materials,
+                          can_see_lesson_materials, can_add_homework)
 
 
 class LessonPage(LoginRequiredMixin, TemplateView):  # страница уроков
@@ -24,7 +26,7 @@ class LessonPage(LoginRequiredMixin, TemplateView):  # страница урок
         return render(request, self.template_name, context)
 
 
-class LessonItemPage(LoginRequiredMixin, TemplateView):  # страница урока
+class LessonItemPage(CanSeeLessonMixin, TemplateView):  # страница урока
     template_name = "lesson_item.html"
 
     def get(self, request, *args, **kwargs):
@@ -33,8 +35,10 @@ class LessonItemPage(LoginRequiredMixin, TemplateView):  # страница ур
                    'menu': get_menu(request.user),
                    'lesson': lesson,
                    'can_set_replace': replace_teacher_button(request),
-                   'can_edit_materials': True,
-                   'can_add_hw': True}
+                   'can_see_materials': can_see_lesson_materials(request, lesson),
+                   'can_edit_materials': can_edit_lesson_materials(request, lesson),
+                   'can_add_hw': can_add_homework(request, lesson)
+                   }
         return render(request, self.template_name, context)
 
 

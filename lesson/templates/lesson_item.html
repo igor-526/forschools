@@ -55,32 +55,42 @@
             <div class="col-6">
                 <div class="card mb-3">
                     <div class="card-header">Материалы
-                        <button id="LessonItemAddMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="fa-solid fa-plus"></i></button>
-                        {% include "materials_embed_modal.html" %}
+                        {% if can_edit_materials %}
+                            <button id="LessonItemAddMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="fa-solid fa-plus"></i></button>
+                            {% include "materials_embed_modal.html" %}
+                        {% endif %}
                         <button id="LessonItemSendMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2"><i class="fa-brands fa-telegram"></i></button>
                     </div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
-                            {% for material in lesson.materials.all %}
-                                <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2"><i class="fa-solid fa-trash"></i></button>
-                                    <a href="/materials/{{ material.id }}">{{ material.name }}</a>
-                                </li>
-                            {% endfor %}
+                            {% if can_see_materials %}
+                                {% for material in lesson.materials.all %}
+                                    <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2"><i class="fa-solid fa-trash"></i></button>
+                                        <a href="/materials/{{ material.id }}">{{ material.name }}</a>
+                                    </li>
+                                {% endfor %}
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
 
                 <div class="card mb-3">
                     <div class="card-header">Домашние задания
-                        <button id="LessonItemNewHWButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNewHW"><i class="fa-solid fa-plus"></i></button></div>
+                        {% if can_add_hw %}
+                            <button id="LessonItemNewHWButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNewHW"><i class="fa-solid fa-plus"></i></button>
+                            {% include "offcanvas_lesson_new_HW.html" %}
+                        {% endif %}
+                    </div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
                             {% for hw in lesson.homeworks.all %}
-                                <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2"><i class="fa-solid fa-trash"></i></button>
+                                <li class="list-group-item">
+                                    {% if can_add_hw %}
+                                        <button type="button" class="btn btn-danger btn-sm me-2"><i class="fa-solid fa-trash"></i></button>
+                                    {% endif %}
                                     <a href="/homeworks/{{ hw.id }}">{{ hw.name }}</a>
                                 </li>
                             {% endfor %}
-                            {% include "offcanvas_lesson_new_HW.html" %}
                         </ul>
                     </div>
                 </div>
@@ -108,8 +118,12 @@
         <script src="{% static 'js/users/users_api.js' %}"></script>
         <script src="{% static 'js/lessons/lesson_hw_replace_teacher.js' %}"></script>
     {% endif %}
-
-    <script src="{% static 'js/materials/materials_embed.js' %}"></script>
+    {% if can_edit_materials %}
+        <script src="{% static 'js/materials/materials_embed.js' %}"></script>
+    {% endif %}
     <script src="{% static 'js/lessons/lesson_item.js' %}"></script>
-    <script src="{% static 'js/lessons/lesson_item_homeworks.js' %}"></script>
+    {% if can_add_hw %}
+        <script src="{% static 'js/lessons/lesson_item_homeworks.js' %}"></script>
+    {% endif %}
+
 {% endblock %}
