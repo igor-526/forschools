@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (LessonPage, LessonItemPage,
                     LessonListAPIView, LessonAddMaterials,
-                    LessonReplaceTeacher)
+                    LessonReplaceTeacher, LessonAPIView)
 
 urlpatterns = [
     path('', LessonPage.as_view(), name='lessons'),
@@ -10,6 +10,7 @@ urlpatterns = [
 
 apiv1patterns = [
     path('', LessonListAPIView.as_view()),
+    path('<int:pk>/', LessonAPIView.as_view()),
     path('<int:pk>/materials/', LessonAddMaterials.as_view()),
     path('<int:pk>/rt/', LessonReplaceTeacher.as_view()),
 ]

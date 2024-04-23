@@ -5,12 +5,12 @@ from django.views.generic import TemplateView
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import Q
-from rest_framework.generics import ListCreateAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 from learning_plan.permissions import plans_button
 from .models import Lesson
 from dls.utils import get_menu
-from .serializers import LessonListSerializer
+from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
                           can_see_lesson_materials, can_add_homework)
@@ -31,14 +31,21 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):  # страница ур�
 
     def get(self, request, *args, **kwargs):
         lesson = Lesson.objects.get(pk=kwargs.get("pk"))
-        context = {'title': lesson.name,
-                   'menu': get_menu(request.user),
-                   'lesson': lesson,
-                   'can_set_replace': replace_teacher_button(request),
-                   'can_see_materials': can_see_lesson_materials(request, lesson),
-                   'can_edit_materials': can_edit_lesson_materials(request, lesson),
-                   'can_add_hw': can_add_homework(request, lesson)
-                   }
+        can_add_hw = can_add_homework(request, lesson)
+        context = {
+            'title': lesson.name,
+            'menu': get_menu(request.user),
+            'lesson': lesson,
+            'can_set_replace': replace_teacher_button(request),
+            'can_see_materials': can_see_lesson_materials(request, lesson),
+            'can_edit_materials': can_edit_lesson_materials(request, lesson),
+            'can_add_hw': can_add_hw
+        }
+        if can_add_hw:
+            hwdeadline = (lesson.get_hw_deadline())
+            if hwdeadline:
+                hwdeadline = hwdeadline.strftime('%Y-%m-%d')
+            context["hwdeadline"] = hwdeadline
         return render(request, self.template_name, context)
 
 
@@ -76,6 +83,11 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
                                      user=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return JsonResponse(serializer.data, safe=False)
+
+
+class LessonAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
 
 
 class LessonAddMaterials(LoginRequiredMixin, APIView):

@@ -36,7 +36,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         for listener in listeners:
             homework = Homework.objects.create(**validated_data,
                                                listener=listener,
-                                               teacher=lesson.get_teacher())
+                                               teacher=lesson.get_hw_teacher())
 
             send_homework_tg(homework.listener, homework)
 

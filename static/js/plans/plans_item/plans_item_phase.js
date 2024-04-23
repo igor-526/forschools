@@ -68,7 +68,7 @@ function planItemAddModalPhase(phaseID = 0) {
 async function planItemEditPhase(phaseID) {
     if (planItemClientValidation()) {
         const formData = new FormData(plansItemPhaseModalForm)
-        const response = await fetch(`/api/v1/learning_plans/${planID}/phases/${phaseID}`, {
+        const response = await fetch(`/api/v1/learning_plans/${planID}/phases/${phaseID}/`, {
             method: "patch",
             credentials: 'same-origin',
             headers:{
@@ -89,8 +89,21 @@ async function planItemEditPhase(phaseID) {
     }
 }
 
+async function planItemDestroyPhase(phaseID){
+    const request = await planItemAPIDestroyPhase(planID, phaseID)
+    bsPlansItemPhaseDeleteModal.hide()
+    if (request.status === 204){
+        showToast("Успешно", "Этап успешно удалён")
+        await planItemMain()
+    } else {
+        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+    }
+}
+
 const plansItemPhaseModal = document.querySelector("#PlansItemPhaseModal")
 const bsPlansItemPhaseModal = new bootstrap.Modal(plansItemPhaseModal)
+const plansItemPhaseDeleteModal = document.querySelector("#PhaseDeleteModal")
+const bsPlansItemPhaseDeleteModal = new bootstrap.Modal(plansItemPhaseDeleteModal)
 
 const plansItemPhaseModalTitle = plansItemPhaseModal.querySelector("#PlansItemPhaseModalTitle")
 
@@ -101,3 +114,6 @@ const plansItemPhaseModalNameError = plansItemPhaseModalForm.querySelector("#Pla
 const plansItemPhaseModalPurposeField = plansItemPhaseModalForm.querySelector("#PlansItemPhaseModalPurposeField")
 const plansItemPhaseModalPurposeError = plansItemPhaseModalForm.querySelector("#PlansItemPhaseModalPurposeError")
 const plansItemPhaseModalSaveButton = plansItemPhaseModal.querySelector("#PlansItemPhaseModalSaveButton")
+const plansItemPhaseDeleteModalButton = plansItemPhaseDeleteModal.querySelector("#LearningPhaseDeleteModalButton")
+
+plansItemListenersPhaseModal()

@@ -32,6 +32,11 @@ class LearningPhases(models.Model):
                                  blank=True,
                                  null=False)
 
+    class Meta:
+        verbose_name = 'Этап плана обучения'
+        verbose_name_plural = 'Этапы плана обучения'
+        ordering = ['pk']
+
 
 class LearningPlan(models.Model):
     name = models.CharField(verbose_name="Наименование",
@@ -64,7 +69,7 @@ class LearningPlan(models.Model):
     phases = models.ManyToManyField(LearningPhases,
                                     verbose_name="Этапы обучения",
                                     blank=True)
-    deadline = models.DateTimeField(verbose_name="Срок",
+    deadline = models.DateField(verbose_name="Срок",
                                     blank=True,
                                     null=True)
     status = models.IntegerField(verbose_name="Статус",
@@ -72,3 +77,18 @@ class LearningPlan(models.Model):
                                  blank=True,
                                  default=0,
                                  choices=PLAN_STATUS_CHOICES)
+
+    class Meta:
+        verbose_name = 'План обучения'
+        verbose_name_plural = 'Планы обучения'
+        ordering = ['pk']
+
+    def get_next_lesson(self, lesson: Lesson):
+        if not lesson.date:
+            return None
+        phases = [phase.id for phase in self.phases.all()]
+        lesson = Lesson.objects.filter(learningphases__in=phases,
+                                       date__gt=lesson.date).first()
+        if not lesson:
+            return None
+        return lesson

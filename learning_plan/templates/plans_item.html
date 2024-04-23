@@ -97,7 +97,9 @@
     </div>
     {% if can_edit_plan %}
         {% include 'modal_phase.html' %}
+        {% include 'phase_modal_delete.html' %}
         {% include 'modal_lesson.html' %}
+        {% include 'lesson_modal_delete.html' %}
         {% include 'toast.html' %}
     {% endif %}
 {% endblock %}
@@ -108,7 +110,8 @@
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/apitostr.js' %}"></script>
-
+    <script src="{% static 'js/plans/plans_api.js' %}"></script>
+    <script src="{% static 'js/plans/plans_item/plans_item_main.js' %}"></script>
     {% if can_edit_plan %}
         <script>
             const canEditPlan = true
@@ -122,6 +125,5 @@
             const canEditPlan = false
         </script>
     {% endif %}
-    <script src="{% static 'js/plans/plans_api.js' %}"></script>
-    <script src="{% static 'js/plans/plans_item/plans_item_main.js' %}"></script>
+
 {% endblock %}

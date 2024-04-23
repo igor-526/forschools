@@ -11,6 +11,7 @@
                 {% if perms.lesson.edit_plans_self %}
                     <button id="PlansAddButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" role="button"><i class="fa-solid fa-plus"></i></button>
                     {% include 'plans_offcanvas_new.html' %}
+                    {% include 'plans_modal_delete.html' %}
                 {% endif %}
             </div>
         </div>
@@ -47,9 +48,10 @@
         {% endif %}
         <script src="{% static 'js/plans/plans_add/plans_add_validation.js' %}"></script>
         <script src="{% static 'js/plans/plans_add/plans_add_set.js' %}"></script>
-        <script src="{% static 'js/plans/plans_add/plans_add.js' %}"></script>
+        <script src="{% static 'js/plans/plans_add/plans_add_edit_delete.js' %}"></script>
     {% endif %}
     <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/plans/plans_api.js' %}"></script>
     <script src="{% static 'js/plans/plans_main.js' %}"></script>
 {% endblock %}

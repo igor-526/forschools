@@ -1,6 +1,6 @@
 async function plansItemLessonMain(){
     await plansItemLessonSetPlaces()
-    plansItemListenersLessonsAddEdit()
+    plansItemListenersLessonModalSave()
 }
 
 
@@ -20,8 +20,20 @@ async function plansItemLessonSetPlaces(){
 function phaseItemAddModalLesson(phaseID, lessonID){
     if (lessonID === 0){
         plansItemPhaseLessonModalTitle.innerHTML = "Добавление урока"
+        plansItemPhaseLessonModalForm.reset()
     } else {
         plansItemPhaseLessonModalTitle.innerHTML = "Изменение урока"
+
+        const phase = phasesArray.find(phase => phase.id === phaseID)
+        const lesson = phase.lessons.find(lesson => lesson.id === lessonID)
+        plansItemPhaseLessonModalNameField.value = lesson.name
+        plansItemPhaseLessonModalDescriptionField.value = lesson.description
+        plansItemPhaseLessonModalDateField.value = lesson.date
+        plansItemPhaseLessonModalStartField.value = lesson.start_time
+        plansItemPhaseLessonModalEndField.value = lesson.end_time
+        if (lesson.place){
+            plansItemPhaseLessonModalPlaceField.value = lesson.place.id
+        }
     }
     plansItemPhaseLessonModalSaveButton.attributes.getNamedItem("data-phase-id")
         .value = phaseID
@@ -98,7 +110,34 @@ async function phaseItemLessonAdd(phaseID){
 
 
 async function phaseItemLessonEdit(phaseID, lessonID){
+    if (phaseItemLessonClientValidation()){
+        const formData = new FormData(plansItemPhaseLessonModalForm)
+        if (formData.get("place") === ""){
+            formData.delete("place")
+        }
+        const request = await planItemAPIUpdateLesson(formData, lessonID)
+        if (request.status === 200){
+            bsPlansItemPhaseLessonModal.hide()
+            showToast("Урок", "Урок успешно изменён")
+            await planItemMain()
+        } else if (request.status === 400) {
+            phaseItemLessonServerValidation(request.response)
+        } else {
+            bsPlansItemPhaseLessonModal.hide()
+            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+        }
+    }
+}
 
+async function phaseItemLessonDestroy(lessonID){
+    const request = await planItemAPIDestroyLesson(lessonID)
+    bsLessonDeleteModal.hide()
+    if (request.status === 204){
+        showToast("Успешно", "Урок удалён")
+        await planItemMain()
+    } else {
+        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+    }
 }
 
 
@@ -106,14 +145,18 @@ async function phaseItemLessonEdit(phaseID, lessonID){
 const plansItemPhaseLessonModal = document.querySelector("#PlansItemPhaseLessonModal")
 const bsPlansItemPhaseLessonModal = new bootstrap.Modal(plansItemPhaseLessonModal)
 const plansItemPhaseLessonModalTitle = plansItemPhaseLessonModal.querySelector("#PlansItemPhaseLessonModalTitle")
+const lessonDeleteModal = document.querySelector("#LessonDeleteModal")
+const bsLessonDeleteModal = new bootstrap.Modal(lessonDeleteModal)
 
 const plansItemPhaseLessonModalForm = plansItemPhaseLessonModal.querySelector("#PlansItemPhaseLessonModalForm")
 const plansItemPhaseLessonModalNameField = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalNameField")
 const plansItemPhaseLessonModalNameError = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalNameError")
+const plansItemPhaseLessonModalDescriptionField = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalDescriptionField")
 const plansItemPhaseLessonModalDateField = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalDateField")
 const plansItemPhaseLessonModalStartField = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalStartField")
 const plansItemPhaseLessonModalEndField = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalEndField")
 const plansItemPhaseLessonModalPlaceField = plansItemPhaseLessonModalForm.querySelector("#PlansItemPhaseLessonModalPlaceField")
 const plansItemPhaseLessonModalSaveButton = plansItemPhaseLessonModal.querySelector("#PlansItemPhaseLessonModalSaveButton")
+const lessonDeleteModalButton = lessonDeleteModal.querySelector("#LessonDeleteModalButton")
 
-plansItemListenersLessonModalSave()
+plansItemLessonMain()

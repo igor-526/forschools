@@ -3,10 +3,6 @@ async function planItemMain(){
     if (request.status === 200){
         phasesArray = request.response
         planItemShowPhases()
-        if (canEditPlan){
-            await plansItemLessonMain()
-            plansItemListenersPhaseModal()
-        }
     }
 }
 
@@ -29,19 +25,38 @@ function planItemGetLessonHTML(lessons, phaseID){
             time = `${stH}:${stM} - ${etH}:${etM}`
         }
         if (canEditPlan){
-            lessonsHTML += `
+            if (lesson.deletable){
+                lessonsHTML += `
             <tr>
                 <td>${lesson.name}</td>
                 <td>${date}</td>
                 <td>${time}</td>
                 <td>
-                    <button type="button" class="btn btn-primary" id="PlansItemLessonEditButton" data-lesson-id="${lesson.id}" data-phase-id="${phaseID}">
-                    <i class="fa-solid fa-pen-to-square"></i></button>
+                    <button type="button" class="btn btn-danger phase-lesson-button-delete" data-bs-toggle="modal" href="#LessonDeleteModal" data-lesson-id="${lesson.id}">
+                        <i class="fa-solid fa-trash"></i></button>
+                    <button type="button" class="btn btn-primary phase-lesson-button-edit" data-lesson-id="${lesson.id}" data-phase-id="${phaseID}">
+                        <i class="fa-solid fa-pen-to-square"></i></button>
                     <a href="/lessons/${lesson.id}"><button type="button" class="btn btn-primary">
-                    <i class="fa-solid fa-chevron-right"></i></button></a>
+                        <i class="fa-solid fa-chevron-right"></i></button></a>
                 </td>
             </tr> 
             `
+            } else {
+                lessonsHTML += `
+            <tr>
+                <td>${lesson.name}</td>
+                <td>${date}</td>
+                <td>${time}</td>
+                <td>
+                    <button type="button" class="btn btn-primary phase-lesson-button-edit" data-lesson-id="${lesson.id}" data-phase-id="${phaseID}">
+                        <i class="fa-solid fa-pen-to-square"></i></button>
+                    <a href="/lessons/${lesson.id}"><button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-chevron-right"></i></button></a>
+                </td>
+            </tr> 
+            `
+            }
+
         } else {
             lessonsHTML += `
             <tr>
@@ -64,17 +79,37 @@ function planItemGetPhaseHTML(phase){
     let phaseHTML
     const lessonsHTML = planItemGetLessonHTML(phase.lessons, phase.id)
     if (canEditPlan){
-        phaseHTML = `
+        if (phase.deletable){
+            phaseHTML = `
         <tr data-phase-id="${phase.id}">
             <td style="max-width: 300px;">${phase.name}</td>
             <td>${phase.purpose}</td>
             <td>
-                <button type="button" class="btn btn-primary" id="PlansItemTableEditButton" data-phase-id="${phase.id}">
+                <button type="button" class="btn btn-danger phase-table-button-delete" data-bs-toggle="modal" href="#PhaseDeleteModal" data-phase-id="${phase.id}">
+                    <i class="fa-solid fa-trash"></i></button>
+                <button type="button" class="btn btn-primary phase-table-button-edit" data-phase-id="${phase.id}">
                     <i class="fa-solid fa-pen-to-square"></i></button>
                 <button type="button" class="btn btn-primary"  data-phase-id="${phase.id}" data-bs-toggle="collapse" data-bs-target="#PlansItemTablePhaseCollapse${phase.id}">
                     <i class="fa-solid fa-chevron-right"></i></button>
             </td>
         </tr>
+            `
+        } else {
+            phaseHTML = `
+        <tr data-phase-id="${phase.id}">
+            <td style="max-width: 300px;">${phase.name}</td>
+            <td>${phase.purpose}</td>
+            <td>
+                <button type="button" class="btn btn-primary phase-table-button-edit" data-phase-id="${phase.id}">
+                    <i class="fa-solid fa-pen-to-square"></i></button>
+                <button type="button" class="btn btn-primary"  data-phase-id="${phase.id}" data-bs-toggle="collapse" data-bs-target="#PlansItemTablePhaseCollapse${phase.id}">
+                    <i class="fa-solid fa-chevron-right"></i></button>
+            </td>
+        </tr>
+            `
+        }
+        phaseHTML += `
+
         <tr>
             <td colspan="4">
             <div class="collapse ms-3" id="PlansItemTablePhaseCollapse${phase.id}">
@@ -94,7 +129,7 @@ function planItemGetPhaseHTML(phase){
                         <tr>
                             <td colspan="3">Добавить урок</td>
                             <td>
-                                <button type="button" class="btn btn-primary" id="PlansItemLessonTableAddButton" 
+                                <button type="button" class="btn btn-primary phase-lesson-button-add" 
                                 data-phase-id="${phase.id}" data-lesson-id="0"><i class="fa-solid fa-plus"></i></button>
                             </td>
                         </tr>                               
@@ -158,6 +193,7 @@ function planItemShowPhases(list = phasesArray) {
             </td>
         </tr>`)
         plansItemListenersPhaseEdit()
+        plansItemListenersLessonsAddEdit()
     }
 }
 

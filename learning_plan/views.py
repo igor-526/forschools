@@ -38,7 +38,7 @@ class PlansItemPageView(CanSeePlansPageMixin, TemplateView):
         return render(request, self.template_name, context)
 
 
-class PlansListView(LoginRequiredMixin, ListCreateAPIView):
+class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = LearningPlanListSerializer
 
     def get_queryset(self):
@@ -52,7 +52,21 @@ class PlansListView(LoginRequiredMixin, ListCreateAPIView):
             return None
 
 
-class PlanPhasesAPIView(LoginRequiredMixin, ListCreateAPIView):
+class PlansItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+    serializer_class = LearningPlanListSerializer
+
+    def get_queryset(self):
+        usergroups = [group.name for group in self.request.user.groups.all()]
+        queryset = LearningPlan.objects.all()
+        if ("Admin" in usergroups) or ("Metodist" in usergroups):
+            return queryset
+        if "Teacher" in usergroups:
+            return queryset.filter(teacher=self.request.user)
+        if "Listener" in usergroups:
+            return None
+
+
+class PlanPhasesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = LearningPhasesListSerializer
 
     def get_queryset(self, *args, **kwargs):
@@ -104,3 +118,14 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
                 return JsonResponse(serializer.data, status=400)
         else:
             raise PermissionDenied
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            phase = self.get_object(phase_pk=kwargs.get("pk"))
+        except LearningPhases.DoesNotExist:
+            raise Http404
+        if can_edit_plan(request, phase=phase):
+            if phase.lessons.count() == 0:
+                phase.delete()
+                return JsonResponse({"status": "ok"}, status=204)
+        raise PermissionDenied

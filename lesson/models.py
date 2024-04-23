@@ -84,7 +84,7 @@ class Lesson(models.Model):
     class Meta:
         verbose_name = 'Урок'
         verbose_name_plural = 'Уроки'
-        ordering = ['date', 'pk']
+        ordering = ['date', 'start_time', 'pk']
 
     def __str__(self):
         return f'{self.name} - {self.date}'
@@ -93,9 +93,25 @@ class Lesson(models.Model):
         if self.replace_teacher:
             return self.replace_teacher
         else:
-            return self.learningphases_set.first().learningplan_set.first().teacher
+            return self.get_learning_plan().teacher
 
     def get_listeners(self):
-        return self.learningphases_set.first().learningplan_set.first().listeners.all()
+        return self.get_learning_plan().listeners.all()
+
+    def get_hw_teacher(self):
+        default_hw_teacher = self.get_learning_plan().default_hw_teacher
+        if default_hw_teacher:
+            return default_hw_teacher
+        else:
+            return self.get_teacher()
+
+    def get_learning_plan(self):
+        return self.learningphases_set.first().learningplan_set.first()
+
+    def get_hw_deadline(self):
+        nl = self.get_learning_plan().get_next_lesson(self)
+        if not nl or not nl.date:
+            return None
+        return nl.date
 
 

@@ -11,6 +11,7 @@ function lessonItemHomeworksMain() {
 
 function lessonItemHomeworksClean(){
     HWNewForm.reset()
+    HWNewDeadlineField.value = lessonItemNewHwDeadline
     HWNewMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
     HWNewMaterialsSet = []
 }
