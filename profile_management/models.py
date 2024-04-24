@@ -122,7 +122,7 @@ class NewUser(AbstractUser):
 
     def update_last_activity(self):
         self.last_activity = timezone.localtime(timezone.now())
-        super().save()
+        self.save()
 
     def set_group(self, group: str):
         group_obj = Group.objects.filter(name=group).first()
