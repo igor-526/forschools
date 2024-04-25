@@ -7,14 +7,18 @@
     <div class="offcanvas-body">
         <form id="formUserPhoto">
             <div class="text-center" id="UserShowPhotoField">
-                <img src="" alt="Фото профиля" class="base-profile-photo" id="UserShowPhotoImage">
-                <div class="dropdown-menu" id="UserShowPhotoDropdown">
-                    <form>
-                        <div class="input-group">
-                            <input name="photo" type="file" class="form-control" id="UserShowPhotoChangeField">
-                            <button class="btn btn-outline-secondary" type="button" id="UserShowPhotoDelButton">Удалить</button>
-                        </div>
-                    </form>
+                <a data-bs-toggle="collapse" href="#UserShowPhotoCollapse">
+                    <img src="" alt="Фото профиля" class="base-profile-photo" id="UserShowPhotoImage">
+                </a>
+                <div class="collapse mt-3" id="UserShowPhotoCollapse">
+                    <div class="card card-body">
+                        <form id="formUserPhoto">
+                            <div class="input-group">
+                                <input name="photo" type="file" class="form-control" id="UserShowPhotoChangeField">
+                                <button class="btn btn-outline-danger" type="button" id="UserShowPhotoDelButton">Удалить</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -48,13 +52,16 @@
             </div>
 
             <div class="mb-3">
-                <span class="form-label">Роль</span>
-                <select name="role" class="form-select mb-3" id="UserShowRoleSelect">
-                    <option value="Listener">Ученик</option>
-                    <option value="Teacher">Преподаватель</option>
-                    <option value="Metodist">Методист</option>
-                    <option value="Admin">Администратор</option>
-                </select>
+                <input name="role" value="Admin" type="checkbox" class="btn-check" id="UserShowRoleCheckboxAdmin" autocomplete="off">
+                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxAdmin">Администратор</label>
+                <input name="role" value="Metodist" type="checkbox" class="btn-check" id="UserShowRoleCheckboxMetodist" autocomplete="off">
+                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxMetodist">Методист</label>
+                <input name="role" value="Teacher" type="checkbox" class="btn-check" id="UserShowRoleCheckboxTeacher" autocomplete="off">
+                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxTeacher">Преподаватель</label>
+                <input name="role" value="Curator" type="checkbox" class="btn-check" id="UserShowRoleCheckboxCurator" autocomplete="off" disabled>
+                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxCurator">Куратор</label>
+                <input name="role" value="Listener" type="checkbox" class="btn-check" id="UserShowRoleCheckboxListener" autocomplete="off">
+                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxListener">Ученик</label>
             </div>
 
             <div class="mb-3">
@@ -117,14 +124,23 @@
                 <input name="eng_channel_new" type="text" class="form-control d-none" id="UserNewEngagementChannelField" placeholder="Новый канал привлечения" required>
             </div>
 
+            <div class="card mb-3">
+                <div class="card-header">Активность</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item" id="UserShowLastActivity"></li>
+                        <li class="list-group-item" id="UserShowRegistrationDate"></li>
+                    </ul>
+                </div>
+            </div>
+
             <div class="mb-3">
                 <button id="UserShowSaveButton" type="button" class="btn btn-success">Сохранить</button>
                 <button id="UserShowChangePasswordButton" type="button" class="btn btn-warning">Смена пароля</button>
             </div>
 
             <div class="mb-3">
-                <button id="UserShowDeactivateButton" type="button" class="btn btn-danger">Деактивировать</button>
-                <button id="UserShowActivateButton" type="button" class="btn btn-warning">Активировать</button>
+                <button id="UserShowActivateButton" type="button" class="btn"></button>
                 <button id="UserShowTelegramButton" type="button" class="btn btn-primary">Telegram</button>
             </div>
 

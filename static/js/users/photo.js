@@ -1,46 +1,39 @@
-async function setPhoto(){
-    const userID = formUser.attributes.getNamedItem('data-user-id').value
-    const formData = new FormData(formPhoto)
-    let response = await fetch(`/api/v1/users/${userID}/photo/`, {
-        method: 'patch',
-        credentials: 'same-origin',
-        headers:{
-            "X-CSRFToken": csrftoken,
-        },
-        body: formData
+function usersAdminPhotoMain() {
+    photoChange.addEventListener('change', async function(){
+        const userID = formPhoto.attributes.getNamedItem("data-user-id").value
+        await usersAdminPhotoUpdate(userID)
     })
-    await updatePhoto()
+    photoDelete.addEventListener('click', async function(){
+        const userID = formPhoto.attributes.getNamedItem("data-user-id").value
+        await usersAdminPhotoDelete(userID)
+    })
 }
 
-async function updatePhoto(){
-    const userID = formUser.attributes.getNamedItem('data-user-id').value
-    const response = await fetch(`/api/v1/users/${userID}/photo/`)
-    const content = await response.json()
-    console.log(content.photo)
-    photoImage.src = content.photo
-}
-
-async function deletePhoto(){
-    const userID = formUser.attributes.getNamedItem('data-user-id').value
-    await fetch(`/api/v1/users/${userID}/photo/`, {
-        method: 'delete',
-        credentials: 'same-origin',
-        headers:{
-            "X-CSRFToken": csrftoken,
+async function usersAdminPhotoUpdate(userID){
+    const formData = new FormData(formPhoto)
+    await usersAPIPhotoUpdate(userID, formData).then(async response => {
+        if (response.status === 200){
+            await usersAdminPhotoGet(userID)
         }
     })
-    await updatePhoto()
 }
 
-const formPhoto = document.querySelector("#formUserPhoto")
-const photo = formPhoto.querySelector("#UserShowPhotoField")
+async function usersAdminPhotoGet(userID){
+    await usersAPIPhotoGet(userID).then(request => {
+        if (request.status === 200){
+            photoImage.src = request.response.photo
+        }
+    })
+}
+
+async function usersAdminPhotoDelete(userID){
+    await usersAPIPhotoDestroy(userID).then(async request => {
+        if (request.status === 204){
+            await usersAdminPhotoGet(userID)
+        }
+    })
+}
+
 const photoImage = formPhoto.querySelector("#UserShowPhotoImage")
-const photoChange = formPhoto.querySelector("#UserShowPhotoChangeField")
-const photoDelete = formPhoto.querySelector("#UserShowPhotoDelButton")
 
-photoChange.addEventListener('change', setPhoto)
-photoDelete.addEventListener('click', deletePhoto)
-
-photo.addEventListener('click', function () {
-    bsPhotoDropdown.toggle()
-})
+usersAdminPhotoMain()

@@ -9,7 +9,7 @@ async function lessonItemReplaceMain(){
 }
 
 async function lessonItemReplaceGetTeachers(){
-    const request = await usersGetTeachers()
+    const request = await usersAPIGetTeachers()
     if (request.status === 200){
         teachersArray = request.response
     }

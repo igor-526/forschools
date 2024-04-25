@@ -1,4 +1,8 @@
-function formRegistrationClientValidation(){
+function usersAdminRegistrationMain(){
+    formRegistrationButtonRegister.addEventListener('click', usersAdminRegistrationRegister)
+}
+
+function usersAdminRegistrationClientValidation(){
     let validationStatus = true
     formRegistrationUsernameField.classList.remove("is-invalid")
     formRegistrationLastNameField.classList.remove("is-invalid")
@@ -35,7 +39,7 @@ function formRegistrationClientValidation(){
     return validationStatus
 }
 
-function formRegistrationServerValidation(errors) {
+function usersAdminRegistrationServerValidation(errors) {
 
     if (errors.username) {
         formRegistrationUsernameField.classList.add("is-invalid")
@@ -51,32 +55,29 @@ function formRegistrationServerValidation(errors) {
     }
 }
 
-async function registerUser(){
-    const validationStatus = formRegistrationClientValidation()
+async function usersAdminRegistrationRegister(){
+    const validationStatus = usersAdminRegistrationClientValidation()
     if (validationStatus){
         const data = new FormData(formRegistration);
         data.append("password2", data.get('password1'))
-        const response = await fetch("/register", {
-            method: 'post',
-            credentials: 'same-origin',
-            headers:{
-                "X-CSRFToken": csrftoken,
-            },
-            body: data
+        await usersAPIRegistration(data).then(async response => {
+            if (response.status === 200){
+                bsOffcanvasRegister.hide()
+                formRegistration.reset()
+                showToast("Регистрация пользователя", "Пользователь успешно зарегистрирован")
+                await usersAdminGetAll()
+                usersAdminShow()
+            } else if (response.status === 400) {
+                usersAdminRegistrationServerValidation(response.response)
+            } else {
+                showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+            }
         })
-        if (response.status === 200){
-            bsOffcanvasRegister.hide()
-            formRegistration.reset()
-            showToast("Регистрация пользователя", "Пользователь успешно зарегистрирован")
-            await getUsers()
-            showUsers()
-        } else if (response.status === 400) {
-            await response.json().then(errors => formRegistrationServerValidation(errors))
-        } else {
-            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-        }
     }
 }
+
+const bsOffcanvasRegister = new bootstrap
+    .Offcanvas(document.querySelector("#offcanvasRegister"))
 
 //Forms
 const formRegistration = document.querySelector('#formRegistration')
@@ -91,4 +92,4 @@ const formRegistrationPasswordField = formRegistration.querySelector("#RegisterU
 const formRegistrationPasswordError = formRegistration.querySelector("#RegisterUserPasswordErrors")
 const formRegistrationButtonRegister = formRegistration.querySelector("#UserRegistrationButton")
 
-formRegistrationButtonRegister.addEventListener('click', registerUser)
+usersAdminRegistrationMain()

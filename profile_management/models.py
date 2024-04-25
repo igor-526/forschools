@@ -110,46 +110,87 @@ class NewUser(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ['last_name', 'first_name']
+        ordering = ['-is_active', 'last_name', 'first_name']
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
 
     def update_tg_code(self):
         self.tg_code = randint(10000, 99999)
-        super().save()
+        self.save()
         return self.tg_code
 
     def update_last_activity(self):
         self.last_activity = timezone.localtime(timezone.now())
         self.save()
 
-    def set_group(self, group: str):
-        group_obj = Group.objects.filter(name=group).first()
-        self.groups.set([group_obj])
+    def set_groups(self, groups: list):
+        try:
+            groupslist = [Group.objects.get(name=group) for group in groups]
+            self.groups.set(groupslist)
+            return "success"
+        except Group.DoesNotExist:
+            return "Произошла ошибка при определении роли"
 
-    def set_engagement_channel(self, eng_ch: str):
-        if eng_ch and not eng_ch.strip(" ") == "":
-            eng_channel = EngagementChannel.objects.get_or_create(name=eng_ch)
-            self.engagement_channel = eng_channel[0]
+    def set_engagement_channel(self, eng_ch, can_create=False):
+        if eng_ch is None:
+            self.engagement_channel = None
             self.save()
+            return "success"
+        else:
+            eng_ch = eng_ch.strip(" ")
+            if eng_ch != "":
+                if can_create:
+                    eng_channel = EngagementChannel.objects.get_or_create(name=eng_ch)
+                    self.engagement_channel = eng_channel[0]
+                else:
+                    try:
+                        eng_channel = EngagementChannel.objects.get(name=eng_ch)
+                        self.engagement_channel = eng_channel
+                    except EngagementChannel.DoesNotExist:
+                        return "Канал привлечения не найден"
+                self.save()
+                return "success"
+            else:
+                return "Произошла ошибка при определении наименования"
 
-    def set_level(self, level: str):
-        if level and not level.strip(" ") == "":
-            level_obj = Level.objects.get_or_create(name=level)
-            self.level = level_obj[0]
+    def set_level(self, level: str, can_create=False):
+        if level is None:
+            self.level = None
             self.save()
+            return "success"
+        else:
+            level = level.strip(" ")
+        if level != "":
+            if can_create:
+                level_obj = Level.objects.get_or_create(name=level)
+                self.level = level_obj[0]
+            else:
+                try:
+                    level_obj = Level.objects.get(name=level)
+                    self.level = level_obj
+                except Level.DoesNotExist:
+                    return "Уровень не найден"
+            self.save()
+            return "success"
+        else:
+            return "Произошла ошибка при определении наименования"
 
     def set_programs(self, programslist: list, new=None):
         all_progs = []
         if "new" in programslist:
             programslist.remove("new")
+
         for prog in programslist:
             if not prog.strip(" ") == "":
-                all_progs.append(Programs.objects.get_or_create(name=prog)[0])
+                try:
+                    all_progs.append(Programs.objects.get(name=prog))
+                except Programs.DoesNotExist:
+                    return "Программа обучения не найдена"
         if new and new.strip(" ") != "":
             all_progs.append(Programs.objects.get_or_create(name=new)[0])
         self.programs.set(all_progs)
+        return "success"
 
     def set_lessons_type(self, private, group):
         self.private_lessons = True if private else False

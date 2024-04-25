@@ -76,5 +76,5 @@ const profileEditChangePasswordButton = formProfileEdit.querySelector("#ProfileE
 
 profileEditSaveButton.addEventListener("click", saveEdit)
 profileEditChangePasswordButton.addEventListener("click", function () {
-    changePasswordShow(userID)
+    usersAdminChangePasswordShow(userID)
 })

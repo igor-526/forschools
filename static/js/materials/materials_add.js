@@ -130,7 +130,7 @@ async function materialsSetCategories(){
     } else {
         formMaterialNewCategorySelect.innerHTML = ''
     }
-    const request = await collectionsGetMatCats()
+    const request = await collectionsAPIGetMatCats()
     if (request.status === 200){
         request.response.map(category => {
             formMaterialNewCategorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`
@@ -151,7 +151,7 @@ async function materialsSetLevels(){
     } else {
         formMaterialNewLvlSelect.innerHTML = ''
     }
-    const request = await collectionsGetMatLevels()
+    const request = await collectionsAPIGetMatLevels()
     if (request.status === 200){
         request.response.map(level => {
             formMaterialNewLvlSelect.innerHTML += `<option value="${level.name}">${level.name}</option>`

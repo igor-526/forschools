@@ -1,3 +1,40 @@
+function usersAdminEditMain(){
+    formUserEditSaveButton.addEventListener('click', async function(){
+        await usersAdminEditSaveUser(this.attributes.getNamedItem("data-user-id").value)
+    })
+    formUserEditActivateButton.addEventListener('click', async function(){
+        await usersAdminUserActivation(this.attributes.getNamedItem("data-user-id").value,
+            this.attributes.getNamedItem("data-action").value)
+    })
+    formUserEditChangePasswordButton.addEventListener('click', async function (){
+        await usersAdminChangePasswordShow(this.attributes.getNamedItem("data-user-id").value)
+    })
+
+    if (canSetNewEngChLvlPrg){
+        formUserEditProgramSelect.addEventListener('change', function () {
+            if (this.value === 'new'){
+                formUserEditProgramInput.classList.remove('d-none')
+            } else {
+                formUserEditProgramInput.classList.add('d-none')
+            }
+        })
+        formUserEditEngagementChannelSelect.addEventListener('change', function () {
+            if (this.value === 'new'){
+                formUserEditEngagementChannelInput.classList.remove('d-none')
+            } else {
+                formUserEditEngagementChannelInput.classList.add('d-none')
+            }
+        })
+        formUserEditLevelSelect.addEventListener('change', function () {
+            if (this.value === 'new'){
+                formUserEditLevelInput.classList.remove('d-none')
+            } else {
+                formUserEditLevelInput.classList.add('d-none')
+            }
+        })
+    }
+}
+
 function formUserEditClientValidation(){
     let validationStatus = true
 
@@ -43,217 +80,145 @@ function formUserEditServerValidation(errors){
     console.log(errors)
 }
 
-async function saveUser() {
-    const validationStatus = formUserEditClientValidation()
-    if (validationStatus){
-        const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
+async function usersAdminEditSaveUser(userID) {
+    if (formUserEditClientValidation()){
         const formData = new FormData(formUserEdit);
-        // if (formData.get("eng_channel") === "new" || formData.get("eng_channel") == null){
-        //     formData.delete("eng_channel")
-        // }
-        // if (formData.get("lvl") === "new" || formData.get("lvl") == null){
-        //     formData.delete("lvl")
-        // }
-        const response = await fetch(`/api/v1/users/${userID}/`, {
-            method: 'patch',
-            credentials: 'same-origin',
-            headers:{
-                "X-CSRFToken": csrftoken,
-            },
-            body: formData
-        })
-        if (response.status === 200){
-            bsOffcanvasUser.hide()
-            console.log(await response.json())
-            showToast("Изменение пользователя", "Пользователь успешно изменён")
-            await getUsers()
-            showUsers()
-        } else if (response.status === 400){
-            await response.json().then(errors => formUserEditServerValidation(errors))
-        } else {
-            bsOffcanvasUser.hide()
-            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+        if (formData.get("eng_channel") === "new" || formData.get("eng_channel") === "none"){
+            formData.delete("eng_channel")
         }
-
-    }
-
-}
-
-function permsEdit(state){
-    formUserEditUsernameField.disabled = state
-    formUserEditLastNameField.disabled = state
-    formUserEditFirstNameField.disabled = state
-    formUserEditEmailField.disabled = state
-    formUserEditBDate.disabled = state
-    formUserEditPrivateLessons.disabled = state
-    formUserEditGroupLessons.disabled = state
-    formUserEditProgramSelect.disabled = state
-    formUserEditProgramInput.disabled = state
-    formUserEditProgress.disabled = state
-    formUserEditLevelSelect.disabled = state
-    formUserEditLevelInput.disabled = state
-    formUserEditWorkExperience.disabled = state
-    formUserEditNote.disabled = state
-    formUserEditEngagementChannelSelect.disabled = state
-    formUserEditEngagementChannelInput.disabled = state
-    formUserEditSaveButton.disabled = state
-}
-
-function permsMoreInfo(state) {
-    if (state) {
-        formUserEditWorkBlock.classList.remove("d-none")
-        formUserEditNoteBlock.classList.remove("d-none")
-        formUserEditEngagementChannelBlock.classList.remove("d-none")
-
-    } else {
-        formUserEditWorkBlock.classList.add("d-none")
-        formUserEditNoteBlock.classList.add("d-none")
-        formUserEditEngagementChannelBlock.classList.add("d-none")
+        if (formData.get("eng_channel_new") === ""){
+            formData.delete("eng_channel_new")
+        }
+        if (formData.get("lvl") === "new" || formData.get("lvl") === "none"){
+            formData.delete("lvl")
+        }
+        if (formData.get("lvl_new") === ""){
+            formData.delete("lvl_new")
+        }
+        if (formData.get("prog_new") === ""){
+            formData.delete("prog_new")
+        }
+        await usersAPIUpdateUser(formData, userID).then(response => {
+            if (response.status === 200){
+                bsOffcanvasUser.hide()
+                showToast("Изменение пользователя", "Пользователь успешно изменён")
+                usersAdminMain()
+            } else if (response.status === 400){
+                formUserEditServerValidation(response.response)
+            } else {
+                bsOffcanvasUser.hide()
+                showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+            }
+        })
     }
 }
 
-function setupPerms(group){
-    console.log(group)
-    console.log(userPermissions)
-    formUserEditRole.disabled = userPermissions.permissions.indexOf("auth.register_users") === -1;
-    formUserEditPrivateLessonsBlock.classList.add("d-none")
-    formUserEditGroupLessonsBlock.classList.add("d-none")
-    formUserEditProgramBlock.classList.add("d-none")
-    formUserEditProgressBlock.classList.add("d-none")
-    formUserEditLevelBlock.classList.add("d-none")
-    formUserEditWorkBlock.classList.add("d-none")
-    formUserEditNoteBlock.classList.add("d-none")
-    formUserEditEngagementChannelBlock.classList.add("d-none")
-
-
-    if (group === "Listener"){
-        formUserEditPrivateLessonsBlock.classList.remove("d-none")
-        formUserEditGroupLessonsBlock.classList.remove("d-none")
-        formUserEditProgramBlock.classList.remove("d-none")
-        formUserEditProgressBlock.classList.remove("d-none")
-        formUserEditLevelBlock.classList.remove("d-none")
-        formUserEditNoteBlock.classList.remove("d-none")
-        formUserEditEngagementChannelBlock.classList.remove("d-none")
-
-        permsEdit(userPermissions.permissions.indexOf("auth.edit_listener") === -1)
-        permsMoreInfo(userPermissions.permissions.indexOf("auth.see_moreinfo_listener") !== -1)
-        if (userPermissions.permissions.indexOf("auth.deactivate_listener") !== -1){}
-    }
-
-    else if (group === "Teacher"){
-        formUserEditPrivateLessonsBlock.classList.remove("d-none")
-        formUserEditGroupLessonsBlock.classList.remove("d-none")
-        formUserEditProgramBlock.classList.remove("d-none")
-        formUserEditProgressBlock.classList.remove("d-none")
-        formUserEditLevelBlock.classList.remove("d-none")
-        formUserEditWorkBlock.classList.remove("d-none")
-        formUserEditNoteBlock.classList.remove("d-none")
-        formUserEditEngagementChannelBlock.classList.remove("d-none")
-
-        permsEdit(userPermissions.permissions.indexOf("auth.edit_teacher") === -1)
-        permsMoreInfo(userPermissions.permissions.indexOf("auth.see_moreinfo_teacher") !== -1)
-    }
-
-    else if (group === "Metodist"){
-        formUserEditWorkBlock.classList.remove("d-none")
-        formUserEditNoteBlock.classList.remove("d-none")
-        formUserEditEngagementChannelBlock.classList.remove("d-none")
-
-        permsEdit(userPermissions.permissions.indexOf("auth.edit_metodist") === -1)
-        permsMoreInfo(userPermissions.permissions.indexOf("auth.see_moreinfo_metodist") !== -1)
-    }
-
-    else if (group === "Admin"){
-        formUserEditWorkBlock.classList.remove("d-none")
-        formUserEditNoteBlock.classList.remove("d-none")
-        formUserEditEngagementChannelBlock.classList.remove("d-none")
-
-        permsEdit(userPermissions.permissions.indexOf("auth.edit_admin") === -1)
-        permsMoreInfo(userPermissions.permissions.indexOf("auth.see_moreinfo_admin") !== -1)
-    }
-}
-
-async function showUser(){
+async function usersAdminShowUser(){
     formUserEdit.reset()
     const userId = this.attributes.getNamedItem('data-user-id').value
-    let userObj = await fetch(`/api/v1/users/${userId}`)
-    userObj = await userObj.json()
-    if (userObj.is_active === true){
-        formUserEditDeactivateButton.classList.remove("d-none")
-        formUserEditActivateButton.classList.add("d-none")
-    } else {
-        formUserEditDeactivateButton.classList.add("d-none")
-        formUserEditActivateButton.classList.remove("d-none")
-    }
-    setupPerms(userObj.groups[0].name)
-    bsOffcanvasUser.show()
-    // if (userObj.engagement_channel){
-    //     formUserEditEngagementChannelSelect.value = userObj.engagement_channel.name
-    // }
-    // if (userObj.level){
-    //     formUserEditLevelSelect.value = userObj.level.name
-    // }
-    // formUserEditUsernameField.value = userObj.username
-    formUserEditLastNameField.value = userObj.last_name
-    formUserEditFirstNameField.value = userObj.first_name
-    formUserEditRole.value = userObj.groups[0].name
-    // formUserEditEmailField.value = userObj.email
-    // formUserEditBDate.value = userObj.bdate
-    // formUserEditProgress.value = userObj.progress
-    // formUserEditWorkExperience.value = userObj.work_experience
-    // formUserEditPrivateLessons.checked = userObj.private_lessons
-    // formUserEditGroupLessons.checked = userObj.group_lessons
-    // formUserEditNote.value = userObj.note
-    // photoImage.src = userObj.photo
-    // userObj.programs.map(program => {
-    //     const option = formUserEditProgramSelect.querySelector(`[value="${program.name}"]`)
-    //     option.selected = true
-    // })
-
-    formUserEdit.setAttribute('data-user-id', userObj.id)
-    formUserEditTelegramButton.setAttribute('data-user-id', userObj.id)
-
-}
-
-async function deactivateUser(){
-    const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
-    const response = await fetch(`/api/v1/users/${userID}/deactivate/`, {
-        method: 'patch',
-        credentials: 'same-origin',
-        headers:{
-            "X-CSRFToken": csrftoken,
+    let userObj
+    await usersAPIGetItem(userId).then(response => {
+        if (response.status === 200){
+            userObj = response.response
+        } else {
+            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
         }
     })
-    if (response.status === 200){
-        bsOffcanvasUser.hide()
-        showToast("Изменение пользователя", "Пользователь успешно деактивирован")
-        await getUsers()
-        showUsers()
-    } else {
-        bsOffcanvasUser.hide()
-        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+    if (userObj){
+        if (userObj.can_deactivate){
+            formUserEditActivateButton.classList.remove("d-none")
+            if (userObj.is_active){
+                formUserEditActivateButton.classList.add("btn-danger")
+                formUserEditActivateButton.classList.remove("btn-warning")
+                formUserEditActivateButton.innerHTML = "Деактивировать"
+                formUserEditActivateButton.setAttribute("data-action", "deactivate")
+            } else {
+                formUserEditActivateButton.classList.remove("btn-danger")
+                formUserEditActivateButton.classList.add("btn-warning")
+                formUserEditActivateButton.innerHTML = "Активировать"
+                formUserEditActivateButton.setAttribute("data-action", "activate")
+            }
+        }
+        else {
+            formUserEditActivateButton.classList.add("d-none")
+        }
+
+        if (userObj.engagement_channel){
+            formUserEditEngagementChannelSelect.value = userObj.engagement_channel.name
+        }
+        if (userObj.level){
+            formUserEditLevelSelect.value = userObj.level.name
+        }
+        formUserEditUsernameField.value = userObj.username
+        formUserEditLastNameField.value = userObj.last_name
+        formUserEditFirstNameField.value = userObj.first_name
+        userObj.groups.map(group => {
+            switch (group.name) {
+                case "Admin":
+                    formUserCheckboxAdmin.checked = true
+                    break
+                case "Metodist":
+                    formUserCheckboxMetodist.checked = true
+                    break
+                case "Teacher":
+                    formUserCheckboxTeacher.checked = true
+                    break
+                case "Curator":
+                    formUserCheckboxCurator.checked = true
+                    break
+                case "Listener":
+                    formUserCheckboxListener.checked = true
+                    break
+            }
+        })
+        formUserEditEmailField.value = userObj.email
+        formUserEditBDate.value = userObj.bdate
+        formUserEditProgress.value = userObj.progress
+        formUserEditWorkExperience.value = userObj.work_experience
+        formUserEditPrivateLessons.checked = userObj.private_lessons
+        formUserEditGroupLessons.checked = userObj.group_lessons
+        formUserEditNote.value = userObj.note
+        photoImage.src = userObj.photo
+        userObj.programs.map(program => {
+            const option = formUserEditProgramSelect.querySelector(`[value="${program.name}"]`)
+            option.selected = true
+        })
+        const activityDate = new Date(userObj.last_activity)
+        const registrationDate = new Date(userObj.date_joined)
+        formUserShowLastActivity.innerHTML = `Последняя активность: ${activityDate.toLocaleString()}`
+        formUserShowRegistrationDate.innerHTML = `Дата регистрации: ${registrationDate.toLocaleDateString()}`
+
+        bsOffcanvasUser.show()
+        const actionButtons = [
+            formUserEditActivateButton,
+            formUserEditChangePasswordButton,
+            formUserEditTelegramButton,
+            formUserEditSaveButton,
+            formPhoto]
+        actionButtons.forEach(button => {
+            button.setAttribute("data-user-id", userObj.id)
+        })
     }
+
 }
 
-async function activateUser(){
-    const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
-    const response = await fetch(`/api/v1/users/${userID}/activate/`, {
-        method: 'patch',
-        credentials: 'same-origin',
-        headers:{
-            "X-CSRFToken": csrftoken,
+async function usersAdminUserActivation(userID, action){
+    await usersAPIDeactivate(userID, action).then(async response => {
+        bsOffcanvasUser.hide()
+        if (response.status === 200) {
+            showToast("Изменение пользователя", "Пользователь успешно активирован")
+            await usersAdminGetAll()
+            usersAdminShow()
+        } else if (response.status === 403){
+            showToast("Ошибка", "У вас нет прав на это действие")
+        } else {
+            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
         }
     })
-    if (response.status === 200){
-        bsOffcanvasUser.hide()
-        showToast("Изменение пользователя", "Пользователь успешно активирован")
-        await getUsers()
-        showUsers()
-    } else {
-        bsOffcanvasUser.hide()
-        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-    }
 }
+
+const bsOffcanvasUser = new bootstrap
+    .Offcanvas(document.querySelector("#offcanvasUser"))
 
 //  Forms (EditUser)
 const formUserEdit = document.querySelector("#formUserEdit")
@@ -265,7 +230,13 @@ const formUserEditFirstNameField = formUserEdit.querySelector("#UserShowFirstNam
 const formUserEditFirstNameError = formUserEdit.querySelector("#UserShowFirstNameErrors")
 const formUserEditEmailField = formUserEdit.querySelector("#UserShowEmailField")
 const formUserEditEmailErrors = formUserEdit.querySelector("#UserShowEmailErrors")
-const formUserEditRole = formUserEdit.querySelector("#UserShowRoleSelect")
+
+const formUserCheckboxAdmin = formUserEdit.querySelector("#UserShowRoleCheckboxAdmin")
+const formUserCheckboxMetodist = formUserEdit.querySelector("#UserShowRoleCheckboxMetodist")
+const formUserCheckboxTeacher = formUserEdit.querySelector("#UserShowRoleCheckboxTeacher")
+const formUserCheckboxCurator = formUserEdit.querySelector("#UserShowRoleCheckboxCurator")
+const formUserCheckboxListener = formUserEdit.querySelector("#UserShowRoleCheckboxListener")
+
 const formUserEditBDate = formUserEdit.querySelector("#UserShowBDateField")
 const formUserEditPrivateLessons = formUserEdit.querySelector("#UserShowPrivateLessonsField")
 const formUserEditPrivateLessonsBlock = formUserEdit.querySelector("#UserShowPrivateLessonsBlock")
@@ -286,40 +257,15 @@ const formUserEditNoteBlock = formUserEdit.querySelector(".UserShowNoteBlock")
 const formUserEditEngagementChannelSelect = formUserEdit.querySelector("#UserShowEngagementChannelField")
 const formUserEditEngagementChannelInput = formUserEdit.querySelector("#UserNewEngagementChannelField")
 const formUserEditEngagementChannelBlock = formUserEdit.querySelector(".UserShowEngagementChannelBlock")
+const formUserShowLastActivity = formUserEdit.querySelector("#UserShowLastActivity")
+const formUserShowRegistrationDate = formUserEdit.querySelector("#UserShowRegistrationDate")
 const formUserEditSaveButton = formUserEdit.querySelector("#UserShowSaveButton")
-const formUserEditDeactivateButton = formUserEdit.querySelector("#UserShowDeactivateButton")
 const formUserEditActivateButton = formUserEdit.querySelector("#UserShowActivateButton")
 const formUserEditChangePasswordButton = formUserEdit.querySelector("#UserShowChangePasswordButton")
 const formUserEditTelegramButton = formUserEdit.querySelector("#UserShowTelegramButton")
 
+const formPhoto = document.querySelector("#formUserPhoto")
+const photoChange = formPhoto.querySelector("#UserShowPhotoChangeField")
+const photoDelete = formPhoto.querySelector("#UserShowPhotoDelButton")
 
-formUserEditSaveButton.addEventListener('click', saveUser)
-formUserEditTelegramButton.addEventListener('click', showTelegramOptions)
-formUserEditDeactivateButton.addEventListener('click', deactivateUser)
-formUserEditActivateButton.addEventListener('click', activateUser)
-
-formUserEditProgramSelect.addEventListener('change', function () {
-    if (this.value === 'new'){
-        formUserEditProgramInput.classList.remove('d-none')
-    } else {
-        formUserEditProgramInput.classList.add('d-none')
-    }
-})
-formUserEditEngagementChannelSelect.addEventListener('change', function () {
-    if (this.value === 'new'){
-        formUserEditEngagementChannelInput.classList.remove('d-none')
-    } else {
-        formUserEditEngagementChannelInput.classList.add('d-none')
-    }
-})
-formUserEditLevelSelect.addEventListener('change', function () {
-    if (this.value === 'new'){
-        formUserEditLevelInput.classList.remove('d-none')
-    } else {
-        formUserEditLevelInput.classList.add('d-none')
-    }
-})
-formUserEditChangePasswordButton.addEventListener('click', function (){
-    const userID = formUserEdit.attributes.getNamedItem('data-user-id').value
-    changePasswordShow(userID)
-})
+usersAdminEditMain()

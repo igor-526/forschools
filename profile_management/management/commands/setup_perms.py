@@ -69,7 +69,7 @@ class Command(BaseCommand):
                              register_metodist, register_teacher,
                              register_listener, edit_admin,
                              edit_metodist, edit_teacher,
-                             edit_listener,  deactivate_admin,
+                             edit_listener,
                              deactivate_metodist, deactivate_teacher,
                              deactivate_listener, see_moreinfo_admin,
                              see_moreinfo_metodist, see_moreinfo_teacher,

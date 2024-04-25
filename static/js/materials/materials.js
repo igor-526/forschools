@@ -130,7 +130,7 @@ async function materialsSetCategories(){
     }
     materialsCollapseSearchCategory.innerHTML = '<option selected value="none">Категория</option>'
 
-    const request = await collectionsGetMatCats()
+    const request = await collectionsAPIGetMatCats()
     if (request.status === 200){
         request.response.map(category => {
             formMaterialNewCategorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`
@@ -153,7 +153,7 @@ async function materialsSetLevels(){
         formMaterialNewLvlSelect.innerHTML = ''
     }
     materialsCollapseSearchLevel.innerHTML = '<option selected value="none">Уровень</option>'
-    const request = await collectionsGetMatLevels()
+    const request = await collectionsAPIGetMatLevels()
     if (request.status === 200){
         request.response.map(level => {
             formMaterialNewLvlSelect.innerHTML += `<option value="${level.name}">${level.name}</option>`

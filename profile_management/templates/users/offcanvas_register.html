@@ -27,12 +27,28 @@
                 </div>
             </div>
 
-            <select name="role" class="form-select mb-3" aria-label="">
-                <option value="Listener" selected>Ученик</option>
-                <option value="Teacher">Преподаватель</option>
-                <option value="Metodist">Методист</option>
-                <option value="Admin">Администратор</option>
-            </select>
+            <div class="mb-3">
+                {% if "auth.register_admin" in perms %}
+                    <input name="role" value="Admin" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxAdmin" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxAdmin">Администратор</label>
+                {% endif %}
+                {% if "auth.register_metodist" in perms %}
+                    <input name="role" value="Metodist" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxMetodist" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxMetodist">Методист</label>
+                {% endif %}
+                {% if "auth.register_teacher" in perms %}
+                    <input name="role" value="Teacher" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxTeacher" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxTeacher">Преподаватель</label>
+                {% endif %}
+                {% if "auth.register_curator" in perms %}
+                    <input name="role" value="Curator" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxCurator" autocomplete="off" disabled>
+                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxCurator">Куратор</label>
+                {% endif %}
+                {% if "auth.register_listener" in perms %}
+                    <input name="role" value="Listener" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxListener" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxListener">Ученик</label>
+                {% endif %}
+            </div>
 
             <button id="UserRegistrationButton" type="button" class="btn btn-primary">Зарегистрировать</button>
 

@@ -3,6 +3,7 @@ let profileEditButton
 let profileTelegramButton
 let profileMessageButton
 
+
 if (userSelf){
     bsOffcanvasEdit = new bootstrap
         .Offcanvas(document.querySelector("#offcanvasProfileEdit"))
@@ -11,7 +12,9 @@ if (userSelf){
     profileEditButton.addEventListener("click", function () {
         bsOffcanvasEdit.show()
     })
-    profileTelegramButton.addEventListener("click", openProfileTelegramModal)
+    profileTelegramButton.addEventListener("click", async function(){
+        usersAdminTelegramOpen(this.attributes.getNamedItem('data-user-id').value)
+    })
 } else {
     profileMessageButton = document.querySelector("#ProfileMessageButton")
     profileMessageButton.addEventListener("click", function () {

@@ -5,7 +5,7 @@ async function plansItemLessonMain(){
 
 
 async function plansItemLessonSetPlaces(){
-    const request = await collectionsGetLessonPlaces()
+    const request = await collectionsAPIGetLessonPlaces()
     if (request.status === 200){
         plansItemPhaseLessonModalPlaceField.innerHTML = '<option value="">Выберите</option>'
         request.response.map(place => {

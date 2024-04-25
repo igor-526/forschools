@@ -5,13 +5,13 @@ async function main(){
     await getLearningPrograms()
     await getEngagementChannels()
     await getLessonPlaces()
-    tabLevels.addEventListener('click', setLevels)
+    tabLevels.addEventListener('click', usersAdminSetLevels)
     tabMaterialCategories.addEventListener('click', setMaterialCategories)
     tabLearningPrograms.addEventListener('click', setLearningPrograms)
-    tabEngagementChannels.addEventListener('click', setEngagementChannels)
+    tabEngagementChannels.addEventListener('click', usersAdminSetEngagementChannels)
     tabPlaces.addEventListener('click', setLessonPlaces)
     tabMaterialLevels.addEventListener('click', setMaterialLevels)
-    setLevels()
+    usersAdminSetLevels()
 }
 
 //Bootstrap Elements

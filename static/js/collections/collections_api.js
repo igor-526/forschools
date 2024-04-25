@@ -1,14 +1,29 @@
-async function collectionsGetLessonPlaces(){
+async function collectionsAPIGetLessonPlaces(){
     const request = await fetch("/api/v1/collections/lesson_places/")
     return await APIGetToObject(request)
 }
 
-async function collectionsGetMatLevels(){
+async function collectionsAPIGetMatLevels(){
     const request = await fetch("/api/v1/collections/mat_levels/")
     return await APIGetToObject(request)
 }
 
-async function collectionsGetMatCats(){
+async function collectionsAPIGetMatCats(){
     const request = await fetch("/api/v1/collections/mat_cats/")
+    return await APIGetToObject(request)
+}
+
+async function collectionsAPIGetEngChannels(){
+    const request = await fetch("/api/v1/collections/eng_channels/")
+    return await APIGetToObject(request)
+}
+
+async function collectionsAPIGetLevels(){
+    const request = await fetch("/api/v1/collections/levels/")
+    return await APIGetToObject(request)
+}
+
+async function collectionsAPIGetPrograms(){
+    const request = await fetch("/api/v1/collections/learn_progs/")
     return await APIGetToObject(request)
 }

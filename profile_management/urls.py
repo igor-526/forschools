@@ -24,7 +24,7 @@ apiv1patterns = [
     path('', UserListAPIView.as_view()),  # API для вывода списка пользователей
     path('<int:pk>/', UserDetailAPIView.as_view()),     # API для вывода, изменения и удаления пользователя
     path('<int:pk>/photo/', UserPhotoApiView.as_view()),  # API для изменения фото профиля
-    path('<int:pk>/disconnect_telegram/', TelegramAPIView.as_view()),     # API для удаления привязки Telegram
+    path('<int:pk>/telegram/', TelegramAPIView.as_view()),     # API для удаления привязки Telegram
     path('<int:pk>/deactivate/', DeactivateUserView.as_view()),     # API для деактивации пользователя
     path('<int:pk>/activate/', ActivateUserView.as_view()),  # API для активации пользователя
     path('<int:pk>/reset_password/', ChangePasswordView.as_view()),  # API для смены пароля пользователя

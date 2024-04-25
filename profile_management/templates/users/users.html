@@ -40,7 +40,7 @@
         </div>
     </div>
 
-    <table class="table">
+    <table class="table table-hover">
         <thead>
         <tr>
             <th scope="col">ID</th>
@@ -59,15 +59,26 @@
 {% endblock %}
 {% block static_js %}
     <script>
-        var csrftoken = '{{ csrf_token }}';
-        const userPermissions = JSON.parse("{{ perms|escapejs }}")
+        const csrftoken = '{{ csrf_token }}'
+        const tgAction = "admin"
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/collections/collections_api.js' %}"></script>
+    <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
+
+    <script>
+        const canSetNewEngChLvlPrg = true
+    </script>
+
     <script src="{% static 'js/users/users.js' %}"></script>
-    <script src="{% static 'js/users/registration.js' %}"></script>
-    <script src="{% static 'js/users/telegram.js' %}"></script>
-    <script src="{% static 'js/users/users_change_password.js' %}"></script>
+    <script src="{% static 'js/users/search.js' %}"></script>
     <script src="{% static 'js/users/edit.js' %}"></script>
     <script src="{% static 'js/users/photo.js' %}"></script>
-    <script src="{% static 'js/users/search.js' %}"></script>
+    <script src="{% static 'js/users/telegram.js' %}"></script>
+    <script src="{% static 'js/users/users_change_password.js' %}"></script>
+    {% if "auth.register_users" in perms %}
+    <script src="{% static 'js/users/registration.js' %}"></script>
+    {% endif %}
 {% endblock %}

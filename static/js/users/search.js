@@ -28,10 +28,10 @@ function search(){
     if (formData.get("username") !== "" ||
         formData.get("name") !== "" ||
         formData.get("role") !== "none"){
-        const result = userSet.filter(u => filterSet(u, formData))
-        showUsers(result)
+        const result = usersAdminArray.filter(u => filterSet(u, formData))
+        usersAdminShow(result)
     } else {
-        showUsers()
+        usersAdminShow()
     }
 }
 

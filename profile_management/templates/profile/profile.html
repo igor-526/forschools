@@ -17,7 +17,7 @@
                             <button id="ProfileEditButton" type="button" class="btn btn-warning">Редактировать</button>
                         </div>
                         <div class="mb-2">
-                            <button id="ProfileTelegramButton" type="button" class="btn btn-primary">Telegram</button>
+                            <button id="ProfileTelegramButton" type="button" class="btn btn-primary" data-user-id="{{ request.user.id }}">Telegram</button>
                         </div>
                         {% include 'profile/profile_offcanvas_edit.html' %}
                         {% include 'users/modal_telegram.html' %}
@@ -73,7 +73,7 @@
                             {% else %}
                                 <li class="list-group-item">Последняя активность: не было</li>
                             {% endif %}
-                            <li class="list-group-item">Регистрация: {{ puser.date_joined|date:'Y-m-d H:i' }}</li>
+                            <li class="list-group-item">Регистрация: {{ puser.date_joined|date:'Y-m-d' }}</li>
                         </ul>
                     </div>
                 </div>
@@ -86,7 +86,6 @@
                                 <li class="list-group-item">Примечание: {{ puser.note }}</li>
                             {% endif %}
                             <li class="list-group-item">ID: {{ puser.id }}</li>
-                            <li class="list-group-item">TG: {{ puser.tg }}</li>
                         </ul>
                     </div>
                 </div>
@@ -97,14 +96,9 @@
     {% include 'users/users_modal_change_password.html' %}
 {% endblock %}
 {% block static_js %}
-    {% if self %}
-        <script src="{% static 'js/users/profile/profile_edit.js' %}"></script>
-        <script src="{% static 'js/users/profile/profile_photo.js' %}"></script>
-        <script src="{% static 'js/users/users_change_password.js' %}"></script>
-        <script src="{% static 'js/users/telegram.js' %}"></script>
-    {% endif %}
     <script>
-        var csrftoken = '{{ csrf_token }}';
+        const csrftoken = '{{ csrf_token }}'
+        const tgAction = 'profile'
         {% if self %}
             const userSelf = true
         {% else %}
@@ -112,6 +106,16 @@
         {% endif %}
         const userID = {{ puser.id }}
     </script>
+    {% if self %}
+        <script src="{% static 'js/apitostr.js' %}"></script>
+        <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
+        <script src="{% static 'js/users/users_api.js' %}"></script>
+        <script src="{% static 'js/users/profile/profile_edit.js' %}"></script>
+        <script src="{% static 'js/users/profile/profile_photo.js' %}"></script>
+        <script src="{% static 'js/users/users_change_password.js' %}"></script>
+        <script src="{% static 'js/users/telegram.js' %}"></script>
+    {% endif %}
+
     <script src="{% static 'js/users/profile/profile.js' %}"></script>
     <script src="{% static 'js/toasts.js' %}"></script>
 {% endblock %}

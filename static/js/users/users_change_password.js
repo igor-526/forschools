@@ -1,4 +1,11 @@
-function changePasswordClientValidation(){
+function usersAdminChanegPasswordMain(){
+    changePasswordModalChangeButton.addEventListener("click", async function(){
+        const userID = changePasswordModalChangeButton.attributes.getNamedItem("data-user-id").value
+        await usersAdminChangePassword(userID)
+    })
+}
+
+function usersAdminChangePasswordClientValidation(){
     let validationStatus = true
     changePasswordModalField.classList.remove("is-invalid")
     changePasswordModalError.innerHTML = ""
@@ -12,7 +19,7 @@ function changePasswordClientValidation(){
     return validationStatus
 }
 
-function changePasswordServerValidation(errors){
+function usersAdminChangePasswordServerValidation(errors){
     changePasswordModalField.classList.add("is-invalid")
     changePasswordModalError.innerHTML = "Поле не может быть пустым"
     errors.password.map(function (error) {
@@ -20,34 +27,34 @@ function changePasswordServerValidation(errors){
     })
 }
 
-function changePasswordShow(UID){
+function usersAdminChangePasswordShow(userID){
     changePasswordModalForm.reset()
     bsChangePasswordModal.show()
-    changePasswordModalChangeButton.attributes.getNamedItem("data-user-id").value = UID
+    changePasswordModalChangeButton.attributes.getNamedItem("data-user-id").value = userID
 }
 
-async function changePassword(){
-    if (changePasswordClientValidation()){
-        const userID = this.attributes.getNamedItem("data-user-id").value
-        const response = await fetch(`/api/v1/users/${userID}/reset_password/`, {
-            method: 'patch',
-            credentials: 'same-origin',
-            headers:{
-                "X-CSRFToken": csrftoken,
-            },
-            body: new FormData(changePasswordModalForm)
+async function usersAdminChangePassword(userID){
+    if (usersAdminChangePasswordClientValidation()){
+        await usersAPIChangePassword(new FormData(changePasswordModalForm), userID).then(async response => {
+            if (response.status === 200){
+                bsChangePasswordModal.hide()
+                changePasswordModalForm.reset()
+                if (tgAction === "admin"){
+                    bsOffcanvasUser.hide()
+                }
+                showToast("Смена пароля", "Пароль успешно сменён")
+            } else if (response.status === 400) {
+                usersAdminChangePasswordServerValidation(response.response)
+            } else if (response.status === 403) {
+                bsChangePasswordModal.hide()
+                changePasswordModalForm.reset()
+                showToast("Ошибка", "У вас нет прав на изменение пароля данного пользователя")
+            } else {
+                bsChangePasswordModal.hide()
+                changePasswordModalForm.reset()
+                showToast("Ошибка", "На сервере произошла ошибка. Обновите страницу или попробуйте позже")
+            }
         })
-        if (response.status === 200){
-            bsChangePasswordModal.hide()
-            changePasswordModalForm.reset()
-            showToast("Смена пароля", "Пароль успешно сменён")
-        } else if (response.status === 400){
-            changePasswordServerValidation(await response.json())
-        } else {
-            bsChangePasswordModal.hide()
-            changePasswordModalForm.reset()
-            showToast("Ошибка", "На сервере произошла ошибка. Обновите страницу или попробуйте позже")
-        }
     }
 }
 
@@ -62,6 +69,4 @@ const changePasswordModalField = changePasswordModal.querySelector("#UserChangeP
 const changePasswordModalError = changePasswordModal.querySelector("#UserChangePasswordModalError")
 const changePasswordModalChangeButton = changePasswordModal.querySelector("#UserChangePasswordModalChangeButton")
 
-changePasswordModalChangeButton.addEventListener("click", changePassword)
-
-
+usersAdminChanegPasswordMain()
