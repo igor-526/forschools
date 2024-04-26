@@ -37,7 +37,7 @@ def user_logout(request):    # логаут
     return HttpResponseRedirect(reverse_lazy('login'))
 
 
-@permission_required(perm='register_users', raise_exception=True)
+@permission_required(perm='auth.register_users', raise_exception=True)
 def register_view(request):     # API для регистрации пользователей
     if request.method == "POST":
         form = SignUpForm(request.POST)
