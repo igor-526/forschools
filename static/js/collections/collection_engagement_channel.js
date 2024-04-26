@@ -8,15 +8,15 @@ function setEngagementChannels(){
     tableHead.innerHTML = `<tr>
                         <th scope="col">Канал привлечения</th>
                         <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = '<td>Добавить канал привлечения</td><td><button type="button" class="btn btn-primary" id="TableButtonEngChannelAdd" data-col-id="0"><i class="fa-solid fa-plus"></i></button></td>'
+    tableBody.innerHTML = '<td>Добавить канал привлечения</td><td><button type="button" class="btn btn-primary" id="TableButtonEngChannelAdd" data-col-id="0"><i class="bi bi-plus-lg"></i></button></td>'
     engagementChannelsSet.map(function (item) {
         tableBody.insertAdjacentHTML("beforeend", `
                                 <td>${item.name}</td>
                                 <td>
                                 <button type="button" class="btn btn-danger" id="TableButtonEngChannelDelete" data-col-id="${item.id}">
-                                <i class="fa-regular fa-trash-can"></i></button>
+                                <i class="bi bi-trash3"></i></button>
                                 <button type="button" class="btn btn-primary" id="TableButtonEngChannelEdit" data-col-id="${item.id}">
-                                <i class="fa-regular fa-pen-to-square"></i></button>
+                                <i class="bi bi-pencil"></i></button>
                                 </td>
         `)
     })

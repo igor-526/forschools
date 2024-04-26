@@ -59,7 +59,7 @@ function lessonsShow(list = lessonsSet){
                 <td></td>
                 <td></td>
                 <td>
-                    <a href="/lessons/${lesson.id}"><button type="button" class="btn btn-primary"><i class="fa-solid fa-chevron-right"></i></button></a>
+                    <a href="/lessons/${lesson.id}"><button type="button" class="btn btn-primary"><i class="bi bi-chevron-right"></i></button></a>
                 </td>
             </tr>
         `)

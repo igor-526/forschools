@@ -86,9 +86,9 @@ function showMaterials(list = material_set){
             <td><a href="/profile/${material.owner.id}">${material.owner.first_name} ${material.owner.last_name}</a></td>
             <td>
                 <a href="${material.file}" download=""><button type="button" class="btn btn-primary" id="TableButtonDownload">
-                    <i class="fa-solid fa-download"></i></button></a>
+                    <i class="bi bi-download"></i></button></a>
                 <button type="button" class="btn btn-primary" id="TableButtonTelegram" data-material-id="${material.id}">
-                    <i class="fa-brands fa-telegram"></i></button>
+                    <i class="bi bi-telegram"></i></button>
             </td>
         </tr>`)
             tableBody.querySelectorAll("#TableButtonTelegram")
@@ -108,7 +108,7 @@ function showMaterials(list = material_set){
             <td><a href="/profile/${material.owner.id}">${material.owner.first_name} ${material.owner.last_name}</a></td>
             <td>
                 <a href="${material.file}" download=""><button type="button" class="btn btn-primary" id="TableButtonDownload">
-                    <i class="fa-solid fa-download"></i></button></a>
+                    <i class="bi bi-download"></i></button></a>
             </td>
         </tr>`)
         }

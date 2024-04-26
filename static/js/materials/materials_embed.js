@@ -20,7 +20,7 @@ async function materialsEmbedMain(){
         } else if (materialEmbedAction === "addToHW"){
             HWNewMaterialsSet = new FormData(materialsEmbedModalTableForm).getAll("material")
             HWNewMaterialsList.innerHTML = `
-            <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2" id="HWNewMaterialsListClearButton"><i class="fa-solid fa-trash"></i></button>
+            <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2" id="HWNewMaterialsListClearButton"><i class="bi bi-trash3"></i></button>
                 Прикреплено ${HWNewMaterialsSet.length}
             </li>
             `

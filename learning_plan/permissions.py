@@ -11,6 +11,7 @@ class CanSeePlansPageMixin(LoginRequiredMixin):
 
 def plans_button(request):
     usergroups = [group.name for group in request.user.groups.all()]
+    print(usergroups)
     return ("Admin" in usergroups) or ("Metodist" in usergroups) or ("Teacher" in usergroups)
 
 

@@ -8,15 +8,15 @@ function setLearningPrograms(){
     tableHead.innerHTML = `<tr>
                         <th scope="col">Программа обучения</th>
                         <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = '<td>Добавить программу обучения</td><td><button type="button" class="btn btn-primary" id="TableButtonLearnProgAdd" data-col-id="0"><i class="fa-solid fa-plus"></i></button></td>'
+    tableBody.innerHTML = '<td>Добавить программу обучения</td><td><button type="button" class="btn btn-primary" id="TableButtonLearnProgAdd" data-col-id="0"><i class="bi bi-plus-lg"></i></button></td>'
     learningProgramsSet.map(function (item) {
         tableBody.insertAdjacentHTML("beforeend", `
                                 <td>${item.name}</td>
                                 <td>
                                 <button type="button" class="btn btn-danger" id="TableButtonLearnProgDelete" data-col-id="${item.id}">
-                                <i class="fa-regular fa-trash-can"></i></button>
+                                <i class="bi bi-trash3"></i></button>
                                 <button type="button" class="btn btn-primary" id="TableButtonLearnProgEdit" data-col-id="${item.id}">
-                                <i class="fa-regular fa-pen-to-square"></i></button>
+                                <i class="bi bi-pencil"></i></button>
                                 </td>
         `)
     })

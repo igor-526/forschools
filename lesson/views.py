@@ -22,7 +22,7 @@ class LessonPage(LoginRequiredMixin, TemplateView):  # страница урок
     def get(self, request, *args, **kwargs):
         context = {'title': 'Уроки',
                    'menu': get_menu(request.user),
-                   'plans_button': plans_button(request),}
+                   'plans_button': plans_button(request)}
         return render(request, self.template_name, context)
 
 

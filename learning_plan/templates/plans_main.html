@@ -7,9 +7,9 @@
                 <h1>Планы обучения</h1>
             </div>
             <div class="col-auto">
-                <button id="PlansCollapseSearchButton" type="button" class="btn btn-primary mt-1"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button id="PlansCollapseSearchButton" type="button" class="btn btn-primary mt-1"><i class="bi bi-search"></i></button>
                 {% if perms.lesson.edit_plans_self %}
-                    <button id="PlansAddButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" role="button"><i class="fa-solid fa-plus"></i></button>
+                    <button id="PlansAddButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" role="button"><i class="bi bi-plus-lg"></i></button>
                     {% include 'plans_offcanvas_new.html' %}
                     {% include 'plans_modal_delete.html' %}
                 {% endif %}

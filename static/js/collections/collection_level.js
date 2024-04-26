@@ -8,15 +8,15 @@ function setLevels(){
     tableHead.innerHTML = `<tr>
                         <th scope="col">Уровень</th>
                         <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = '<td>Добавить уровень</td><td><button type="button" class="btn btn-primary" id="TableButtonLevelAdd" data-col-id="0"><i class="fa-solid fa-plus"></i></button></td>'
+    tableBody.innerHTML = '<td>Добавить уровень</td><td><button type="button" class="btn btn-primary" id="TableButtonLevelAdd" data-col-id="0"><i class="bi bi-plus-lg"></i></button></td>'
     levelsSet.map(function (item) {
         tableBody.insertAdjacentHTML("beforeend", `
                                 <td>${item.name}</td>
                                 <td>
                                 <button type="button" class="btn btn-danger" id="TableButtonLevelDelete" data-col-id="${item.id}">
-                                <i class="fa-regular fa-trash-can"></i></button>
+                                <i class="bi bi-trash3"></i></button>
                                 <button type="button" class="btn btn-primary" id="TableButtonLevelEdit" data-col-id="${item.id}">
-                                <i class="fa-regular fa-pen-to-square"></i></button>
+                                <i class="bi bi-pencil"></i></button>
                                 </td>
         `)
     })

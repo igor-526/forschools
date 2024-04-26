@@ -25,11 +25,11 @@ function learningPlansShowHTML(plan){
             <td>${listenersHTML}</td>
             <td>
                 <button type="button" class="btn btn-danger plans-table-button-delete" data-bs-toggle="modal" href="#LearningPlanDeleteModal" data-plan-id="${plan.id}">
-                    <i class="fa-solid fa-trash"></i></button>
+                    <i class="bi bi-trash3"></i></button>
                 <button type="button" class="btn btn-primary plans-table-button-edit" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" data-plan-id="${plan.id}">
-                    <i class="fa-solid fa-pen-to-square"></i></button>
+                    <i class="bi bi-pencil"></i></button>
                 <a href="${plan.id}"><button type="button" class="btn btn-primary" id="PlansTableButtonGo">
-                    <i class="fa-solid fa-chevron-right"></i></button></a>
+                    <i class="bi bi-chevron-right"></i></button></a>
             </td>
         </tr>`
     } else {
@@ -40,9 +40,9 @@ function learningPlansShowHTML(plan){
             <td>${listenersHTML}</td>
             <td>
                 <button type="button" class="btn btn-primary plans-table-button-edit" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" data-plan-id="${plan.id}">
-                    <i class="fa-solid fa-pen-to-square"></i></button>
+                    <i class="bi bi-pencil"></i></button>
                 <a href="${plan.id}"><button type="button" class="btn btn-primary plans-table-button-delete" id="PlansTableButtonGo">
-                    <i class="fa-solid fa-chevron-right"></i></button></a>
+                    <i class="bi bi-chevron-right"></i></button></a>
             </td>
         </tr>`
     }

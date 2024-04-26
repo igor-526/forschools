@@ -16,7 +16,7 @@
                                 {{ hw.description }}</li>
                             <li class="list-group-item">Проверяющий: <a href="/profile/{{ hw.teacher.id }}">{{ hw.teacher }}</a>
                                 {% if can_set_replace %}
-                                    <button id="LessonItemReplaceTeacherButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#LessonItemReplaceTeacherModal"><i class="fa-solid fa-retweet"></i></button>
+                                    <button id="LessonItemReplaceTeacherButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#LessonItemReplaceTeacherModal"><i class="bi bi-person-gear"></i></button>
                                     {% include "modal_set_replace.html" %}
                                 {% endif %}
                             </li>
