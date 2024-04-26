@@ -6,7 +6,7 @@ async function APIGetToObject(request){
 
     if (request.status === 200){
         return {status: 200,
-            response: await request.json()}
+            response: data}
     } else {
         return {status: request.status}
     }
@@ -19,7 +19,7 @@ async function APIPostPatchToObject(request){
     console.log(data)
 
     return {status: request.status,
-        response: await request.json()}
+        response: data}
 }
 
 async function APIDeleteToObject(request){
