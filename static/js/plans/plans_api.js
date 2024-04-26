@@ -22,7 +22,7 @@ async function plansCreate(fd){
 
 async function plansUpdate(fd, planID){
     const request = await fetch(`/api/v1/learning_plans/${planID}/`, {
-        method: "patch",
+        method: "PATCH",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
@@ -77,7 +77,7 @@ async function planItemAPIDestroyLesson(lessonID){
 
 async function planItemAPIUpdateLesson(fd, lessonID){
     const request = await fetch(`/api/v1/lessons/${lessonID}/`, {
-        method: "patch",
+        method: "PATCH",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken

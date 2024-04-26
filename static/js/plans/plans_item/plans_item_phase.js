@@ -69,7 +69,7 @@ async function planItemEditPhase(phaseID) {
     if (planItemClientValidation()) {
         const formData = new FormData(plansItemPhaseModalForm)
         const response = await fetch(`/api/v1/learning_plans/${planID}/phases/${phaseID}/`, {
-            method: "patch",
+            method: "PATCH",
             credentials: 'same-origin',
             headers:{
                 "X-CSRFToken": csrftoken,

@@ -20,7 +20,7 @@ async function usersAPIGetItem(userID){
 
 async function usersAPIUpdateUser(fd, userID){
     const request = await fetch(`/api/v1/users/${userID}/`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
@@ -37,7 +37,7 @@ async function usersAPIPhotoGet(userID){
 
 async function usersAPIPhotoUpdate(userID, fd){
     const request = await fetch(`/api/v1/users/${userID}/photo/`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
@@ -60,7 +60,7 @@ async function usersAPIPhotoDestroy(userID){
 
 async function usersAPIChangePassword(fd, userID){
     const request = await fetch(`/api/v1/users/${userID}/reset_password/`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
@@ -72,7 +72,7 @@ async function usersAPIChangePassword(fd, userID){
 
 async function usersAPIDeactivate(userID, action){
     const request = await fetch(`/api/v1/users/${userID}/${action}/`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

@@ -86,7 +86,7 @@ async function addLearnProg(){
 
 async function editLearnProg(colID){
     const response = await fetch(`/api/v1/collections/learn_progs/${colID}`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

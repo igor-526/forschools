@@ -87,7 +87,7 @@ async function addLevel(){
 
 async function editLevel(colID){
     const response = await fetch(`/api/v1/collections/levels/${colID}`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

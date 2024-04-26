@@ -87,7 +87,7 @@ async function addMatLevel(){
 
 async function editMatLevel(colID){
     const response = await fetch(`/api/v1/collections/mat_levels/${colID}`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

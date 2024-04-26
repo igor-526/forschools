@@ -87,7 +87,7 @@ async function addMatCat(){
 
 async function editMatCat(colID){
     const response = await fetch(`/api/v1/collections/mat_cats/${colID}`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

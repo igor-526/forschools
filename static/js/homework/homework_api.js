@@ -53,7 +53,7 @@ async function homeworkAPIGet(status){
 
 async function homeworkAPIReplaceTeacher(teacherID, homework){
     const request = await fetch(`/api/v1/homeworks/${homework}/rt/`, {
-        method: "patch",
+        method: "PATCH",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

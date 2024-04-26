@@ -40,7 +40,7 @@ function serverEditValidation(errors) {
 async function saveEdit() {
     if (clientEditValidation()){
         const response = await fetch(`/api/v1/users/${userID}/`, {
-            method: 'patch',
+            method: 'PATCH',
             credentials: 'same-origin',
             headers:{
                 "X-CSRFToken": csrftoken,

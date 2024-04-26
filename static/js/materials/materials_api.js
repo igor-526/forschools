@@ -22,7 +22,7 @@ async function materialsAPICreate(formData){
 
 async function materialsAPIEdit(formData, matID){
     const request = await fetch(`/api/v1/materials/${matID}`, {
-        method: "patch",
+        method: "PATCH",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

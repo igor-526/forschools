@@ -86,7 +86,7 @@ async function addEngChannel(){
 
 async function editEngChannel(colID){
     const response = await fetch(`/api/v1/collections/eng_channels/${colID}`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

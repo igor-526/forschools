@@ -92,7 +92,7 @@ async function addLessonPlace(){
 
 async function editLessonPlace(colID){
     const response = await fetch(`/api/v1/collections/lesson_places/${colID}`, {
-        method: 'patch',
+        method: 'PATCH',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
