@@ -228,6 +228,7 @@ async def filedownloader(data, owner) -> dict:
         for msg in text:
             comment += f"{msg}\n"
     files_db = []
+    print(MEDIA_ROOT)
     for photo in photos:
         await bot.download(file=photo,
                            destination=f"{MEDIA_ROOT}/files/{photo}.jpg")
