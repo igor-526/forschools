@@ -1,0 +1,78 @@
+networks:
+  development_network:
+    driver: bridge
+
+volumes:
+  development_pgdata:
+
+services:
+  development_database:
+    image: postgres:latest
+    ports:
+      - "${PORT}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DB}
+      POSTGRES_HOST: localhost
+    networks:
+      - development_network
+    volumes:
+      - development_pgdata:/var/lib/postgresql/data
+    restart: always
+
+  development_django:
+    build: .
+    ports:
+      - "5001:5000"
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      SECRET_KEY: ${SECRET_KEY}
+      DB_DB: ${DB_DB}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: development_database
+      PORT: 5432
+      PYTHONUNBUFFERED: 1
+    entrypoint: bash -c  "python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
+    depends_on:
+      - development_database
+    networks:
+      - development_network
+    volumes:
+      - /home/sdo/development/media:/src/media
+    restart: always
+
+  development_redis:
+    image: redis:latest
+    restart: always
+    networks:
+      - development_network
+
+  development_celery:
+    build: .
+    depends_on:
+      - development_redis
+      - development_django
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+    command: celery -A dls worker -l info
+    networks:
+      - development_network
+  development_bot:
+    build: .
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      SECRET_KEY: ${SECRET_KEY}
+      DB_DB: ${DB_DB}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: development_database
+      PORT: 5432
+      PYTHONUNBUFFERED: 1
+    entrypoint: bash -c  "python manage.py runbot";
+    depends_on:
+      - development_celery
+    networks:
+      - development_network
+    restart: always
