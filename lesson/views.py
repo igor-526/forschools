@@ -68,10 +68,10 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
 
     def get_queryset(self, *args, **kwargs):
         queryset = Lesson.objects.filter(status=kwargs.get("status"))
-        if kwargs.get("group") == 'Teacher':
+        if kwargs.get("groups") == 'Teacher':
             queryset = queryset.filter(Q(learningphases__learningplan__teacher=kwargs.get("user")) |
                                        Q(replace_teacher=kwargs.get("user")))
-        elif kwargs.get("group") == 'Listener':
+        elif kwargs.get("groups") == 'Listener':
             queryset = queryset.filter(learningphases__learningplan__listeners=kwargs.get("user"),
                                        date__isnull=False)
         return queryset

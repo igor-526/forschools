@@ -32,8 +32,8 @@ async def send_material_item(tg_id: int, material: Material) -> None:
     file = material.tg_url if material.tg_url else FSInputFile(path=material.file.path)
     mat_type = get_type(material.file.name.split(".")[-1])
     user = await get_user(tg_id)
-    perms = await get_group_and_perms(user.id, "material")
-    send_tg = 'send_telegram' in perms.get('permissions')
+    perms = await get_group_and_perms(user.id)
+    send_tg = 'material.send_telegram' in perms.get('permissions')
     if mat_type == "image_formats":
         message = await bot.send_photo(chat_id=tg_id,
                                        photo=file,
@@ -94,9 +94,9 @@ async def filter_materials(materials: list[Material], state: FSMContext):
 async def send_material_query(callback: CallbackQuery, state: FSMContext, materials=None):
     if materials is None:
         user = await get_user(callback.from_user.id)
-        perms = await get_group_and_perms(user.id, 'material')
+        perms = await get_group_and_perms(user.id)
         materials = [_ async for _ in Material.objects.filter(type=1, owner=user)]
-        if 'see_all_general' in perms["permissions"]:
+        if 'material.see_all_general' in perms["permissions"]:
             materials += [_ async for _ in Material.objects.filter(type=2)]
         dicted_materials = await filter_materials(materials, state)
         await callback.message.edit_text(text="Вот что удалось найти:",
@@ -122,8 +122,8 @@ async def send_types(callback: CallbackQuery):
 
 async def get_materials(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
-    perms = await get_group_and_perms(user.id, "material")
-    button_add = 'add_general' in perms['permissions']
+    perms = await get_group_and_perms(user.id)
+    button_add = 'material.add_general' in perms['permissions']
     if perms['group'] == 'Listener':
         pass
     else:
@@ -136,8 +136,8 @@ async def get_materials(message: types.Message, state: FSMContext):
 async def add_material_message(message: types.Message, state: FSMContext) -> None:
     await message.delete()
     user = await get_user(message.from_user.id)
-    perms = await get_group_and_perms(user.id, "material")
-    if 'add_personal' in perms.get("permissions"):
+    perms = await get_group_and_perms(user.id)
+    if 'material.add_personal' in perms.get("permissions"):
         await message.answer(text="Отправьте мне файл(ы) и я быстро добавлю их в Ваши личные материалы\n"
                                   "Поддерживаются изображения, архивы, GIF-ки, PDF-документы, видео и аудио\n"
                                   "Вы также можете переслать мне сообщение. Если файлов будет несколько, я "

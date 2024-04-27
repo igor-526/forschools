@@ -21,23 +21,28 @@ from aiogram.utils.media_group import MediaGroupBuilder
 async def show_homework_queryset(message: types.Message):
     user = await get_user(message.from_user.id)
     gp = await get_group_and_perms(user.id)
-    group = gp.get('group')
-    if group == 'Listener':
+    groups = gp.get('groups')
+    if 'Listener' in groups:
         homeworks = list(filter(lambda hw: hw['hw_status'] in [1, 2, 5],
                                 [{
                                     'hw': hw,
                                     'hw_status': (await hw.aget_status()).status
                                 } async for hw in Homework.objects.filter(listener=user)]))
         homeworks = [hw.get('hw') for hw in homeworks]
-        await message.answer(text="Вот домашние задания, которые ждут Вашего выполнения:",
+        if len(homeworks) == 0:
+            await message.answer(text="Нет домашних заданий для выполнения")
+        else:
+            await message.answer(text="Вот домашние задания, которые ждут Вашего выполнения:",
                              reply_markup=get_homeworks_buttons(homeworks))
-    elif group == 'Teacher':
+    elif 'Teacher' in groups:
         homeworks = list(filter(lambda hw: hw['hw_status'] == 3,
                                 [{
                                     'hw': hw,
                                     'hw_status': (await hw.aget_status()).status
                                 } async for hw in Homework.objects.filter(teacher=user)]))
         homeworks = [hw.get('hw') for hw in homeworks]
+        if  len(homeworks) == 0:
+            await message.answer(text="Нет домашних заданий для проверки")
         await message.answer(text="Вот домашние задания, которые ждут Вашей проверки:",
                              reply_markup=get_homeworks_buttons(homeworks))
     else:
@@ -52,8 +57,8 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
     materials = await hw.materials.acount()
-    can_send = gp['group'] == 'Listener' and hw_status.status in [1, 2, 5]
-    can_check = gp['group'] == 'Teacher' and hw_status.status in [3]
+    can_send = 'Listener' in gp['groups'] and hw_status.status in [1, 2, 5]
+    can_check = 'Teacher' in gp['groups'] and hw_status.status in [3]
 
     await bot.send_message(chat_id=callback.from_user.id,
                            text=f"Домашнее задание: <b>{hw.name}</b>\n"
@@ -63,7 +68,7 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
                                                                   can_send,
                                                                   can_check,
                                                                   materials))
-    if hw_status.status == 1 and gp['group'] == 'Listener':
+    if hw_status.status == 1 and gp['groups'] == 'Listener':
         await hw.aopen()
     await show_log_item(callback, hw_status.id)
 
@@ -109,6 +114,11 @@ async def show_log_item(callback: CallbackQuery, log_id: int):
                     album_builder.add_photo(media=file.tg_url)
                 else:
                     album_builder.add_photo(media=types.FSInputFile(file.path.path))
+            if file_type == "video_formats":
+                if file.tg_url:
+                    album_builder.add_video(media=file.tg_url)
+                else:
+                    album_builder.add_video(media=types.FSInputFile(file.path.path))
             elif file_type == "audio_formats":
                 if file.tg_url:
                     await bot.send_audio(chat_id=callback.from_user.id,
@@ -138,11 +148,11 @@ async def send_hw_answer(callback: CallbackQuery,
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    if gp['group'] == 'Listener' and hw_status.status in [1, 2, 5]:
+    if 'Listener' in gp['groups'] and hw_status.status in [1, 2, 5]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие решение домашнего задания, "
-                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии, аудио "
-                                    "или голосовые сообщения",
+                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии, аудио, "
+                                    "видео или голосовые сообщения",
                                reply_markup=ready_cancel_keyboard)
         await state.set_state(HomeworkFSM.send_hw_files)
         await state.update_data({'files': {
@@ -150,6 +160,7 @@ async def send_hw_answer(callback: CallbackQuery,
             'photo': [],
             'voice': [],
             'audio': [],
+            'video': [],
         }, 'action': 'send',
             'hw_id': callback_data.hw_id})
     else:
@@ -166,11 +177,11 @@ async def send_hw_check(callback: CallbackQuery,
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    if gp['group'] == 'Teacher' and hw_status.status in [3]:
+    if 'Teacher' in gp['groups'] and hw_status.status in [3]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие проверку домашнего задания, "
-                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии, аудио "
-                                    "или голосовые сообщения",
+                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии, аудио, "
+                                    "видео или голосовые сообщения",
                                reply_markup=ready_cancel_keyboard)
         await state.set_state(HomeworkFSM.send_hw_files)
         await state.update_data({'files': {
@@ -178,6 +189,7 @@ async def send_hw_check(callback: CallbackQuery,
             'photo': [],
             'voice': [],
             'audio': [],
+            'video': [],
         }, 'action': callback_data.action,
             'hw_id': callback_data.hw_id})
     else:
@@ -198,6 +210,8 @@ async def add_files(message: types.Message, state: FSMContext):
     if message.audio:
         data.get("files").get('audio').append({'file_id': message.audio.file_id,
                                                'format': message.audio.file_name.split(".")[-1]})
+    if message.video:
+        data.get("files").get('video').append(message.video.file_id)
 
 
 async def filedownloader(data, owner) -> dict:
@@ -205,6 +219,7 @@ async def filedownloader(data, owner) -> dict:
     voices = data.get("files").get("voice")
     text = data.get("files").get('text')
     audio = data.get("files").get('audio')
+    videos = data.get("files").get('video')
     comment = ""
     if not text:
         comment = "-"
@@ -236,6 +251,14 @@ async def filedownloader(data, owner) -> dict:
                                           tg_url=aud.get('file_id'),
                                           owner=owner)
         files_db.append(file)
+    for video in videos:
+        await bot.download(file=video,
+                           destination=f"media/files/{video}.webm")
+        file = await File.objects.acreate(name="ДЗ",
+                                          path=f"files/{video}.webm",
+                                          tg_url=video,
+                                          owner=owner)
+        files_db.append(file)
     return {'files_db': files_db,
             'comment': comment}
 
@@ -245,26 +268,13 @@ def filechecker(data) -> bool:
     voices = data.get("files").get("voice")
     text = data.get("files").get('text')
     audio = data.get("files").get('audio')
-    return len(photos) + len(voices) + len(text) + len(audio) != 0
-
-
-async def hw_send_confirmation(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    text = ""
-    for msg in data.get('files').get('text'):
-        text += msg + "\n"
-    await bot.send_message(message.from_user.id,
-                           text=f"{text}\n"
-                                f"+{len(data.get('files').get('photo'))} фотографий\n"
-                                f"+{len(data.get('files').get('audio'))} аудио\n"
-                                f"+{len(data.get('files').get('voice'))} голосовых сообщений\n\n"
-                                f"Всё верно?",
-                           reply_markup=yes_cancel_keyboard)
-    await state.set_state(HomeworkFSM.send_hw_accept)
+    video = data.get("files").get('video')
+    return len(photos) + len(voices) + len(text) + len(audio) + len(video) != 0
 
 
 async def hw_send(message: types.Message, state: FSMContext):
     data = await state.get_data()
+    print(data)
     if not filechecker(data):
         await message.answer("Вы не можете отправить путой ответ. Пожалуйста, пришлите мне текст, фотографии, "
                              "аудио или голосовые сообщения")

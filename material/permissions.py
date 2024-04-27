@@ -19,8 +19,11 @@ def has_material_access(request, mat_id):
     except Material.DoesNotExist:
         raise PermissionDenied('Доступ ограничен')
     if ("Metodist" in usergroups) or ("Teacher" in usergroups):
-        if not material.visible:
+        if material.visible:
+            return True
+        else:
             raise PermissionDenied('Доступ ограничен')
+
     if "Listener" in usergroups:
         if request.user in material.access.all():
             return True

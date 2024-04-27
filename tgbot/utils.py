@@ -1,7 +1,7 @@
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
 from material.models import Material
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot
 import async_to_sync as sync
 from tgbot.keyboards.materials import get_show_key
@@ -37,16 +37,15 @@ async def get_tg_id(user: NewUser) -> int | None:
         return None
 
 
-async def get_group_and_perms(user_id, ct=None) -> dict:
+async def get_group_and_perms(user_id) -> dict:
     user = await NewUser.objects.aget(id=user_id)
-    group = await user.groups.afirst()
-    if ct:
-        content_type = await ContentType.objects.filter(model=ct).afirst()
-        perms = [_ async for _ in group.permissions.filter(content_type=content_type)]
-    else:
-        perms = [_ async for _ in group.permissions.all()]
-    perm_codenames = [perm.codename for perm in perms]
-    return {"group": group.name, "permissions": perm_codenames}
+    groups = [group.name async for group in user.groups.all()]
+    perms = [f"{perm.content_type.app_label}.{perm.codename}"
+             async for perm in Permission.objects.select_related("content_type").filter(group__name__in=groups)]
+    return {
+        "groups": groups,
+        "permissions": perms
+    }
 
 
 def send_material(user_id: int, material: Material) -> dict:

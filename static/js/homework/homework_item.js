@@ -148,6 +148,11 @@ function homeworkItemLogShowModal(logID) {
                     <audio controls src="${file.path}"></audio>
                 </figure>
             `)
+        }  else if (file.type === "video_formats"){
+            console.log(file)
+            HWItemLogModalFilesAudio.insertAdjacentHTML("beforeend", `
+                <video controls src="${file.path}"></video>
+            `)
         }
 
     })
