@@ -16,6 +16,7 @@ from tgbot.utils import get_group_and_perms, get_user
 from homework.utils import status_code_to_string
 from material.utils.get_type import get_type
 from aiogram.utils.media_group import MediaGroupBuilder
+from dls.settings import MEDIA_ROOT
 
 
 async def show_homework_queryset(message: types.Message):
@@ -229,7 +230,7 @@ async def filedownloader(data, owner) -> dict:
     files_db = []
     for photo in photos:
         await bot.download(file=photo,
-                           destination=f"media/files/{photo}.jpg")
+                           destination=f"{MEDIA_ROOT}/files/{photo}.jpg")
         file = await File.objects.acreate(name="ДЗ",
                                           path=f"files/{photo}.jpg",
                                           tg_url=photo,
@@ -237,7 +238,7 @@ async def filedownloader(data, owner) -> dict:
         files_db.append(file)
     for voice in voices:
         await bot.download(file=voice,
-                           destination=f"media/files/{voice}.ogg")
+                           destination=f"{MEDIA_ROOT}/files/{voice}.ogg")
         file = await File.objects.acreate(name="ДЗ",
                                           path=f"files/{voice}.ogg",
                                           tg_url=voice,
@@ -245,7 +246,7 @@ async def filedownloader(data, owner) -> dict:
         files_db.append(file)
     for aud in audio:
         await bot.download(file=aud.get("file_id"),
-                           destination=f"media/files/{aud.get('file_id')}.{aud.get('format')}")
+                           destination=f"{MEDIA_ROOT}/files/{aud.get('file_id')}.{aud.get('format')}")
         file = await File.objects.acreate(name="ДЗ",
                                           path=f"files/{aud.get('file_id')}.{aud.get('format')}",
                                           tg_url=aud.get('file_id'),
@@ -253,7 +254,7 @@ async def filedownloader(data, owner) -> dict:
         files_db.append(file)
     for video in videos:
         await bot.download(file=video,
-                           destination=f"media/files/{video}.webm")
+                           destination=f"{MEDIA_ROOT}/files/{video}.webm")
         file = await File.objects.acreate(name="ДЗ",
                                           path=f"files/{video}.webm",
                                           tg_url=video,
@@ -274,7 +275,6 @@ def filechecker(data) -> bool:
 
 async def hw_send(message: types.Message, state: FSMContext):
     data = await state.get_data()
-    print(data)
     if not filechecker(data):
         await message.answer("Вы не можете отправить путой ответ. Пожалуйста, пришлите мне текст, фотографии, "
                              "аудио или голосовые сообщения")
