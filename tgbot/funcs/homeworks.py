@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
@@ -229,6 +231,9 @@ async def filedownloader(data, owner) -> dict:
             comment += f"{msg}\n"
     files_db = []
     print(MEDIA_ROOT)
+    logging.log(logging.INFO, f"{MEDIA_ROOT}")
+    print("epmvpermperp")
+    logging.log(logging.INFO, f"regnoev")
     for photo in photos:
         await bot.download(file=photo,
                            destination=f"{MEDIA_ROOT}/files/{photo}.jpg")
