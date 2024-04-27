@@ -16,7 +16,7 @@ from data_collections.urls import (urlpatterns as data_collections_urlpatterns,
 from learning_plan.urls import (urlpatterns as learning_plan_urlpatterns,
                                 apiv1patterns as learning_plan_apiv1patterns)
 from tgbot.urls import apiv1patterns as tgbot_apiv1patterns
-from pdfviewer.urls import urlpatterns as pdfviewer_urlpatterns
+from automatic_fields.urls import apiv1patterns as automatic_fields_apiv1patterns
 
 
 urlpatterns = [
@@ -25,7 +25,6 @@ urlpatterns = [
     path('materials/', include(material_urlpatterns)),  # страницы материалов
     path('lessons/', include(lesson_urlpatterns)),   # страницы уроков
     path('homeworks/', include(homework_urlpatterns)),   # страницы домашних заданий
-    path('pdfviewer/', include(pdfviewer_urlpatterns)),  # просмотрщик PDF
     path('', include(data_collections_urlpatterns)),  # страницы коллекций данных
     path('learning_plans/', include(learning_plan_urlpatterns)),
     path('api/v1/learning_plans/', include(learning_plan_apiv1patterns)),
@@ -34,6 +33,7 @@ urlpatterns = [
     path('api/v1/lessons/', include(lesson_apiv1patterns)),
     path('api/v1/telegram/', include(tgbot_apiv1patterns)),
     path('api/v1/homeworks/', include(homework_apiv1patterns)),
+    path('api/v1/automatic/', include(automatic_fields_apiv1patterns)),
     path('api/v1/', include(data_collections_apiv1patterns)),
 ]
 

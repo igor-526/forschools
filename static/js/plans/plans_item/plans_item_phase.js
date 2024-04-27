@@ -49,13 +49,16 @@ async function planItemAddPhase() {
     }
 }
 
-function planItemAddModalPhase(phaseID = 0) {
+async function planItemAddModalPhase(phaseID = 0) {
     plansItemPhaseModalSaveButton.attributes
         .getNamedItem("data-phase-id").value=`${phaseID}`
     if (phaseID === 0){
         plansItemPhaseModalTitle.innerHTML = "Новый этап обучения"
-        plansItemPhaseModalNameField.value = ""
-        plansItemPhaseModalPurposeField.value = ""
+        const autoName = await getAutoFieldLearningPhaseName(planID)
+        if (autoName.status === 200){
+            plansItemPhaseModalNameField.value = autoName.response.name
+            plansItemPhaseModalPurposeField.value = autoName.response.name
+        }
     } else {
         const phase = phasesArray.find(phase => phase.id === phaseID)
         plansItemPhaseModalTitle.innerHTML = "Редактирование"

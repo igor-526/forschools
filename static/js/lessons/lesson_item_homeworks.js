@@ -3,15 +3,22 @@ function lessonItemHomeworksMain() {
     HWNewSaveAndGoButton.addEventListener("click", async function () {
         await lessonItemHomeworksSave(true)
     })
-    lessonItemNewHWButton.addEventListener("click", lessonItemHomeworksClean)
+    lessonItemNewHWButton.addEventListener("click", async function(){
+        await lessonItemHomeworksClean()
+    })
     HWNewMaterialsAddButton.addEventListener("click", function () {
         materialEmbedAction = "addToHW"
     })
 }
 
-function lessonItemHomeworksClean(){
+async function lessonItemHomeworksClean(){
     HWNewForm.reset()
     HWNewDeadlineField.value = lessonItemNewHwDeadline
+    const autoName = await getAutoFieldHomeworkName(lessonID)
+    if (autoName.status === 200){
+        HWNewNameField.value = autoName.response.name
+    }
+    HWNewDescriptionField.value = "Выполните следующее задание:"
     HWNewMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
     HWNewMaterialsSet = []
 }
@@ -63,10 +70,10 @@ async function lessonItemHomeworksSave(go = false){
             })
         }
         await homeworkAdd(lessonID, fd)
-            .then(request => {
+            .then(async request => {
                 if (request.status === 201){
                     bsOffcanvasNewHW.hide()
-                    lessonItemHomeworksClean()
+                    await lessonItemHomeworksClean()
                     showToast("ДЗ", "Домашнее задание успешно создано")
                     if (go === true){
                         window.open(`/homeworks/${request.response.id}`)

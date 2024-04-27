@@ -17,10 +17,14 @@ async function plansItemLessonSetPlaces(){
 }
 
 
-function phaseItemAddModalLesson(phaseID, lessonID){
+async function phaseItemAddModalLesson(phaseID, lessonID){
     if (lessonID === 0){
         plansItemPhaseLessonModalTitle.innerHTML = "Добавление урока"
         plansItemPhaseLessonModalForm.reset()
+        const autoName = await getAutoFieldLessonName(phaseID)
+        if (autoName.status === 200){
+            plansItemPhaseLessonModalNameField.value = autoName.response.name
+        }
     } else {
         plansItemPhaseLessonModalTitle.innerHTML = "Изменение урока"
 

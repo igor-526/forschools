@@ -30,16 +30,16 @@ function plansItemListenersPhaseEdit(){
         })
 
     plansItemTableBody.querySelector("#PlansItemTableAddButton")
-        .addEventListener('click', function () {
-            planItemAddModalPhase(0)
+        .addEventListener('click', async function () {
+            await planItemAddModalPhase(0)
         })
 }
 
 function plansItemListenersLessonsAddEdit(){
     plansItemTableBody.querySelectorAll(".phase-lesson-button-add, .phase-lesson-button-edit")
         .forEach(button => {
-            button.addEventListener("click", function () {
-                phaseItemAddModalLesson(Number(this.attributes.getNamedItem("data-phase-id").value),
+            button.addEventListener("click", async function () {
+                await phaseItemAddModalLesson(Number(this.attributes.getNamedItem("data-phase-id").value),
                     Number(this.attributes.getNamedItem("data-lesson-id").value))
             })
         })

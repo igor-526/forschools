@@ -21,20 +21,23 @@ async function plansAddMain(){
         })
     plansTableBody.querySelectorAll(".plans-table-button-edit")
         .forEach(button => {
-            button.addEventListener('click', function () {
-                plansAddSetupOffcanvas(button.attributes.getNamedItem('data-plan-id').value)
+            button.addEventListener('click', async function () {
+                await plansAddSetupOffcanvas(button.attributes.getNamedItem('data-plan-id').value)
             })
         })
 }
 
-function plansAddSetupOffcanvas(planID=0){
+async function plansAddSetupOffcanvas(planID=0){
     planNewSubmitButton.attributes.getNamedItem('data-plan-id').value = planID
     planNewSubmitAndGoButton.attributes.getNamedItem('data-plan-id').value = planID
     if (planID === 0){
         formNewPlan.reset()
+        const autoName = await getAutoFieldLearningPlanName(userID)
+        if (autoName.status === 200){
+            planNewNameField.value = autoName.response.name
+        }
     } else {
         const plan = learningPlansArray.find(plan => plan.id === Number(planID))
-        console.log(plan)
         planNewNameField.value = plan.name
         planNewTeacherField.value = plan.teacher.id
         planNewHWTeacherField.value = plan.default_hw_teacher.id

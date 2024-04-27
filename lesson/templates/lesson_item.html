@@ -123,6 +123,7 @@
     {% endif %}
     <script src="{% static 'js/lessons/lesson_item.js' %}"></script>
     {% if can_add_hw %}
+        <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script>
             {% if hwdeadline %}
                 const lessonItemNewHwDeadline = '{{ hwdeadline }}'
