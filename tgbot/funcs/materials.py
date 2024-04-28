@@ -52,6 +52,24 @@ async def send_material_item(tg_id: int, material: Material) -> None:
                                           caption=generate_material_message(material),
                                           reply_markup=get_keyboard_material_item(material, send_tg))
         file_id = message.document.file_id
+    elif mat_type == "video_formats":
+        message = bot.send_video(chat_id=tg_id,
+                                 video=file,
+                                 caption=generate_material_message(material),
+                                 reply_markup=get_keyboard_material_item(material, send_tg))
+        file_id = message.video.file_id
+    elif mat_type == "audio_formats":
+        message = await bot.send_audio(chat_id=tg_id,
+                                       audio=file,
+                                       caption=generate_material_message(material),
+                                       reply_markup=get_keyboard_material_item(material, send_tg))
+        file_id = message.audio.file_id
+    elif mat_type == "voice_formats":
+        message = await bot.send_voice(chat_id=tg_id,
+                                       voice=file,
+                                       caption=generate_material_message(material),
+                                       reply_markup=get_keyboard_material_item(material, send_tg))
+        file_id = message.voice.file_id
     else:
         file_id = None
     if not material.tg_url:

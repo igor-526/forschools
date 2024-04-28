@@ -1,0 +1,61 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="HomeworksAddOffcanvas">
+    <div class="offcanvas-header">
+        <h5 id="offcanvasNewMaterial">Новое домашнее задание</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="HomeworksAddOffcanvasForm">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="HomeworksAddOffcanvasNameField" class="form-label">Наименование</label>
+                <input name="name" type="text" class="form-control" id="HomeworksAddOffcanvasNameField">
+                <div class="form-text">Наименование домашнего задания. Обязательно к заполнению</div>
+                <div class="invalid-feedback" id="HomeworksAddOffcanvasNameError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="HomeworksAddOffcanvasDescriptionField" class="form-label">Описание</label>
+                <textarea name="description" type="text" class="form-control" rows="3" id="HomeworksAddOffcanvasDescriptionField"></textarea>
+                <div class="form-text">Опишите, что необходимо сделать для получения зачёта. Обязтельно к заполнению</div>
+                <div class="invalid-feedback" id="HomeworksAddOffcanvasDescriptionError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="HomeworksAddOffcanvasDeadlineField" class="form-label">Срок</label>
+                <input name="deadline" type="date" class="form-control" id="HomeworksAddOffcanvasDeadlineField">
+                <div class="form-text">В какой срок необходимо выполнить домашнее задание. Обязательно к заполнению</div>
+                <div class="invalid-feedback" id="HomeworksAddOffcanvasDeadlineError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="HomeworksAddOffcanvasTeacherField" class="form-label">Проверяющий ДЗ</label>
+                <select name="default_hw_teacher" class="form-select" id="HomeworksAddOffcanvasTeacherField" data-dselect-search="true"></select>
+                <div class="form-text">Выберите из выпадающего списка</div>
+                <div class="invalid-feedback" id="HomeworksAddOffcanvasTeacherError"></div>
+            </div>
+
+            <div>
+                <label for="HomeworksAddOffcanvasListenersSearchField" class="form-label">Ученики</label>
+                <input type="text" class="form-control" id="HomeworksAddOffcanvasListenersSearchField" placeholder="Поиск по ученикам:">
+            </div>
+            <div class="mb-3">
+                <select id="HomeworksAddOffcanvasListenersSelect" name="listeners" class="form-select" multiple></select>
+                <div class="form-text">Зажмите CTRL для выбора нескольких</div>
+                <div class="invalid-feedback" id="HomeworksAddOffcanvasListenersError"></div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Материалы
+                    <button type="button" class="btn btn-primary btn-sm ms-2" id="HomeworksAddOffcanvasMaterialsAddButton" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="bi bi-plus-lg"></i></button>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush" id="HomeworksAddOffcanvasMaterialsList"></ul>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="HomeworksAddOffcanvasSaveAndGoButton" type="button">Сохранить и перейти</button>
+            <button class="btn btn-primary" id="HomeworksAddOffcanvasSaveButton" type="button">Сохранить</button>
+        </form>
+    </div>
+</div>

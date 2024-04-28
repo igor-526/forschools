@@ -2,34 +2,37 @@ async function materialsEmbedMain(){
     const request = await materialsAPIGetAll(2)
     if (request.status === 200){
         materialsAllSet = request.response
-        console.log(materialsAllSet)
         materialsEmbedShow(materialsAllSet)
     }
     materialsEmbedModalAddButton.addEventListener("click", async function () {
-        if (materialEmbedAction === "addToLesson"){
-            const request = await lessonsAPIAddMaterials(new FormData(materialsEmbedModalTableForm), lessonID)
-            if (request.status === 200){
+        switch (materialEmbedAction){
+            case "addToLesson":
+                const request = await lessonsAPIAddMaterials(new FormData(materialsEmbedModalTableForm), lessonID)
+                if (request.status === 200){
+                    bsMaterialsEmbedModal.hide()
+                    showToast("Добавлено","Материалы успешно прикреплены")
+                    materialsEmbedReset()
+                } else {
+                    bsMaterialsEmbedModal.hide()
+                    showToast("Ошибка","На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+                    materialsEmbedReset()
+                }
+                break
+            case "addToHW":
+                HWNewMaterialsSet = new FormData(materialsEmbedModalTableForm).getAll("material")
+                HWNewMaterialsList.innerHTML = `
+                    <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2" id="HWNewMaterialsListClearButton"><i class="bi bi-trash3"></i></button>
+                        Прикреплено ${HWNewMaterialsSet.length}
+                    </li>`
+                HWNewMaterialsList.querySelector("#HWNewMaterialsListClearButton").addEventListener("click", function () {
+                    HWNewMaterialsSet = []
+                    HWNewMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
+                })
                 bsMaterialsEmbedModal.hide()
-                showToast("Добавлено","Материалы успешно прикреплены")
                 materialsEmbedReset()
-            } else {
-                bsMaterialsEmbedModal.hide()
-                showToast("Ошибка","На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-                materialsEmbedReset()
-            }
-        } else if (materialEmbedAction === "addToHW"){
-            HWNewMaterialsSet = new FormData(materialsEmbedModalTableForm).getAll("material")
-            HWNewMaterialsList.innerHTML = `
-            <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2" id="HWNewMaterialsListClearButton"><i class="bi bi-trash3"></i></button>
-                Прикреплено ${HWNewMaterialsSet.length}
-            </li>
-            `
-            HWNewMaterialsList.querySelector("#HWNewMaterialsListClearButton").addEventListener("click", function () {
-                HWNewMaterialsSet = []
-                HWNewMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
-            })
-            bsMaterialsEmbedModal.hide()
-            materialsEmbedReset()
+                break
+            case "addToHW_":
+                break
         }
     })
 }

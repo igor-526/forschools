@@ -14,12 +14,16 @@ from rest_framework.response import Response
 from dls.utils import get_menu
 
 
-class HomeworkPage(LoginRequiredMixin, TemplateView):  # страница домашних заданий
+class HomeworksPage(LoginRequiredMixin, TemplateView):  # страница домашних заданий
     template_name = "homeworks.html"
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Домашние задания',
-                   'menu': get_menu(request.user)}
+                   'menu': get_menu(request.user),
+                   'can_add_hw': True,
+                   'is_admin_or_metodist': request.user.groups.filter(name__in=["Admin", "Metodist"]).exists(),
+                   'is_teacher': request.user.groups.filter(name="Teacher").exists(),
+                   'is_listener': request.user.groups.filter(name="Listener").exists()}
         return render(request, self.template_name, context)
 
 

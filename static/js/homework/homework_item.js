@@ -4,6 +4,7 @@ async function homeworkItemMain(){
         homeworkItemLogSet = request.response
         homeworkItemShowLogs(homeworkItemLogSet)
     }
+    const lastLog = homeworkItemLogSet[0]
     if (HWItemSendButton !== null){
         HWItemSendButton.addEventListener("click", function () {
             HWItemSendModalForm.reset()
@@ -28,6 +29,10 @@ async function homeworkItemMain(){
                     })
             }
         })
+        if (lastLog.status === 5){
+            HWItemSendModalAnswer.classList.remove("d-none")
+            HWItemSendModalAnswerBody.innerHTML = homeworkItemLogHTML(lastLog)
+        }
     }
     if (HWItemCheckButton !== null){
         HWItemCheckButton.addEventListener("click", function () {
@@ -73,34 +78,36 @@ async function homeworkItemMain(){
                     })
             }
         })
+        if (lastLog.status === 3){
+            HWItemCheckModalAnswer.classList.remove("d-none")
+            HWItemCheckModalAnswerBody.innerHTML = homeworkItemLogHTML(lastLog)
+        }
+    }
+}
 
+function homeworkItemShowLogsStrStatus(status){
+    switch (status){
+        case 1:
+            return  "Создано"
+        case 2:
+            return  "Открыто"
+        case 3:
+            return  "На проверке"
+        case 4:
+            return  "Принято"
+        case 5:
+            return  "На доработке"
+        case 6:
+            return  "Отменено"
+        default:
+            return ""
     }
 }
 
 function homeworkItemShowLogs(list = homeworkItemLogSet){
     homeworkItemLogList.innerHTML = ''
     list.forEach(log => {
-        let status = ""
-        switch (log.status){
-            case 1:
-                status = "Создано"
-                break
-            case 2:
-                status = "Открыто"
-                break
-            case 3:
-                status = "На проверке"
-                break
-            case 4:
-                status = "Принято"
-                break
-            case 5:
-                status = "На доработке"
-                break
-            case 6:
-                status = "Отменено"
-                break
-        }
+        const status = homeworkItemShowLogsStrStatus(log.status)
         const datetime = new Date(log.dt).toLocaleString()
         homeworkItemLogList.insertAdjacentHTML("beforeend", `
         <a href="#" class="list-group-item list-group-item-action" data-log-id="${log.id}">
@@ -120,42 +127,48 @@ function homeworkItemShowLogs(list = homeworkItemLogSet){
     })
 }
 
-function homeworkItemLogShowModal(logID) {
-    const log = homeworkItemLogSet.find(log => log.id === Number(logID))
-    HWItemLogModalTitle.innerHTML = `${log.user.first_name} ${log.user.last_name}`
+function homeworkItemLogHTML(log){
+    let logHTMLComment = ""
+    let logHTMLImageVideos = "<div>"
+    let logHTMLAudio = "<div>"
     if (log.comment !== null){
-        HWItemLogModalComment.innerHTML = log.comment
+        logHTMLComment = `<p>${log.comment}</p>`
     }
-    HWItemLogModalFilesImages.innerHTML = ""
-    HWItemLogModalFilesAudio.innerHTML = ""
     log.files.map(file => {
         if (file.type === "image_formats"){
-            HWItemLogModalFilesImages.insertAdjacentHTML("beforeend", `
+            logHTMLImageVideos += `
                 <a href="${file.path}" target="_blank">
-                <img alt="file" src="${file.path}" class="col-6 mb-3" style="object-fit: contain;"></a>
-            `)
+                <img alt="file" src="${file.path}" class="col-5 mb-3" style="object-fit: contain;"></a>
+            `
         } else if (file.type === "voice_formats"){
-            HWItemLogModalFilesAudio.insertAdjacentHTML("beforeend", `
+            logHTMLAudio += `
                 <figure>
                     <figcaption>Голосовое сообщение:</figcaption>
                     <audio controls src="${file.path}"></audio>
                 </figure>
-            `)
+            `
         } else if (file.type === "audio_formats"){
-            HWItemLogModalFilesAudio.insertAdjacentHTML("beforeend", `
+            logHTMLAudio += `
                 <figure>
                     <figcaption>Аудио:</figcaption>
                     <audio controls src="${file.path}"></audio>
                 </figure>
-            `)
+            `
         }  else if (file.type === "video_formats"){
-            console.log(file)
-            HWItemLogModalFilesAudio.insertAdjacentHTML("beforeend", `
-                <video controls src="${file.path}"></video>
-            `)
+            logHTMLImageVideos += `
+                <video controls class="col-5 mb-3" src="${file.path}"></video>
+            `
         }
-
     })
+    logHTMLImageVideos += "</div>"
+    logHTMLAudio += "</div>"
+    return logHTMLComment + logHTMLImageVideos + logHTMLAudio
+}
+
+function homeworkItemLogShowModal(logID) {
+    const log = homeworkItemLogSet.find(log => log.id === Number(logID))
+    HWItemLogModalTitle.innerHTML = `${log.user.first_name} ${log.user.last_name}`
+    HWItemLogModalBody.innerHTML = homeworkItemLogHTML(log)
     bsHWItemLogModal.show()
 }
 
@@ -188,6 +201,8 @@ if (HWItemSendModal !== null){
     HWItemSendModalFormCommentField = HWItemSendModalForm.querySelector("#HWItemSendModalFormCommentField")
     HWItemSendModalFormFileField = HWItemSendModalForm.querySelector("#HWItemSendModalFormFileField")
     HWItemSendModalSendButton = HWItemSendModal.querySelector("#HWItemSendModalSendButton")
+    HWItemSendModalAnswer = HWItemSendModal.querySelector("#HWItemSendModalAnswer")
+    HWItemSendModalAnswerBody = HWItemSendModal.querySelector("#HWItemSendModalAnswerBody")
 }
 
 const HWItemCheckModal = document.querySelector("#HWItemCheckModal")
@@ -197,21 +212,22 @@ let HWItemCheckModalFormCommentField
 let HWItemCheckModalFormFileField
 let HWItemCheckModalAcceptButton
 let HWItemCheckModalDeclineButton
+let HWItemCheckModalAnswer
+let HWItemCheckModalAnswerBody
 if (HWItemCheckModal !== null){
     bsHWItemCheckModal = new bootstrap.Modal(HWItemCheckModal)
-    HWItemCheckModalForm = document.querySelector("#HWItemCheckModalForm")
-    HWItemCheckModalFormCommentField = document.querySelector("#HWItemCheckModalFormCommentField")
-    HWItemCheckModalFormFileField = document.querySelector("#HWItemCheckModalFormFileField")
-    HWItemCheckModalAcceptButton = document.querySelector("#HWItemCheckModalAcceptButton")
-    HWItemCheckModalDeclineButton = document.querySelector("#HWItemCheckModalDeclineButton")
+    HWItemCheckModalForm = HWItemCheckModal.querySelector("#HWItemCheckModalForm")
+    HWItemCheckModalFormCommentField = HWItemCheckModalForm.querySelector("#HWItemCheckModalFormCommentField")
+    HWItemCheckModalFormFileField = HWItemCheckModalForm.querySelector("#HWItemCheckModalFormFileField")
+    HWItemCheckModalAcceptButton = HWItemCheckModal.querySelector("#HWItemCheckModalAcceptButton")
+    HWItemCheckModalDeclineButton = HWItemCheckModal.querySelector("#HWItemCheckModalDeclineButton")
+    HWItemCheckModalAnswer = HWItemCheckModal.querySelector("#HWItemCheckModalAnswer")
+    HWItemCheckModalAnswerBody = HWItemCheckModal.querySelector("#HWItemCheckModalAnswerBody")
 }
 
 const HWItemLogModal = document.querySelector("#HWItemLogModal")
 const bsHWItemLogModal = new bootstrap.Modal(HWItemLogModal)
 const HWItemLogModalTitle = HWItemLogModal.querySelector("#HWItemLogModalTitle")
-const HWItemLogModalComment = HWItemLogModal.querySelector("#HWItemLogModalComment")
-
-const HWItemLogModalFilesImages = HWItemLogModal.querySelector("#HWItemLogModalFilesImages")
-const HWItemLogModalFilesAudio = HWItemLogModal.querySelector("#HWItemLogModalFilesAudio")
+const HWItemLogModalBody = HWItemLogModal.querySelector("#HWItemLogModalBody")
 
 homeworkItemMain()

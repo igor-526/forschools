@@ -7,6 +7,11 @@
                 <h1>Домашние задания</h1>
             </div>
             <div class="col-auto">
+                {% if is_admin_or_metodist or is_teacher %}
+                    <button id="HomeworksAddOffcanvasButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" data-bs-target="#HomeworksAddOffcanvas"><i class="bi bi-plus-lg"></i></button>
+                    {% include "homework_add_offcanvas.html" %}
+                    {% include "materials_embed_modal.html" %}
+                {% endif %}
                 <button id="HomeworksCollapseSearchButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="collapse" data-bs-target="#HomeworksCollapseSearch"><i class="bi bi-search"></i></button>
             </div>
         </div>
@@ -54,9 +59,25 @@
 {% block static_js %}
     <script>
         const csrftoken = '{{ csrf_token }}'
-        const userGroup = '{{ request.user.groups.first.name }}'
+        const isAdminOrMetodist = {% if is_admin_or_metodist %}true{% else %}false{% endif %}
+        const isTeacher = {% if is_teacher %}true{% else %}false{% endif %}
+        const isListener = {% if is_listener %}true{% else %}false{% endif %}
+        const user = {
+            id: {{ request.user.id }},
+            first_name: {{ request.user.first_name }},
+            last_name: {{ request.user.last_name }}
+        }
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/homework/homeworks.js' %}"></script>
+    {% if is_admin_or_metodist or is_teacher %}
+        <script>
+            const materialEmbedAction = "addToHW_"
+        </script>
+        <script src="{% static 'js/materials/materials_api.js' %}"></script>
+        <script src="{% static 'js/homework/homework_add.js' %}"></script>
+        <script src="{% static 'js/materials/materials_embed.js' %}"></script>
+    {% endif %}
 {% endblock %}

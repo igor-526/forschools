@@ -1,16 +1,17 @@
-import logging
-
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
+from django.db.models import Q
+
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.materials import get_keyboard_query
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons)
-from tgbot.keyboards.default import ready_cancel_keyboard, yes_cancel_keyboard
+from tgbot.keyboards.default import ready_cancel_keyboard, cancel_keyboard
 from tgbot.finite_states.homework import HomeworkFSM
 from tgbot.funcs.menu import send_menu
-from tgbot.utils import get_tg_id
+from tgbot.utils import get_tg_id, get_user
+from profile_management.models import NewUser
 from homework.models import Homework, HomeworkLog
 from material.models import File
 from tgbot.create_bot import bot
@@ -36,7 +37,7 @@ async def show_homework_queryset(message: types.Message):
             await message.answer(text="Нет домашних заданий для выполнения")
         else:
             await message.answer(text="Вот домашние задания, которые ждут Вашего выполнения:",
-                             reply_markup=get_homeworks_buttons(homeworks))
+                                 reply_markup=get_homeworks_buttons(homeworks))
     elif 'Teacher' in groups:
         homeworks = list(filter(lambda hw: hw['hw_status'] == 3,
                                 [{
@@ -44,12 +45,47 @@ async def show_homework_queryset(message: types.Message):
                                     'hw_status': (await hw.aget_status()).status
                                 } async for hw in Homework.objects.filter(teacher=user)]))
         homeworks = [hw.get('hw') for hw in homeworks]
-        if  len(homeworks) == 0:
+        if len(homeworks) == 0:
             await message.answer(text="Нет домашних заданий для проверки")
         await message.answer(text="Вот домашние задания, которые ждут Вашей проверки:",
-                             reply_markup=get_homeworks_buttons(homeworks))
+                             reply_markup=get_homeworks_buttons(homeworks, sb=True))
     else:
         await message.answer("Для Вашей роли данная функция в Telegram недоступна")
+
+
+async def search_homeworks_message(callback: CallbackQuery, state: FSMContext):
+    await bot.send_message(chat_id=callback.from_user.id,
+                           text="Поиск по имени или фамилии:",
+                           reply_markup=cancel_keyboard)
+    await state.set_state(HomeworkFSM.search)
+
+
+async def search_homeworks_query(message: types.Message):
+    query = message.text.split(" ")
+    if len(query) == 0:
+        await message.answer("Некорректный запрос")
+        return
+    listeners = [_ async for _ in NewUser.objects.filter(Q(groups__name="Listener",
+                                                           first_name__iregex=f'{query[0]}') |
+                                                         Q(groups__name="Listener",
+                                                           last_name__iregex=f'{query[0]}'))]
+    if len(listeners) == 0:
+        await message.answer("По данному запросу не найдено ни одного ученика")
+        return
+    homeworks = list(filter(lambda hw: hw['hw_status'] == 3,
+                            [{
+                                'hw': hw,
+                                'hw_status': (await hw.aget_status()).status
+                            } async for hw in Homework.objects.select_related("listener")
+                            .filter(listener__id__in=[usr.id for usr in listeners],
+                                                                      teacher=await get_user(message.from_user.id))]))
+    if not homeworks:
+        await message.answer("По данному запросу не найдено ни одного домашнего задания")
+    msg = "Вот домашние задания, которые требуют Вашей проверки от следующих учеников:"
+    for n, hw in enumerate(homeworks):
+        msg += f"\n{n+1}. {hw.get('hw').listener.first_name} {hw.get('hw').listener.last_name}"
+    await message.answer(text=msg,
+                         reply_markup=get_homeworks_buttons([hw.get('hw') for hw in homeworks], sb=False))
 
 
 async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback):
@@ -230,10 +266,6 @@ async def filedownloader(data, owner) -> dict:
         for msg in text:
             comment += f"{msg}\n"
     files_db = []
-    print(MEDIA_ROOT)
-    logging.log(logging.INFO, f"{MEDIA_ROOT}")
-    print("epmvpermperp")
-    logging.log(logging.INFO, f"regnoev")
     for photo in photos:
         await bot.download(file=photo,
                            destination=f"{MEDIA_ROOT}/files/{photo}.jpg")

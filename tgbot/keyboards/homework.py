@@ -3,8 +3,14 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkLogCallback
 
 
-def get_homeworks_buttons(homeworks: list) -> InlineKeyboardMarkup:
+def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    if sb:
+        builder.button(
+            text="Поиск по ученику",
+            callback_data=HomeworkCallback(action="search",
+                                           hw_id=0)
+        )
     for hw in homeworks:
         builder.button(
             text=f"ДЗ: {hw.name}",

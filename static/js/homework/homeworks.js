@@ -1,5 +1,5 @@
 async function homeworksMain(){
-    if (userGroup === "Teacher"){
+    if (isTeacher){
         await homeworksGetShow("checking")
     } else {
         await homeworksGetShow("doing")

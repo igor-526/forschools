@@ -1,10 +1,10 @@
 from django.urls import path
-from .views import (HomeworkPage, HomeworkListCreateAPIView,
+from .views import (HomeworksPage, HomeworkListCreateAPIView,
                     HomeworkItemPage, HomeworkLogListCreateAPIView,
                     HomeworkReplaceTeacher)
 
 urlpatterns = [
-    path('', HomeworkPage.as_view(), name='homeworks'),    # страница с домашними заданиями
+    path('', HomeworksPage.as_view(), name='homeworks'),    # страница с домашними заданиями
     path('<int:pk>', HomeworkItemPage.as_view()),
 ]
 
