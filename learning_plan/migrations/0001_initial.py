@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(verbose_name='Наименование')),
                 ('purpose', models.CharField(blank=True, null=True, verbose_name='Цель')),
-                ('show_lessons', models.IntegerField(blank=True, null=True, verbose_name='Видимость уроков')),
+                ('show_lessons', models.IntegerField(blank=True, null=True, verbose_name='Видимость занятий')),
                 ('show_materials', models.IntegerField(blank=True, null=True, verbose_name='Видимость материалов')),
                 ('deadline', models.DateTimeField(blank=True, null=True, verbose_name='Срок')),
                 ('status', models.IntegerField(blank=True, choices=[(0, 'Обучение не начато'), (1, 'В процессе обучения'), (2, 'Обучение завершено'), (3, 'Обучение заморожено')], default=0, verbose_name='Статус')),

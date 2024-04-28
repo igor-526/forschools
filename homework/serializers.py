@@ -30,7 +30,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         try:
             lesson = Lesson.objects.get(pk=int(lesson_id))
         except Lesson.DoesNotExist:
-            raise serializers.ValidationError({"msg": "Урок отсутствует"})
+            raise serializers.ValidationError({"msg": "Занятие отсутствует"})
         listeners = lesson.get_listeners()
         homeworks = []
         for listener in listeners:

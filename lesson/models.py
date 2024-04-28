@@ -28,17 +28,17 @@ class Lesson(models.Model):
                             max_length=200,
                             null=False,
                             blank=False)
-    start_time = models.TimeField(verbose_name='Начало урока',
+    start_time = models.TimeField(verbose_name='Начало занятия',
                                   null=True,
                                   blank=True)
-    end_time = models.TimeField(verbose_name='Окончание урока',
+    end_time = models.TimeField(verbose_name='Окончание занятия',
                                 null=True,
                                 blank=True)
-    date = models.DateField(verbose_name='Дата урока',
+    date = models.DateField(verbose_name='Дата занятия',
                             null=True,
                             blank=True,
                             default=timezone.now)
-    description = models.TextField(verbose_name='Описание урока',
+    description = models.TextField(verbose_name='Описание занятия',
                                    null=True,
                                    blank=True)
     replace_teacher = models.ForeignKey(NewUser,
@@ -60,11 +60,11 @@ class Lesson(models.Model):
                                        verbose_name='Домашние задания',
                                        blank=True)
     place = models.ForeignKey(Place,
-                              verbose_name='Место урока',
+                              verbose_name='Место занятия',
                               null=True,
                               blank=True,
                               on_delete=models.DO_NOTHING)
-    evaluation = models.IntegerField(verbose_name='Оценка урока',
+    evaluation = models.IntegerField(verbose_name='Оценка занятия',
                                      null=True,
                                      blank=True)
     note_teacher = models.CharField(verbose_name='Заметка преподавателя',
@@ -82,8 +82,8 @@ class Lesson(models.Model):
                                  choices=LESSON_STATUS_CHOICES)
 
     class Meta:
-        verbose_name = 'Урок'
-        verbose_name_plural = 'Уроки'
+        verbose_name = 'Занятие'
+        verbose_name_plural = 'Занятия'
         ordering = ['date', 'start_time', 'pk']
 
     def __str__(self):

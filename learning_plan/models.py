@@ -24,7 +24,7 @@ class LearningPhases(models.Model):
                                blank=True,
                                null=True)
     lessons = models.ManyToManyField(Lesson,
-                                     verbose_name="Уроки",
+                                     verbose_name="Занятия",
                                      blank=True)
     status = models.IntegerField(verbose_name="Статус",
                                  choices=PLAN_STATUS_CHOICES,
@@ -54,7 +54,7 @@ class LearningPlan(models.Model):
     purpose = models.CharField(verbose_name="Цель",
                                blank=True,
                                null=True)
-    show_lessons = models.IntegerField(verbose_name="Видимость уроков",
+    show_lessons = models.IntegerField(verbose_name="Видимость занятий",
                                        blank=True,
                                        null=True,
                                        default=7)

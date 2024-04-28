@@ -14,7 +14,7 @@ def get_menu(user):
     admin_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Уроки', 'url': reverse('lessons'), 'type': 'main'},
+        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
@@ -26,7 +26,7 @@ def get_menu(user):
     metodist_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Уроки', 'url': reverse('lessons'), 'type': 'main'},
+        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
@@ -38,7 +38,7 @@ def get_menu(user):
     teacher_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Уроки', 'url': reverse('lessons'), 'type': 'main'},
+        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
@@ -46,7 +46,7 @@ def get_menu(user):
     listener_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Уроки', 'url': reverse('lessons'), 'type': 'main'},
+        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]

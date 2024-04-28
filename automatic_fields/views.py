@@ -33,7 +33,7 @@ class AutomaticFieldAPIView(APIView):
         if qp.get('learning_phase'):
             try:
                 count = LearningPhases.objects.get(pk=qp.get('learning_phase')).lessons.count()
-                return JsonResponse({'name': f'Урок {count + 1}'}, status=status.HTTP_200_OK)
+                return JsonResponse({'name': f'Занятие {count + 1}'}, status=status.HTTP_200_OK)
             except LearningPhases.DoesNotExist:
                 return JsonResponse({'learning_phase': 'not found'}, status=status.HTTP_404_NOT_FOUND)
         else:
@@ -45,7 +45,7 @@ class AutomaticFieldAPIView(APIView):
             try:
                 lesson = Lesson.objects.get(pk=qp.get('lesson'))
                 count = lesson.homeworks.count()
-                return JsonResponse({'name': f'ДЗ к уроку "{lesson.name}" {count + 1}'}, status=status.HTTP_200_OK)
+                return JsonResponse({'name': f'ДЗ к занятию "{lesson.name}" {count + 1}'}, status=status.HTTP_200_OK)
             except Lesson.DoesNotExist:
                 return JsonResponse({'lesson': 'not found'}, status=status.HTTP_404_NOT_FOUND)
         else:

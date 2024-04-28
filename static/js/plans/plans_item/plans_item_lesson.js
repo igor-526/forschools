@@ -19,14 +19,14 @@ async function plansItemLessonSetPlaces(){
 
 async function phaseItemAddModalLesson(phaseID, lessonID){
     if (lessonID === 0){
-        plansItemPhaseLessonModalTitle.innerHTML = "Добавление урока"
+        plansItemPhaseLessonModalTitle.innerHTML = "Добавление занятия"
         plansItemPhaseLessonModalForm.reset()
         const autoName = await getAutoFieldLessonName(phaseID)
         if (autoName.status === 200){
             plansItemPhaseLessonModalNameField.value = autoName.response.name
         }
     } else {
-        plansItemPhaseLessonModalTitle.innerHTML = "Изменение урока"
+        plansItemPhaseLessonModalTitle.innerHTML = "Изменение занятия"
 
         const phase = phasesArray.find(phase => phase.id === phaseID)
         const lesson = phase.lessons.find(lesson => lesson.id === lessonID)
@@ -101,7 +101,7 @@ async function phaseItemLessonAdd(phaseID){
         })
         if (response.status === 201){
             bsPlansItemPhaseLessonModal.hide()
-            showToast("Урок", "Урок успешно создан")
+            showToast("Занятие", "Занятие успешно создан")
             await planItemMain()
         } else if (response.status === 400) {
             phaseItemLessonServerValidation(await response.json())
@@ -122,7 +122,7 @@ async function phaseItemLessonEdit(phaseID, lessonID){
         const request = await planItemAPIUpdateLesson(formData, lessonID)
         if (request.status === 200){
             bsPlansItemPhaseLessonModal.hide()
-            showToast("Урок", "Урок успешно изменён")
+            showToast("Занятие", "Занятие успешно изменено")
             await planItemMain()
         } else if (request.status === 400) {
             phaseItemLessonServerValidation(request.response)
@@ -137,7 +137,7 @@ async function phaseItemLessonDestroy(lessonID){
     const request = await planItemAPIDestroyLesson(lessonID)
     bsLessonDeleteModal.hide()
     if (request.status === 204){
-        showToast("Успешно", "Урок удалён")
+        showToast("Успешно", "Занятие удалено")
         await planItemMain()
     } else {
         showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")

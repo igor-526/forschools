@@ -114,7 +114,7 @@ function planItemGetPhaseHTML(phase){
             <td colspan="4">
             <div class="collapse ms-3" id="PlansItemTablePhaseCollapse${phase.id}">
                 <div class="card card-body">
-                <h4>Уроки этапа "${phase.name}":</h4>
+                <h4>Занятия этапа "${phase.name}":</h4>
                 <table class="table table-hover mb-3" style="width: 100%;">
                     <thead>
                         <tr>
@@ -127,7 +127,7 @@ function planItemGetPhaseHTML(phase){
                     <tbody>
                         ${lessonsHTML}
                         <tr>
-                            <td colspan="3">Добавить урок</td>
+                            <td colspan="3">Добавить занятие</td>
                             <td>
                                 <button type="button" class="btn btn-primary phase-lesson-button-add" 
                                 data-phase-id="${phase.id}" data-lesson-id="0"><i class="bi bi-plus-lg"></i></button>
@@ -154,7 +154,7 @@ function planItemGetPhaseHTML(phase){
             <td colspan="4">
             <div class="collapse ms-3" id="PlansItemTablePhaseCollapse${phase.id}">
                 <div class="card card-body">
-                <h4>Уроки этапа "${phase.name}":</h4>
+                <h4>Занятия этапа "${phase.name}":</h4>
                 <table class="table table-hover mb-3" style="width: 100%;">
                     <thead>
                         <tr>

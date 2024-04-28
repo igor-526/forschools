@@ -7,7 +7,7 @@ from tgbot.funcs.menu import send_menu
 
 
 async def ask_lesson_name(message: types.Message, state: FSMContext) -> None:
-    await message.answer(text="Введите название урока: ")
+    await message.answer(text="Введите название занятия: ")
     await state.set_state(AddLesson.name)
 
 
@@ -28,7 +28,7 @@ async def new_lesson(message: types.Message, state: FSMContext) -> None:
                                  teacher=teacher.user,
                                  listener=data['listener'],
                                  zoom_url='https://1.ru')
-    await message.answer("Урок создан")
+    await message.answer("Занятие создан")
     await send_menu(message, state)
 
 

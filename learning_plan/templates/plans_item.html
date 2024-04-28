@@ -31,8 +31,8 @@
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">Этапов всего: {{ plan.phases.count }}</li>
                             <li class="list-group-item">Этапов пройдено:</li>
-                            <li class="list-group-item">Уроков всего:</li>
-                            <li class="list-group-item">Уроков пройдено:</li>
+                            <li class="list-group-item">Занятий всего:</li>
+                            <li class="list-group-item">Занятий пройдено:</li>
                         </ul>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                     <div class="card-header">Преподаватели</div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><b>Уроки: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
+                            <li class="list-group-item"><b>Занятия: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
                         </ul>
                         {% if plan.default_hw_teacher %}
                             <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.default_hw_teacher.id }}">{{ plan.default_hw_teacher }}</a></li>
@@ -67,11 +67,15 @@
                     <div class="card-header">Настройки</div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Уроки видны ученику за <b>{{ plan.show_lessons }}</b> дней</li>
+                            {%  if plan.show_lessons %}
+                                <li class="list-group-item">Занятия видны ученику за <b>{{ plan.show_lessons }}</b> дней</li>
+                            {% else %}
+                                <li class="list-group-item">Занятия видны ученику за <b>7</b> дней</li>
+                            {% endif %}
                             {% if plan.show_materials %}
                                 <li class="list-group-item">Материалы видны ученику за <b>{{ plan.show_materials }}</b> дней</li>
                             {% else %}
-                                <li class="list-group-item">Материалы видны ученику по факту начала урока</li>
+                                <li class="list-group-item">Материалы видны ученику по факту начала занятия</li>
                             {% endif %}
                         </ul>
                     </div>

@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='learningphases',
             name='lessons',
-            field=models.ManyToManyField(blank=True, to='lesson.lesson', verbose_name='Уроки'),
+            field=models.ManyToManyField(blank=True, to='lesson.lesson', verbose_name='Занятия'),
         ),
     ]

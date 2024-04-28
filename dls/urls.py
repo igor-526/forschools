@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),    # страницы администрирования
     path('', include(profile_urlpatterns)),     # страницы профиля
     path('materials/', include(material_urlpatterns)),  # страницы материалов
-    path('lessons/', include(lesson_urlpatterns)),   # страницы уроков
+    path('lessons/', include(lesson_urlpatterns)),   # страницы занятий
     path('homeworks/', include(homework_urlpatterns)),   # страницы домашних заданий
     path('', include(data_collections_urlpatterns)),  # страницы коллекций данных
     path('learning_plans/', include(learning_plan_urlpatterns)),

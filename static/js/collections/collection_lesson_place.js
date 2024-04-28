@@ -9,7 +9,7 @@ function setLessonPlaces(){
                         <th scope="col">Название</th>
                         <th scope="col">Ссылка</th>
                         <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = '<td>Добавить место проведения урока</td><td></td><td><button type="button" class="btn btn-primary" id="TableButtonLessonPlaceAdd" data-col-id="0"><i class="bi bi-plus-lg"></i></button></td>'
+    tableBody.innerHTML = '<td>Добавить место проведения занятия</td><td></td><td><button type="button" class="btn btn-primary" id="TableButtonLessonPlaceAdd" data-col-id="0"><i class="bi bi-plus-lg"></i></button></td>'
     lessonPlacesSet.map(function (item) {
         tableBody.insertAdjacentHTML("beforeend", `
                                 <td>${item.name}</td>
@@ -33,9 +33,9 @@ function setLessonPlaces(){
 }
 
 function editLessonPlaceModal(){
-    modalEditPlaceLabel.innerHTML = "Место проведения урока"
-    modalEditPlaceNameHelp.innerHTML = "Наименование места для проведения урока. Должно быть уникальным"
-    modalEditPlaceURLHelp.innerHTML = "Ссылка на урок. У учеников и преподаавтелей есть доступ к ссылке на платформе и по напоминанию в Telegram. Должна быть уникальной"
+    modalEditPlaceLabel.innerHTML = "Место проведения занятия"
+    modalEditPlaceNameHelp.innerHTML = "Наименование места для проведения занятия. Должно быть уникальным"
+    modalEditPlaceURLHelp.innerHTML = "Ссылка на занятие. У учеников и преподавателей есть доступ к ссылке на платформе и по напоминанию в Telegram. Должна быть уникальной"
     const colID = this.attributes.getNamedItem("data-col-id").value
     const colObj = lessonPlacesSet.find(i => i.id === Number(colID))
     modalEditPlaceNameField.value = colObj.name
@@ -60,9 +60,9 @@ function deleteLessonPlaceModal(){
 }
 
 function addLessonPlaceModal(){
-    modalEditPlaceLabel.innerHTML = "Место проведения урока"
-    modalEditPlaceNameHelp.innerHTML = "Наименование места для проведения урока. Должно быть уникальным"
-    modalEditPlaceURLHelp.innerHTML = "Ссылка на урок. У учеников и преподаавтелей есть доступ к ссылке на платформе и по напоминанию в Telegram. Должна быть уникальной"
+    modalEditPlaceLabel.innerHTML = "Место проведения занятия"
+    modalEditPlaceNameHelp.innerHTML = "Наименование места для проведения занятия. Должно быть уникальным"
+    modalEditPlaceURLHelp.innerHTML = "Ссылка на занятие. У учеников и преподавателей есть доступ к ссылке на платформе и по напоминанию в Telegram. Должна быть уникальной"
     modalEditPlaceNameField.value = ""
     modalEditPlaceURLField.value = ""
     bsModalEditPlace.show()
@@ -81,7 +81,7 @@ async function addLessonPlace(){
     })
     if (response.status === 201){
         bsModalEditPlace.hide()
-        showToast("Место проведения урока", "Место проведения урока успешно добавлено")
+        showToast("Место проведения занятия", "Место проведения занятия успешно добавлено")
         await getLessonPlaces()
         setLessonPlaces()
     } else {
@@ -101,7 +101,7 @@ async function editLessonPlace(colID){
     })
     if (response.status === 200){
         bsModalEditPlace.hide()
-        showToast("Место проведения урока", "Место проведения урока успешно изменено")
+        showToast("Место проведения занятия", "Место проведения занятия успешно изменено")
         await getLessonPlaces()
         setLessonPlaces()
     } else {
@@ -120,7 +120,7 @@ async function deleteLessonPlace(colID){
     })
     if (response.status === 204){
         bsModalDelete.hide()
-        showToast("Место проведения урока", "Место проведения урока успешно удалено")
+        showToast("Место проведения занятия", "Место проведения занятия успешно удалено")
         await getLessonPlaces()
         setLessonPlaces()
     } else {

@@ -16,17 +16,17 @@ from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           can_see_lesson_materials, can_add_homework)
 
 
-class LessonPage(LoginRequiredMixin, TemplateView):  # страница уроков
+class LessonPage(LoginRequiredMixin, TemplateView):  # страница занятий
     template_name = "lessons.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Уроки',
+        context = {'title': 'Занятия',
                    'menu': get_menu(request.user),
                    'plans_button': plans_button(request)}
         return render(request, self.template_name, context)
 
 
-class LessonItemPage(CanSeeLessonMixin, TemplateView):  # страница урока
+class LessonItemPage(CanSeeLessonMixin, TemplateView):  # страница занятия
     template_name = "lesson_item.html"
 
     def get(self, request, *args, **kwargs):
@@ -110,6 +110,6 @@ class LessonReplaceTeacher(CanReplaceTeacherMixin, APIView):
             lesson.save()
             return JsonResponse({'status': 'ok'}, status=status.HTTP_200_OK)
         except Lesson.DoesNotExist:
-            return JsonResponse({'error': 'Урок не найден'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': 'Занятие не найдено'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

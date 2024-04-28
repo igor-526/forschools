@@ -26,6 +26,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='learningplan',
             name='show_lessons',
-            field=models.IntegerField(blank=True, default=7, null=True, verbose_name='Видимость уроков'),
+            field=models.IntegerField(blank=True, default=7, null=True, verbose_name='Видимость занятий'),
         ),
     ]

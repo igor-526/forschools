@@ -152,7 +152,7 @@ class Command(BaseCommand):
                                                          name="Просмотр всех планов обучения",
                                                          content_type=content_type)[0]
         comment_lesson = Permission.objects.get_or_create(codename="comment_lesson",
-                                                          name="Комментирование/оценка урока",
+                                                          name="Комментирование/оценка занятия",
                                                           content_type=content_type)[0]
         see_teachers_comment = Permission.objects.get_or_create(codename="see_teachers_comment",
                                                                 name="Просмотр комментария преподавателя",
