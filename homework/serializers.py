@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Homework, HomeworkLog
 from lesson.models import Lesson
 from profile_management.serializers import NewUserNameOnlyListSerializer
+from profile_management.models import NewUser
 from material.serializers import MaterialListSerializer
 from material.serializers import FileSerializer
 from tgbot.utils import send_homework_tg, send_homework_answer_tg
@@ -26,26 +27,39 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "deadline", "description", "teacher", "listener"]
 
     def create(self, validated_data):
-        lesson_id = self.context.get('request').POST.get('lesson')
-        try:
-            lesson = Lesson.objects.get(pk=int(lesson_id))
-        except Lesson.DoesNotExist:
-            raise serializers.ValidationError({"msg": "Занятие отсутствует"})
-        listeners = lesson.get_listeners()
+        request = self.context.get("request")
+        lesson_id = request.POST.get('lesson')
+        if lesson_id:
+            try:
+                lesson = Lesson.objects.get(pk=int(lesson_id))
+                listeners = lesson.get_listeners()
+                teacher = lesson.get_hw_teacher()
+            except Lesson.DoesNotExist:
+                raise serializers.ValidationError({"msg": "Занятие отсутствует"})
+        else:
+            try:
+                lesson = None,
+                listeners = NewUser.objects.filter(groups__name="Listener",
+                                                   id__in=request.POST.getlist("listeners"))
+                if not listeners:
+                    raise serializers.ValidationError({"listeners": "Ученики не найдены"})
+                teacher = NewUser.objects.get(groups__name="Teacher",
+                                              id=request.POST.get("teacher"))
+            except NewUser.DoesNotExist:
+                raise serializers.ValidationError({"teacher": "Преподаватель не найден"})
         homeworks = []
         for listener in listeners:
             homework = Homework.objects.create(**validated_data,
                                                listener=listener,
-                                               teacher=lesson.get_hw_teacher())
-
+                                               teacher=teacher)
             send_homework_tg(homework.listener, homework)
-
             homeworks.append(homework)
-        lesson.homeworks.add(*homeworks)
+        if lesson_id:
+            lesson.homeworks.add(*homeworks)
+            lesson.save()
         for homework in homeworks:
             homework.materials.set(self.context.get('request').POST.getlist('materials'))
             homework.save()
-        lesson.save()
         return homeworks[0]
 
 

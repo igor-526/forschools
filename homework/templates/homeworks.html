@@ -62,20 +62,22 @@
         const isAdminOrMetodist = {% if is_admin_or_metodist %}true{% else %}false{% endif %}
         const isTeacher = {% if is_teacher %}true{% else %}false{% endif %}
         const isListener = {% if is_listener %}true{% else %}false{% endif %}
-        const user = {
+        const userObj = {
             id: {{ request.user.id }},
-            first_name: {{ request.user.first_name }},
-            last_name: {{ request.user.last_name }}
+            first_name: "{{ request.user.first_name }}",
+            last_name: "{{ request.user.last_name }}"
         }
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/homework/homeworks.js' %}"></script>
     {% if is_admin_or_metodist or is_teacher %}
         <script>
             const materialEmbedAction = "addToHW_"
         </script>
+        <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script src="{% static 'js/materials/materials_api.js' %}"></script>
         <script src="{% static 'js/homework/homework_add.js' %}"></script>
         <script src="{% static 'js/materials/materials_embed.js' %}"></script>

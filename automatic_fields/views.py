@@ -1,7 +1,11 @@
+import datetime
+
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
+
+from homework.models import Homework
 from learning_plan.models import LearningPlan, LearningPhases
 from lesson.models import Lesson
 
@@ -49,7 +53,9 @@ class AutomaticFieldAPIView(APIView):
             except Lesson.DoesNotExist:
                 return JsonResponse({'lesson': 'not found'}, status=status.HTTP_404_NOT_FOUND)
         else:
-            return JsonResponse({'lesson': 'not found'}, status=status.HTTP_400_BAD_REQUEST)
+            count = Homework.objects.count()
+            return JsonResponse({'name': f'Домашнее задание {count+1}',
+                                 'deadline': datetime.date.today() + datetime.timedelta(days=7)}, status=status.HTTP_200_OK)
 
     def get(self, request, *args, **kwargs):
         field = kwargs.get('field')

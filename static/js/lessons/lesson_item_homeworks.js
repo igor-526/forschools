@@ -69,7 +69,7 @@ async function lessonItemHomeworksSave(go = false){
                 fd.append("materials", material)
             })
         }
-        await homeworkAdd(lessonID, fd)
+        await homeworkAPIAddToLesson(lessonID, fd)
             .then(async request => {
                 if (request.status === 201){
                     bsOffcanvasNewHW.hide()

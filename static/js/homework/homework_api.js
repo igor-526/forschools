@@ -1,5 +1,23 @@
-async function homeworkAdd(lessonID, formData){
+async function homeworkAPIAddToLesson(lessonID, formData){
     formData.append("lesson", lessonID)
+    const response = await fetch('/api/v1/homeworks/', {
+        method: "post",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: formData
+    })
+    if (response.status === 500){
+        return {status: 500,
+            response: {}}
+    } else {
+        return {status: response.status,
+            response: await response.json()}
+    }
+}
+
+async function homeworkAPIAdd(formData){
     const response = await fetch('/api/v1/homeworks/', {
         method: "post",
         credentials: 'same-origin',

@@ -32,6 +32,17 @@ async function materialsEmbedMain(){
                 materialsEmbedReset()
                 break
             case "addToHW_":
+                HWAddMaterialsSet = new FormData(materialsEmbedModalTableForm).getAll("material")
+                HWAddMaterialsList.innerHTML = `
+                    <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2" id="HWNewMaterialsListClearButton"><i class="bi bi-trash3"></i></button>
+                        Прикреплено ${HWAddMaterialsSet.length}
+                    </li>`
+                HWAddMaterialsList.querySelector("#HWNewMaterialsListClearButton").addEventListener("click", function () {
+                    HWAddMaterialsSet = []
+                    HWAddMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
+                })
+                bsMaterialsEmbedModal.hide()
+                materialsEmbedReset()
                 break
         }
     })

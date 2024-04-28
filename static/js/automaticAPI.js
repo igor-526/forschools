@@ -14,6 +14,11 @@ async function getAutoFieldLessonName(phaseID){
 }
 
 async function getAutoFieldHomeworkName(lessonID){
-    const request = await fetch(`/api/v1/automatic/homework?lesson=${lessonID}`)
+    let request
+    if (lessonID === 0){
+        request = await fetch(`/api/v1/automatic/homework`)
+    } else {
+        request = await fetch(`/api/v1/automatic/homework?lesson=${lessonID}`)
+    }
     return APIGetToObject(request)
 }
