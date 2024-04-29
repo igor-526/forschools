@@ -113,3 +113,11 @@ class LessonReplaceTeacher(CanReplaceTeacherMixin, APIView):
             return JsonResponse({'error': 'Занятие не найдено'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserLessonListAPIView(LoginRequiredMixin, ListAPIView):
+    serializer_class = LessonListSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        userID = self.kwargs.get('pk')
+        return Lesson.objects.filter(learningphases__learningplan__listeners__id=userID)

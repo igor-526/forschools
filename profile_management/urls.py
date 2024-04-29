@@ -7,6 +7,8 @@ from .views import (DashboardPage, user_login,
                     UserPhotoApiView, ProfilePage,
                     TelegramAPIView, DeactivateUserView,
                     ActivateUserView, ChangePasswordView)
+from homework.views import UserHWListApiView
+from lesson.views import UserLessonListAPIView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='dashboard')),  # редирект на дэшборд
@@ -28,4 +30,6 @@ apiv1patterns = [
     path('<int:pk>/deactivate/', DeactivateUserView.as_view()),     # API для деактивации пользователя
     path('<int:pk>/activate/', ActivateUserView.as_view()),  # API для активации пользователя
     path('<int:pk>/reset_password/', ChangePasswordView.as_view()),  # API для смены пароля пользователя
+    path('<int:pk>/hw/', UserHWListApiView.as_view()),
+    path('<int:pk>/lessons/', UserLessonListAPIView.as_view()),
 ]

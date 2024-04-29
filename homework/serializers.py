@@ -21,10 +21,14 @@ class HomeworkSerializer(serializers.ModelSerializer):
 class HomeworkListSerializer(serializers.ModelSerializer):
     teacher = NewUserNameOnlyListSerializer(many=False, read_only=True)
     listener = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    status = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Homework
-        fields = ["id", "name", "deadline", "description", "teacher", "listener"]
+        fields = ["id", "name", "deadline", "description", "teacher", "listener", "status"]
+
+    def get_status(self, obj):
+        return obj.get_status().status
 
     def create(self, validated_data):
         request = self.context.get("request")

@@ -6,7 +6,7 @@ from lesson.permissions import CanReplaceTeacherMixin, replace_teacher_button
 from material.models import File
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView
 from .models import Homework, HomeworkLog
 from .serializers import HomeworkListSerializer, HomeworkLogSerializer
 from rest_framework import status
@@ -125,3 +125,11 @@ class HomeworkReplaceTeacher(CanReplaceTeacherMixin, APIView):
             return JsonResponse({'error': 'ДЗ не найдено'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserHWListApiView(LoginRequiredMixin, ListAPIView):
+    serializer_class = HomeworkListSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        userID = self.kwargs.get('pk')
+        return Homework.objects.filter(listener__id=userID)

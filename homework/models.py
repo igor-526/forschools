@@ -48,7 +48,7 @@ class Homework(models.Model):
     class Meta:
         verbose_name = 'Домашнее задание'
         verbose_name_plural = 'Домишние задания'
-        ordering = ['id']
+        ordering = ['-id']
 
     def __str__(self):
         return f'{self.name}'

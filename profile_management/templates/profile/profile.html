@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
     <div class="container-xxl mt-4">
-        <div class="row">
+        <div class="row mb-5">
             <div class="col-auto">
                 <div class="text-center">
                     <img src="{{ puser.photo }}" alt="Фото профиля" class="page-profile-photo">
@@ -91,6 +91,23 @@
                 </div>
             </div>
         </div>
+        {% if can_see_data %}
+            <div class="row">
+                <ul class="nav nav-tabs mb-3 ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="ProfileDataTabLessons">Занятия</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="ProfileDataTabHW">Домашние задания</a>
+                    </li>
+                </ul>
+
+                <table class="table table-hover">
+                    <thead id="ProfileDataTableHead"></thead>
+                    <tbody id="ProfileDataTableBody"></tbody>
+                </table>
+            </div>
+        {% endif %}
     </div>
     {% include 'toast.html' %}
     {% include 'users/users_modal_change_password.html' %}
@@ -106,14 +123,17 @@
         {% endif %}
         const userID = {{ puser.id }}
     </script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
     {% if self %}
-        <script src="{% static 'js/apitostr.js' %}"></script>
         <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
-        <script src="{% static 'js/users/users_api.js' %}"></script>
         <script src="{% static 'js/users/profile/profile_edit.js' %}"></script>
         <script src="{% static 'js/users/profile/profile_photo.js' %}"></script>
         <script src="{% static 'js/users/users_change_password.js' %}"></script>
         <script src="{% static 'js/users/telegram.js' %}"></script>
+    {% endif %}
+    {% if can_see_data %}
+        <script src="{% static 'js/users/profile/profile_data.js' %}"></script>
     {% endif %}
 
     <script src="{% static 'js/users/profile/profile.js' %}"></script>

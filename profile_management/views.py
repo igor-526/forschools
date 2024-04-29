@@ -190,6 +190,7 @@ class ProfilePage(LoginRequiredMixin, TemplateView):
         context = {'title': f"Профиль: {puser}",
                    'menu': get_menu(request.user),
                    'puser': user_object,
+                   'can_see_data': True,
                    'self': puser == request.user}
         return render(request, self.template_name, context)
 
@@ -273,4 +274,3 @@ class TelegramAPIView(LoginRequiredMixin, APIView):  # API для управле
             return JsonResponse({"status": "disconnected",
                                  "code": user.tg_code},
                                 status=status.HTTP_200_OK)
-
