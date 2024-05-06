@@ -4,6 +4,7 @@ async function materialsEmbedMain(){
         materialsAllSet = request.response
         materialsEmbedShow(materialsAllSet)
     }
+
     materialsEmbedModalAddButton.addEventListener("click", async function () {
         switch (materialEmbedAction){
             case "addToLesson":
@@ -44,6 +45,34 @@ async function materialsEmbedMain(){
                 bsMaterialsEmbedModal.hide()
                 materialsEmbedReset()
                 break
+            case "programHW":
+                modalLProgramHWMaterialsSet = new FormData(materialsEmbedModalTableForm).getAll("material")
+                lProgramHWMaterialsList.innerHTML = ""
+                modalLProgramHWMaterialsSet.forEach(matID => {
+                    const mat = materialsAllSet.find(mat => Number(mat.id) === Number(matID))
+                    lProgramHWMaterialsList.insertAdjacentHTML("beforeend", `
+                    <li class="list-group-item"><button type="button" class="btn btn-danger material-embed-delete" data-mat-id="${mat.id}">
+                    <i class="bi bi-trash3"></i></button>
+                    <a href="/materials/${mat.id}">${mat.name}</a></li>`)
+                })
+                lProgramHWMaterialsList.querySelectorAll(".material-embed-delete").forEach(matDelButton => {
+                    matDelButton.addEventListener("click", materialsEmbedDelete)
+                })
+                break
+            case "programLesson":
+                modalLProgramLessonMaterialsSet = new FormData(materialsEmbedModalTableForm).getAll("material")
+                lProgramLessonMaterialsList.innerHTML = ""
+                modalLProgramLessonMaterialsSet.forEach(matID => {
+                    const mat = materialsAllSet.find(mat => Number(mat.id) === Number(matID))
+                    lProgramLessonMaterialsList.insertAdjacentHTML("beforeend", `
+                    <li class="list-group-item"><button type="button" class="btn btn-danger material-embed-delete" data-mat-id="${mat.id}">
+                    <i class="bi bi-trash3"></i></button>
+                    <a href="/materials/${mat.id}">${mat.name}</a></li>`)
+                })
+                lProgramLessonMaterialsList.querySelectorAll(".material-embed-delete").forEach(matDelButton => {
+                    matDelButton.addEventListener("click", materialsEmbedDelete)
+                })
+                break
         }
     })
 }
@@ -63,6 +92,35 @@ function materialsEmbedShow(list = materialsAllSet){
         `)
     })
 }
+
+
+function materialsEmbedDelete(){
+    const matID = this.attributes.getNamedItem("data-mat-id").value
+    let matIndex
+    switch (materialEmbedAction){
+        case "programHW":
+            this.parentElement.remove()
+            matIndex = modalLProgramHWMaterialsSet.indexOf(Number(matID))
+            if (matIndex !== -1) {
+                modalLProgramHWMaterialsSet.splice(matIndex, 1)
+            }
+            if (modalLProgramHWMaterialsSet.length === 0){
+                lProgramHWMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
+            }
+            break
+        case "programLesson":
+            this.parentElement.remove()
+            matIndex = modalLProgramLessonMaterialsSet.indexOf(Number(matID));
+            if (matIndex !== -1) {
+                modalLProgramLessonMaterialsSet.splice(matIndex, 1);
+            }
+            if (modalLProgramLessonMaterialsSet.length === 0){
+                lProgramLessonMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
+            }
+            break
+    }
+}
+
 
 function materialsEmbedReset() {
     materialsEmbedModalSearchForm.reset()
@@ -90,9 +148,9 @@ const materialsEmbedModalTableBody = materialsEmbedModalTableForm.querySelector(
 
 //Buttons
 const materialsEmbedModalAddButton = materialsEmbedModal.querySelector("#MaterialsEmbedModalAddButton")
+const materialsEmbedModalCloseButton = materialsEmbedModal.querySelector("#MaterialsEmbedModalCloseButton")
 
 //Sets
-let materialsSelectedSet = []
 let materialsAllSet = []
 
 materialsEmbedMain()

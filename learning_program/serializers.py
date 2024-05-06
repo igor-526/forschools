@@ -1,0 +1,76 @@
+from .models import LearningProgram, LearningProgramPhase, LearningProgramLesson, LearningProgramHomework
+from material.serializers import MaterialListSerializer
+from profile_management.serializers import NewUserNameOnlyListSerializer
+from rest_framework import serializers
+
+
+class LearningProgramHomeworkSerializer(serializers.ModelSerializer):
+    materials = MaterialListSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = LearningProgramHomework
+        fields = '__all__'
+
+    def create(self, validated_data):
+        hw = LearningProgramHomework.objects.create(**validated_data)
+        request = self.context.get("request")
+        materials = request.POST.getlist('materials')
+        hw.materials.set(materials)
+        hw.save()
+        return hw
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        materials = request.POST.getlist('materials')
+        print(materials)
+        instance.materials.set(materials)
+        instance.save()
+        return super(LearningProgramHomeworkSerializer, self).update(instance, validated_data)
+
+
+class LearningProgramLessonSerializer(serializers.ModelSerializer):
+    materials = MaterialListSerializer(read_only=True, many=True)
+    homeworks = LearningProgramHomeworkSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = LearningProgramLesson
+        fields = '__all__'
+
+    def create(self, validated_data):
+        lesson = LearningProgramLesson.objects.create(**validated_data)
+        request = self.context.get("request")
+        materials = request.POST.getlist('materials')
+        lesson.materials.set(materials)
+        lesson.save()
+        return lesson
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        materials = request.POST.getlist('materials')
+        instance.materials.set(materials)
+        instance.save()
+        return super(LearningProgramLessonSerializer, self).update(instance, validated_data)
+
+
+class LearningProgramPhaseSerializer(serializers.ModelSerializer):
+    materials = MaterialListSerializer(read_only=True, many=True)
+    lessons = LearningProgramLessonSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = LearningProgramPhase
+        fields = '__all__'
+
+
+class LearningProgramSerializer(serializers.ModelSerializer):
+    phases = LearningProgramPhaseSerializer(many=True, read_only=True)
+    owner = NewUserNameOnlyListSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = LearningProgram
+        fields = '__all__'
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        program = LearningProgram.objects.create(**validated_data,
+                                                 owner=request.user)
+        return program

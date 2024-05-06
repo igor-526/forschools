@@ -18,20 +18,9 @@ def get_menu(user):
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
-                {'name': 'Управление пользователями', 'url': reverse('admin_users')},
-                {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
-        ]},
-        {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
-    ]
-    metodist_menu = [
-        {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
-        {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
-        {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
-        {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
-        {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
-                {'name': 'Управление пользователями', 'url': reverse('admin_users')},
-                {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
+            {'name': 'Управление пользователями', 'url': reverse('admin_users')},
+            {'name': 'Программы обучения', 'url': reverse('learning_programs')},
+            {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
@@ -41,6 +30,10 @@ def get_menu(user):
         {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
+        {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
+            {'name': 'Управление пользователями', 'url': reverse('admin_users')},
+            {'name': 'Программы обучения', 'url': reverse('learning_programs')},
+        ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
     listener_menu = [
@@ -50,11 +43,9 @@ def get_menu(user):
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
-    if user.groups.first().name == "Listener":
+    if user.groups.filter(name="Listener").exists():
         return listener_menu
-    elif user.groups.first().name == "Metodist":
-        return metodist_menu
-    elif user.groups.first().name == "Teacher":
+    if user.groups.filter(name="Teacher").exists():
         return teacher_menu
-    elif user.groups.first().name == "Admin":
+    if user.groups.filter(name__in=["Metodist", "Admin"]).exists():
         return admin_menu

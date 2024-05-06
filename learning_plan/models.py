@@ -1,6 +1,7 @@
 from django.db import models
 from lesson.models import Lesson
 from profile_management.models import NewUser
+from learning_program.models import LearningProgram
 
 
 PLAN_STATUS_CHOICES = (
@@ -42,6 +43,11 @@ class LearningPlan(models.Model):
     name = models.CharField(verbose_name="Наименование",
                             null=False,
                             blank=False)
+    from_program = models.ForeignKey(LearningProgram,
+                                     verbose_name="Из програмы:",
+                                     null=True,
+                                     blank=True,
+                                     on_delete=models.SET_NULL)
     listeners = models.ManyToManyField(NewUser,
                                        verbose_name="Ученики",
                                        related_name="plan_listeners",
@@ -70,8 +76,8 @@ class LearningPlan(models.Model):
                                     verbose_name="Этапы обучения",
                                     blank=True)
     deadline = models.DateField(verbose_name="Срок",
-                                    blank=True,
-                                    null=True)
+                                blank=True,
+                                null=True)
     status = models.IntegerField(verbose_name="Статус",
                                  null=False,
                                  blank=True,

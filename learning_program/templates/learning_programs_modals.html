@@ -1,0 +1,169 @@
+<div class="modal fade" tabindex="-1" id="modalLProgramHW">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Домашнее задание</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form id="modalLProgramHWForm">
+                    <div class="mb-3">
+                        <label for="modalLProgramHWNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="modalLProgramHWNameField">
+                        <div class="form-text"></div>
+                        <div id="modalLProgramHWNameError" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalLProgramHWDescriptionField" class="form-label">Описание</label>
+                        <textarea name="description" type="text" class="form-control" id="modalLProgramHWDescriptionField"></textarea>
+                        <div class="form-text"></div>
+                        <div id="modalLProgramHWDescriptionError" class="invalid-feedback"></div>
+                    </div>
+                </form>
+
+                <div class="card mb-3">
+                    <div class="card-header">Материалы
+                        <button type="button" class="btn btn-primary btn-sm ms-2" id="modalLProgramHWMaterialsAddButton" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="bi bi-plus-lg"></i></button>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush" id="modalLProgramHWMaterialsList"></ul>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="modalLProgramHWSaveButton">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="modalLProgramLesson">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Урок</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form id="modalLProgramLessonForm">
+                    <div class="mb-3">
+                        <label for="modalLProgramLessonNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="modalLProgramLessonNameField">
+                        <div class="form-text"></div>
+                        <div id="modalLProgramLessonNameError" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalLProgramLessonDescriptionField" class="form-label">Описание</label>
+                        <input name="description" type="text" class="form-control" id="modalLProgramLessonDescriptionField">
+                        <div class="form-text"></div>
+                        <div id="modalLProgramLessonDescriptionError" class="invalid-feedback"></div>
+                    </div>
+                </form>
+
+                <div class="card mb-3">
+                    <div class="card-header">Материалы
+                        <button type="button" class="btn btn-primary btn-sm ms-2" id="modalLProgramLessonMaterialsAddButton" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="bi bi-plus-lg"></i></button>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush" id="modalLProgramLessonMaterialsList"></ul>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="modalLProgramLessonSaveButton">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="modalLProgramPhase">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Этап обучения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form id="modalLProgramPhaseForm">
+                    <div class="mb-3">
+                        <label for="modalLProgramPhaseNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="modalLProgramPhaseNameField">
+                        <div class="form-text"></div>
+                        <div id="modalLProgramPhaseNameError" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalLProgramPhasePurposeField" class="form-label">Цель этапа обучения</label>
+                        <input name="purpose" type="text" class="form-control" id="modalLProgramPhasePurposeField">
+                        <div class="form-text"></div>
+                        <div id="modalLProgramPhasePurposeError" class="invalid-feedback"></div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="modalLProgramPhaseSaveButton">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="modalLProgramProgram">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Этап обучения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form id="modalLProgramProgramForm">
+                    <div class="mb-3">
+                        <label for="modalLProgramProgramNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="modalLProgramProgramNameField">
+                        <div class="form-text"></div>
+                        <div id="modalLProgramProgramNameError" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalLProgramProgramPurposeField" class="form-label">Цель программы обучения</label>
+                        <input name="purpose" type="text" class="form-control" id="modalLProgramProgramPurposeField">
+                        <div class="form-text"></div>
+                        <div id="modalLProgramProgramPurposeError" class="invalid-feedback"></div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="modalLProgramProgramSaveButton">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="modalLProgramDelete">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Удаление</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalLProgramDeleteBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-danger" id="modalLProgramDeleteButton" data-id="" data-action="">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
