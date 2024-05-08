@@ -22,7 +22,6 @@ class LearningProgramHomeworkSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request")
         materials = request.POST.getlist('materials')
-        print(materials)
         instance.materials.set(materials)
         instance.save()
         return super(LearningProgramHomeworkSerializer, self).update(instance, validated_data)
@@ -53,12 +52,18 @@ class LearningProgramLessonSerializer(serializers.ModelSerializer):
 
 
 class LearningProgramPhaseSerializer(serializers.ModelSerializer):
-    materials = MaterialListSerializer(read_only=True, many=True)
     lessons = LearningProgramLessonSerializer(many=True, read_only=True)
+    owner = NewUserNameOnlyListSerializer(read_only=True)
 
     class Meta:
         model = LearningProgramPhase
         fields = '__all__'
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        phase = LearningProgramPhase.objects.create(**validated_data,
+                                                    owner=request.user)
+        return phase
 
 
 class LearningProgramSerializer(serializers.ModelSerializer):
@@ -71,6 +76,21 @@ class LearningProgramSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get("request")
+        validated_data.pop("visibility")
+        phases = request.POST.getlist('phases_order')
         program = LearningProgram.objects.create(**validated_data,
-                                                 owner=request.user)
+                                                 owner=request.user,
+                                                 visibility=True,
+                                                 phases_order=list(phases))
+        if phases:
+            program.phases.set(phases)
+            program.save()
         return program
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        phases = request.POST.getlist('phases_order')
+        validated_data['phases_order'] = list(phases)
+        instance.phases.set(phases)
+        instance.save()
+        return super(LearningProgramSerializer, self).update(instance, validated_data)

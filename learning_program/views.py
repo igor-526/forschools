@@ -1,6 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .models import LearningProgramHomework, LearningProgram, LearningProgramLesson, LearningProgramPhase
 from .serializers import LearningProgramSerializer, LearningProgramHomeworkSerializer, LearningProgramLessonSerializer, LearningProgramPhaseSerializer
@@ -19,7 +21,7 @@ class LearningProgramHomeworkListAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = LearningProgramHomework
 
     def get_queryset(self):
-        return LearningProgramHomework.objects.all()
+        return LearningProgramHomework.objects.filter(visibility=True)
 
 
 class LearningProgramHomeworkDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
@@ -27,7 +29,13 @@ class LearningProgramHomeworkDetailAPIView(LoginRequiredMixin, RetrieveUpdateDes
     model = LearningProgramHomework
 
     def get_queryset(self):
-        return LearningProgramHomework.objects.all()
+        return LearningProgramHomework.objects.filter(visibility=True)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.visibility = False
+        instance.save()
+        return JsonResponse({'status': "success"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class LearningProgramLessonListAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -35,7 +43,7 @@ class LearningProgramLessonListAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = LearningProgramLesson
 
     def get_queryset(self):
-        return LearningProgramLesson.objects.all()
+        return LearningProgramLesson.objects.filter(visibility=True)
 
 
 class LearningProgramLessonDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
@@ -43,7 +51,13 @@ class LearningProgramLessonDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestr
     model = LearningProgramLesson
 
     def get_queryset(self):
-        return LearningProgramLesson.objects.all()
+        return LearningProgramLesson.objects.filter(visibility=True)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.visibility = False
+        instance.save()
+        return JsonResponse({'status': "success"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class LearningProgramPhaseListAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -51,7 +65,7 @@ class LearningProgramPhaseListAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = LearningProgramPhase
 
     def get_queryset(self):
-        return LearningProgramPhase.objects.all()
+        return LearningProgramPhase.objects.filter(visibility=True)
 
 
 class LearningProgramPhaseDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
@@ -59,7 +73,13 @@ class LearningProgramPhaseDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestro
     model = LearningProgramPhase
 
     def get_queryset(self):
-        return LearningProgramPhase.objects.all()
+        return LearningProgramPhase.objects.filter(visibility=True)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.visibility = False
+        instance.save()
+        return JsonResponse({'status': "success"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class LearningProgramListAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -67,7 +87,7 @@ class LearningProgramListAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = LearningProgram
 
     def get_queryset(self):
-        return LearningProgram.objects.all()
+        return LearningProgram.objects.filter(visibility=True)
 
 
 class LearningProgramDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
@@ -75,4 +95,10 @@ class LearningProgramDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIV
     model = LearningProgram
 
     def get_queryset(self):
-        return LearningProgram.objects.all()
+        return LearningProgram.objects.filter(visibility=True)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.visibility = False
+        instance.save()
+        return JsonResponse({'status': "success"}, status=status.HTTP_204_NO_CONTENT)

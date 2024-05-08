@@ -199,7 +199,8 @@ function programsMainShowProgramListGetHTML(programs, actionButtons=false){
                                 <div class="card-body">
                                     <ul class="list-group list-group-flush">
                                         <li class="list-group-item">Наименование: ${program.name}</li>
-                                        <li class="list-group-item">Цель этапа обучения: ${program.purpose}</li>
+                                        <li class="list-group-item">Цель программы обучения: ${program.purpose}</li>
+                                        <li class="list-group-item">Дата создания: ${program.created_at}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -214,8 +215,29 @@ function programsMainShowProgramListGetHTML(programs, actionButtons=false){
             </div>
             `
         }
+        programHTML += `</div>`
 
-        programHTML += `</div></div></div></div>`
+        const orderedPhases = program.phases_order.map(phaseID => {
+            return program.phases.find(p => p.id === Number(phaseID))
+        })
+
+        programHTML += `
+        <div class="accordion ms-5">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapseProgram${program.id}Phases" aria-expanded="false" aria-controls="accordionCollapseProgram${program.id}Phases">
+                Этапы обучения</button>
+                </h2>
+                <div id="accordionCollapseProgram${program.id}Phases" class="accordion-collapse collapse">
+                    <div class="accordion-body">${programsMainShowPhaseListGetHTML(orderedPhases)}<div>
+                </div>
+            </div>
+        </div>
+        `
+
+
+
+        programHTML += `</div></div></div>`
     })
     return programHTML
 }
@@ -225,7 +247,6 @@ async function programsMainShowHWList(actionButtons=false){
     programsAPIHWGetAll().then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 lProgramsAccordion.innerHTML = programsMainShowHWListGetHTML(request.response, actionButtons)
                 if (actionButtons) {
                     programsMainShowHWListListeners()
@@ -243,7 +264,6 @@ async function programsMainShowLessonList(actionButtons=false){
     programsAPILessonGetAll().then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 lProgramsAccordion.innerHTML = programsMainShowLessonListGetHTML(request.response, actionButtons)
                 if (actionButtons) {
                     programsMainShowLessonListListeners()
@@ -261,7 +281,6 @@ async function programsMainShowPhaseList(actionButtons=false){
     programsAPIPhaseGetAll().then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 lProgramsAccordion.innerHTML = programsMainShowPhaseListGetHTML(request.response, actionButtons)
                 if (actionButtons) {
                     programsMainShowPhaseListListeners()
@@ -279,7 +298,6 @@ async function programsMainShowProgramList(actionButtons=false){
     programsAPIProgramGetAll().then(request => {
         switch (request.status) {
             case 200:
-                console.log(request.response)
                 lProgramsAccordion.innerHTML = programsMainShowProgramListGetHTML(request.response, actionButtons)
                 if (actionButtons) {
                     programsMainShowProgramListListeners()
