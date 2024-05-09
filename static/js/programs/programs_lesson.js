@@ -13,22 +13,56 @@ function programsLessonReset(){
     lProgramLessonForm.reset()
     modalLProgramLessonMaterialsSet = []
     lProgramLessonMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
+    lProgramLessonHWList.innerHTML = ""
+    lProgramLessonHWListAdded.innerHTML = ""
 }
 
 async function programsLessonSetModal(lessonID=0){
+
+    function setListenerAdded(){
+        const element = document.createElement("a")
+        element.href = "#"
+        element.classList.add("list-group-item", "list-group-item-action")
+        element.innerHTML = `<span>${this.querySelector("span").innerHTML}</span>`
+        element.setAttribute("data-hw-id", this.attributes.getNamedItem("data-hw-id").value)
+        lProgramLessonHWList.insertAdjacentElement('beforeend', element)
+        this.remove()
+        element.addEventListener("click", setListenerNotAdded)
+    }
+
+    function setListenerNotAdded(){
+        const element = document.createElement("a")
+        element.href = "#"
+        element.classList.add("list-group-item", "list-group-item-action")
+        element.innerHTML = `<span>${this.querySelector("span").innerHTML}</span>`
+        element.setAttribute("data-hw-id", this.attributes.getNamedItem("data-hw-id").value)
+        lProgramLessonHWListAdded.insertAdjacentElement('beforeend', element)
+        this.remove()
+        element.addEventListener("click", setListenerAdded)
+    }
+
     programsLessonReset()
     materialEmbedAction = "programLesson"
-
     materialsEmbedModalCloseButton.setAttribute("data-bs-target", "#modalLProgramLesson")
     materialsEmbedModalAddButton.setAttribute("data-bs-target", "#modalLProgramLesson")
+    const homeworks = await programsAPIHWGetAll()
     if (lessonID === 0){
         lProgramLessonDescriptionField.value = ""
         lProgramLessonSaveButton.setAttribute("data-lesson-id", "0")
+        if (homeworks.status === 200){
+            homeworks.response.forEach(hw => {
+                const element = document.createElement("a")
+                element.href = "#"
+                element.classList.add("list-group-item", "list-group-item-action")
+                element.innerHTML = `<span>${hw.name}</span>`
+                element.setAttribute("data-hw-id", hw.id)
+                lProgramLessonHWList.insertAdjacentElement('beforeend', element)
+                element.addEventListener("click", setListenerNotAdded)
+            })
+        }
     } else {
         programsAPILessonGetItem(lessonID).then(request => {
             if (request.status === 200){
-                console.log(request.response)
-
                 lProgramLessonNameField.value = request.response.name
                 lProgramLessonDescriptionField.value = request.response.description
                 if (request.response.materials.length === 0){
@@ -44,6 +78,30 @@ async function programsLessonSetModal(lessonID=0){
                     })
                     lProgramLessonMaterialsList.querySelectorAll(".material-embed-delete").forEach(matDelButton => {
                         matDelButton.addEventListener("click", materialsEmbedDelete)
+                    })
+                }
+                if (homeworks.status === 200){
+                    console.log(homeworks.response)
+                    console.log(request.response.homeworks)
+                    homeworks.response.forEach(hw => {
+                        const selected = request.response.homeworks.find(h => h.id === hw.id)
+                        if (selected === undefined){
+                            const element = document.createElement("a")
+                            element.href = "#"
+                            element.classList.add("list-group-item", "list-group-item-action")
+                            element.innerHTML = `<span>${hw.name}</span>`
+                            element.setAttribute("data-hw-id", hw.id)
+                            lProgramLessonHWList.insertAdjacentElement('beforeend', element)
+                            element.addEventListener("click", setListenerNotAdded)
+                        } else {
+                            const element = document.createElement("a")
+                            element.href = "#"
+                            element.classList.add("list-group-item", "list-group-item-action")
+                            element.innerHTML = `<span>${hw.name}</span>`
+                            element.setAttribute("data-hw-id", hw.id)
+                            lProgramLessonHWListAdded.insertAdjacentElement('beforeend', element)
+                            element.addEventListener("click", setListenerAdded)
+                        }
                     })
                 }
             }
@@ -88,6 +146,12 @@ async function programsLessonEditSave(lessonID=0){
         const formData = new FormData(lProgramLessonForm)
         modalLProgramLessonMaterialsSet.map(matID => {
             formData.append("materials", matID)
+        })
+        const hwList = Array.from(lProgramLessonHWListAdded.querySelectorAll('a')).map(element => {
+            return element.attributes.getNamedItem("data-hw-id").value
+        })
+        hwList.forEach(hwID => {
+            formData.append("homeworks_ids", hwID)
         })
         if (lessonID === "0"){
             programsAPILessonCreate(formData).then(request => {
@@ -135,6 +199,10 @@ const lProgramLessonNameField = lProgramLessonForm.querySelector("#modalLProgram
 const lProgramLessonNameError = lProgramLessonForm.querySelector("#modalLProgramLessonNameError")
 const lProgramLessonDescriptionField = lProgramLessonForm.querySelector("#modalLProgramLessonDescriptionField")
 const lProgramLessonDescriptionError = lProgramLessonForm.querySelector("#modalLProgramLessonDescriptionError")
+
+//homeworks
+const lProgramLessonHWList = modalLProgramLesson.querySelector("#modalLProgramLessonHWList")
+const lProgramLessonHWListAdded = modalLProgramLesson.querySelector("#modalLProgramLessonHWListAdded")
 
 //materials
 let modalLProgramLessonMaterialsSet = []

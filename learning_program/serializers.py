@@ -12,8 +12,11 @@ class LearningProgramHomeworkSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        hw = LearningProgramHomework.objects.create(**validated_data)
+        validated_data.pop("visibility")
         request = self.context.get("request")
+        hw = LearningProgramHomework.objects.create(**validated_data,
+                                                    visibility=True,
+                                                    owner=request.user)
         materials = request.POST.getlist('materials')
         hw.materials.set(materials)
         hw.save()
@@ -36,9 +39,14 @@ class LearningProgramLessonSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        lesson = LearningProgramLesson.objects.create(**validated_data)
+        validated_data.pop("visibility")
         request = self.context.get("request")
+        lesson = LearningProgramLesson.objects.create(**validated_data,
+                                                      visibility=True,
+                                                      owner=request.user)
         materials = request.POST.getlist('materials')
+        homeworks = request.POST.getlist("homeworks_ids")
+        lesson.homeworks.set(homeworks)
         lesson.materials.set(materials)
         lesson.save()
         return lesson
@@ -46,6 +54,8 @@ class LearningProgramLessonSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request")
         materials = request.POST.getlist('materials')
+        homeworks = request.POST.getlist("homeworks_ids")
+        instance.homeworks.set(homeworks)
         instance.materials.set(materials)
         instance.save()
         return super(LearningProgramLessonSerializer, self).update(instance, validated_data)

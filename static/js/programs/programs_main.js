@@ -137,7 +137,25 @@ function programsMainShowLessonListGetHTML(lessons, actionButtons=false){
             `
         }
 
-        lessonHTML += `</div></div></div></div>`
+        lessonHTML += `</div>`
+
+        lessonHTML += `
+        <div class="accordion ms-5">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapseLesson${lesson.id}Homeworks" aria-expanded="false" aria-controls="accordionCollapseLesson${lesson.id}Homeworks">
+                Домашние задания</button>
+                </h2>
+                <div id="accordionCollapseLesson${lesson.id}Homeworks" class="accordion-collapse collapse">
+                    <div class="accordion-body">${programsMainShowHWListGetHTML(lesson.homeworks)}</div>
+                </div>
+            </div>
+        </div>
+        `
+
+
+
+        lessonHTML += `</div></div></div>`
     })
     return lessonHTML
 }

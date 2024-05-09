@@ -41,7 +41,7 @@
     </div>
 </div>
 
-<div class="modal fade" tabindex="-1" id="modalLProgramLesson">
+<div class="modal fade modal-lg" tabindex="-1" id="modalLProgramLesson">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -72,6 +72,30 @@
                     </div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush" id="modalLProgramLessonMaterialsList"></ul>
+                    </div>
+                </div>
+
+                <div class="accordion" id="modalLProgramLessonHWAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="modalLProgramLessonHWAccordionLabel">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modalLProgramLessonHWAccordionItem" aria-expanded="true">
+                                Домашние задания</button>
+                        </h2>
+                        <div id="modalLProgramLessonHWAccordionItem" class="accordion-collapse collapse" aria-labelledby="modalLProgramLessonHWAccordionLabel">
+                            <div class="accordion-body">
+
+                                <div class="container-lg">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="list-group" id="modalLProgramLessonHWList"></div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="list-group" id="modalLProgramLessonHWListAdded"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
