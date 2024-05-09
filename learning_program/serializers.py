@@ -61,9 +61,25 @@ class LearningProgramPhaseSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get("request")
+        validated_data.pop("visibility")
+        validated_data.pop('lessons_order')
+        lessons = request.POST.getlist('lessons_order')
         phase = LearningProgramPhase.objects.create(**validated_data,
-                                                    owner=request.user)
+                                                    owner=request.user,
+                                                    visibility=True,
+                                                    lessons_order=list(lessons))
+        if lessons:
+            phase.lessons.set(lessons)
+            phase.save()
         return phase
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        lessons = request.POST.getlist('lessons_order')
+        validated_data['lessons_order'] = list(lessons)
+        instance.lessons.set(lessons)
+        instance.save()
+        return super(LearningProgramPhaseSerializer, self).update(instance, validated_data)
 
 
 class LearningProgramSerializer(serializers.ModelSerializer):
@@ -77,6 +93,7 @@ class LearningProgramSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get("request")
         validated_data.pop("visibility")
+        validated_data.pop("phases_order")
         phases = request.POST.getlist('phases_order')
         program = LearningProgram.objects.create(**validated_data,
                                                  owner=request.user,

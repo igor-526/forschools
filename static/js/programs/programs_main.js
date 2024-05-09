@@ -147,7 +147,7 @@ function programsMainShowPhaseListGetHTML(phases, actionButtons=false){
     phases.forEach(phase => {
         phaseHTML += `
         <div class="accordion-item">
-            <h2 class="accordion-header" id="panelsStayOpen-headingTwo">
+            <h2 class="accordion-header">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapsePhase${phase.id}" aria-expanded="false" aria-controls="accordionCollapsePhase${phase.id}">
             ${phase.name}</button>
             </h2>
@@ -176,7 +176,29 @@ function programsMainShowPhaseListGetHTML(phases, actionButtons=false){
             `
         }
 
-        phaseHTML += `</div></div></div></div>`
+        phaseHTML += `</div>`
+
+        const orderedLessons = phase.lessons_order.map(lessonID => {
+            return phase.lessons.find(l => l.id === Number(lessonID))
+        })
+
+        phaseHTML += `
+        <div class="accordion ms-5">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionCollapsePhases${phase.id}Lessons" aria-expanded="false" aria-controls="accordionCollapsePhases${phase.id}Lessons">
+                Уроки</button>
+                </h2>
+                <div id="accordionCollapsePhases${phase.id}Lessons" class="accordion-collapse collapse">
+                    <div class="accordion-body">${programsMainShowLessonListGetHTML(orderedLessons)}</div>
+                </div>
+            </div>
+        </div>
+        `
+
+
+
+        phaseHTML += `</div></div></div>`
     })
     return phaseHTML
 }
@@ -229,7 +251,7 @@ function programsMainShowProgramListGetHTML(programs, actionButtons=false){
                 Этапы обучения</button>
                 </h2>
                 <div id="accordionCollapseProgram${program.id}Phases" class="accordion-collapse collapse">
-                    <div class="accordion-body">${programsMainShowPhaseListGetHTML(orderedPhases)}<div>
+                    <div class="accordion-body">${programsMainShowPhaseListGetHTML(orderedPhases)}</div>
                 </div>
             </div>
         </div>

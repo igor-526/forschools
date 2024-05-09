@@ -62,7 +62,6 @@ async function programsProgramSetModal(programID=0){
     }
 
     function setListenerNotAdded(){
-
         const element = document.createElement("a")
         element.href = "#"
         element.classList.add("list-group-item", "list-group-item-action")
@@ -105,7 +104,6 @@ async function programsProgramSetModal(programID=0){
             if (request.status === 200){
                 lProgramProgramNameField.value = request.response.name
                 lProgramProgramPurposeField.value = request.response.purpose
-                console.log(request.response)
                 const selectedPhases = request.response.phases_order.map(phaseID => {
                     return {
                         phaseID: Number(phaseID),
@@ -178,8 +176,8 @@ async function programsProgramEditSave(programID=0){
         const phasesList = Array.from(lProgramProgramPhaseListAdded.querySelectorAll('a')).map(element => {
             return element.attributes.getNamedItem("data-phase-id").value
         })
-        phasesList.forEach(phaseId => {
-            formData.append("phases_order", phaseId)
+        phasesList.forEach(phaseID => {
+            formData.append("phases_order", phaseID)
         })
         if (programID === "0"){
             programsAPIProgramCreate(formData).then(request => {
@@ -222,7 +220,6 @@ const modalLProgramProgram = document.querySelector("#modalLProgramProgram")
 const bsModalLProgramProgram = new bootstrap.Modal(modalLProgramProgram)
 
 //phases
-let lProgramProgramSelectedPhasesSet = []
 const lProgramProgramPhaseList = modalLProgramProgram.querySelector("#modalLProgramProgramPhaseList")
 const lProgramProgramPhaseListAdded = modalLProgramProgram.querySelector("#modalLProgramProgramPhaseListAdded")
 
