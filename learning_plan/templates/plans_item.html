@@ -2,8 +2,18 @@
 {% load static %}
 {% block content %}
     <div class="container-xxl mt-4 mb-3">
-        <h1>{{ title }}</h1>
+        <div class="row row justify-content-between">
+            <div class="col-auto">
+                <h1>{{ title }}</h1>
+            </div>
+            <div class="col-auto">
+                <button id="PlansItemGenerateButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#plansItemFromProgramModal">Сгенерировать из программы</button>
+                {% include 'modals_program.html' %}
+            </div>
+        </div>
     </div>
+
+
     <div class="container-xxl">
         <div class="row">
             <div class="col-6">
@@ -125,6 +135,10 @@
         <script src="{% static 'js/plans/plans_item/plans_item_listeners.js' %}"></script>
         <script src="{% static 'js/plans/plans_item/plans_item_phase.js' %}"></script>
         <script src="{% static 'js/plans/plans_item/plans_item_lesson.js' %}"></script>
+
+        <script src="{% static 'js/programs/programsAPI.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_from_program.js' %}"></script>
+
     {% else %}
         <script>
             const canEditPlan = false

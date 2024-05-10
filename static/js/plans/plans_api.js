@@ -86,3 +86,21 @@ async function planItemAPIUpdateLesson(fd, lessonID){
     })
     return APIPostPatchToObject(request)
 }
+
+async function planItemAPICalculateFromProgram(fd, planID){
+    const params = new URLSearchParams(fd).toString();
+    const request = await fetch(`/api/v1/learning_plans/${planID}/setprogram?${params}`)
+    return APIGetToObject(request)
+}
+
+async function planItemAPISetPlanFromProgram(fd, planID){
+        const request = await fetch(`/api/v1/learning_plans/${planID}/setprogram/`, {
+        method: "post",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
+}

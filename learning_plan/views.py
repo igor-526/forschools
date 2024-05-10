@@ -4,10 +4,15 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.views import APIView
 from .permissions import CanSeePlansPageMixin, can_edit_plan
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer
 from dls.utils import get_menu
+from pprint import pprint
+from .utils import plan_calculated_info, ProgramSetter
+from learning_program.models import LearningProgram
+from datetime import datetime
 
 
 class PlansPageView(CanSeePlansPageMixin, TemplateView):
@@ -129,3 +134,65 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
                 phase.delete()
                 return JsonResponse({"status": "ok"}, status=204)
         raise PermissionDenied
+
+
+class PlansItemSetProgram(LoginRequiredMixin, APIView):
+    def get_schedule(self, data, *args, **kwargs):
+        schedule = {}
+        if data.get("monday"):
+            schedule[0] = {
+                "start": data.get("monday_start"),
+                "end": data.get("monday_end")
+            }
+        if data.get("tuesday"):
+            schedule[1] = {
+                "start": data.get("tuesday_start"),
+                "end": data.get("tuesday_end")
+            }
+        if data.get("wednesday"):
+            schedule[2] = {
+                "start": data.get("wednesday_start"),
+                "end": data.get("wednesday_end")
+            }
+        if data.get("thursday"):
+            schedule[3] = {
+                "start": data.get("thursday_start"),
+                "end": data.get("thursday_end")
+            }
+        if data.get("friday"):
+            schedule[4] = {
+                "start": data.get("friday_start"),
+                "end": data.get("friday_end")
+            }
+        if data.get("saturday"):
+            schedule[5] = {
+                "start": data.get("saturday_start"),
+                "end": data.get("saturday_end")
+            }
+        if data.get("sunday"):
+            schedule[6] = {
+                "start": data.get("sunday_start"),
+                "end": data.get("sunday_end")
+            }
+        return schedule
+
+    def get(self, request, *args, **kwargs):
+        program = LearningProgram.objects.get(pk=request.query_params.get("programID"))
+        return JsonResponse(plan_calculated_info(
+            datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
+            self.get_schedule(request.query_params),
+            program
+        ), status=200)
+
+    def post(self, request, *args, **kwargs):
+        program = LearningProgram.objects.get(pk=request.POST.get("programID"))
+        plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
+        setter = ProgramSetter(
+            datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
+            self.get_schedule(request.POST),
+            program,
+            plan
+        )
+        setter.set_program()
+        return JsonResponse({"status": "ok"}, status=201)
+

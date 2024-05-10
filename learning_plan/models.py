@@ -48,6 +48,9 @@ class LearningPlan(models.Model):
                                      null=True,
                                      blank=True,
                                      on_delete=models.SET_NULL)
+    schedule = models.JSONField(verbose_name="Расписание",
+                                null=True,
+                                blank=True)
     listeners = models.ManyToManyField(NewUser,
                                        verbose_name="Ученики",
                                        related_name="plan_listeners",

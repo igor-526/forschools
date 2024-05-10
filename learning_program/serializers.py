@@ -95,10 +95,14 @@ class LearningProgramPhaseSerializer(serializers.ModelSerializer):
 class LearningProgramSerializer(serializers.ModelSerializer):
     phases = LearningProgramPhaseSerializer(many=True, read_only=True)
     owner = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    info = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = LearningProgram
         fields = '__all__'
+
+    def get_info(self, obj):
+        return obj.get_all_info()
 
     def create(self, validated_data):
         request = self.context.get("request")

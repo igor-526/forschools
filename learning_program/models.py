@@ -127,3 +127,22 @@ class LearningProgram(models.Model):
         verbose_name = 'Программа обучения'
         verbose_name_plural = 'Программы обучения'
         ordering = ['pk']
+
+    def get_all_info(self):
+        phase_counter = 0
+        lessons_counter = 0
+        homeworks_counter = 0
+        phases_ids = [p.id for p in self.phases.all()]
+        phase_counter = len(phases_ids)
+        lessons_ids = [l.id for l in LearningProgramLesson.objects.filter(learningprogramphase__in=phases_ids)]
+        lessons_counter = len(lessons_ids)
+        homeworks_ids = [hw.id for hw in LearningProgramHomework.objects.filter(learningprogramlesson__in=lessons_ids)]
+        homeworks_counter = len(homeworks_ids)
+        return {
+            "phases": phase_counter,
+            "lessons": lessons_counter,
+            "homeworks": homeworks_counter
+        }
+
+    def get_lessons_count(self):
+        return LearningProgramLesson.objects.filter(learningprogramphase__learningprogram=self).count()

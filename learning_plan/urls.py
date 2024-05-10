@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (PlansPageView, PlansItemPageView,
                     PlansListCreateAPIView, PlanPhasesListCreateAPIView,
-                    PlanPhaseItemAPIView, PlansItemAPIView)
+                    PlanPhaseItemAPIView, PlansItemAPIView, PlansItemSetProgram)
 from lesson.views import LessonListCreateAPIView
 
 urlpatterns = [
@@ -15,4 +15,5 @@ apiv1patterns = [
     path('<int:plan_pk>/phases/', PlanPhasesListCreateAPIView.as_view()),
     path('<int:plan_pk>/phases/<int:pk>/', PlanPhaseItemAPIView.as_view()),
     path('phases/<int:phase_pk>/add/', LessonListCreateAPIView.as_view()),
+    path('<int:plan_pk>/setprogram/', PlansItemSetProgram.as_view()),
 ]

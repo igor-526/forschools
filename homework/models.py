@@ -42,8 +42,7 @@ class Homework(models.Model):
                                    max_length=2000)
     deadline = models.DateField(verbose_name='Срок',
                                 null=True,
-                                blank=True,
-                                default=datetime.now() + timedelta(days=1))
+                                blank=True)
 
     class Meta:
         verbose_name = 'Домашнее задание'

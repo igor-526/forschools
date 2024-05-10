@@ -1,0 +1,103 @@
+<div class="modal modal-lg fade" id="plansItemFromProgramModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Создание плана обучения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-auto">
+                        <form id="plansItemFromProgramModalDForm">
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <span class="input-group-text" id="addon-wrapping">Начало обучения</span>
+                                <input name="date_start" type="date" class="form-control" id="plansItemFromProgramModalDate">
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="monday" type="checkbox" class="btn-check" id="plansItemFromProgramModalDMondayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemFromProgramModalDMondayCheck">ПН</label>
+                                <input name="monday_start" type="time" class="form-control" id="plansItemFromProgramModalDMondayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="monday_end" type="time" class="form-control" id="plansItemFromProgramModalDMondayTimeEnd" aria-label="" disabled>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="tuesday" type="checkbox" class="btn-check" id="plansItemFromProgramModalDTuesdayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemFromProgramModalDTuesdayCheck">ВТ</label>
+                                <input name="tuesday_start" type="time" class="form-control" id="plansItemFromProgramModalDTuesdayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="tuesday_end" type="time" class="form-control" id="plansItemFromProgramModalDTuesdayTimeEnd" aria-label="" disabled>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="wednesday" type="checkbox" class="btn-check" id="plansItemFromProgramModalDWednesdayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemFromProgramModalDWednesdayCheck">СР</label>
+                                <input name="wednesday_start" type="time" class="form-control" id="plansItemFromProgramModalDWednesdayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="wednesday_end" type="time" class="form-control" id="plansItemFromProgramModalDWednesdayTimeEnd" aria-label="" disabled>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="thursday" type="checkbox" class="btn-check" id="plansItemFromProgramModalDThursdayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemFromProgramModalDThursdayCheck">ЧТ</label>
+                                <input name="thursday_start" type="time" class="form-control" id="plansItemFromProgramModalDThursdayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="thursday_end" type="time" class="form-control" id="plansItemFromProgramModalDThursdayTimeEnd" aria-label="" disabled>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="friday" type="checkbox" class="btn-check" id="plansItemFromProgramModalDFridayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemFromProgramModalDFridayCheck">ПТ</label>
+                                <input name="friday_start" type="time" class="form-control" id="plansItemFromProgramModalDFridayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="friday_end" type="time" class="form-control" id="plansItemFromProgramModalDFridayTimeEnd" aria-label="" disabled>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="saturday" type="checkbox" class="btn-check" id="plansItemFromProgramModalDSaturdayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemFromProgramModalDSaturdayCheck">СБ</label>
+                                <input name="saturday_start" type="time" class="form-control" id="plansItemFromProgramModalDSaturdayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="saturday_end" type="time" class="form-control" id="plansItemFromProgramModalDSaturdayTimeEnd" aria-label="" disabled>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="sunday" type="checkbox" class="btn-check" id="plansItemFromProgramModalDSundayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemFromProgramModalDSundayCheck">ВС</label>
+                                <input name="sunday_start" type="time" class="form-control" id="plansItemFromProgramModalDSundayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="sunday_end" type="time" class="form-control" id="plansItemFromProgramModalDSundayTimeEnd" aria-label="" disabled>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="col-auto">
+                        <div class="mb-3">
+                            <input  type="text" class="form-control" id="plansItemFromProgramModalSearch" placeholder="Поиск">
+                        </div>
+                        <div class="nav flex-column nav-pills me-3" id="plansItemFromProgramModalProgList" role="tablist" aria-orientation="vertical">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3 mx-3">
+                    <div class="alert alert-danger d-flex align-items-center d-none mb-3" role="alert" id="plansItemFromProgramModalErrorsAlert">
+                        <div id="plansItemFromProgramModalErrors"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" id="plansItemFromProgramModalProgInfoTitle"></div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush"  id="plansItemFromProgramModalProgInfoList"></ul>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="plansItemFromProgramModalSetButton" data-action="calculate">Рассчитать</button>
+                </div>
+            </div>
+        </div>
+    </div>
