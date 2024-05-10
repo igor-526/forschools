@@ -5,7 +5,7 @@ from django.views.generic import TemplateView
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
-from .permissions import CanSeePlansPageMixin, can_edit_plan
+from .permissions import CanSeePlansPageMixin, can_edit_plan, can_generate_from_program
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer
 from dls.utils import get_menu
@@ -39,7 +39,8 @@ class PlansItemPageView(CanSeePlansPageMixin, TemplateView):
         context = {'title': plan.name,
                    'menu': get_menu(request.user),
                    'plan': plan,
-                   'can_edit_plan': can_edit_plan(request, plan)}
+                   'can_edit_plan': can_edit_plan(request, plan),
+                   'can_generate_from_program': can_generate_from_program(request, plan)}
         return render(request, self.template_name, context)
 
 
@@ -187,12 +188,15 @@ class PlansItemSetProgram(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
         program = LearningProgram.objects.get(pk=request.POST.get("programID"))
         plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
-        setter = ProgramSetter(
-            datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
-            self.get_schedule(request.POST),
-            program,
-            plan
-        )
-        setter.set_program()
-        return JsonResponse({"status": "ok"}, status=201)
+        if can_generate_from_program(request, plan):
+            setter = ProgramSetter(
+                datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
+                self.get_schedule(request.POST),
+                program,
+                plan
+            )
+            setter.set_program()
+            return JsonResponse({"status": "ok"}, status=201)
+        else:
+            return JsonResponse({"error": "Вы не можете сгенерировать план на основе программы"}, status=400)
 

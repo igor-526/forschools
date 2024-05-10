@@ -11,7 +11,6 @@ class CanSeePlansPageMixin(LoginRequiredMixin):
 
 def plans_button(request):
     usergroups = [group.name for group in request.user.groups.all()]
-    print(usergroups)
     return ("Admin" in usergroups) or ("Metodist" in usergroups) or ("Teacher" in usergroups)
 
 
@@ -24,3 +23,10 @@ def can_edit_plan(request, plan=None, phase=None):
             return request.user == plan.teacher
         if phase:
             return phase.learningplan_set.first().teacher == request.user
+
+
+def can_generate_from_program(request, plan):
+    if plan.phases.count() > 0:
+        return False
+    else:
+        return can_edit_plan(request, plan)
