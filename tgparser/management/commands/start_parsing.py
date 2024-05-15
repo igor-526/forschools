@@ -98,29 +98,31 @@ class ChannelMessage:
         return cats
 
     async def save_material(self):
-        path = f'media/materials/{self.get_file_path()}'
-        path_for_db = f'materials/{self.get_file_path()}'
-        fi = self.get_file_info()
-        print("Сохранение файла")
-        if fi != "text":
-            await self.msg_object.download_media(path)
-        else:
-            with open(path, "w") as f:
-                f.write(self.get_text_without_hashtags())
-        categories = await self.get_categories()
-        mat = await Material.objects.acreate(
-            owner=self.m_owner,
-            name=self.name,
-            description=self.description,
-            file=path_for_db,
-            type=self.m_type,
-            visible=True
-        )
-        await mat.category.aset(categories)
-        await mat.asave()
-        return True
-
-
+        try:
+            path = f'media/materials/{self.get_file_path()}'
+            path_for_db = f'materials/{self.get_file_path()}'
+            fi = self.get_file_info()
+            print("Сохранение файла")
+            if fi != "text":
+                await self.msg_object.download_media(path)
+            else:
+                with open(path, "w") as f:
+                    f.write(self.get_text_without_hashtags())
+            categories = await self.get_categories()
+            mat = await Material.objects.acreate(
+                owner=self.m_owner,
+                name=self.name,
+                description=self.description,
+                file=path_for_db,
+                type=self.m_type,
+                visible=True
+            )
+            await mat.category.aset(categories)
+            await mat.asave()
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
 
 def get_dialog(dialogs: TotalList):
@@ -195,7 +197,7 @@ async def parse_manual(messages: list, owner: NewUser):
             if not msg_object.file_info and not msg_object.category and not msg_object.get_text_without_hashtags():
                 break
             msg_object.category = categories
-            print(msg_object.get_file_path())
+            print(msg_object)
             action = input("Выберите действие: ")
             if action == "1":
                 res = await msg_object.save_material()
