@@ -34,6 +34,10 @@ services:
       DB_HOST: kitaischool_database
       REDIS_HOST: ${REDIS_HOST}
       PORT: 5432
+      TGPARSER_SESSION_NAME: ${TGPARSER_SESSION_NAME}
+      TGPARSER_API_ID: ${TGPARSER_API_ID}
+      TGPARSER_API_HASH: ${TGPARSER_API_HASH}
+      TGPARSER_CHANNEL_NAME: ${TGPARSER_CHANNEL_NAME}
       PYTHONUNBUFFERED: 1
     entrypoint: bash -c  "python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
     depends_on:
