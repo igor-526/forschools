@@ -1,5 +1,3 @@
-from django.http import Http404
-from pdf2image import convert_from_path
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -28,18 +26,38 @@ class MaterialPage(LoginRequiredMixin, TemplateView):    # страница ма
 
 
 class MaterialListView(LoginRequiredMixin, ListCreateAPIView):  # API для просмотра и добавления материалов
-    queryset = Material.objects.filter(visible=True)
     serializer_class = MaterialSerializer
+
+    def filter_queryset(self, queryset):
+        params = self.request.query_params
+        q_name = params.get('name')
+        q_cat = params.getlist('cat')
+        q_lvl = params.getlist('lvl')
+        q_mat_type = params.getlist('typeMat')
+        if q_name:
+            queryset = queryset.filter(name__icontains=q_name)
+        if q_cat:
+            queryset = queryset.filter(category__in=q_cat)
+        if q_lvl:
+            queryset = queryset.filter(level__in=q_lvl)
+        if q_mat_type:
+            filtered = [m.id for m in
+                        list(filter(lambda mat: get_type(mat.file.path.split(".")[-1]) in q_mat_type, queryset))]
+            queryset = queryset.filter(id__in=filtered)
+        return queryset
 
     def get_queryset(self):
         param_type = self.request.query_params.get('type')
-        if not param_type or param_type == '2':
+        if not param_type or param_type == '1':
             if self.request.user.has_perm('material.see_all_general'):
-                return Material.objects.filter(type=2, visible=True)
+                queryset = Material.objects.filter(type=1, visible=True)
             else:
                 raise PermissionDenied
-        elif param_type == "1":
-            return Material.objects.filter(type=1, owner=self.request.user, visible=True)
+        elif param_type == "2":
+            queryset = Material.objects.filter(type=2, owner=self.request.user, visible=True)
+        else:
+            queryset = None
+        return self.filter_queryset(queryset).distinct()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

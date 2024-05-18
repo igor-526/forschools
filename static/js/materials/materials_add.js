@@ -204,7 +204,7 @@ async function createMaterial() {
                 if (formData.has("type")){
                     formData.delete("type")
                 }
-                const requestEdit = await materialsAPIEdit(formData, material_id)
+                const requestEdit = await materialsAPIUpdate(formData, material_id)
                 console.log(requestEdit)
                 if (requestEdit.status === 200){
                     bsOffcanvasNewMaterial.hide()

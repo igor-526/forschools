@@ -1,5 +1,24 @@
-async function materialsAPIGetAll(type=2){
-    const request = await fetch(`/api/v1/materials?type=${type}`)
+async function materialsAPIGetAll(type=2, offset=0, name="", cat=[], lvl=[], typeMat=[]){
+    let url = `/api/v1/materials/?type=${type}&offset=${offset}`
+    if (name !== ""){
+        url += `&name=${name}`
+    }
+    if (cat.length !== 0){
+        cat.forEach(item => {
+            url += `&cat=${item}`
+        })
+    }
+    if (lvl.length !== 0){
+        lvl.forEach(item => {
+            url += `&lvl=${item}`
+        })
+    }
+    if (typeMat.length !== 0){
+        typeMat.forEach(item => {
+            url += `&typeMat=${item}`
+        })
+    }
+    const request = await fetch(url)
     return await APIGetToObject(request)
 }
 
@@ -20,7 +39,7 @@ async function materialsAPICreate(formData){
     return await APIPostPatchToObject(request)
 }
 
-async function materialsAPIEdit(formData, matID){
+async function materialsAPIUpdate(formData, matID){
     const request = await fetch(`/api/v1/materials/${matID}`, {
         method: "PATCH",
         credentials: 'same-origin',

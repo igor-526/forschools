@@ -2,12 +2,11 @@
 {% load static %}
 {% block content %}
     <div class="container-xxl mt-4 mb-3">
-        <div class="row row justify-content-between">
+        <div class="row justify-content-between">
             <div class="col-auto">
                 <h1>Материалы</h1>
             </div>
             <div class="col-auto">
-                <button id="MaterialsCollapseSearchButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="collapse" data-bs-target="#MaterialsCollapseSearch"><i class="bi bi-search"></i></button>
                 {% if perms.material.add_personal %}
                     <button id="offcanvasNewMaterialButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewMaterial" role="button"><i class="bi bi-plus-lg"></i></button>
                     {% include 'materials_offcanvas_new.html' %}
@@ -16,45 +15,8 @@
             </div>
         </div>
     </div>
-
-    <div class="collapse mb-3" id="MaterialsCollapseSearch">
-        <div class="card card-body">
-            <form id="MaterialsCollapseSearchForm">
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <input name="name" id="MaterialsCollapseSearchName" type="text" class="form-control" placeholder="Наименование">
-                    </div>
-                    <div class="col-md-4">
-                        <select name="category" id="MaterialsCollapseSearchCategory" class="form-select"></select>
-                    </div>
-                    <div class="col-md-5">
-                        <input name="owner" id="MaterialsCollapseSearchOwner" type="text" class="form-control" placeholder="Владелец">
-                    </div>
-                    <div class="col-md-3">
-                        <select name="level" id="MaterialsCollapseSearchLevel" class="form-select"></select>
-                    </div>
-                    <div class="col-md-3">
-                        <select name="type" id="MaterialsCollapseSearchType" class="form-select">
-                            <option selected value="none">Тип</option>
-                            <option value="pdf">PDF документ</option>
-                            <option value="gif">Анимация</option>
-                            <option value="archive">Архив</option>
-                            <option value="audio">Аудио</option>
-                            <option value="video">Видео</option>
-                            <option value="image">Изображение</option>
-                            <option value="presentation">Презентации</option>
-                            <option value="text">Текст</option>
-                        </select>
-                    </div>
-                    <div class="col-md-1">
-                        <button id="MaterialsCollapseSearchClearButton" type="button" class="btn btn-primary" role="button"><i class="bi bi-eraser"></i></button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div class="container-xxl">
+
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
                 <a class="nav-link active" href="#" id="MaterialsTabGeneral">Общие</a>
@@ -62,18 +24,91 @@
             <li class="nav-item">
                 <a class="nav-link" href="#" id="MaterialsTabMy">Мои</a>
             </li>
+            <li class="nav-item">
+                <button id="materialsTabActionsShowButton" type="button" class="btn btn-sm btn-outline-primary mx-1" role="button"><i class="bi bi-eye"></i></button>
+                <button id="materialTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i></button>
+            </li>
         </ul>
 
         <div class="container-xxl">
             <table class="table table-hover">
                 <thead>
                 <tr>
-                    <th scope="col">Наименование<button id="MaterialTableSortNameButton" type="button" class="btn btn-outline-primary btn-sm ms-2" data-sorted="asc"><i class="bi bi-chevron-bar-expand"></i></button></th>
-                    <th scope="col">Категория</th>
-                    <th scope="col">Уровень</th>
-                    <th scope="col">Тип</th>
-                    <th scope="col">Владелец</th>
-                    <th scope="col">Действие</th>
+                    <th scope="col"><input class="form-check-input" type="checkbox" value="" id="materialTableSelectAll"></th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">Наименование
+                                <span class="visually-hidden"></span></button>
+                            <button id="materialTableSortNameButton" type="button" class="btn btn-outline-secondary btn-sm" data-sorted="asc"><i class="bi bi-chevron-bar-expand"></i></button>
+                            <ul class="dropdown-menu" style="min-width: 250px;">
+                                <div class="input-group px-1">
+                                    <input id="materialTableFilterNameField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="materialTableFilterNameFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </div>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                Категории</button>
+                            <ul id="materialTableFilterCatList" class="dropdown-menu" style="min-width: 250px;">
+                                <div class="input-group px-1">
+                                    <input id="materialTableFilterCatSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="materialTableFilterCatSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </div>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                Уровень</button>
+                            <ul id="materialTableFilterLevelList" class="dropdown-menu" style="min-width: 250px;">
+                                <div class="input-group px-1">
+                                    <input id="materialTableFilterLevelSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="materialTableFilterLevelSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </div>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                Тип</button>
+                            <ul id="materialTableFilterTypeList" class="dropdown-menu" style="min-width: 250px;">
+                                <div class="input-group px-1">
+                                    <input id="materialTableFilterTypeSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="materialTableFilterTypeSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </div>
+                                <li data-type-name="image_formats"><a class="dropdown-item" href="#">Изображение</a></li>
+                                <li data-type-name="video_formats"><a class="dropdown-item" href="#">Видео</a></li>
+                                <li data-type-name="animation_formats"><a class="dropdown-item" href="#">Анмиация</a></li>
+                                <li data-type-name="archive_formats"><a class="dropdown-item" href="#">Архив</a></li>
+                                <li data-type-name="pdf_formats"><a class="dropdown-item" href="#">PDF-документ</a></li>
+                                <li data-type-name="voice_formats"><a class="dropdown-item" href="#">Голосовое сообщение</a></li>
+                                <li data-type-name="audio_formats"><a class="dropdown-item" href="#">Аудио</a></li>
+                                <li data-type-name="text_formats"><a class="dropdown-item" href="#">Текст</a></li>
+                                <li data-type-name="presentation_formats"><a class="dropdown-item" href="#">Презентация</a></li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+
+                        <div class="btn-group">
+                            <button id="materialsTabActionsButton" disabled class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Действие
+                            </button>
+                            <ul class="dropdown-menu">
+                                <div class="btn-group" role="group">
+                                    <button id="materialsTabActionsTelegramButton" type="button" class="btn btn-primary"><i class="bi bi-telegram"></i></button>
+                                    <button id="materialsTabActionsEditButton" type="button" class="btn btn-warning"><i class="bi bi-pencil"></i></button>
+                                    <button id="materialsTabActionsDeleteButton" type="button" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                                </div>
+                            </ul>
+                        </div>
+
+                    </th>
                 </tr>
                 </thead>
                 <tbody id="MaterialTableBody"></tbody>
@@ -82,6 +117,7 @@
     </div>
     {% include 'toast.html' %}
     {% include 'materials_modal_telegram.html' %}
+    {% include 'materials_modal_edit.html' %}
 
 {% endblock %}
 {% block static_js %}
@@ -111,9 +147,10 @@
     <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/collections/collections_api.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
+    <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
     <script src="{% static 'js/telegram/telegram_main.js' %}"></script>
     <script src="{% static 'js/materials/materials_add.js' %}"></script>
-    <script src="{% static 'js/materials/materials_serach.js' %}"></script>
+    <script src="{% static 'js/materials/materials_edit.js' %}"></script>
     <script src="{% static 'js/materials/materials_telegram.js' %}"></script>
     <script src="{% static 'js/materials/materials.js' %}"></script>
 {% endblock %}
