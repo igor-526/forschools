@@ -58,7 +58,7 @@ function getMaterialType(format){
     } else if (mediaFormats.videoFormats.includes(format)) {
         return 'Видео'
     } else if (mediaFormats.animationFormats.includes(format)) {
-        return 'Анмиация'
+        return 'Анимация'
     } else if (mediaFormats.archiveFormats.includes(format)) {
         return 'Архив'
     } else if (mediaFormats.pdfFormats.includes(format)) {
