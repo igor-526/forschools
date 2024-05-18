@@ -148,7 +148,10 @@ function materialsMainCollapseAction(materialID, action="show"){
                         case "Аудио" || 'Голосовое сообщение':
                             element.innerHTML = `<audio controls src="${request.response.file}"></audio>`
                             break
-                        case "Изображение" || 'Анмиация':
+                        case "Изображение":
+                            element.innerHTML = `<a href="${request.response.file}" target="_blank"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
+                            break
+                        case "Анмиация":
                             element.innerHTML = `<a href="${request.response.file}" target="_blank"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
                             break
                         default:
