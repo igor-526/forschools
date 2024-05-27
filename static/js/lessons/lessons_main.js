@@ -1,38 +1,42 @@
-async function lessonsMain(){
-    await lessonsSetUpcoming()
+function lessonsMain(){
+    lessonsSetUpcoming()
     lessonsTabUpcoming.addEventListener("click", lessonsSetUpcoming)
     lessonsTabPassed.addEventListener("click", lessonsSetPassed)
 }
 
-async function lessonsSetUpcoming(){
+function lessonsSetUpcoming(){
     lessonsTabUpcoming.classList.add("active")
     lessonsTabPassed.classList.remove("active")
-    lessonsSet = await lessonsGet(0)
-    lessonsShow()
+    lessonsAPIGetAll(0).then(request => {
+        switch (request.status){
+            case 200:
+                lessonsShow(request.response)
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
 }
 
-async function lessonsSetPassed(){
+function lessonsSetPassed(){
     lessonsTabUpcoming.classList.remove("active")
     lessonsTabPassed.classList.add("active")
-    lessonsSet = await lessonsGet(1)
-    lessonsShow()
+    lessonsAPIGetAll(1).then(request => {
+        switch (request.status){
+            case 200:
+                lessonsShow(request.response)
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
 }
 
-async function lessonsGet(status){
-    let url = ""
-    if (status === 0){
-        url = "/api/v1/lessons?status=0"
-    } else if (status === 1){
-        url = "/api/v1/lessons?status=1"
-    }
-    return await fetch(url)
-        .then(async response => await response.json())
-}
-
-function lessonsShow(list = lessonsSet){
-    console.log(list)
+function lessonsShow(list){
     lessonsTableBody.innerHTML = ""
-    list.map(lesson => {
+    list.forEach(lesson => {
         let dt = ""
 
         if (lesson.start_time !== null){
@@ -65,9 +69,6 @@ function lessonsShow(list = lessonsSet){
         `)
     })
 }
-
-//Sets
-let lessonsSet = []
 
 //Tabs
 const lessonsTabUpcoming = document.querySelector("#LessonsTabUpcoming")

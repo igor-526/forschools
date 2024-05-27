@@ -6,61 +6,131 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="MaterialsEmbedModalSearchForm">
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <input aria-label="Наименование" type="text" name="name" class="form-control" id="MaterialsEmbedModalSearchName" placeholder="Наименование">
-                        </div>
-                        <div class="col-6">
-                            <input aria-label="Владелец" type="text" name="owner" class="form-control" id="MaterialsEmbedModalSearchOwner" placeholder="Владелец">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-4">
-                            <select name="category" id="MaterialsEmbedModalSearchCategory" class="form-select" aria-label="Категория">
-                                <option selected>Категория</option>
-                            </select>
-                        </div>
-                        <div class="col-4">
-                            <select name="level" id="MaterialsEmbedModalSearchLevel" class="form-select" aria-label="Уровень">
-                                <option selected>Уровень</option>
-                            </select>
-                        </div>
-                        <div class="col-3">
-                            <select name="type" id="MaterialsEmbedModalSearchType" class="form-select" aria-label="Тип">
-                                <option value="none" selected>Тип</option>
-                                <option value="pdf">PDF документ</option>
-                                <option value="animation">Анимация</option>
-                                <option value="archive">Архив</option>
-                                <option value="video">Видео</option>
-                                <option value="image">Изображение</option>
-                            </select>
-                        </div>
-                        <div class="col-1 mx-a">
-                            <button id="MaterialsEmbedModalSearchClearButton" type="button" class="btn btn-primary" role="button"><i class="bi bi-eraser"></i></button>
-                        </div>
-                    </div>
-                </form>
-                <form id="MaterialsEmbedModalTableForm">
+                <ul class="nav nav-tabs mb-3">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="materialsEmbedTabGeneral">Общие</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="materialsEmbedTabMy">Мои</a>
+                    </li>
+                    <li class="nav-item">
+                        <button id="materialEmbedTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i></button>
+                        <button id="materialEmbedTableEraseAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-x-lg"></i></button>
+                        <button id="materialEmbedTableFilterPrograms" type="button" class="btn btn-sm btn-outline-primary mx-2" role="button" data-bs-toggle="collapse" data-bs-target="#materialEmbedTableFilterProgramsCollapse"><i class="bi bi-book"></i> Программы</button>
+                    </li>
+                </ul>
 
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th scope="col"><i class="bi bi-check-square"></i></th>
-                            <th scope="col">Наименование</th>
-                            <th scope="col">Категория</th>
-                            <th scope="col">Уровень</th>
-                            <th scope="col">Тип</th>
-                            <th scope="col">Владелец</th>
-                        </tr>
-                        </thead>
-                        <tbody id="MaterialsEmbedModalTableBody"></tbody>
-                    </table>
-                </form>
+                <div class="collapse mb-4" id="materialEmbedTableFilterProgramsCollapse">
+                    <div class="row">
+                        <div id="materialEmbedTableFilterProgramsProglist" class="col-4">
+                            <h4 style="color: gray;">Программа:</h4>
+                            <div class="input-group px-1">
+                                <button id="materialEmbedTableFilterProgramsProglistSearchCancel" type="button" class="btn btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                <input id="materialEmbedTableFilterProgramsProglistSearch" type="text" class="form-control" placeholder="Поиск: ">
+                                <button id="materialEmbedTableFilterProgramsProglistSearchErase" type="button" class="btn btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </div>
+                            <div class="list-group">
+                                <button type="button" class="list-group-item list-group-item-action">A second item</button>
+                                <button type="button" class="list-group-item list-group-item-action">A third button item</button>
+                                <button type="button" class="list-group-item list-group-item-action">A fourth button item</button>
+                            </div>
+                        </div>
+                        <div id="materialEmbedTableFilterProgramsPhaselist" class="col-4 d-none">
+                            <h4 style="color: gray;">Этап:</h4>
+                            <div class="input-group px-1">
+                                <button id="materialEmbedTableFilterProgramsPhaselistSearchCancel" type="button" class="btn btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                <input id="materialEmbedTableFilterProgramsPhaselistSearch" type="text" class="form-control" placeholder="Поиск: ">
+                                <button id="materialEmbedTableFilterProgramsPhaselistSearchErase" type="button" class="btn btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </div>
+                            <div class="list-group"></div>
+                        </div>
+                        <div id="materialEmbedTableFilterProgramsLessonslist" class="col-4 d-none">
+                            <h4 style="color: gray;">Урок:</h4>
+                            <div class="input-group px-1">
+                                <button id="materialEmbedTableFilterProgramsLessonlistSearchCancel" type="button" class="btn btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                <input id="materialEmbedTableFilterProgramsLessonlistSearch" type="text" class="form-control" placeholder="Поиск: ">
+                                <button id="materialEmbedTableFilterProgramsLessonlistSearchErase" type="button" class="btn btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </div>
+                            <div class="list-group"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col"><input class="form-check-input" type="checkbox" value="" id="materialsEmbedTableSelectAll"></th>
+                        <th scope="col">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">Наименование
+                                    <span class="visually-hidden"></span></button>
+                                <button id="materialsEmbedTableSortNameButton" type="button" class="btn btn-outline-secondary btn-sm" data-sorted="asc"><i class="bi bi-chevron-bar-expand"></i></button>
+                                <ul class="dropdown-menu" style="min-width: 250px;">
+                                    <div class="input-group px-1">
+                                        <input id="materialsEmbedTableFilterNameField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                        <button id="materialsEmbedTableFilterNameFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                    </div>
+                                </ul>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                    Категории</button>
+                                <ul id="materialsEmbedTableFilterCatList" class="dropdown-menu" style="min-width: 250px;">
+                                    <div class="input-group px-1">
+                                        <input id="materialsEmbedTableFilterCatSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                        <button id="materialsEmbedTableFilterCatSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                    </div>
+                                </ul>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                    Уровень</button>
+                                <ul id="materialsEmbedTableFilterLevelList" class="dropdown-menu" style="min-width: 250px;">
+                                    <div class="input-group px-1">
+                                        <input id="materialsEmbedTableFilterLevelSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                        <button id="materialsEmbedTableFilterLevelSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                    </div>
+                                </ul>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                    Тип</button>
+                                <ul id="materialsEmbedTableFilterTypeList" class="dropdown-menu" style="min-width: 250px;">
+                                    <div class="input-group px-1">
+                                        <input id="materialsEmbedTableFilterTypeSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                        <button id="materialsEmbedTableFilterTypeSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                    </div>
+                                    <li data-type-name="image_formats"><a class="dropdown-item" href="#">Изображение</a></li>
+                                    <li data-type-name="video_formats"><a class="dropdown-item" href="#">Видео</a></li>
+                                    <li data-type-name="animation_formats"><a class="dropdown-item" href="#">Анимация</a></li>
+                                    <li data-type-name="archive_formats"><a class="dropdown-item" href="#">Архив</a></li>
+                                    <li data-type-name="pdf_formats"><a class="dropdown-item" href="#">PDF-документ</a></li>
+                                    <li data-type-name="voice_formats"><a class="dropdown-item" href="#">Голосовое сообщение</a></li>
+                                    <li data-type-name="audio_formats"><a class="dropdown-item" href="#">Аудио</a></li>
+                                    <li data-type-name="text_formats"><a class="dropdown-item" href="#">Текст</a></li>
+                                    <li data-type-name="presentation_formats"><a class="dropdown-item" href="#">Презентация</a></li>
+                                </ul>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <button id="materialsEmbedShowAllButton" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                        </th>
+
+                    </tr>
+                    </thead>
+                    <tbody id="MaterialsEmbedModalTableBody"></tbody>
+                </table>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                <button id="MaterialsEmbedModalAddButton" type="button" class="btn btn-primary">Добавить</button>
+                <button id="MaterialsEmbedModalAddButton" type="button" class="btn btn-primary">Изменить (0)</button>
             </div>
         </div>
     </div>

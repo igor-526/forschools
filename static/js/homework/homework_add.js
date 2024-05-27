@@ -8,6 +8,9 @@ async function HWAddMain(){
     HWAddSaveButton.addEventListener('click', async function(){
         await HWAddSave(false)
     })
+    HWAddOffcanvasMaterialsAddButton.addEventListener("click", function (){
+        materialsEmbedSet(HWAddMaterialsSet)
+    })
 }
 
 async function HWAddSetTeachersListeners(){
@@ -155,8 +158,6 @@ async function HWAddSave(go=false){
     }
 }
 
-
-
 let HWAddMaterialsSet = []
 
 //Bootstrap elements
@@ -181,5 +182,8 @@ const HWAddMaterialsAddButton = HWAddForm.querySelector("#HomeworksAddOffcanvasM
 const HWAddSaveAndGoButton = HWAddForm.querySelector("#HomeworksAddOffcanvasSaveAndGoButton")
 const HWAddSaveButton = HWAddForm.querySelector("#HomeworksAddOffcanvasSaveButton")
 const HWAddButton = document.querySelector("#HomeworksAddOffcanvasButton")
+
+//Buttons
+const HWAddOffcanvasMaterialsAddButton = document.querySelector("#homeworksAddOffcanvasMaterialsAddButton")
 
 HWAddMain()

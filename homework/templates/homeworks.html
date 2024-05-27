@@ -76,10 +76,25 @@
     {% if is_admin_or_metodist or is_teacher %}
         <script>
             const materialEmbedAction = "addToHW_"
+            const see_general = {% if perms.material.see_all_general %}true{% else %}false{% endif %}
+            const mediaFormats = {
+                imageFormats: {{ material_formats.image_formats | safe }},
+                videoFormats: {{ material_formats.video_formats | safe }},
+                animationFormats: {{ material_formats.animation_formats | safe }},
+                archiveFormats: {{ material_formats.archive_formats | safe }},
+                pdfFormats: {{ material_formats.pdf_formats | safe }},
+                voiceFormats: {{ material_formats.voice_formats | safe }},
+                audioFormats: {{ material_formats.audio_formats | safe }},
+                textFormats: {{ material_formats.text_formats | safe }},
+                presentationFormats: {{ material_formats.presentation_formats | safe }}
+            }
         </script>
         <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script src="{% static 'js/materials/materials_api.js' %}"></script>
         <script src="{% static 'js/homework/homework_add.js' %}"></script>
+        <script src="{% static 'js/collections/collections_api.js' %}"></script>
+        <script src="{% static 'js/programs/programsAPI.js' %}"></script>
+        <script src="{% static 'js/materials/materials_utils.js' %}"></script>
         <script src="{% static 'js/materials/materials_embed.js' %}"></script>
     {% endif %}
 {% endblock %}

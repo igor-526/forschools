@@ -11,6 +11,7 @@ from dls.utils import get_menu
 from .utils.get_type import get_type
 from dls.settings import MATERIAL_FORMATS
 from .permissions import CanSeeMaterialMixin
+from learning_program.models import LearningProgramLesson, LearningProgramPhase
 
 
 class MaterialPage(LoginRequiredMixin, TemplateView):    # страница матриалов
@@ -27,6 +28,22 @@ class MaterialPage(LoginRequiredMixin, TemplateView):    # страница ма
 
 class MaterialListView(LoginRequiredMixin, ListCreateAPIView):  # API для просмотра и добавления материалов
     serializer_class = MaterialSerializer
+
+    def filter_queryset_programs(self, queryset):
+        params = self.request.query_params
+        progs = params.getlist('progs')
+        phases = params.getlist('phases')
+        lessons = params.getlist('lessons')
+        if lessons:
+            return queryset.filter(learning_program_lesson__in=lessons)
+        if phases:
+            lessons = LearningProgramLesson.objects.filter(learningprogramphase__id__in=phases)
+            return queryset.filter(learning_program_lesson__in=lessons)
+        if progs:
+            phases = LearningProgramPhase.objects.filter(learningprogram__id__in=progs)
+            lessons = LearningProgramLesson.objects.filter(learningprogramphase__id__in=phases)
+            return queryset.filter(learning_program_lesson__in=lessons)
+        return queryset
 
     def filter_queryset(self, queryset):
         params = self.request.query_params
@@ -57,10 +74,13 @@ class MaterialListView(LoginRequiredMixin, ListCreateAPIView):  # API для п�
             queryset = Material.objects.filter(type=2, owner=self.request.user, visible=True)
         else:
             queryset = None
-        return self.filter_queryset(queryset).distinct()
+        queryset = self.filter_queryset_programs(queryset)
+        queryset = self.filter_queryset(queryset).distinct()
+        return queryset
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        offset = int(request.query_params.get('offset')) if request.query_params.get('offset') else 0
+        queryset = self.get_queryset()[offset:offset+15]
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

@@ -62,10 +62,10 @@
                         <button id="LessonItemSendMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2"><i class="bi bi-telegram"></i></button>
                     </div>
                     <div class="card-body">
-                        <ul class="list-group list-group-flush">
+                        <ul class="list-group list-group-flush" id="lessonItemMaterialsList">
                             {% if can_see_materials %}
                                 {% for material in lesson.materials.all %}
-                                    <li class="list-group-item"><button type="button" class="btn btn-danger btn-sm me-2"><i class="bi bi-trash3"></i></button>
+                                    <li class="list-group-item">
                                         <a href="/materials/{{ material.id }}">{{ material.name }}</a>
                                     </li>
                                 {% endfor %}
@@ -101,9 +101,8 @@
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}';
+        const csrftoken = '{{ csrf_token }}'
         const lessonID = '{{ lesson.id }}'
-        let materialEmbedAction
     </script>
     <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/toasts.js' %}"></script>
@@ -119,6 +118,24 @@
         <script src="{% static 'js/lessons/lesson_hw_replace_teacher.js' %}"></script>
     {% endif %}
     {% if can_edit_materials %}
+        <script>
+            let materialEmbedAction
+            const see_general = {% if perms.material.see_all_general %}true{% else %}false{% endif %}
+            const mediaFormats = {
+                imageFormats: {{ material_formats.image_formats | safe }},
+                videoFormats: {{ material_formats.video_formats | safe }},
+                animationFormats: {{ material_formats.animation_formats | safe }},
+                archiveFormats: {{ material_formats.archive_formats | safe }},
+                pdfFormats: {{ material_formats.pdf_formats | safe }},
+                voiceFormats: {{ material_formats.voice_formats | safe }},
+                audioFormats: {{ material_formats.audio_formats | safe }},
+                textFormats: {{ material_formats.text_formats | safe }},
+                presentationFormats: {{ material_formats.presentation_formats | safe }}
+            }
+        </script>
+        <script src="{% static 'js/collections/collections_api.js' %}"></script>
+        <script src="{% static 'js/programs/programsAPI.js' %}"></script>
+        <script src="{% static 'js/materials/materials_utils.js' %}"></script>
         <script src="{% static 'js/materials/materials_embed.js' %}"></script>
     {% endif %}
     <script src="{% static 'js/lessons/lesson_item.js' %}"></script>

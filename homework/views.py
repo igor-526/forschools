@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404, JsonResponse
+from django.http import JsonResponse
 from rest_framework.views import APIView
 
 from lesson.permissions import CanReplaceTeacherMixin, replace_teacher_button
@@ -12,6 +12,7 @@ from .serializers import HomeworkListSerializer, HomeworkLogSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from dls.utils import get_menu
+from dls.settings import MATERIAL_FORMATS
 
 
 class HomeworksPage(LoginRequiredMixin, TemplateView):  # страница домашних заданий
@@ -23,7 +24,8 @@ class HomeworksPage(LoginRequiredMixin, TemplateView):  # страница до�
                    'can_add_hw': True,
                    'is_admin_or_metodist': request.user.groups.filter(name__in=["Admin", "Metodist"]).exists(),
                    'is_teacher': request.user.groups.filter(name="Teacher").exists(),
-                   'is_listener': request.user.groups.filter(name="Listener").exists()}
+                   'is_listener': request.user.groups.filter(name="Listener").exists(),
+                   'material_formats': MATERIAL_FORMATS}
         return render(request, self.template_name, context)
 
 

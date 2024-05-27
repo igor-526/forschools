@@ -6,6 +6,9 @@ function programsLessonMain(){
         const lessonID = lProgramLessonSaveButton.attributes.getNamedItem("data-lesson-id").value
         await programsLessonEditSave(lessonID)
     })
+    lProgramLessonMaterialsAddButton.addEventListener("click", function () {
+        materialsEmbedSet(modalLProgramLessonMaterialsSet)
+    })
 }
 
 function programsLessonReset(){
@@ -71,8 +74,7 @@ async function programsLessonSetModal(lessonID=0){
                     lProgramLessonMaterialsList.innerHTML = ''
                     modalLProgramLessonMaterialsSet = request.response.materials.map(mat => {
                         lProgramLessonMaterialsList.insertAdjacentHTML("beforeend", `
-                            <li class="list-group-item"><button type="button" class="btn btn-danger material-embed-delete" data-mat-id="${mat.id}">
-                            <i class="bi bi-trash3"></i></button>
+                            <li class="list-group-item">
                             <a href="/materials/${mat.id}">${mat.name}</a></li>`)
                         return mat.id
                     })

@@ -18,7 +18,6 @@ async function lessonItemReplaceGetTeachers(){
 function lessonItemReplaceShowTeachers(list = teachersArray){
     lessonItemReplaceTeacherModalList.innerHTML = ""
     list.map(teacher => {
-        console.log(selectedTeacher)
         if (teacher.id === Number(selectedTeacher)){
             lessonItemReplaceTeacherModalList.insertAdjacentHTML("beforeend", `
             <a href="#" class="list-group-item list-group-item-action active" data-teacher-id="${teacher.id}">${teacher.first_name} ${teacher.last_name}</a>

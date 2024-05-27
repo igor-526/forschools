@@ -2,9 +2,10 @@ async function materialsMain(){
     if (see_general){
         materialsTabGeneral.addEventListener('click', async function () {
             await getMaterials(1)
-            this.classList.add('active')
+            materialsTabGeneral.classList.add('active')
             materialsTabMy.classList.remove('active')
         })
+        materialsTabGeneral.classList.add('active')
         await getMaterials(1)
     } else {
         materialsTabGeneral.classList.remove("active")
@@ -34,15 +35,21 @@ async function materialsMain(){
     await materialsSetCategories()
     await materialsSetLevels()
     materialsFilterSetListeners()
+    materialFilterPrograms()
 }
 
 async function getMaterials(type=currentType, offset=0, name, cat, lvl, typeMat){
     currentType = type
     currentOffset = offset
-    materialsAPIGetAll(type, offset, name, cat, lvl, typeMat).then(request => {
+    materialsAPIGetAll(type, offset, name,
+        cat, lvl, typeMat,
+        materialFilterProgramsSelectedProgsArray,
+        materialFilterProgramsSelectedPhasesArray,
+        materialFilterProgramsSelectedLessonsArray).then(request => {
         switch (request.status) {
             case 200:
-                materialsMainShowTable(request.response)
+                console.log(offset)
+                offset === 0 ? materialsMainShowTable(request.response) : materialsMainShowTable(request.response, "append")
                 break
             default:
                 showErrorToast()
@@ -51,31 +58,15 @@ async function getMaterials(type=currentType, offset=0, name, cat, lvl, typeMat)
     })
 }
 
-function getMaterialType(format){
-    format = format.toLowerCase()
-    if (mediaFormats.imageFormats.includes(format)){
-        return 'Изображение'
-    } else if (mediaFormats.videoFormats.includes(format)) {
-        return 'Видео'
-    } else if (mediaFormats.animationFormats.includes(format)) {
-        return 'Анимация'
-    } else if (mediaFormats.archiveFormats.includes(format)) {
-        return 'Архив'
-    } else if (mediaFormats.pdfFormats.includes(format)) {
-        return 'PDF-документ'
-    } else if (mediaFormats.voiceFormats.includes(format)) {
-        return 'Голосовое сообщение'
-    } else if (mediaFormats.audioFormats.includes(format)) {
-        return 'Аудио'
-    } else if (mediaFormats.textFormats.includes(format)) {
-        return 'Текст'
-    }else if (mediaFormats.presentationFormats.includes(format)) {
-        return 'Презентация'
-    }
-}
-
 function materialsMainShowAll(){
-    materialsMainCollapseAction(0, "show")
+    if (this.classList.contains("active")){
+        materialsMainCollapseAction(0, "hide")
+        this.classList.remove("active")
+    } else {
+        materialsMainCollapseAction(0, "show")
+        this.classList.add("active")
+    }
+
 }
 
 function materialsMainSelect(matID, select=true){
@@ -117,7 +108,8 @@ function materialsMainSelect(matID, select=true){
 
 function materialsMainCollapseAction(materialID, action="show"){
     function getCollapseData(){
-        const collapse = tableBody.querySelector(`#materialItemCollapse${materialID}`)
+        const collapse = tableBody.querySelector(`[data-mat-collapse-id="${materialID}"]`)
+            .querySelector(".collapse")
         const bsCollapse = new bootstrap.Collapse(collapse)
         return {
             element: collapse,
@@ -129,9 +121,7 @@ function materialsMainCollapseAction(materialID, action="show"){
         materialsAPIGet(matID).then(async request => {
             switch (request.status) {
                 case 200:
-                    const splittedFile = request.response.file.split('.')
-                    const matType = getMaterialType(splittedFile[splittedFile.length - 1])
-                    console.log(matType)
+                    const matType = materialsGetType(request.response.file)
                     switch (matType) {
                         case "Видео":
                             element.innerHTML = `<video controls src="${request.response.file}" type="video/webm" style="max-height: 150px;"></video>`
@@ -170,24 +160,45 @@ function materialsMainCollapseAction(materialID, action="show"){
             switch (materialID) {
                 case 0:
                     tableBody.querySelectorAll(".collapse").forEach(collapse => {
-                        const bsCollapse = new bootstrap.Collapse(collapse)
+                        const bsCollapse = new bootstrap.Collapse(collapse, {
+                            toggle: false
+                        })
                         bsCollapse.show()
-                        collapse.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div>'
-                        getMaterial(
+                        if (collapse.attributes.getNamedItem("data-downloaded").value === "false"){
+                            getMaterial(
                             collapse.attributes.getNamedItem("data-material-id").value,
                             collapse)
+                            collapse.attributes.getNamedItem("data-downloaded").value = "true"
+                        }
                     })
                     break
                 default:
                     const cd = getCollapseData()
                     cd.bsElement.show()
-                    getMaterial(
-                        cd.element.attributes.getNamedItem("data-material-id").value,
-                        cd.element)
+                    if (cd.element.attributes.getNamedItem("data-downloaded").value === "false"){
+                            getMaterial(
+                            cd.element.attributes.getNamedItem("data-material-id").value,
+                            cd.element)
+                        cd.element.attributes.getNamedItem("data-downloaded").value = "true"
+                        }
                     break
             }
             break
         case "hide":
+            switch (materialID) {
+                case 0:
+                    tableBody.querySelectorAll(".collapse").forEach(collapse => {
+                        const bsCollapse = new bootstrap.Collapse(collapse, {
+                            toggle: false
+                        })
+                        bsCollapse.hide()
+                    })
+                    break
+                default:
+                    const cd = getCollapseData()
+                    cd.bsElement.hide()
+                    break
+            }
             break
     }
 }
@@ -198,28 +209,7 @@ function materialsMainShowTable(list = [], action="clear"){
         materialsEditSet(matID)
     }
 
-    function getTableElementCategory(categories){
-        const tdCategory = document.createElement("td")
-        let categoryHTML = ''
-        categories.forEach(category => {
-            categoryHTML += `${category.name}<br>`
-        })
-        tdCategory.innerHTML = categoryHTML
-        return tdCategory
-    }
-
-    function getTableElementLevel(levels){
-        const tdLevel = document.createElement("td")
-        let levelHTML = ''
-        levels.forEach(level => {
-            levelHTML += `${level.name}<br>`
-        })
-        tdLevel.innerHTML = levelHTML
-        return tdLevel
-    }
-
     function getTableElement(material){
-        const splittedFile = material.file.split('.')
         const tr = document.createElement("tr")
         const tdCheckbox = document.createElement("td")
         const tdName = document.createElement("td")
@@ -251,8 +241,6 @@ function materialsMainShowTable(list = [], action="clear"){
         tdActionsShow.type = "button"
         tdActionsShow.classList.add("btn", "btn-outline-primary")
         tdActionsShow.setAttribute("data-material-id", material.id)
-        tdActionsShow.setAttribute("data-bs-toggle", "collapse")
-        tdActionsShow.setAttribute("data-bs-target", `materialItemCollapse${material.id}`)
         tdActionsShow.innerHTML = '<i class="bi bi-eye"></i>'
         tdActionsShow.addEventListener('click', function () {
             materialsMainCollapseAction(material.id)
@@ -276,12 +264,12 @@ function materialsMainShowTable(list = [], action="clear"){
         tdNameA.innerHTML = material.name
         tdNameA.target = "_blank"
         tdName.insertAdjacentElement('beforeend', tdNameA)
-        tdType.innerHTML = getMaterialType(splittedFile[splittedFile.length - 1])
+        tdType.innerHTML = materialsGetType(material.file)
         tr.setAttribute("data-material-id", material.id)
         tr.insertAdjacentElement('beforeend', tdCheckbox)
         tr.insertAdjacentElement('beforeend', tdName)
-        tr.insertAdjacentElement('beforeend', getTableElementCategory(material.category))
-        tr.insertAdjacentElement('beforeend', getTableElementLevel(material.level))
+        tr.insertAdjacentElement('beforeend', materialsGetTableElementCategory(material.category))
+        tr.insertAdjacentElement('beforeend', materialsGetTableElementLevel(material.level))
         tr.insertAdjacentElement('beforeend', tdType)
         tr.insertAdjacentElement('beforeend', tdActions)
         return tr
@@ -296,10 +284,30 @@ function materialsMainShowTable(list = [], action="clear"){
         const collapse = document.createElement("div")
         td.insertAdjacentElement('beforeend', collapse)
         collapse.classList.add("collapse")
-        collapse.id = `materialItemCollapse${materialID}`
+        collapse.setAttribute("data-downloaded", "false")
         collapse.setAttribute("data-material-id", materialID)
         collapse.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div>'
         return tr
+    }
+
+    function moreButtonListener(){
+        getMaterials(currentType, currentOffset+15)
+    }
+
+    function getMoreButton(){
+        const moreTR = document.createElement("tr")
+        const moreTD = document.createElement("td")
+        moreTR.insertAdjacentElement('beforeend', moreTD)
+        moreTD.colSpan = 5
+        const moreButton = document.createElement("button")
+        moreButton.classList.add("btn", "btn-outline-primary")
+        moreButton.innerHTML = '<i class="bi bi-caret-down"></i> показать больше'
+        moreButton.addEventListener("click", function () {
+            moreButtonListener()
+            moreTR.remove()
+        })
+        moreTD.insertAdjacentElement("beforeend", moreButton)
+        return moreTR
     }
 
     switch (action){
@@ -309,6 +317,9 @@ function materialsMainShowTable(list = [], action="clear"){
                 tableBody.insertAdjacentElement('beforeend', getTableElement(material))
                 tableBody.insertAdjacentElement('beforeend', getMaterialCollapse(material.id))
             })
+            if (list.length === 15) {
+                tableBody.insertAdjacentElement('beforeend', getMoreButton())
+            }
             break
         case "replace":
             list.forEach(material => {
@@ -323,6 +334,19 @@ function materialsMainShowTable(list = [], action="clear"){
                 element.remove()
                 elementCollapse.remove()
             })
+            break
+        case "append":
+            list.forEach(material => {
+                tableBody.insertAdjacentElement('beforeend', getTableElement(material))
+                tableBody.insertAdjacentElement('beforeend', getMaterialCollapse(material.id))
+            })
+            if (list.length === 15) {
+                tableBody.insertAdjacentElement('beforeend', getMoreButton())
+            }
+            break
+    }
+    if (materialsTabActionsShowButton.classList.contains("active")){
+        materialsMainCollapseAction(0, "show")
     }
 }
 
@@ -539,6 +563,225 @@ async function materialsFilterReset(){
     getMaterials(currentType, 0)
 }
 
+function materialFilterPrograms(){
+    function programItemListener(){
+        const progID = Number(this.attributes.getNamedItem("data-program-id").value)
+        const index = materialFilterProgramsSelectedProgsArray.indexOf(progID)
+        switch (index){
+            case -1:
+                materialFilterProgramsSelectedProgsArray.push(progID)
+                this.classList.add("active")
+                break
+            default:
+                materialFilterProgramsSelectedProgsArray.splice(index, 1)
+                this.classList.remove("active")
+                break
+        }
+        getMaterials(currentType, 0)
+        setPhases()
+    }
+
+    function phaseItemListener(){
+        const phaseID = Number(this.attributes.getNamedItem("data-phase-id").value)
+        const index = materialFilterProgramsSelectedPhasesArray.indexOf(phaseID)
+        switch (index){
+            case -1:
+                materialFilterProgramsSelectedPhasesArray.push(phaseID)
+                this.classList.add("active")
+                break
+            default:
+                materialFilterProgramsSelectedPhasesArray.splice(index, 1)
+                this.classList.remove("active")
+                break
+        }
+        getMaterials(currentType, 0)
+        setLessons()
+    }
+
+    function lessonItemListener(){
+        const lessonID = Number(this.attributes.getNamedItem("data-lesson-id").value)
+        const index = materialFilterProgramsSelectedLessonsArray.indexOf(lessonID)
+        switch (index){
+            case -1:
+                materialFilterProgramsSelectedLessonsArray.push(lessonID)
+                this.classList.add("active")
+                break
+            default:
+                materialFilterProgramsSelectedLessonsArray.splice(index, 1)
+                this.classList.remove("active")
+                break
+        }
+        getMaterials(currentType, 0)
+    }
+
+    function getElement(name, element){
+        let attrName = ""
+        let buttonListener
+        switch (name){
+            case "program":
+                attrName = "data-program-id"
+                buttonListener = programItemListener
+                break
+            case "phase":
+                attrName = "data-phase-id"
+                buttonListener = phaseItemListener
+                break
+            case "lesson":
+                attrName = "data-lesson-id"
+                buttonListener = lessonItemListener
+                break
+        }
+
+        const el = document.createElement("button")
+        el.type = "button"
+        el.classList.add("list-group-item", "list-group-item-action")
+        el.setAttribute(attrName, element.id)
+        el.innerHTML = element.name
+        el.addEventListener("click", buttonListener)
+        return el
+    }
+
+    function setPrograms(){
+        materialFilterProgramsSelectedProgsArray = []
+        programsAPIProgramGetAll().then(request => {
+            switch (request.status){
+                case 200:
+                    const list = materialTableFilterProgramsProglist.querySelector(".list-group")
+                    list.innerHTML = ""
+                    request.response.forEach(program => {
+                        list.insertAdjacentElement("beforeend", getElement("program", program))
+                    })
+                    break
+                default:
+                    showErrorToast()
+            }
+        })
+    }
+
+    function setPhases(){
+        materialFilterProgramsSelectedPhasesArray = []
+        if (materialFilterProgramsSelectedProgsArray.length !== 0){
+            materialTableFilterProgramsPhaselist.classList.remove("d-none")
+            programsAPIPhaseGetAll(materialFilterProgramsSelectedProgsArray)
+                .then(request => {
+                    switch (request.status){
+                        case 200:
+                            const list = materialTableFilterProgramsPhaselist.querySelector(".list-group")
+                            list.innerHTML = ""
+                            request.response.forEach(phase => {
+                                list.insertAdjacentElement("beforeend", getElement("phase", phase))
+                            })
+                            break
+                        default:
+                            showErrorToast()
+                            break
+                    }
+                })
+        } else {
+            materialTableFilterProgramsPhaselist.classList.add("d-none")
+        }
+    }
+
+    function setLessons(){
+        materialFilterProgramsSelectedLessonsArray = []
+        if (materialFilterProgramsSelectedPhasesArray.length !== 0){
+            materialTableFilterProgramsLessonslist.classList.remove("d-none")
+            programsAPILessonGetAll(materialFilterProgramsSelectedPhasesArray)
+                .then(request => {
+                    switch (request.status){
+                        case 200:
+                            const list = materialTableFilterProgramsLessonslist.querySelector(".list-group")
+                            list.innerHTML = ""
+                            request.response.forEach(lesson => {
+                                list.insertAdjacentElement("beforeend", getElement("lesson", lesson))
+                            })
+                            break
+                        default:
+                            showErrorToast()
+                            break
+                    }
+                })
+        } else {
+            materialTableFilterProgramsLessonslist.classList.add("d-none")
+        }
+    }
+
+    function searchListeners(){
+        materialTableFilterProgramsProglistSearchErase.addEventListener("click", function () {
+            materialTableFilterProgramsProglistSearch.value = ""
+            materialTableFilterProgramsProglist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(el => {
+                el.classList.remove("d-none")
+            })
+        })
+        materialTableFilterProgramsPhaselistSearchErase.addEventListener("click", function () {
+            materialTableFilterProgramsPhaselistSearch.value = ""
+            materialTableFilterProgramsPhaselist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(el => {
+                el.classList.remove("d-none")
+            })
+        })
+        materialTableFilterProgramsLessonlistSearchErase.addEventListener("click", function () {
+            materialTableFilterProgramsLessonlistSearch.value = ""
+            materialTableFilterProgramsLessonslist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(el => {
+                el.classList.remove("d-none")
+            })
+        })
+        materialTableFilterProgramsProglistSearch.addEventListener("input", function (){
+            const query = new RegExp(materialTableFilterProgramsProglistSearch.value.trim().toLowerCase())
+            materialTableFilterProgramsProglist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(elem => {
+                query.test(elem.innerHTML.toLowerCase()) ? elem.classList.remove("d-none") : elem.classList.add("d-none")
+            })
+        })
+        materialTableFilterProgramsPhaselistSearch.addEventListener("input", function (){
+            const query = new RegExp(materialTableFilterProgramsPhaselistSearch.value.trim().toLowerCase())
+            materialTableFilterProgramsPhaselist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(elem => {
+                query.test(elem.innerHTML.toLowerCase()) ? elem.classList.remove("d-none") : elem.classList.add("d-none")
+            })
+        })
+        materialTableFilterProgramsLessonlistSearch.addEventListener("input", function (){
+            const query = new RegExp(materialTableFilterProgramsLessonlistSearch.value.trim().toLowerCase())
+            materialTableFilterProgramsLessonslist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(elem => {
+                query.test(elem.innerHTML.toLowerCase()) ? elem.classList.remove("d-none") : elem.classList.add("d-none")
+            })
+        })
+        materialTableFilterProgramsProglistSearchCancel.addEventListener("click", function () {
+            materialFilterProgramsSelectedProgsArray = []
+            materialTableFilterProgramsProglist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(elem => {
+                elem.classList.remove("active")
+            })
+            materialTableFilterProgramsPhaselist.classList.add("d-none")
+            materialTableFilterProgramsLessonslist.classList.add("d-none")
+            getMaterials(currentType, 0)
+        })
+        materialTableFilterProgramsPhaselistSearchCancel.addEventListener("click", function () {
+            materialFilterProgramsSelectedPhasesArray = []
+            materialTableFilterProgramsPhaselist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(elem => {
+                elem.classList.remove("active")
+            })
+            materialTableFilterProgramsLessonslist.classList.add("d-none")
+            getMaterials(currentType, 0)
+        })
+        materialTableFilterProgramsLessonlistSearchCancel.addEventListener("click", function () {
+            materialFilterProgramsSelectedLessonsArray = []
+            materialTableFilterProgramsLessonslist.querySelector(".list-group")
+                .querySelectorAll("button").forEach(elem => {
+                elem.classList.remove("active")
+            })
+            getMaterials(currentType, 0)
+        })
+    }
+
+    setPrograms()
+    searchListeners()
+}
+
 //Tabs
 const materialsTabGeneral = document.querySelector("#MaterialsTabGeneral")
 const materialsTabMy = document.querySelector("#MaterialsTabMy")
@@ -556,19 +799,33 @@ const materialTableSelectAll = document.querySelector("#materialTableSelectAll")
 const materialTableFilterCatList = document.querySelector("#materialTableFilterCatList")
 const materialTableFilterLevelList = document.querySelector("#materialTableFilterLevelList")
 const materialTableFilterTypeList = document.querySelector("#materialTableFilterTypeList")
-
 const materialTableFilterNameField = document.querySelector("#materialTableFilterNameField")
 const materialTableFilterCatSearchField = document.querySelector("#materialTableFilterCatSearchField")
 const materialTableFilterLevelSearchField = document.querySelector("#materialTableFilterLevelSearchField")
 const materialTableFilterTypeSearchField = document.querySelector("#materialTableFilterTypeSearchField")
-
 const materialTableFilterResetAll = document.querySelector("#materialTableFilterResetAll")
 const materialTableFilterNameFieldErase = document.querySelector("#materialTableFilterNameFieldErase")
 const materialTableFilterCatSearchFieldErase = document.querySelector("#materialTableFilterCatSearchFieldErase")
 const materialTableFilterLevelSearchFieldErase = document.querySelector("#materialTableFilterLevelSearchFieldErase")
 const materialTableFilterTypeSearchFieldErase = document.querySelector("#materialTableFilterTypeSearchFieldErase")
-
 const materialTableSortNameButton = document.querySelector("#materialTableSortNameButton")
+
+//Filtering programs
+const materialTableFilterProgramsProglist = document.querySelector("#materialTableFilterProgramsProglist")
+const materialTableFilterProgramsProglistSearchCancel = materialTableFilterProgramsProglist.querySelector("#materialTableFilterProgramsProglistSearchCancel")
+const materialTableFilterProgramsProglistSearch = materialTableFilterProgramsProglist.querySelector("#materialTableFilterProgramsProglistSearch")
+const materialTableFilterProgramsProglistSearchErase = materialTableFilterProgramsProglist.querySelector("#materialTableFilterProgramsProglistSearchErase")
+const materialTableFilterProgramsPhaselist = document.querySelector("#materialTableFilterProgramsPhaselist")
+const materialTableFilterProgramsPhaselistSearchCancel = materialTableFilterProgramsPhaselist.querySelector("#materialTableFilterProgramsPhaselistSearchCancel")
+const materialTableFilterProgramsPhaselistSearch = materialTableFilterProgramsPhaselist.querySelector("#materialTableFilterProgramsPhaselistSearch")
+const materialTableFilterProgramsPhaselistSearchErase = materialTableFilterProgramsPhaselist.querySelector("#materialTableFilterProgramsPhaselistSearchErase")
+const materialTableFilterProgramsLessonslist = document.querySelector("#materialTableFilterProgramsLessonslist")
+const materialTableFilterProgramsLessonlistSearchCancel = materialTableFilterProgramsLessonslist.querySelector("#materialTableFilterProgramsLessonlistSearchCancel")
+const materialTableFilterProgramsLessonlistSearch = materialTableFilterProgramsLessonslist.querySelector("#materialTableFilterProgramsLessonlistSearch")
+const materialTableFilterProgramsLessonlistSearchErase = materialTableFilterProgramsLessonslist.querySelector("#materialTableFilterProgramsLessonlistSearchErase")
+let materialFilterProgramsSelectedProgsArray = []
+let materialFilterProgramsSelectedPhasesArray = []
+let materialFilterProgramsSelectedLessonsArray = []
 
 let materialsMainSelectedArray = []
 let materialsCatergoriesArray = []

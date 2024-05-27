@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from learning_plan.permissions import plans_button
 from .models import Lesson
 from dls.utils import get_menu
+from dls.settings import MATERIAL_FORMATS
 from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
@@ -39,7 +40,8 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):  # страница за�
             'can_set_replace': replace_teacher_button(request),
             'can_see_materials': can_see_lesson_materials(request, lesson),
             'can_edit_materials': can_edit_lesson_materials(request, lesson),
-            'can_add_hw': can_add_hw
+            'can_add_hw': can_add_hw,
+            'material_formats': MATERIAL_FORMATS
         }
         if can_add_hw:
             hwdeadline = (lesson.get_hw_deadline())
@@ -94,8 +96,7 @@ class LessonAddMaterials(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
-            for material in request.POST.getlist('material'):
-                lesson.materials.add(material)
+            lesson.materials.set(request.data.get('materials'))
             lesson.save()
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

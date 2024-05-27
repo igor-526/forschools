@@ -55,8 +55,14 @@ async function programsAPILessonCreate(fd){
     return await APIPostPatchToObject(request)
 }
 
-async function programsAPILessonGetAll(){
-    const request = await fetch('/api/v1/learning_programs/lesson/')
+async function programsAPILessonGetAll(phases = []){
+    let url = '/api/v1/learning_programs/lesson/?'
+    if (phases.length !== 0){
+        phases.forEach(phase => {
+            url += `&phase=${phase}`
+        })
+    }
+    const request = await fetch(url)
     return await APIGetToObject(request)
 }
 
@@ -100,8 +106,14 @@ async function programsAPIPhaseCreate(fd){
     return await APIPostPatchToObject(request)
 }
 
-async function programsAPIPhaseGetAll(){
-    const request = await fetch('/api/v1/learning_programs/phase/')
+async function programsAPIPhaseGetAll(programs = []){
+    let url = '/api/v1/learning_programs/phase/?'
+    if (programs.length !== 0){
+        programs.forEach(prog => {
+            url += `&prog=${prog}`
+        })
+    }
+    const request = await fetch(url)
     return await APIGetToObject(request)
 }
 
