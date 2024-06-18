@@ -1,0 +1,32 @@
+<div class="modal fade" tabindex="-1" id="lessonItemStatusPassedModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Замена преподавателя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="lessonItemStatusPassedModalForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalNoteField" class="form-label">Заметка (ученик не сможет увидеть)</label>
+                        <textarea name="note_teacher" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalNoteField"></textarea>
+                        <div class="form-text">Расскажите, всё ли прошло хорошо? Какие проблемы возникли у ученика, что не успели пройти и т.д.<br>Необязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalNoteError"></div>
+                    </div>
+                </form>
+                <div class="alert alert-danger d-flex align-items-center d-none mb-3" role="alert" id="lessonItemStatusPassedModalErrorsAlert">
+                    <div id="lessonItemStatusPassedModalErrors"></div>
+                </div>
+                <div>
+                    Внимание! Действие обратимо только администратором.<br>После изменения статура урока его корректировка невозможна (в том числе материалов)<br>
+                    После нажатия кнопки "Урок проведён" ученик(-и) увидят приложенные материалы и получат уведомления о заданном ДЗ
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="lessonItemStatusPassedModalButton" type="button" class="btn btn-primary">Урок проведён</button>
+            </div>
+        </div>
+    </div>
+</div>

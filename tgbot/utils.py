@@ -55,13 +55,12 @@ def send_material(user_id: int, material: Material) -> dict:
                                            reply_markup=get_show_key(material.id))
 
 
-def send_homework_tg(user: NewUser, homework: Homework) -> dict:
+def send_homework_tg(user: NewUser, homeworks: list[Homework]) -> dict:
     user_tg_id = get_tg_id_sync(user)
     if user_tg_id:
         return sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
-                                               message=f"У вас новое домашнее задание!\n"
-                                                       f"Выполните его до: {homework.deadline}",
-                                               reply_markup=get_homeworks_buttons([homework]))
+                                               message=f"У вас новые домашние задания!",
+                                               reply_markup=get_homeworks_buttons([hw for hw in homeworks]))
     else:
         return {"status": "error",
                 "errors": "not found"}

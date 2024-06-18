@@ -1,7 +1,6 @@
 from django.db import models
 from profile_management.models import NewUser
 from material.models import Material, File
-from datetime import datetime, timedelta
 from django.db.models.signals import post_save
 
 

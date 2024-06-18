@@ -26,10 +26,10 @@
                                 <li class="list-group-item">Время: не установлено</li>
                             {% endif %}
                             {% if lesson.status == 0 %}
-                                <li class="list-group-item list-group-item-warning">Занятие не проведено</li>
+                                <li id="lessonItemStatus" class="list-group-item list-group-item-warning">Занятие не проведено</li>
                             {% endif %}
                             {% if lesson.status == 1 %}
-                                <li class="list-group-item list-group-item-success">Занятие проведено</li>
+                                <li id="lessonItemStatus" class="list-group-item list-group-item-success">Занятие проведено</li>
                             {% endif %}
                         </ul>
                     </div>
@@ -41,7 +41,7 @@
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">Преподаватель: <a href="/profile/{{ lesson.get_teacher.id }}">{{ lesson.get_teacher }}</a>
                                 {% if can_set_replace %}
-                                    <button id="LessonItemReplaceTeacherButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#LessonItemReplaceTeacherModal"><i class="bi bi-person-gear"></i></button>
+                                    <button id="LessonItemReplaceTeacherButton" type="button" class="btn btn-primary btn-sm ms-2 lesson-item-not-passed" data-bs-toggle="modal" data-bs-target="#LessonItemReplaceTeacherModal"><i class="bi bi-person-gear"></i></button>
                                     {% include "modal_set_replace.html" %}
                                 {% endif %}
                             </li>
@@ -51,6 +51,21 @@
                         </ul>
                     </div>
                 </div>
+
+                {% if can_set_passed %}
+                    <div class="card mb-3 lesson-item-not-passed">
+                        <div class="card-header">Урок был проведён?</div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <button id="lessonItemStatusPassedButton" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#lessonItemStatusPassedModal">Да</button>
+                                </li>
+                            </ul>
+                        </div>
+                        {% include "modal_set_status.html" %}
+                    </div>
+                {% endif %}
+
             </div>
             <div class="col-6">
                 <div class="card mb-3">
@@ -59,7 +74,7 @@
                             <button id="LessonItemAddMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="bi bi-plus-lg"></i></button>
                             {% include "materials_embed_modal.html" %}
                         {% endif %}
-                        <button id="LessonItemSendMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2"><i class="bi bi-telegram"></i></button>
+                        <button id="LessonItemSendMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2 lesson-item-not-passed"><i class="bi bi-telegram"></i></button>
                     </div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush" id="lessonItemMaterialsList">
@@ -109,6 +124,9 @@
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+    {% if can_set_passed %}
+        <script src="{% static 'js/lessons/lesson_item_set_status.js' %}"></script>
+    {% endif %}
     {% if can_set_replace %}
         <script>
             let replaceAction = "lesson"

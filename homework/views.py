@@ -129,7 +129,7 @@ class HomeworkReplaceTeacher(CanReplaceTeacherMixin, APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserHWListApiView(LoginRequiredMixin, ListAPIView):
+class UserHWListAPIView(LoginRequiredMixin, ListAPIView):
     serializer_class = HomeworkListSerializer
 
     def get_queryset(self, *args, **kwargs):

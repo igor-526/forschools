@@ -58,7 +58,10 @@ def can_see_lesson_materials(request, lesson: Lesson):
         learning_plan = lesson.learningphases_set.first().learningplan_set.first()
         lessondt = timezone.datetime(lesson.date.year, lesson.date.month, lesson.date.day)
         if not learning_plan.show_materials:
-            return timezone.now().timestamp() >= lessondt.timestamp()
+            if lesson.status == 1:
+                return True
+            else:
+                return lesson.materials_access
         return timezone.now().timestamp() >= (lessondt - timedelta(days=learning_plan.show_materials)).timestamp()
 
 
@@ -73,3 +76,20 @@ def can_add_homework(request, lesson: Lesson):
     return False
 
 
+def can_set_passed(request, lesson: Lesson):
+    if lesson.status == 1:
+        return False
+    if not lesson.date or not lesson.start_time or not lesson.end_time:
+        return False
+    if lesson.date > timezone.now().date():
+        return False
+    if lesson.date == timezone.now().date() and lesson.end_time > timezone.now().time():
+        return False
+    usergroups = get_usergroups(request.user)
+    if ("Admin" in usergroups) or ("Metodist" in usergroups):
+        return True
+    if "Teacher" in usergroups:
+        teacher = lesson.learningphases_set.filter(learningplan__teacher=request.user).exists()
+        replace_teacher = lesson.replace_teacher == request.user
+        return teacher or replace_teacher
+    return False

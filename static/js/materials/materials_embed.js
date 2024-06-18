@@ -657,6 +657,15 @@ async function materialEmbedChange(){
         elemA.target = "_blank"
         elemA.innerHTML = matName
         elem.insertAdjacentElement("beforeend", elemA)
+        const elemDesc = document.createElement("div")
+        elemDesc.classList.add("mt-1")
+        const elemDescInp = document.createElement("input")
+        elemDescInp.classList.add("form-control", "form-control-sm", "material-embed-description")
+        elemDescInp.type = "text"
+        elemDescInp.placeholder = "Подпись к материалу"
+        elemDescInp.setAttribute("data-desc-id", matID)
+        elemDesc.insertAdjacentElement("beforeend", elemDescInp)
+        elem.insertAdjacentElement("beforeend", elemDesc)
         return elem
     }
 

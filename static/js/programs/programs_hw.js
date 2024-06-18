@@ -81,9 +81,20 @@ function programsHWServerValidation(errors){
 async function programsHWEditSave(hwID=0){
     if (programsHWClientValidation()){
         const formData = new FormData(lProgramHWForm)
-        modalLProgramHWMaterialsSet.map(matID => {
+        modalLProgramHWMaterialsSet.forEach(matID => {
             formData.append("materials", matID)
         })
+        const descriptions = modalLProgramHW.querySelectorAll(".material-embed-description")
+        const descriptionsObj = {}
+        descriptions.forEach(desc => {
+            if (desc.value.trim() !== ""){
+                const matID = Number(desc.attributes.getNamedItem("data-desc-id").value)
+                descriptionsObj[matID] = desc.value
+            }
+        })
+        if (Object.keys(descriptionsObj).length !== 0){
+            formData.append("materials_comment", JSON.stringify(descriptionsObj))
+        }
         if (hwID === "0"){
             programsAPIHWCreate(formData).then(request => {
                 switch (request.status){

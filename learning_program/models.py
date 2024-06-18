@@ -25,6 +25,10 @@ class LearningProgramHomework(models.Model):
                                      null=False,
                                      default=True,
                                      blank=True)
+    materials_comment = models.JSONField(verbose_name="Описание материала",
+                                         null=True,
+                                         blank=True,
+                                         default=dict)
 
 
 class LearningProgramLesson(models.Model):

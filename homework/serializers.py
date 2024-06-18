@@ -56,7 +56,6 @@ class HomeworkListSerializer(serializers.ModelSerializer):
             homework = Homework.objects.create(**validated_data,
                                                listener=listener,
                                                teacher=teacher)
-            send_homework_tg(homework.listener, homework)
             homeworks.append(homework)
         if lesson_id:
             lesson.homeworks.add(*homeworks)
