@@ -403,11 +403,7 @@ function materialsSetLevels(){
 async function materialsFilterSearch(){
     await getMaterials(
         currentType,
-        currentOffset,
-        materialTableFilterNameField.value.toLowerCase(),
-        materialsFilterCatergoriesSelectedArray,
-        materialsFilterLevelsSelectedArray,
-        materialsFilterTypesSelectedArray
+        currentOffset
     )
 }
 
