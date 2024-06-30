@@ -5,3 +5,4 @@ kitaischool.env
 media/*
 dls/settings.py
 tgparser/sessions/*
+tgparser/logs/*

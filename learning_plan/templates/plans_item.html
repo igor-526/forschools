@@ -116,6 +116,7 @@
         {% include 'phase_modal_delete.html' %}
         {% include 'modal_lesson.html' %}
         {% include 'lesson_modal_delete.html' %}
+        {% include 'plans_modal_rescheduling.html' %}
         {% include 'toast.html' %}
     {% endif %}
 {% endblock %}
@@ -134,9 +135,10 @@
         </script>
         <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script src="{% static 'js/collections/collections_api.js' %}"></script>
+        <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
         <script src="{% static 'js/plans/plans_item/plans_item_listeners.js' %}"></script>
-        <script src="{% static 'js/plans/plans_item/plans_item_phase.js' %}"></script>
-        <script src="{% static 'js/plans/plans_item/plans_item_lesson.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plan_item_modals.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_rescheduling.js' %}"></script>
 
         {% if can_generate_from_program %}
             <script src="{% static 'js/programs/programsAPI.js' %}"></script>

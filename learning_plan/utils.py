@@ -30,6 +30,53 @@ def plan_calculated_info(date: datetime, schedule: dict, program: LearningProgra
     }
 
 
+def get_schedule(data):
+    schedule = {}
+    if data.get("monday"):
+        schedule[0] = {
+            "start": data.get("monday_start"),
+            "end": data.get("monday_end"),
+            "place": data.get("monday_place")
+        }
+    if data.get("tuesday"):
+        schedule[1] = {
+            "start": data.get("tuesday_start"),
+            "end": data.get("tuesday_end"),
+            "place": data.get("tuesday_place")
+        }
+    if data.get("wednesday"):
+        schedule[2] = {
+            "start": data.get("wednesday_start"),
+            "end": data.get("wednesday_end"),
+            "place": data.get("wednesday_place")
+        }
+    if data.get("thursday"):
+        schedule[3] = {
+            "start": data.get("thursday_start"),
+            "end": data.get("thursday_end"),
+            "place": data.get("thursday_place")
+        }
+    if data.get("friday"):
+        schedule[4] = {
+            "start": data.get("friday_start"),
+            "end": data.get("friday_end"),
+            "place": data.get("friday_place")
+        }
+    if data.get("saturday"):
+        schedule[5] = {
+            "start": data.get("saturday_start"),
+            "end": data.get("saturday_end"),
+            "place": data.get("saturday_place")
+        }
+    if data.get("sunday"):
+        schedule[6] = {
+            "start": data.get("sunday_start"),
+            "end": data.get("sunday_end"),
+            "place": data.get("sunday_place")
+        }
+    return schedule
+
+
 class ProgramSetter:
     first_date: datetime
     last_date: datetime
@@ -93,12 +140,14 @@ class ProgramSetter:
             lessons = phase_dict.get("lessons")
             for lesson_dict in lessons:
                 pr_lesson = lesson_dict.get("object")
+                lp_lesson_date = lesson_dict.get("dt").get("date")
                 lp_lesson = lp_phase.lessons.create(
                     name=pr_lesson.name,
                     description=pr_lesson.description,
-                    date=lesson_dict.get("dt").get("date"),
+                    date=lp_lesson_date,
                     start_time=lesson_dict.get("dt").get("start"),
-                    end_time=lesson_dict.get("dt").get("end")
+                    end_time=lesson_dict.get("dt").get("end"),
+                    place_id=self.schedule[lp_lesson_date.weekday()]["place"]
                 )
                 lp_lesson.materials.set(pr_lesson.materials.all())
                 lp_lesson.save()
@@ -114,3 +163,7 @@ class ProgramSetter:
                         )
                         lp_hw.materials.set(homework.get("object").materials.all())
                         lp_hw.save()
+
+
+class Rescheduling:
+    pass

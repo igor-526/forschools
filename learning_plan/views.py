@@ -9,8 +9,7 @@ from .permissions import CanSeePlansPageMixin, can_edit_plan, can_generate_from_
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer
 from dls.utils import get_menu
-from pprint import pprint
-from .utils import plan_calculated_info, ProgramSetter
+from .utils import plan_calculated_info, ProgramSetter, get_schedule, Rescheduling
 from learning_program.models import LearningProgram
 from datetime import datetime
 
@@ -138,50 +137,11 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
 
 
 class PlansItemSetProgram(LoginRequiredMixin, APIView):
-    def get_schedule(self, data, *args, **kwargs):
-        schedule = {}
-        if data.get("monday"):
-            schedule[0] = {
-                "start": data.get("monday_start"),
-                "end": data.get("monday_end")
-            }
-        if data.get("tuesday"):
-            schedule[1] = {
-                "start": data.get("tuesday_start"),
-                "end": data.get("tuesday_end")
-            }
-        if data.get("wednesday"):
-            schedule[2] = {
-                "start": data.get("wednesday_start"),
-                "end": data.get("wednesday_end")
-            }
-        if data.get("thursday"):
-            schedule[3] = {
-                "start": data.get("thursday_start"),
-                "end": data.get("thursday_end")
-            }
-        if data.get("friday"):
-            schedule[4] = {
-                "start": data.get("friday_start"),
-                "end": data.get("friday_end")
-            }
-        if data.get("saturday"):
-            schedule[5] = {
-                "start": data.get("saturday_start"),
-                "end": data.get("saturday_end")
-            }
-        if data.get("sunday"):
-            schedule[6] = {
-                "start": data.get("sunday_start"),
-                "end": data.get("sunday_end")
-            }
-        return schedule
-
     def get(self, request, *args, **kwargs):
         program = LearningProgram.objects.get(pk=request.query_params.get("programID"))
         return JsonResponse(plan_calculated_info(
             datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
-            self.get_schedule(request.query_params),
+            get_schedule(request.query_params),
             program
         ), status=200)
 
@@ -191,7 +151,7 @@ class PlansItemSetProgram(LoginRequiredMixin, APIView):
         if can_generate_from_program(request, plan):
             setter = ProgramSetter(
                 datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
-                self.get_schedule(request.POST),
+                get_schedule(request.POST),
                 program,
                 plan
             )

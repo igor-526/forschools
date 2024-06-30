@@ -1,31 +1,82 @@
-<div class="modal" id="PlansItemPhaseModal" tabindex="-1">
+<div class="modal" id="planItemPhaseModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="PlansItemPhaseModalTitle"></h5>
+                <h5 class="modal-title" id="planItemPhaseModalTitle"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="PlansItemPhaseModalForm">
+                <form id="planItemPhaseModalForm">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="PlansItemPhaseModalNameField" class="form-label">Наименование</label>
-                        <input name="name" type="text" class="form-control" id="PlansItemPhaseModalNameField">
+                        <label for="planItemPhaseModalNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="planItemPhaseModalNameField">
                         <div class="form-text">Наименование для этапа обучения. Должно быть уникальным</div>
-                        <div id="PlansItemPhaseModalNameError" class="invalid-feedback"></div>
+                        <div id="planItemPhaseModalNameError" class="invalid-feedback"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="PlansItemPhaseModalPurposeField" class="form-label">Цель</label>
-                        <input name="purpose" type="text" class="form-control" id="PlansItemPhaseModalPurposeField">
+                        <label for="planItemPhaseModalPurposeField" class="form-label">Цель</label>
+                        <input name="purpose" type="text" class="form-control" id="planItemPhaseModalPurposeField">
                         <div class="form-text">Цель, которая ставится этапом обучения</div>
-                        <div id="PlansItemPhaseModalPurposeError" class="invalid-feedback"></div>
+                        <div id="planItemPhaseModalPurposeError" class="invalid-feedback"></div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                <button type="button" class="btn btn-primary" id="PlansItemPhaseModalSaveButton" data-phase-id="">Сохранить</button>
+                <button type="button" class="btn btn-primary" id="planItemPhaseModalSaveButton" data-phase-edit-id="">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-lg" tabindex="-1" id="planItemPhaseModalNew">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Новый этап</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="mb-3">
+                        <label for="planItemPhaseModalNewNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="planItemPhaseModalNewNameField">
+                        <div class="form-text">Наименование для этапа обучения. Должно быть уникальным</div>
+                        <div id="planItemPhaseModalNewNameError" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="planItemPhaseModalNewPurposeField" class="form-label">Цель</label>
+                        <input name="purpose" type="text" class="form-control" id="planItemPhaseModalNewPurposeField">
+                        <div class="form-text">Цель, которая ставится этапом обучения</div>
+                        <div id="planItemPhaseModalNewPurposeError" class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="planItemPhaseModalNewProgramList" class="col-6">
+                        <h4 style="color: gray;">Программа:</h4>
+                        <div class="input-group px-1">
+                            <input id="planItemPhaseModalNewProgramSearch" type="text" class="form-control" placeholder="Поиск: ">
+                            <button id="planItemPhaseModalNewProgramSearchErase" type="button" class="btn btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                        </div>
+                        <div class="list-group"></div>
+                    </div>
+                    <div id="planItemPhaseModalNewPhaseList" class="col-6 d-none">
+                        <h4 style="color: gray;">Этап:</h4>
+                        <div class="input-group px-1">
+                            <input id="planItemPhaseModalNewPhaseSearch" type="text" class="form-control" placeholder="Поиск: ">
+                            <button id="planItemPhaseModalNewPhaseSearchErase" type="button" class="btn btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                        </div>
+                        <div class="list-group"></div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="planItemPhaseModalNewAddButton" type="button" class="btn btn-primary">Добавить</button>
             </div>
         </div>
     </div>

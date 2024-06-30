@@ -48,7 +48,6 @@ async function getMaterials(type=currentType, offset=0, name, cat, lvl, typeMat)
         materialFilterProgramsSelectedLessonsArray).then(request => {
         switch (request.status) {
             case 200:
-                console.log(offset)
                 offset === 0 ? materialsMainShowTable(request.response) : materialsMainShowTable(request.response, "append")
                 break
             default:

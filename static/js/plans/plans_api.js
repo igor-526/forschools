@@ -1,4 +1,4 @@
-async function plansGet(){
+async function plansAPIGet(){
     const request = await fetch("/api/v1/learning_plans/")
     if (request.status === 200){
         return {status: 200,
@@ -8,7 +8,7 @@ async function plansGet(){
     }
 }
 
-async function plansCreate(fd){
+async function plansAPICreate(fd){
     const request = await fetch('/api/v1/learning_plans/', {
         method: "post",
         credentials: 'same-origin',
@@ -20,7 +20,7 @@ async function plansCreate(fd){
     return APIPostPatchToObject(request)
 }
 
-async function plansUpdate(fd, planID){
+async function plansAPIUpdate(fd, planID){
     const request = await fetch(`/api/v1/learning_plans/${planID}/`, {
         method: "PATCH",
         credentials: 'same-origin',
@@ -32,7 +32,7 @@ async function plansUpdate(fd, planID){
     return APIPostPatchToObject(request)
 }
 
-async function plansDestroy(planID){
+async function plansAPIDestroy(planID){
     const request = await fetch(`/api/v1/learning_plans/${planID}/`, {
         method: "delete",
         credentials: 'same-origin',
@@ -43,7 +43,7 @@ async function plansDestroy(planID){
     return APIDeleteToObject(request)
 }
 
-async function planItemGetPhases() {
+async function planItemAPIGetPhases() {
     const request = await fetch(`/api/v1/learning_plans/${planID}/phases/`)
     if (request.status === 200){
         return {status: 200,
@@ -62,6 +62,30 @@ async function planItemAPIDestroyPhase(planID, phaseID){
         }
     })
     return APIDeleteToObject(request)
+}
+
+async function planItemAPIUpdatePhase(planID, phaseID, fd){
+    const request = await fetch(`/api/v1/learning_plans/${planID}/phases/${phaseID}/`, {
+        method: "PATCH",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
+}
+
+async function planItemAPICreatePhase(planID, fd){
+    const request = await fetch(`/api/v1/learning_plans/${planID}/phases/`, {
+        method: "post",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
 }
 
 async function planItemAPIDestroyLesson(lessonID){
@@ -94,7 +118,7 @@ async function planItemAPICalculateFromProgram(fd, planID){
 }
 
 async function planItemAPISetPlanFromProgram(fd, planID){
-        const request = await fetch(`/api/v1/learning_plans/${planID}/setprogram/`, {
+    const request = await fetch(`/api/v1/learning_plans/${planID}/setprogram/`, {
         method: "post",
         credentials: 'same-origin',
         headers:{

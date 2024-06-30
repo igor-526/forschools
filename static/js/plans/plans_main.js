@@ -1,5 +1,5 @@
 async function learningPlansMain(){
-    const request = await plansGet()
+    const request = await plansAPIGet()
     if (request.status === 200){
         learningPlansArray = request.response
     }

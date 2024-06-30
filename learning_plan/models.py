@@ -20,10 +20,12 @@ PHASE_STATUS_CHOICES = (
 class LearningPhases(models.Model):
     name = models.CharField(verbose_name="Наименование",
                             null=False,
-                            blank=False)
+                            blank=False,
+                            max_length=200)
     purpose = models.CharField(verbose_name="Цель",
                                blank=True,
-                               null=True)
+                               null=True,
+                               max_length=1000)
     lessons = models.ManyToManyField(Lesson,
                                      verbose_name="Занятия",
                                      blank=True)

@@ -5,6 +5,21 @@ async function plansItemFromProgramMain(){
             plansItemFromProgramSetPrograms(request.response)
         }
     })
+    collectionsAPIGetLessonPlaces().then(request => {
+        switch (request.status){
+            case 200:
+                document.querySelectorAll(".place-select").forEach(sel => {
+                    request.response.forEach(place => {
+                        sel.insertAdjacentHTML("beforeend", `
+                        <option value="${place.id}">${place.name}</option>`)
+                    })
+                })
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
     pFromProgramModalSetButton.addEventListener('click', function (){
         plansItemFromProgramCalculate().then()
     })
@@ -77,63 +92,77 @@ function plansItemFromProgramFormDayListeners(){
         if (pFromProgramModalDMondayCheck.checked){
             pFromProgramModalDMondayTimeStart.disabled = false
             pFromProgramModalDMondayTimeEnd.disabled = false
+            pFromProgramModalDMondayPlace.disabled = false
         } else {
             pFromProgramModalDMondayTimeStart.disabled = true
             pFromProgramModalDMondayTimeEnd.disabled = true
+            pFromProgramModalDMondayPlace.disabled = true
         }
     })
     pFromProgramModalDTuesdayCheck.addEventListener("change", function (){
         if (pFromProgramModalDTuesdayCheck.checked){
             pFromProgramModalDTuesdayTimeStart.disabled = false
             pFromProgramModalDTuesdayTimeEnd.disabled = false
+            pFromProgramModalDTuesdayPlace.disabled = false
         } else {
             pFromProgramModalDTuesdayTimeStart.disabled = true
             pFromProgramModalDTuesdayTimeEnd.disabled = true
+            pFromProgramModalDTuesdayPlace.disabled = true
         }
     })
     pFromProgramModalDWednesdayCheck.addEventListener("change", function (){
         if (pFromProgramModalDWednesdayCheck.checked){
             pFromProgramModalDWednesdayTimeStart.disabled = false
             pFromProgramModalDWednesdayTimeEnd.disabled = false
+            pFromProgramModalDWednesdayPlace.disabled = false
         } else {
             pFromProgramModalDWednesdayTimeStart.disabled = true
             pFromProgramModalDWednesdayTimeEnd.disabled = true
+            pFromProgramModalDWednesdayPlace.disabled = true
         }
     })
     pFromProgramModalDThursdayCheck.addEventListener("change", function (){
         if (pFromProgramModalDThursdayCheck.checked){
             pFromProgramModalDThursdayTimeStart.disabled = false
             pFromProgramModalDThursdayTimeEnd.disabled = false
+            pFromProgramModalDThursdayPlace.disabled = false
         } else {
             pFromProgramModalDThursdayTimeStart.disabled = true
             pFromProgramModalDThursdayTimeEnd.disabled = true
+            pFromProgramModalDThursdayPlace.disabled = true
         }
     })
     pFromProgramModalDFridayCheck.addEventListener("change", function (){
         if (pFromProgramModalDFridayCheck.checked){
             pFromProgramModalDFridayTimeStart.disabled = false
             pFromProgramModalDFridayTimeEnd.disabled = false
+            pFromProgramModalDFridayPlace.disabled = false
         } else {
             pFromProgramModalDFridayTimeStart.disabled = true
             pFromProgramModalDFridayTimeEnd.disabled = true
+            pFromProgramModalDFridayPlace.disabled = true
         }
     })
     pFromProgramModalDSaturdayCheck.addEventListener("change", function (){
         if (pFromProgramModalDSaturdayCheck.checked){
             pFromProgramModalDSaturdayTimeStart.disabled = false
             pFromProgramModalDSaturdayTimeEnd.disabled = false
+            pFromProgramModalDSaturdayPlace.disabled = false
         } else {
             pFromProgramModalDSaturdayTimeStart.disabled = true
             pFromProgramModalDSaturdayTimeEnd.disabled = true
+            pFromProgramModalDSaturdayPlace.disabled = true
         }
     })
     pFromProgramModalDSundayCheck.addEventListener("change", function (){
         if (pFromProgramModalDSundayCheck.checked){
             pFromProgramModalDSundayTimeStart.disabled = false
             pFromProgramModalDSundayTimeEnd.disabled = false
+            pFromProgramModalDSundayPlace.disabled = false
         } else {
             pFromProgramModalDSundayTimeStart.disabled = true
             pFromProgramModalDSundayTimeEnd.disabled = true
+            pFromProgramModalDSundayPlace.disabled = true
         }
     })
 
@@ -359,24 +388,31 @@ const pFromProgramModalDate = plansItemFromProgramModal.querySelector("#plansIte
 const pFromProgramModalDMondayCheck = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDMondayCheck")
 const pFromProgramModalDMondayTimeStart = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDMondayTimeStart")
 const pFromProgramModalDMondayTimeEnd = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDMondayTimeEnd")
+const pFromProgramModalDMondayPlace = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDMondayPlace")
 const pFromProgramModalDTuesdayCheck = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDTuesdayCheck")
 const pFromProgramModalDTuesdayTimeStart = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDTuesdayTimeStart")
 const pFromProgramModalDTuesdayTimeEnd = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDTuesdayTimeEnd")
+const pFromProgramModalDTuesdayPlace = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDTuesdayPlace")
 const pFromProgramModalDWednesdayCheck = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDWednesdayCheck")
 const pFromProgramModalDWednesdayTimeStart = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDWednesdayTimeStart")
 const pFromProgramModalDWednesdayTimeEnd = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDWednesdayTimeEnd")
+const pFromProgramModalDWednesdayPlace = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDWednesdayPlace")
 const pFromProgramModalDThursdayCheck = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDThursdayCheck")
 const pFromProgramModalDThursdayTimeStart = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDThursdayTimeStart")
 const pFromProgramModalDThursdayTimeEnd = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDThursdayTimeEnd")
+const pFromProgramModalDThursdayPlace = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDThursdayPlace")
 const pFromProgramModalDFridayCheck = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDFridayCheck")
 const pFromProgramModalDFridayTimeStart = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDFridayTimeStart")
 const pFromProgramModalDFridayTimeEnd = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDFridayTimeEnd")
+const pFromProgramModalDFridayPlace = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDFridayPlace")
 const pFromProgramModalDSaturdayCheck = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDSaturdayCheck")
 const pFromProgramModalDSaturdayTimeStart = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDSaturdayTimeStart")
 const pFromProgramModalDSaturdayTimeEnd = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDSaturdayTimeEnd")
+const pFromProgramModalDSaturdayPlace = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDSaturdayPlace")
 const pFromProgramModalDSundayCheck = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDSundayCheck")
 const pFromProgramModalDSundayTimeStart = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDSundayTimeStart")
 const pFromProgramModalDSundayTimeEnd = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDSundayTimeEnd")
+const pFromProgramModalDSundayPlace = pFromProgramModalDForm.querySelector("#plansItemFromProgramModalDSundayPlace")
 
 const pFromProgramModalProgList = plansItemFromProgramModal.querySelector("#plansItemFromProgramModalProgList")
 const pFromProgramModalErrors = plansItemFromProgramModal.querySelector("#plansItemFromProgramModalErrors")

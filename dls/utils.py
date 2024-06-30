@@ -20,6 +20,7 @@ def get_menu(user):
         {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Программы обучения', 'url': reverse('learning_programs')},
+            {'name': 'Планы обучения', 'url': reverse('learning_plans')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
@@ -33,6 +34,7 @@ def get_menu(user):
         {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Программы обучения', 'url': reverse('learning_programs')},
+            {'name': 'Планы обучения', 'url': reverse('learning_plans')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]

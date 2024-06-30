@@ -59,7 +59,7 @@ async function plansAddCreate(go = false){
         const formData = new FormData(formNewPlan)
         const planID = planNewSubmitButton.attributes.getNamedItem("data-plan-id").value
         if (planID === "0"){
-            const request = await plansCreate(formData)
+            const request = await plansAPICreate(formData)
             if (request.status === 201){
                 bsOffcanvasNewPlan.hide()
                 await learningPlansMain()
@@ -74,7 +74,7 @@ async function plansAddCreate(go = false){
                 showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
             }
         } else {
-            const request = await plansUpdate(formData, planID)
+            const request = await plansAPIUpdate(formData, planID)
             if (request.status === 200){
                 bsOffcanvasNewPlan.hide()
                 await learningPlansMain()
@@ -93,7 +93,7 @@ async function plansAddCreate(go = false){
 }
 
 async function plansAddDestroy(planID){
-    const request = await plansDestroy(planID)
+    const request = await plansAPIDestroy(planID)
     bsPlansModalDelete.hide()
     if (request.status === 204){
         showToast("Успешно", "План обучения удалён")
