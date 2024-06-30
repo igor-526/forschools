@@ -45,9 +45,9 @@ def get_menu(user):
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
-    if user.groups.filter(name="Listener").exists():
-        return listener_menu
-    if user.groups.filter(name="Teacher").exists():
-        return teacher_menu
     if user.groups.filter(name__in=["Metodist", "Admin"]).exists():
         return admin_menu
+    if user.groups.filter(name="Teacher").exists():
+        return teacher_menu
+    if user.groups.filter(name="Listener").exists():
+        return listener_menu
