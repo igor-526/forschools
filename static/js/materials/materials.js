@@ -41,8 +41,11 @@ async function materialsMain(){
 async function getMaterials(type=currentType, offset=0, name, cat, lvl, typeMat){
     currentType = type
     currentOffset = offset
-    materialsAPIGetAll(type, offset, name,
-        cat, lvl, typeMat,
+    materialsAPIGetAll(type, offset,
+        materialTableFilterNameField.value.toLowerCase(),
+        materialsFilterCatergoriesSelectedArray,
+        materialsFilterLevelsSelectedArray,
+        materialsFilterTypesSelectedArray,
         materialFilterProgramsSelectedProgsArray,
         materialFilterProgramsSelectedPhasesArray,
         materialFilterProgramsSelectedLessonsArray).then(request => {
