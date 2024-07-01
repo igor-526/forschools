@@ -7,6 +7,8 @@ from material.models import File
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework.generics import ListCreateAPIView, ListAPIView
+
+from tgbot.utils import send_homework_tg
 from .models import Homework, HomeworkLog
 from .serializers import HomeworkListSerializer, HomeworkLogSerializer
 from rest_framework import status
@@ -66,6 +68,14 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                                      user=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data,
+                                         context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        hw = serializer.save()
+        send_homework_tg(hw.listener, [hw])
+        return Response(serializer.data, status.HTTP_201_CREATED)
 
 
 class HomeworkItemPage(LoginRequiredMixin, TemplateView):

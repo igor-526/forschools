@@ -32,6 +32,9 @@ async function materialsMain(){
     materialsTabActionsTelegramButton.addEventListener("click", function (){
         materialsTelegramSet(materialsMainSelectedArray)
     })
+    materialsTabActionsToHWButton.addEventListener("click", function (){
+        materialsToHWSet()
+    })
     await materialsSetCategories()
     await materialsSetLevels()
     materialsFilterSetListeners()
@@ -837,5 +840,6 @@ const materialsTabActionsButton = document.querySelector("#materialsTabActionsBu
 const materialsTabActionsTelegramButton = document.querySelector("#materialsTabActionsTelegramButton")
 const materialsTabActionsEditButton = document.querySelector("#materialsTabActionsEditButton")
 const materialsTabActionsDeleteButton = document.querySelector("#materialsTabActionsDeleteButton")
+const materialsTabActionsToHWButton = document.querySelector("#materialsTabActionsToHWButton")
 
 materialsMain()

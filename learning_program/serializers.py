@@ -20,6 +20,8 @@ class LearningProgramHomeworkSerializer(serializers.ModelSerializer):
         materials = request.POST.getlist('materials')
         hw.materials.set(materials)
         hw.save()
+        for material in hw.materials.all():
+            material.set_category(["ДЗ"])
         return hw
 
     def update(self, instance, validated_data):
@@ -27,6 +29,8 @@ class LearningProgramHomeworkSerializer(serializers.ModelSerializer):
         materials = request.POST.getlist('materials')
         instance.materials.set(materials)
         instance.save()
+        for material in instance.materials.all():
+            material.set_category(["ДЗ"])
         return super(LearningProgramHomeworkSerializer, self).update(instance, validated_data)
 
 
