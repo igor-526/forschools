@@ -112,7 +112,7 @@ async function planItemAPIUpdateLesson(fd, lessonID){
 }
 
 async function planItemAPICalculateFromProgram(fd, planID){
-    const params = new URLSearchParams(fd).toString();
+    const params = new URLSearchParams(fd).toString()
     const request = await fetch(`/api/v1/learning_plans/${planID}/setprogram?${params}`)
     return APIGetToObject(request)
 }

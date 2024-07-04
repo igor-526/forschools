@@ -18,42 +18,51 @@ function plansItemReschedulingMain(){
         plansItemReschedulingModalMondayTimeStart.disabled = !plansItemReschedulingModalMondayCheck.checked
         plansItemReschedulingModalMondayTimeEnd.disabled = !plansItemReschedulingModalMondayCheck.checked
         plansItemReschedulingModalMondayPlace.disabled = !plansItemReschedulingModalMondayCheck.checked
+        plansItemReschedulingSetButton("calculate")
     })
     plansItemReschedulingModalTuesdayCheck.addEventListener("change", function () {
         plansItemReschedulingModalTuesdayTimeStart.disabled = !plansItemReschedulingModalTuesdayCheck.checked
         plansItemReschedulingModalTuesdayTimeEnd.disabled = !plansItemReschedulingModalTuesdayCheck.checked
         plansItemReschedulingModalTuesdayPlace.disabled = !plansItemReschedulingModalTuesdayCheck.checked
+        plansItemReschedulingSetButton("calculate")
     })
     plansItemReschedulingModalWednesdayCheck.addEventListener("change", function () {
         plansItemReschedulingModalWednesdayTimeStart.disabled = !plansItemReschedulingModalWednesdayCheck.checked
         plansItemReschedulingModalWednesdayTimeEnd.disabled = !plansItemReschedulingModalWednesdayCheck.checked
         plansItemReschedulingModalWednesdayPlace.disabled = !plansItemReschedulingModalWednesdayCheck.checked
+        plansItemReschedulingSetButton("calculate")
     })
     plansItemReschedulingModalThursdayCheck.addEventListener("change", function () {
         plansItemReschedulingModalThursdayTimeStart.disabled = !plansItemReschedulingModalThursdayCheck.checked
         plansItemReschedulingModalThursdayTimeEnd.disabled = !plansItemReschedulingModalThursdayCheck.checked
         plansItemReschedulingModalThursdayPlace.disabled = !plansItemReschedulingModalThursdayCheck.checked
+        plansItemReschedulingSetButton("calculate")
     })
     plansItemReschedulingModalFridayCheck.addEventListener("change", function () {
         plansItemReschedulingModalFridayTimeStart.disabled = !plansItemReschedulingModalFridayCheck.checked
         plansItemReschedulingModalFridayTimeEnd.disabled = !plansItemReschedulingModalFridayCheck.checked
         plansItemReschedulingModalFridayPlace.disabled = !plansItemReschedulingModalFridayCheck.checked
+        plansItemReschedulingSetButton("calculate")
     })
     plansItemReschedulingModalSaturdayCheck.addEventListener("change", function () {
         plansItemReschedulingModalSaturdayTimeStart.disabled = !plansItemReschedulingModalSaturdayCheck.checked
         plansItemReschedulingModalSaturdayTimeEnd.disabled = !plansItemReschedulingModalSaturdayCheck.checked
         plansItemReschedulingModalSaturdayPlace.disabled = !plansItemReschedulingModalSaturdayCheck.checked
+        plansItemReschedulingSetButton("calculate")
     })
     plansItemReschedulingModalSundayCheck.addEventListener("change", function () {
         plansItemReschedulingModalSundayTimeStart.disabled = !plansItemReschedulingModalSundayCheck.checked
         plansItemReschedulingModalSundayTimeEnd.disabled = !plansItemReschedulingModalSundayCheck.checked
         plansItemReschedulingModalSundayPlace.disabled = !plansItemReschedulingModalSundayCheck.checked
+        plansItemReschedulingSetButton("calculate")
     })
+    plansItemReschedulingModalSetButton.addEventListener("click", plansItemRescheduling)
 }
 
 function plansItemReschedulingSetModal(){
     bsPlansItemReschedulingModal.show()
     plansItemReschedulingModalForm.reset()
+    plansItemReschedulingSetButton("calculate")
     plansItemReschedulingModalMondayTimeStart.disabled = true
     plansItemReschedulingModalMondayTimeEnd.disabled = true
     plansItemReschedulingModalMondayPlace.disabled = true
@@ -76,10 +85,79 @@ function plansItemReschedulingSetModal(){
     plansItemReschedulingModalSundayTimeEnd.disabled = true
     plansItemReschedulingModalSundayPlace.disabled = true
     const lessonID = Number(this.attributes.getNamedItem("data-lesson-reschedule-id").value)
+    plansItemReschedulingModalSetButton.setAttribute("data-lesson-reschedule-id", lessonID)
+}
+
+function plansItemReschedulingSetButton(status="calculate"){
+    switch (status){
+        case "calculate":
+            plansItemReschedulingModalSetButton.setAttribute("data-action", "calculate")
+            plansItemReschedulingModalSetButton.innerHTML = "Рассчитать"
+            plansItemReschedulingModalSetButton.classList.remove("btn-warning")
+            plansItemReschedulingModalSetButton.classList.add("btn-primary")
+            break
+        case "set":
+            plansItemReschedulingModalSetButton.setAttribute("data-action", "set")
+            plansItemReschedulingModalSetButton.innerHTML = "Установить"
+            plansItemReschedulingModalSetButton.classList.add("btn-warning")
+            plansItemReschedulingModalSetButton.classList.remove("btn-primary")
+            break
+    }
 }
 
 function plansItemReschedulingValidation(errors){
+    return true
+}
 
+function plansItemRescheduling(){
+    if (plansItemReschedulingValidation()){
+        const lessonID = plansItemReschedulingModalSetButton.attributes.getNamedItem("data-lesson-reschedule-id").value
+        const fd = new FormData(plansItemReschedulingModalForm)
+        switch (plansItemReschedulingModalSetButton.attributes.getNamedItem("data-action").value){
+            case "calculate":
+                lessonsAPIReschedulingCalculate(lessonID, fd).then(request => {
+                    switch (request.status){
+                        case 200:
+                            plansItemReschedulingModalProgInfoList.innerHTML = `
+                    <li class="list-group">Будет перенесено ${request.response.count} уроков</li>
+                    <li class="list-group">Осталось ${request.response.total_hours} часов обучения</li>
+                    <li class="list-group">Плановая дата окончания ${new Date(request.response.last_date).toLocaleDateString()}</li>
+                    `
+                            plansItemReschedulingSetButton("set")
+                            break
+                        case 400:
+                            plansItemReschedulingValidation(request.response)
+                            break
+                        default:
+                            break
+                    }
+                })
+                break
+            case "set":
+                lessonsAPIReschedulingSet(lessonID, fd).then(request => {
+                    switch (request.status){
+                        case 201:
+                            bsPlansItemReschedulingModal.hide()
+                            showSuccessToast("Расписание успешно изменено")
+                            setTimeout(function () {
+                                location.reload()
+                            }, 500)
+                            break
+                        case 400:
+                            plansItemReschedulingValidation(request.response)
+                            plansItemReschedulingSetButton("calculate")
+                            break
+                        default:
+                            bsPlansItemReschedulingModal.hide()
+                            showErrorToast()
+                            break
+                    }
+                })
+                break
+        }
+
+
+    }
 }
 
 //Bootstrap Elements
@@ -117,5 +195,8 @@ const plansItemReschedulingModalSundayCheck = plansItemReschedulingModalForm.que
 const plansItemReschedulingModalSundayTimeStart = plansItemReschedulingModalForm.querySelector("#plansItemReschedulingModalSundayTimeStart")
 const plansItemReschedulingModalSundayTimeEnd = plansItemReschedulingModalForm.querySelector("#plansItemReschedulingModalSundayTimeEnd")
 const plansItemReschedulingModalSundayPlace = plansItemReschedulingModalForm.querySelector("#plansItemReschedulingModalSundayPlace")
+
+const plansItemReschedulingModalProgInfoList = plansItemReschedulingModal.querySelector("#plansItemReschedulingModalProgInfoList")
+const plansItemReschedulingModalSetButton = plansItemReschedulingModal.querySelector("#plansItemReschedulingModalSetButton")
 
 plansItemReschedulingMain()

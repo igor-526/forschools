@@ -7,7 +7,8 @@ from homework.models import Homework
 
 LESSON_STATUS_CHOICES = (
     (0, 'Не проведён'),
-    (1, 'Проведён')
+    (1, 'Проведён'),
+    (2, 'Отменён')
 )
 
 
@@ -21,6 +22,23 @@ class Place(models.Model):
                           null=False,
                           blank=False,
                           unique=True)
+
+    class Meta:
+        verbose_name = 'Место проведения занятия'
+        verbose_name_plural = 'Места проведения занятий'
+        ordering = ['name']
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def has_lessons(self, date, ts, te):
+        lessons = self.lesson_set.filter(date=date).all()
+        for lesson in lessons:
+            latest_start = max(ts, lesson.start_time)
+            earliest_end = min(te, lesson.end_time)
+            if latest_start < earliest_end:
+                return lesson
+        return None
 
 
 class Lesson(models.Model):

@@ -159,4 +159,3 @@ class PlansItemSetProgram(LoginRequiredMixin, APIView):
             return JsonResponse({"status": "ok"}, status=201)
         else:
             return JsonResponse({"error": "Вы не можете сгенерировать план на основе программы"}, status=400)
-

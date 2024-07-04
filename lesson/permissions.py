@@ -77,7 +77,7 @@ def can_add_homework(request, lesson: Lesson):
 
 
 def can_set_passed(request, lesson: Lesson):
-    if lesson.status == 1:
+    if lesson.status != 0:
         return False
     if not lesson.date or not lesson.start_time or not lesson.end_time:
         return False

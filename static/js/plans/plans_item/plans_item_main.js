@@ -113,8 +113,13 @@ function planItemGetLessonElement(lesson){
     tr.insertAdjacentElement("beforeend", tdTime)
     tr.insertAdjacentElement("beforeend", tdActions)
     tr.setAttribute("data-lesson-id", lesson.id)
-    if (lesson.status === 1){
-        tr.classList.add("table-success")
+    switch (lesson.status){
+        case 1:
+            tr.classList.add("table-success")
+            break
+        case 2:
+            tr.classList.add("table-danger")
+            break
     }
     tdName.innerHTML = lesson.name
     tdDate.innerHTML = date

@@ -8,14 +8,16 @@ from django.db.models import Q
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 from learning_plan.permissions import plans_button
+from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from tgbot.utils import send_homework_tg
-from .models import Lesson
+from .models import Lesson, Place
 from dls.utils import get_menu
 from dls.settings import MATERIAL_FORMATS
 from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
                           can_see_lesson_materials, can_add_homework, can_set_passed)
+from datetime import datetime
 
 
 class LessonPage(LoginRequiredMixin, TemplateView):  # страница занятий
@@ -151,3 +153,128 @@ class UserLessonListAPIView(LoginRequiredMixin, ListAPIView):
     def get_queryset(self, *args, **kwargs):
         userID = self.kwargs.get('pk')
         return Lesson.objects.filter(learningphases__learningplan__listeners__id=userID)
+
+
+class PlansItemRescheduling(LoginRequiredMixin, APIView):
+    def get_lessons(self, *args, **kwargs):
+        lesson_id = kwargs.get('pk')
+        lesson = Lesson.objects.get(pk=lesson_id)
+        phase = lesson.learningphases_set.first()
+        phases = phase.learningplan_set.first().phases.filter(lessons__date__gte=lesson.date).distinct()
+        lessons_set = []
+        for ph in phases:
+            lessons_set += [p for p in ph.lessons.filter(date__gte=lesson.date).distinct()]
+        return lessons_set
+
+    def validate_item_rescheduling(self, request, lesson, *args, **kwargs):
+        errors = ""
+        req_date = request.data.get('date')
+        req_start = request.data.get('start')
+        req_end = request.data.get('end')
+        if not req_date:
+            return {"status": "ok", "errors": "", "warnings": ""}
+        if req_date == "":
+            errors += "<li>Необходимо указать дату занятия, либо выключить ручной выбор даты и времени</li>"
+        else:
+            req_date = datetime.strptime(req_date, "%Y-%m-%d")
+            today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+            if req_date < today:
+                errors += "<li>Дата занятия не может быть раньше, чем сегодня</li>"
+        if req_start is not None and req_start == "":
+            errors += "<li>Необходимо указать время начала занятия, либо выключить ручной выбор даты и времени</li>"
+        if req_end is not None and req_end == "":
+            errors += "<li>Необходимо указать время окончания занятия, либо выключить ручной выбор даты и времени</li>"
+        if req_start is not None and req_end is not None and req_start != "" and req_end != "":
+            req_start = datetime.strptime(req_start, "%H:%M").time()
+            req_end = datetime.strptime(req_end, "%H:%M").time()
+            if req_end <= req_start:
+                errors += "<li>Время окончания занятия не может быть раньше или равным времени началу занятия</li>"
+        if errors:
+            return {"status": "error", "errors": errors, "warnings": ""}
+        warns = ""
+        if not request.data.get("ignore_warnings"):
+            next_lesson = Lesson.objects.filter(date__gt=lesson.date).first()
+            if next_lesson:
+                lesson_et = datetime.combine(req_date, req_end)
+                next_lesson_st = datetime.combine(next_lesson.date, lesson.start_time)
+                if lesson_et > next_lesson_st:
+                    warns += (f'<li>Вы устанавливаете дату и время занятия во время либо после '
+                              f'<a href="/lessons/{next_lesson.id}" target="_blank">следующего занятия</a></li>')
+            place = request.data.get("place")
+            if place != "None":
+                place = Place.objects.get(pk=place)
+                has_lessons = place.has_lessons(req_date, req_start, req_end)
+                if has_lessons:
+                    warns += (f'<li>Данное место проведения будет занято '
+                              f'<a href="/lessons/{has_lessons.id}" target="_blank">следующим занятием</a></li>')
+
+        return {"status": "ok" if not warns and not errors else "error", "warnings": warns, "errors": errors}
+
+    def get(self, request, *args, **kwargs):
+        lesson_id = kwargs.get('pk')
+        try:
+            lesson = Lesson.objects.get(pk=lesson_id)
+        except Lesson.DoesNotExist:
+            return JsonResponse({"error": "Занятие не найдено<br>Обновите страницу и повторите попытку"})
+        return JsonResponse(
+            plan_rescheduling_info(
+                datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
+                get_schedule(request.query_params),
+                lesson
+            ), status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        lessons = self.get_lessons(self, *args, **kwargs)
+        schedule = get_schedule(request.POST)
+        plan = lessons[0].get_learning_plan()
+        plan.schedule = schedule
+        plan.save()
+        rescheduler = Rescheduling(
+            first_date=datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
+            lessons=lessons,
+            schedule=schedule
+        )
+
+        rescheduler.set_lessons_dt()
+        return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            lesson = Lesson.objects.get(pk=kwargs.get("pk"))
+        except Lesson.DoesNotExist:
+            return JsonResponse({'errors': "Занятие не найдено<br>Обновите страницу и повторите попытку"}, status=status.HTTP_400_BAD_REQUEST)
+        validation = self.validate_item_rescheduling(request, lesson, *args, **kwargs)
+        if validation['status'] == "error":
+            return JsonResponse(validation, status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get("action") == 'cancel':
+            if request.data.get("date"):
+                new_lesson = Lesson.objects.create(
+                    name=lesson.name,
+                    start_time=datetime.strptime(request.data.get("start"), "%H:%M").time(),
+                    end_time=datetime.strptime(request.data.get("end"), "%H:%M").time(),
+                    date=datetime.strptime(request.data.get("date"), "%Y-%m-%d"),
+                    description=lesson.description,
+                    replace_teacher=lesson.replace_teacher,
+                    materials_access=lesson.materials_access,
+                    place=lesson.place
+                )
+                new_lesson.materials.set(lesson.materials.all())
+                new_lesson.homeworks.set(lesson.homeworks.all())
+                new_lesson.save()
+                phase = lesson.learningphases_set.first()
+                phase.lessons.add(new_lesson)
+                phase.save()
+                lesson.status = 2
+                lesson.save()
+                return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
+            else:
+                pass
+        else:
+            if request.data.get("date"):
+                lesson.start_time = datetime.strptime(request.data.get("start"), "%H:%M").time()
+                lesson.end_time = datetime.strptime(request.data.get("end"), "%H:%M").time()
+                lesson.date = datetime.strptime(request.data.get("date"), "%Y-%m-%d")
+                lesson.save()
+                return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
+            pass
+        return JsonResponse({'errors': 'Функция в разработке'}, status=status.HTTP_400_BAD_REQUEST)

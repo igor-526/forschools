@@ -351,7 +351,7 @@ async function plansItemFromProgramCalculate(){
                             <li class="list-group-item">Количество уроков: ${request.response.info.lessons}</li>
                             <li class="list-group-item">Количество ДЗ: ${request.response.info.homeworks}</li>
                             <li class="list-group-item">Количество часов: ${request.response.total_hours}</li>
-                            <li class="list-group-item">Плановая дата окончания: ${new Date(request.response.last_date).toLocaleDateString() }</li>
+                            <li class="list-group-item">Плановая дата окончания: ${new Date(request.response.last_date).toLocaleDateString()}</li>
                             `
                         pFromProgramModalSetButton.classList.remove("btn-primary")
                         pFromProgramModalSetButton.classList.add("btn-warning")

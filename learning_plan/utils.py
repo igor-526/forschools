@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, time
 from learning_program.models import LearningProgram
 from learning_plan.models import LearningPlan
+from lesson.models import Lesson, Place
 
 
 def plan_calculated_info(date: datetime, schedule: dict, program: LearningProgram) -> dict:
@@ -30,60 +31,94 @@ def plan_calculated_info(date: datetime, schedule: dict, program: LearningProgra
     }
 
 
+def plan_rescheduling_info(date: datetime, schedule: dict, lesson: Lesson) -> dict:
+    counter = Lesson.objects.filter(date__gte=lesson.date).count()
+    counter2 = counter
+    last_date = None
+    total_hours = 0
+    days = schedule.keys()
+    while counter > 0:
+        if date.weekday() in days:
+            last_date = date
+            st = datetime.strptime(
+                schedule.get(date.weekday()).get("start"),
+                "%H:%M",
+            )
+            et = datetime.strptime(
+                schedule.get(date.weekday()).get("end"),
+                "%H:%M",
+            )
+            total_hours += (et - st).seconds / (60 * 60)
+            counter -= 1
+        date = date + timedelta(days=1)
+    return {
+        "count": counter2,
+        "last_date": last_date,
+        "total_hours": total_hours // 1
+    }
+
+
 def get_schedule(data):
     schedule = {}
     if data.get("monday"):
         schedule[0] = {
             "start": data.get("monday_start"),
-            "end": data.get("monday_end"),
-            "place": data.get("monday_place")
+            "end": data.get("monday_end")
         }
+        place = data.get("monday_place")
+        schedule[0]["place"] = place if place != "None" else None
     if data.get("tuesday"):
         schedule[1] = {
             "start": data.get("tuesday_start"),
-            "end": data.get("tuesday_end"),
-            "place": data.get("tuesday_place")
+            "end": data.get("tuesday_end")
         }
+        place = data.get("tuesday_place")
+        schedule[1]["place"] = place if place != "None" else None
     if data.get("wednesday"):
         schedule[2] = {
             "start": data.get("wednesday_start"),
-            "end": data.get("wednesday_end"),
-            "place": data.get("wednesday_place")
+            "end": data.get("wednesday_end")
         }
+        place = data.get("wednesday_place")
+        schedule[2]["place"] = place if place != "None" else None
     if data.get("thursday"):
         schedule[3] = {
             "start": data.get("thursday_start"),
-            "end": data.get("thursday_end"),
-            "place": data.get("thursday_place")
+            "end": data.get("thursday_end")
         }
+        place = data.get("thursday_place")
+        schedule[3]["place"] = place if place != "None" else None
     if data.get("friday"):
         schedule[4] = {
             "start": data.get("friday_start"),
-            "end": data.get("friday_end"),
-            "place": data.get("friday_place")
+            "end": data.get("friday_end")
         }
+        place = data.get("friday_place")
+        schedule[4]["place"] = place if place != "None" else None
     if data.get("saturday"):
         schedule[5] = {
             "start": data.get("saturday_start"),
-            "end": data.get("saturday_end"),
-            "place": data.get("saturday_place")
+            "end": data.get("saturday_end")
         }
+        place = data.get("saturday_place")
+        schedule[5]["place"] = place if place != "None" else None
     if data.get("sunday"):
         schedule[6] = {
             "start": data.get("sunday_start"),
-            "end": data.get("sunday_end"),
-            "place": data.get("sunday_place")
+            "end": data.get("sunday_end")
         }
+        place = data.get("sunday_place")
+        schedule[6]["place"] = place if place != "None" else None
     return schedule
 
 
 class ProgramSetter:
-    first_date: datetime
     last_date: datetime
     program: LearningProgram
     schedule: dict
 
-    def __init__(self, first_date: datetime,
+    def __init__(self,
+                 first_date: datetime,
                  schedule: dict,
                  program: LearningProgram,
                  plan: LearningPlan):
@@ -166,4 +201,48 @@ class ProgramSetter:
 
 
 class Rescheduling:
-    pass
+    last_date: datetime
+    lessons: list
+    schedule: dict
+
+    def __init__(self,
+                 first_date: datetime,
+                 lessons: list,
+                 schedule: dict):
+        self.last_date = first_date
+        self.schedule = schedule
+        self.lessons = lessons
+
+    def get_next_date(self, show=False) -> dict:
+        ld = self.last_date
+        while ld.weekday() not in self.schedule.keys():
+            ld = ld + timedelta(days=1)
+        else:
+            result = {
+                "date": ld,
+                "start": self.schedule.get(ld.weekday()).get("start"),
+                "end": self.schedule.get(ld.weekday()).get("end"),
+            }
+            if not show:
+                self.last_date = ld + timedelta(days=1)
+            return result
+
+    def set_hw_deadline(self, homeworks, date):
+        for hw in homeworks:
+            hw.deadline = date
+            hw.save()
+
+    def set_lessons_dt(self):
+        for lesson in self.lessons:
+            new_dt = self.get_next_date(False)
+            hw_date = self.get_next_date(True)['date']
+            lesson.date = new_dt['date']
+            lesson.start_time = new_dt['start']
+            lesson.end_time = new_dt['end']
+            place_id = self.schedule[new_dt['date'].weekday()]["place"]
+            if place_id:
+                lesson.place = Place.objects.get(pk=place_id)
+            else:
+                lesson.place = None
+            lesson.save()
+            self.set_hw_deadline(lesson.homeworks.all(), hw_date)

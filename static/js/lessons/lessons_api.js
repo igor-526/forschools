@@ -59,3 +59,33 @@ async function lessonsAPISetStatus(lessonID, fd){
     })
     return await APIPostPatchToObject(request)
 }
+
+async function lessonsAPIReschedulingCalculate(lessonID, fd){
+    const params = new URLSearchParams(fd).toString()
+    const request = await fetch(`/api/v1/lessons/${lessonID}/rescheduling?${params}`)
+    return await APIGetToObject(request)
+}
+
+async function lessonsAPIReschedulingSet(lessonID, fd){
+    const request = await fetch(`/api/v1/lessons/${lessonID}/rescheduling/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return await APIPostPatchToObject(request)
+}
+
+async function lessonsAPIReschedulingCancel(lessonID, fd){
+    const request = await fetch(`/api/v1/lessons/${lessonID}/rescheduling/`, {
+        method: "PATCH",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return await APIPostPatchToObject(request)
+}

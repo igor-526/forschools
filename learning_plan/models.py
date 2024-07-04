@@ -40,6 +40,9 @@ class LearningPhases(models.Model):
         verbose_name_plural = 'Этапы плана обучения'
         ordering = ['pk']
 
+    def __str__(self):
+        return self.name
+
 
 class LearningPlan(models.Model):
     name = models.CharField(verbose_name="Наименование",
