@@ -210,18 +210,23 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
 
         return {"status": "ok" if not warns and not errors else "error", "warnings": warns, "errors": errors}
 
+    def validate_plan_rescheduling(self, params, *args, **kwargs):
+        print(params)
+
     def get(self, request, *args, **kwargs):
         lesson_id = kwargs.get('pk')
         try:
             lesson = Lesson.objects.get(pk=lesson_id)
         except Lesson.DoesNotExist:
-            return JsonResponse({"error": "Занятие не найдено<br>Обновите страницу и повторите попытку"})
-        return JsonResponse(
-            plan_rescheduling_info(
-                datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
-                get_schedule(request.query_params),
-                lesson
-            ), status=status.HTTP_200_OK)
+            return JsonResponse({"errors": "Занятие не найдено<br>Обновите страницу и повторите попытку"})
+        self.validate_plan_rescheduling(request.query_params, *args, **kwargs)
+        return JsonResponse({"errors": "test", "warnings": "test"}, status=status.HTTP_400_BAD_REQUEST)
+        # return JsonResponse(
+        #     plan_rescheduling_info(
+        #         datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
+        #         get_schedule(request.query_params),
+        #         lesson
+        #     ), status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         lessons = self.get_lessons(self, *args, **kwargs)

@@ -61,31 +61,56 @@ function plansItemReschedulingMain(){
 
 function plansItemReschedulingSetModal(){
     bsPlansItemReschedulingModal.show()
-    plansItemReschedulingModalForm.reset()
-    plansItemReschedulingSetButton("calculate")
-    plansItemReschedulingModalMondayTimeStart.disabled = true
-    plansItemReschedulingModalMondayTimeEnd.disabled = true
-    plansItemReschedulingModalMondayPlace.disabled = true
-    plansItemReschedulingModalTuesdayTimeStart.disabled = true
-    plansItemReschedulingModalTuesdayTimeEnd.disabled = true
-    plansItemReschedulingModalTuesdayPlace.disabled = true
-    plansItemReschedulingModalWednesdayTimeStart.disabled = true
-    plansItemReschedulingModalWednesdayTimeEnd.disabled = true
-    plansItemReschedulingModalWednesdayPlace.disabled = true
-    plansItemReschedulingModalThursdayTimeStart.disabled = true
-    plansItemReschedulingModalThursdayTimeEnd.disabled = true
-    plansItemReschedulingModalThursdayPlace.disabled = true
-    plansItemReschedulingModalFridayTimeStart.disabled = true
-    plansItemReschedulingModalFridayTimeEnd.disabled = true
-    plansItemReschedulingModalFridayPlace.disabled = true
-    plansItemReschedulingModalSaturdayTimeStart.disabled = true
-    plansItemReschedulingModalSaturdayTimeEnd.disabled = true
-    plansItemReschedulingModalSaturdayPlace.disabled = true
-    plansItemReschedulingModalSundayTimeStart.disabled = true
-    plansItemReschedulingModalSundayTimeEnd.disabled = true
-    plansItemReschedulingModalSundayPlace.disabled = true
+    plansItemReschedulingReset()
     const lessonID = Number(this.attributes.getNamedItem("data-lesson-reschedule-id").value)
     plansItemReschedulingModalSetButton.setAttribute("data-lesson-reschedule-id", lessonID)
+}
+
+function plansItemReschedulingReset(validationOnly = false){
+    if (!validationOnly){
+        plansItemReschedulingModalForm.reset()
+        plansItemReschedulingSetButton("calculate")
+        plansItemReschedulingModalMondayTimeStart.disabled = true
+        plansItemReschedulingModalMondayTimeEnd.disabled = true
+        plansItemReschedulingModalMondayPlace.disabled = true
+        plansItemReschedulingModalTuesdayTimeStart.disabled = true
+        plansItemReschedulingModalTuesdayTimeEnd.disabled = true
+        plansItemReschedulingModalTuesdayPlace.disabled = true
+        plansItemReschedulingModalWednesdayTimeStart.disabled = true
+        plansItemReschedulingModalWednesdayTimeEnd.disabled = true
+        plansItemReschedulingModalWednesdayPlace.disabled = true
+        plansItemReschedulingModalThursdayTimeStart.disabled = true
+        plansItemReschedulingModalThursdayTimeEnd.disabled = true
+        plansItemReschedulingModalThursdayPlace.disabled = true
+        plansItemReschedulingModalFridayTimeStart.disabled = true
+        plansItemReschedulingModalFridayTimeEnd.disabled = true
+        plansItemReschedulingModalFridayPlace.disabled = true
+        plansItemReschedulingModalSaturdayTimeStart.disabled = true
+        plansItemReschedulingModalSaturdayTimeEnd.disabled = true
+        plansItemReschedulingModalSaturdayPlace.disabled = true
+        plansItemReschedulingModalSundayTimeStart.disabled = true
+        plansItemReschedulingModalSundayTimeEnd.disabled = true
+        plansItemReschedulingModalSundayPlace.disabled = true
+    }
+    plansItemFromProgramModalErrorsAlert.classList.add("d-none")
+    plansItemFromProgramModalWarningsAlert.classList.add("d-none")
+    plansItemFromProgramModalErrors.innerHTML = ""
+    plansItemFromProgramModalWarnings.innerHTML = ""
+    plansItemReschedulingModalDate.classList.remove("is-invalid")
+    plansItemReschedulingModalMondayTimeStart.classList.remove("is-invalid")
+    plansItemReschedulingModalMondayTimeEnd.classList.remove("is-invalid")
+    plansItemReschedulingModalTuesdayTimeStart.classList.remove("is-invalid")
+    plansItemReschedulingModalTuesdayTimeEnd.classList.remove("is-invalid")
+    plansItemReschedulingModalWednesdayTimeStart.classList.remove("is-invalid")
+    plansItemReschedulingModalWednesdayTimeEnd.classList.remove("is-invalid")
+    plansItemReschedulingModalThursdayTimeStart.classList.remove("is-invalid")
+    plansItemReschedulingModalThursdayTimeEnd.classList.remove("is-invalid")
+    plansItemReschedulingModalFridayTimeStart.classList.remove("is-invalid")
+    plansItemReschedulingModalFridayTimeEnd.classList.remove("is-invalid")
+    plansItemReschedulingModalSaturdayTimeStart.classList.remove("is-invalid")
+    plansItemReschedulingModalSaturdayTimeEnd.classList.remove("is-invalid")
+    plansItemReschedulingModalSundayTimeStart.classList.remove("is-invalid")
+    plansItemReschedulingModalSundayTimeEnd.classList.remove("is-invalid")
 }
 
 function plansItemReschedulingSetButton(status="calculate"){
@@ -106,13 +131,315 @@ function plansItemReschedulingSetButton(status="calculate"){
 }
 
 function plansItemReschedulingValidation(errors){
+    function setInvalid (errorMsg, elements=[]){
+        plansItemFromProgramModalErrorsAlert.classList.remove("d-none")
+        plansItemFromProgramModalErrors.insertAdjacentHTML("beforeend", `
+        <li>${errorMsg}</li>`)
+        elements.forEach(element => {
+            element.classList.add("is-invalid")
+        })
+        validationStatus = false
+    }
+
+    function validateStartDate(){
+        if (plansItemReschedulingModalDate.value === ""){
+            setInvalid(
+                "Необходимо указать начальную дату продолжения обучения",
+                [plansItemReschedulingModalDate]
+            )
+            return
+        }
+        const date = new Date(plansItemReschedulingModalDate.value).setUTCHours(0, 0, 0, 0)
+        const today = new Date().setUTCHours(0, 0, 0, 0)
+        if (today > date){
+            setInvalid(
+                "Дата продолжения обучения не может быть ранее, чем сегодня",
+                [plansItemReschedulingModalDate]
+            )
+        }
+    }
+
+    function validateDays() {
+        if (
+            !plansItemReschedulingModalMondayCheck.checked &&
+            !plansItemReschedulingModalTuesdayCheck.checked &&
+            !plansItemReschedulingModalWednesdayCheck.checked &&
+            !plansItemReschedulingModalThursdayCheck.checked &&
+            !plansItemReschedulingModalFridayCheck.checked &&
+            !plansItemReschedulingModalSaturdayCheck.checked &&
+            !plansItemReschedulingModalSundayCheck.checked
+        ){
+            setInvalid("Необходимо выбрать хотя бы один день")
+        }
+    }
+
+    function validateMonday(){
+        if (plansItemReschedulingModalMondayCheck.checked){
+            if (plansItemReschedulingModalMondayTimeStart.value === ""){
+                setInvalid(
+                    "ПН: необходимо указать время начала занятия",
+                    [plansItemReschedulingModalMondayTimeStart]
+                )
+            }
+            if (plansItemReschedulingModalMondayTimeEnd.value === ""){
+                setInvalid(
+                    "ПН: необходимо указать время окончания занятия",
+                    [plansItemReschedulingModalMondayTimeEnd]
+                )
+            }
+            if (plansItemReschedulingModalMondayTimeStart.value !== "" ||
+                plansItemReschedulingModalMondayTimeEnd.value !== ""){
+                if (compareTime(
+                    plansItemReschedulingModalMondayTimeStart,
+                    plansItemReschedulingModalMondayTimeEnd
+                )){
+                    setInvalid(
+                        "ПН: время окончания занятия не может быть раньше времени начала",
+                        [plansItemReschedulingModalMondayTimeStart,
+                            plansItemReschedulingModalMondayTimeEnd]
+                    )
+                }
+            }
+        }
+    }
+
+    function validateTuesday(){
+        if (plansItemReschedulingModalTuesdayCheck.checked){
+            if (plansItemReschedulingModalTuesdayTimeStart.value === ""){
+                setInvalid(
+                    "ВТ: необходимо указать время начала занятия",
+                    [plansItemReschedulingModalTuesdayTimeStart]
+                )
+            }
+            if (plansItemReschedulingModalTuesdayTimeEnd.value === ""){
+                setInvalid(
+                    "ВТ: необходимо указать время окончания занятия",
+                    [plansItemReschedulingModalTuesdayTimeEnd]
+                )
+            }
+            if (plansItemReschedulingModalTuesdayTimeStart.value !== "" ||
+                plansItemReschedulingModalTuesdayTimeEnd.value !== ""){
+                if (compareTime(
+                    plansItemReschedulingModalTuesdayTimeStart,
+                    plansItemReschedulingModalTuesdayTimeEnd
+                )){
+                    setInvalid(
+                        "ВТ: время окончания занятия не может быть раньше времени начала",
+                        [plansItemReschedulingModalMondayTimeStart,
+                            plansItemReschedulingModalTuesdayTimeEnd]
+                    )
+                }
+            }
+        }
+    }
+
+    function validateWednesday(){
+        if (plansItemReschedulingModalWednesdayCheck.checked){
+            if (plansItemReschedulingModalWednesdayTimeStart.value === ""){
+                setInvalid(
+                    "СР: необходимо указать время начала занятия",
+                    [plansItemReschedulingModalWednesdayTimeStart]
+                )
+            }
+            if (plansItemReschedulingModalWednesdayTimeEnd.value === ""){
+                setInvalid(
+                    "СР: необходимо указать время окончания занятия",
+                    [plansItemReschedulingModalWednesdayTimeEnd]
+                )
+            }
+            if (plansItemReschedulingModalWednesdayTimeStart.value !== "" ||
+                plansItemReschedulingModalWednesdayTimeEnd.value !== ""){
+                if (compareTime(
+                    plansItemReschedulingModalWednesdayTimeStart,
+                    plansItemReschedulingModalWednesdayTimeEnd
+                )){
+                    setInvalid(
+                        "СР: время окончания занятия не может быть раньше времени начала",
+                        [plansItemReschedulingModalWednesdayTimeStart,
+                            plansItemReschedulingModalWednesdayTimeEnd]
+                    )
+                }
+            }
+        }
+    }
+
+    function validateThursday(){
+        if (plansItemReschedulingModalThursdayCheck.checked){
+            if (plansItemReschedulingModalThursdayTimeStart.value === ""){
+                setInvalid(
+                    "ЧТ: необходимо указать время начала занятия",
+                    [plansItemReschedulingModalThursdayTimeStart]
+                )
+            }
+            if (plansItemReschedulingModalThursdayTimeEnd.value === ""){
+                setInvalid(
+                    "ЧТ: необходимо указать время окончания занятия",
+                    [plansItemReschedulingModalThursdayTimeEnd]
+                )
+            }
+            if (plansItemReschedulingModalThursdayTimeStart.value !== "" ||
+                plansItemReschedulingModalThursdayTimeEnd.value !== ""){
+                if (compareTime(
+                    plansItemReschedulingModalThursdayTimeStart,
+                    plansItemReschedulingModalThursdayTimeEnd
+                )){
+                    setInvalid(
+                        "ЧТ: время окончания занятия не может быть раньше времени начала",
+                        [plansItemReschedulingModalThursdayTimeStart,
+                            plansItemReschedulingModalThursdayTimeEnd]
+                    )
+                }
+            }
+        }
+    }
+
+    function validateFriday(){
+        if (plansItemReschedulingModalFridayCheck.checked){
+            if (plansItemReschedulingModalFridayTimeStart.value === ""){
+                setInvalid(
+                    "ПТ: необходимо указать время начала занятия",
+                    [plansItemReschedulingModalFridayTimeStart]
+                )
+            }
+            if (plansItemReschedulingModalFridayTimeEnd.value === ""){
+                setInvalid(
+                    "ПТ: необходимо указать время окончания занятия",
+                    [plansItemReschedulingModalFridayTimeEnd]
+                )
+            }
+            if (plansItemReschedulingModalFridayTimeStart.value !== "" ||
+                plansItemReschedulingModalFridayTimeEnd.value !== ""){
+                if (compareTime(
+                    plansItemReschedulingModalFridayTimeStart,
+                    plansItemReschedulingModalFridayTimeEnd
+                )){
+                    setInvalid(
+                        "ПТ: время окончания занятия не может быть раньше времени начала",
+                        [plansItemReschedulingModalFridayTimeStart,
+                            plansItemReschedulingModalFridayTimeEnd]
+                    )
+                }
+            }
+        }
+    }
+
+    function validateSaturday(){
+        if (plansItemReschedulingModalSaturdayCheck.checked){
+            if (plansItemReschedulingModalSaturdayTimeStart.value === ""){
+                setInvalid(
+                    "СБ: необходимо указать время начала занятия",
+                    [plansItemReschedulingModalSaturdayTimeStart]
+                )
+            }
+            if (plansItemReschedulingModalSaturdayTimeEnd.value === ""){
+                setInvalid(
+                    "СБ: необходимо указать время окончания занятия",
+                    [plansItemReschedulingModalSaturdayTimeEnd]
+                )
+            }
+            if (plansItemReschedulingModalSaturdayTimeStart.value !== "" ||
+                plansItemReschedulingModalSaturdayTimeEnd.value !== ""){
+                if (compareTime(
+                    plansItemReschedulingModalSaturdayTimeStart,
+                    plansItemReschedulingModalSaturdayTimeEnd
+                )){
+                    setInvalid(
+                        "СБ: время окончания занятия не может быть раньше времени начала",
+                        [plansItemReschedulingModalSaturdayTimeStart,
+                            plansItemReschedulingModalSaturdayTimeEnd]
+                    )
+                }
+            }
+        }
+    }
+
+    function validateSunday(){
+        if (plansItemReschedulingModalSundayCheck.checked){
+            if (plansItemReschedulingModalSundayTimeStart.value === ""){
+                setInvalid(
+                    "ВС: необходимо указать время начала занятия",
+                    [plansItemReschedulingModalSundayTimeStart]
+                )
+            }
+            if (plansItemReschedulingModalSundayTimeEnd.value === ""){
+                setInvalid(
+                    "ВС: необходимо указать время окончания занятия",
+                    [plansItemReschedulingModalSundayTimeEnd]
+                )
+            }
+            if (plansItemReschedulingModalSundayTimeStart.value !== "" ||
+                plansItemReschedulingModalSundayTimeEnd.value !== ""){
+                if (compareTime(
+                    plansItemReschedulingModalSundayTimeStart,
+                    plansItemReschedulingModalSundayTimeEnd
+                )){
+                    setInvalid(
+                        "ВС: время окончания занятия не может быть раньше времени начала",
+                        [plansItemReschedulingModalSundayTimeStart,
+                            plansItemReschedulingModalSundayTimeEnd]
+                    )
+                }
+            }
+        }
+    }
+
+    let validationStatus = true
+    plansItemReschedulingReset(true)
+    console.log(errors)
+    if (errors){
+        if (errors.errors){
+            plansItemFromProgramModalErrorsAlert.classList.remove("d-none")
+            plansItemFromProgramModalErrors.innerHTML = errors.errors
+        }
+        if (errors.warnings){
+            plansItemFromProgramModalWarningsAlert.classList.remove("d-none")
+            plansItemFromProgramModalWarnings.innerHTML = errors.warnings
+        }
+    } else {
+        validateStartDate()
+        validateDays()
+        validateMonday()
+        validateTuesday()
+        validateWednesday()
+        validateThursday()
+        validateFriday()
+        validateSaturday()
+        validateSunday()
+    }
     return true
+    // return validationStatus
 }
 
 function plansItemRescheduling(){
+    function getFormData(){
+        const fd = new FormData(plansItemReschedulingModalForm)
+        if (fd.has("monday_place") && fd.get("monday_place") === "None"){
+            fd.delete("monday_place")
+        }
+        if (fd.has("tuesday_place") && fd.get("tuesday_place") === "None"){
+            fd.delete("tuesday_place")
+        }
+        if (fd.has("wednesday_place") && fd.get("wednesday_place") === "None"){
+            fd.delete("wednesday_place")
+        }
+        if (fd.has("thursday_place") && fd.get("thursday_place") === "None"){
+            fd.delete("thursday_place")
+        }
+        if (fd.has("friday_place") && fd.get("friday_place") === "None"){
+            fd.delete("friday_place")
+        }
+        if (fd.has("saturday_place") && fd.get("saturday_place") === "None"){
+            fd.delete("saturday_place")
+        }
+        if (fd.has("sunday_place") && fd.get("sunday_place") === "None"){
+            fd.delete("sunday_place")
+        }
+        return fd
+    }
+
     if (plansItemReschedulingValidation()){
         const lessonID = plansItemReschedulingModalSetButton.attributes.getNamedItem("data-lesson-reschedule-id").value
-        const fd = new FormData(plansItemReschedulingModalForm)
+        const fd = getFormData()
         switch (plansItemReschedulingModalSetButton.attributes.getNamedItem("data-action").value){
             case "calculate":
                 lessonsAPIReschedulingCalculate(lessonID, fd).then(request => {
@@ -123,9 +450,11 @@ function plansItemRescheduling(){
                     <li class="list-group">Осталось ${request.response.total_hours} часов обучения</li>
                     <li class="list-group">Плановая дата окончания ${new Date(request.response.last_date).toLocaleDateString()}</li>
                     `
-                            plansItemReschedulingSetButton("set")
+                            // plansItemReschedulingSetButton("set")
                             break
                         case 400:
+                            console.log("psfiok'gaeriiogarei")
+                            console.log(request.response)
                             plansItemReschedulingValidation(request.response)
                             break
                         default:
@@ -195,6 +524,12 @@ const plansItemReschedulingModalSundayCheck = plansItemReschedulingModalForm.que
 const plansItemReschedulingModalSundayTimeStart = plansItemReschedulingModalForm.querySelector("#plansItemReschedulingModalSundayTimeStart")
 const plansItemReschedulingModalSundayTimeEnd = plansItemReschedulingModalForm.querySelector("#plansItemReschedulingModalSundayTimeEnd")
 const plansItemReschedulingModalSundayPlace = plansItemReschedulingModalForm.querySelector("#plansItemReschedulingModalSundayPlace")
+
+//Alerts
+const plansItemFromProgramModalErrorsAlert = plansItemReschedulingModal.querySelector("#plansItemFromProgramModalErrorsAlert")
+const plansItemFromProgramModalErrors = plansItemReschedulingModal.querySelector("#plansItemFromProgramModalErrors")
+const plansItemFromProgramModalWarningsAlert = plansItemReschedulingModal.querySelector("#plansItemFromProgramModalWarningsAlert")
+const plansItemFromProgramModalWarnings = plansItemReschedulingModal.querySelector("#plansItemFromProgramModalWarnings")
 
 const plansItemReschedulingModalProgInfoList = plansItemReschedulingModal.querySelector("#plansItemReschedulingModalProgInfoList")
 const plansItemReschedulingModalSetButton = plansItemReschedulingModal.querySelector("#plansItemReschedulingModalSetButton")
