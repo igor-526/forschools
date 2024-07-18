@@ -1,10 +1,13 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.material import (MaterialCategoryCallback,
                                                 MaterialTypeCallback,
                                                 MaterialItemCallback,
                                                 MaterialLevelCallback,
-                                                MaterialItemSendTgCallback)
+                                                MaterialItemSendTgCallback,
+                                                MaterialListActionCallback,
+                                                MaterialListUserNavigationCallback,
+                                                MaterialListHomeworkNavigationCallback)
 
 
 def get_keyboard_materials(add_mat=False) -> ReplyKeyboardMarkup:
@@ -77,15 +80,75 @@ def get_keyboard_types() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_keyboard_query(materials: list) -> InlineKeyboardMarkup:
+def get_keyboard_query_user(materials: list, user_id: int, current_page=1, next_button=False) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    adjust_grid = [1]
     for mat in materials:
         builder.button(
             text=mat.get("name"),
             callback_data=MaterialItemCallback(mat_id=mat.get("id"),
                                                action="show")
         )
-    builder.adjust(1)
+        adjust_grid.append(1)
+    if current_page > 1:
+        builder.button(
+            text="<",
+            callback_data=MaterialListUserNavigationCallback(
+                page=current_page-1,
+                user_id=user_id
+            )
+        )
+        adjust_grid[-1] += 1
+    builder.button(
+        text="X",
+        callback_data=MaterialListActionCallback(action="delete")
+    )
+    if next_button:
+        builder.button(
+            text=">",
+            callback_data=MaterialListUserNavigationCallback(
+                page=current_page+1,
+                user_id=user_id
+            )
+        )
+        adjust_grid[-1] += 1
+    builder.adjust(*adjust_grid)
+    return builder.as_markup()
+
+
+def get_keyboard_query_hw(materials: list, hw_id: int, current_page=1, next_button=False) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    adjust_grid = [1]
+    for mat in materials:
+        builder.button(
+            text=mat.get("name"),
+            callback_data=MaterialItemCallback(mat_id=mat.get("id"),
+                                               action="show")
+        )
+        adjust_grid.append(1)
+    if current_page > 1:
+        builder.button(
+            text="<",
+            callback_data=MaterialListHomeworkNavigationCallback(
+                page=current_page-1,
+                hw_id=hw_id
+            )
+        )
+        adjust_grid[-1] += 1
+    builder.button(
+        text="X",
+        callback_data=MaterialListActionCallback(action="delete")
+    )
+    if next_button:
+        builder.button(
+            text=">",
+            callback_data=MaterialListHomeworkNavigationCallback(
+                page=current_page+1,
+                hw_id=hw_id
+            )
+        )
+        adjust_grid[-1] += 1
+    builder.adjust(*adjust_grid)
     return builder.as_markup()
 
 

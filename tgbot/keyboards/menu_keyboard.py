@@ -2,5 +2,22 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 materials_button = KeyboardButton(text="Материалы")
 hw_button = KeyboardButton(text="Домашние задания")
+lessons_button = KeyboardButton(text="Занятия")
+settings_button = KeyboardButton(text="Настройки")
 
 menu_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[materials_button], [hw_button]])
+
+
+def get_menu_keyboard(materials=False, homeworks=False, lessons=False):
+    keys = []
+    if materials:
+        keys.append([materials_button])
+    if homeworks:
+        keys.append([hw_button])
+    if lessons:
+        keys.append([lessons_button])
+    keys.append([settings_button])
+    return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=keys)
+
+
+

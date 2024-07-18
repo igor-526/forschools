@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery
 from django.db.models import Q
 
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
-from tgbot.keyboards.materials import get_keyboard_query
+from tgbot.keyboards.materials import get_keyboard_query_user
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons)
 from tgbot.keyboards.default import ready_cancel_keyboard, cancel_keyboard
@@ -110,19 +110,6 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
     if hw_status.status == 1 and gp['groups'] == 'Listener':
         await hw.aopen()
     await show_log_item(callback, hw_status.id)
-
-
-async def show_materials(callback: CallbackQuery, callback_data: HomeworkCallback):
-    hw = await (Homework.objects.select_related("listener")
-                .select_related("teacher")
-                .aget(pk=callback_data.hw_id))
-    materials = [{
-        'id': mat.id,
-        'name': mat.name
-    } async for mat in hw.materials.all()]
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text=f"Материалы к домашнему заданию: <b>{hw.name}</b>:",
-                           reply_markup=get_keyboard_query(materials))
 
 
 async def show_logs(callback: CallbackQuery, callback_data: HomeworkCallback):

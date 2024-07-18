@@ -1,6 +1,6 @@
 from aiogram.types import CallbackQuery, FSInputFile
 from django.db.models import Q
-
+from material.utils.get_for_listener import aget_materials_for_listener, aget_materials_for_listener_next
 from material.models import Material, MaterialCategory, MaterialLevel
 from profile_management.models import Telegram
 from tgbot.create_bot import bot
@@ -11,14 +11,15 @@ from aiogram import types
 from tgbot.keyboards.materials import (get_keyboard_materials,
                                        get_keyboard_categories,
                                        get_keyboard_types,
-                                       get_keyboard_query,
+                                       get_keyboard_query_user,
                                        get_keyboard_levels,
                                        get_keyboard_material_item,
                                        get_keyboard_tg_users,
-                                       get_show_key)
+                                       get_show_key, get_keyboard_query_hw)
 from tgbot.keyboards.default import cancel_keyboard
 from tgbot.finite_states.materials import MaterialFSM
 from material.utils.get_type import get_type
+from homework.models import Homework
 
 
 def generate_material_message(material: Material) -> str:
@@ -127,7 +128,9 @@ async def send_material_query(callback: CallbackQuery, state: FSMContext, materi
             materials += [_ async for _ in Material.objects.filter(type=2)]
         dicted_materials = await filter_materials(materials, state)
         await callback.message.edit_text(text="Вот что удалось найти:",
-                                         reply_markup=get_keyboard_query(dicted_materials))
+                                         reply_markup=get_keyboard_query_user(dicted_materials))
+    else:
+        pass
 
 
 async def send_categories(message: types.Message):
@@ -147,17 +150,50 @@ async def send_types(callback: CallbackQuery):
                                      reply_markup=get_keyboard_types())
 
 
-async def get_materials(message: types.Message, state: FSMContext):
+async def navigate_user_materials(callback: CallbackQuery, state: FSMContext, user_id, page):
+    perms = await get_group_and_perms(user_id)
+    if 'Listener' in perms.get('groups'):
+        materials = await aget_materials_for_listener(user_id, page)
+        next_materials = await aget_materials_for_listener_next(user_id, page)
+        dicted_materials = await filter_materials(materials, state)
+        await callback.message.edit_text(text="Вам доступны следующие материалы:",
+                                         reply_markup=get_keyboard_query_user(
+                                             dicted_materials,
+                                             user_id,
+                                             page,
+                                             next_materials))
+
+
+async def get_user_materials(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
     perms = await get_group_and_perms(user.id)
     button_add = 'material.add_general' in perms['permissions']
-    if perms['group'] == 'Listener':
-        pass
+    if 'Listener' in perms.get('groups'):
+        materials = await aget_materials_for_listener(user.id, 1)
+        next_materials = await aget_materials_for_listener_next(user.id, 1)
+        dicted_materials = await filter_materials(materials, state)
+        await message.delete()
+        await message.answer(text="Вам доступны следующие материалы:",
+                             reply_markup=get_keyboard_query_user(dicted_materials, user.id, 1, next_materials))
     else:
         await message.answer("Выберите категорию или напишите фразу для поиска:",
-                             reply_markup=get_keyboard_materials(add_mat=button_add))
+                             reply_markup=get_keyboard_materials(add_mat=False))
         await state.set_state(MaterialFSM.material_search)
         await send_categories(message)
+
+
+async def get_hw_materials(callback: CallbackQuery, state: FSMContext, hw_id: int, page=1, edit=False):
+    hw = await Homework.objects.select_related("listener").select_related("teacher").aget(id=hw_id)
+    materials = [mat async for mat in hw.materials.all()[(page - 1) * 9:page * 9]]
+    next_materials = await hw.materials.acount() > page * 9
+    dicted_materials = await filter_materials(materials, state)
+    if edit:
+        await callback.message.edit_text(text="К ДЗ прикреплены следующие материалы:",
+                                         reply_markup=get_keyboard_query_hw(dicted_materials, hw.id, page, next_materials))
+    else:
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text="К ДЗ прикреплены следующие материалы:",
+                               reply_markup=get_keyboard_query_hw(dicted_materials, hw.id, page, next_materials))
 
 
 async def add_material_message(message: types.Message, state: FSMContext) -> None:
@@ -202,4 +238,4 @@ async def search_materials(message: types.Message, state: FSMContext) -> None:
     await message.delete()
     dicted_materials = await filter_materials(query, state)
     await message.answer(text=f"Вот что удалось найти по запросу '{message.text}'",
-                         reply_markup=get_keyboard_query(dicted_materials))
+                         reply_markup=get_keyboard_query_user(dicted_materials))
