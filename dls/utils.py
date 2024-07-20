@@ -18,9 +18,11 @@ def get_menu(user):
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
-            {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Программы обучения', 'url': reverse('learning_programs')},
             {'name': 'Планы обучения', 'url': reverse('learning_plans')},
+        ]},
+        {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
+            {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
@@ -32,9 +34,11 @@ def get_menu(user):
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
-            {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Программы обучения', 'url': reverse('learning_programs')},
             {'name': 'Планы обучения', 'url': reverse('learning_plans')},
+        ]},
+        {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
+            {'name': 'Управление пользователями', 'url': reverse('admin_users')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]

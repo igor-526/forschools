@@ -93,3 +93,9 @@ def can_set_passed(request, lesson: Lesson):
         replace_teacher = lesson.replace_teacher == request.user
         return teacher or replace_teacher
     return False
+
+
+def can_set_not_held(request, lesson: Lesson):
+    if lesson.status == 0:
+        return False
+    return request.user.groups.filter(name="Admin").exists()

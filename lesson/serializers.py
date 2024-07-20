@@ -9,6 +9,7 @@ from data_collections.serializers import PlaceSerializer
 from lesson.models import Place
 from learning_plan.models import LearningPhases
 from learning_plan.permissions import can_edit_plan
+from .permissions import can_set_not_held
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -16,10 +17,18 @@ class LessonSerializer(serializers.ModelSerializer):
     materials = MaterialListSerializer(many=True, required=False)
     homeworks = HomeworkListSerializer(many=True, required=False)
     place = PlaceSerializer()
+    deletable = serializers.SerializerMethodField(read_only=True)
+    can_set_not_held = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Lesson
         fields = "__all__"
+
+    def get_deletable(self, obj):
+        return obj.status == 0
+
+    def get_can_set_not_held(self, obj):
+        return can_set_not_held(self.context.get('request'), obj)
 
     def update(self, instance, validated_data):
         place = self.context.get('request').POST.get("place")
@@ -40,6 +49,7 @@ class LessonSerializer(serializers.ModelSerializer):
 class LessonListSerializer(serializers.ModelSerializer):
     place = PlaceSerializer(required=False)
     deletable = serializers.SerializerMethodField(read_only=True)
+    can_set_not_held = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Lesson
@@ -47,6 +57,9 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     def get_deletable(self, obj):
         return obj.status == 0
+
+    def get_can_set_not_held(self, obj):
+        return can_set_not_held(self.context.get('request'), obj)
 
     def create(self, validated_data):
         lesson = Lesson.objects.create(**validated_data)

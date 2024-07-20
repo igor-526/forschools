@@ -16,7 +16,7 @@ from dls.settings import MATERIAL_FORMATS
 from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
-                          can_see_lesson_materials, can_add_homework, can_set_passed)
+                          can_see_lesson_materials, can_add_homework, can_set_passed, can_set_not_held)
 from datetime import datetime
 
 
@@ -125,7 +125,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         except Lesson.DoesNotExist:
-            return JsonResponse({'error': "Урок не найден"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': "Занятие не найдено"}, status=status.HTTP_400_BAD_REQUEST)
         if lesson.status == 0:
             if can_set_passed(request, lesson):
                 note_teacher = request.POST.get('note_teacher').strip("")
@@ -141,10 +141,29 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                     send_homework_tg(listener, homeworks)
                 return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
-                return JsonResponse({'error': "Недостаточно прав для изменения статуса урока"},
+                return JsonResponse({'error': "Недостаточно прав для изменения статуса занятия"},
                                     status=status.HTTP_400_BAD_REQUEST)
         else:
-            return JsonResponse({'error': "Урок уже проведён"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': "Занятие уже проведено"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            lesson = Lesson.objects.get(pk=kwargs.get("pk"))
+        except Lesson.DoesNotExist:
+            return JsonResponse({'error': "Занятие не найдено"}, status=status.HTTP_400_BAD_REQUEST)
+        if lesson.status != 0:
+            if can_set_not_held(request, lesson):
+                lesson.status = 0
+                lesson.save()
+                serialized_lesson = LessonSerializer(lesson, context={'request': request})
+                return Response(serialized_lesson.data, status=status.HTTP_201_CREATED)
+            else:
+                return JsonResponse({'error': "Недостаточно прав для изменения статуса занятия"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return JsonResponse({'error': "Занятие в статусе непроведённого"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLessonListAPIView(LoginRequiredMixin, ListAPIView):

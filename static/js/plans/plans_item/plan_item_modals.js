@@ -4,6 +4,7 @@ function planItemModalsMain(){
     planItemPhaseLessonModalSaveButton.addEventListener("click", planItemModalsLessonUpdate)
     planItemLessonDeleteModalButton.addEventListener("click", planItemModalsLessonDestroy)
     planItemPhaseModalNewAddButton.addEventListener("click", planItemModalsPhaseCreate)
+    plansItemNotHeldModalButton.addEventListener("click", planItemModalsLessonSetNotHeld)
     collectionsAPIGetLessonPlaces().then(request => {
         switch (request.status){
             case 200:
@@ -278,6 +279,12 @@ function planItemModalsLessonDeleteSet(){
     planItemLessonDeleteModalButton.setAttribute("data-lesson-del-id", lessonID)
 }
 
+function planItemModalsLessonNotHeldSet(){
+    const lessonID = this.attributes.getNamedItem("data-lesson-notheld-id").value
+    bsPlansItemNotHeldModal.show()
+    plansItemNotHeldModalButton.setAttribute("data-lesson-notheld-id", lessonID)
+}
+
 function planItemModalsLessonValidation(action, errors){
     function resetUpdValidation(){
         planItemPhaseLessonModalNameField.classList.remove("is-invalid")
@@ -419,7 +426,6 @@ function planItemModalsLessonUpdate(){
     }
 
     const lessonID = Number(this.attributes.getNamedItem("data-lesson-edit-id").value)
-    console.log(lessonID)
     if (planItemModalsLessonValidation("update")){
         planItemAPIUpdateLesson(cleanFD(), lessonID).then(request => {
             switch (request.status){
@@ -451,6 +457,23 @@ function planItemModalsLessonDestroy(){
                 break
             default:
                 bsPlanItemLessonDeleteModal.hide()
+                showErrorToast()
+                break
+        }
+    })
+}
+
+function planItemModalsLessonSetNotHeld(){
+    const lessonID= Number(this.attributes.getNamedItem("data-lesson-notheld-id").value)
+    lessonsAPISetNotHeld(lessonID).then(request => {
+        switch (request.status){
+            case 201:
+                bsPlansItemNotHeldModal.hide()
+                showSuccessToast("Занятие успешно изменено")
+                planItemChangeLesson(request.response)
+                break
+            default:
+                bsPlansItemNotHeldModal.hide()
                 showErrorToast()
                 break
         }
@@ -493,6 +516,11 @@ const planItemPhaseLessonModalSaveButton = planItemPhaseLessonModal.querySelecto
 const planItemLessonDeleteModal = document.querySelector("#planItemLessonDeleteModal")
 const bsPlanItemLessonDeleteModal = new bootstrap.Modal(planItemLessonDeleteModal)
 const planItemLessonDeleteModalButton = planItemLessonDeleteModal.querySelector("#planItemLessonDeleteModalButton")
+
+//LessonSetNotHeld
+const plansItemNotHeldModal = document.querySelector("#plansItemNotHeldModal")
+const bsPlansItemNotHeldModal = new bootstrap.Modal(plansItemNotHeldModal)
+const plansItemNotHeldModalButton = plansItemNotHeldModal.querySelector("#plansItemNotHeldModalButton")
 
 //PhaseAdd
 const planItemPhaseModalNew = document.querySelector("#planItemPhaseModalNew")

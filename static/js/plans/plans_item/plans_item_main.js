@@ -133,6 +133,17 @@ function planItemGetLessonElement(lesson){
         tdActions.insertAdjacentElement("beforeend", tdActionsDelete)
         tdActionsDelete.addEventListener("click", planItemModalsLessonDeleteSet)
     }
+
+    if (lesson.can_set_not_held){
+        const tdActionsSetNotHeld = document.createElement("button")
+        tdActionsSetNotHeld.type = "button"
+        tdActionsSetNotHeld.classList.add("btn", "btn-warning", "mx-1")
+        tdActionsSetNotHeld.setAttribute("data-lesson-notheld-id", lesson.id)
+        tdActionsSetNotHeld.innerHTML = '<i class="bi bi-clipboard-x"></i>'
+        tdActions.insertAdjacentElement("beforeend", tdActionsSetNotHeld)
+        tdActionsSetNotHeld.addEventListener("click", planItemModalsLessonNotHeldSet)
+    }
+
     if (lesson.status === 0 && canEditPlan){
         const tdActionsEdit = document.createElement("button")
         tdActionsEdit.type = "button"
@@ -145,7 +156,7 @@ function planItemGetLessonElement(lesson){
         tdActionsReschedule.type = "button"
         tdActionsReschedule.classList.add("btn", "btn-warning", "mx-1")
         tdActionsReschedule.setAttribute("data-lesson-reschedule-id", lesson.id)
-        tdActionsReschedule.innerHTML = '<i class="bi bi-calendar3"></i>'
+        tdActionsReschedule.innerHTML = '<i class="bi bi-calendar3-range"></i>'
         tdActions.insertAdjacentElement("beforeend", tdActionsReschedule)
         tdActionsReschedule.addEventListener("click", plansItemReschedulingSetModal)
     }

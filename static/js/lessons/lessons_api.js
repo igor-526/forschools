@@ -89,3 +89,14 @@ async function lessonsAPIReschedulingCancel(lessonID, fd){
     })
     return await APIPostPatchToObject(request)
 }
+
+async function lessonsAPISetNotHeld(lessonID){
+        const request = await fetch(`/api/v1/lessons/${lessonID}/set_not_held/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        }
+    })
+    return await APIPostPatchToObject(request)
+}
