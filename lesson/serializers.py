@@ -50,10 +50,20 @@ class LessonListSerializer(serializers.ModelSerializer):
     place = PlaceSerializer(required=False)
     deletable = serializers.SerializerMethodField(read_only=True)
     can_set_not_held = serializers.SerializerMethodField(read_only=True)
+    teacher = serializers.SerializerMethodField(read_only=True)
+    listeners = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Lesson
         exclude = ['materials', 'homeworks', 'evaluation', 'note_teacher', 'note_listener']
+
+    def get_teacher(self, obj):
+        teacher = obj.get_teacher()
+        return NewUserNameOnlyListSerializer(teacher, many=False).data
+
+    def get_listeners(self, obj):
+        listeners = obj.get_listeners()
+        return NewUserNameOnlyListSerializer(listeners, many=True).data
 
     def get_deletable(self, obj):
         return obj.status == 0

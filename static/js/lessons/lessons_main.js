@@ -35,10 +35,8 @@ function lessonsSetPassed(){
 }
 
 function lessonsShow(list){
-    lessonsTableBody.innerHTML = ""
-    list.forEach(lesson => {
+    function getDateTime(lesson){
         let dt = ""
-
         if (lesson.start_time !== null){
             const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
             const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
@@ -55,18 +53,47 @@ function lessonsShow(list){
             const dateMonth = (date.getMonth()+1).toString().padStart(2, "0")
             dt = `${dateDay}.${dateMonth}`
         }
+        return dt
+    }
 
-        lessonsTableBody.insertAdjacentHTML("beforeend", `
-            <tr>
-                <td>${lesson.name}</td>
-                <td>${dt}</td>
-                <td></td>
-                <td></td>
-                <td>
-                    <a href="/lessons/${lesson.id}"><button type="button" class="btn btn-primary"><i class="bi bi-chevron-right"></i></button></a>
-                </td>
-            </tr>
-        `)
+    function getListeners(listeners){
+        const listenersArray = listeners.map(listener => {
+            return `<a target="_blank" href="/profile/${listener.id}">${listener.first_name} ${listener.last_name}</a>`
+        })
+        return listenersArray.join("<br>")
+    }
+
+    function getLessonElement(lesson){
+        const tr = document.createElement("tr")
+        const tdName = document.createElement("td")
+        const tdDate = document.createElement("td")
+        const tdTeacher = document.createElement("td")
+        const tdListeners = document.createElement("td")
+        const tdActions = document.createElement("td")
+        const tdActionsGoA = document.createElement("a")
+        const tdActionsGoButton = document.createElement("button")
+        tdActionsGoA.target = "_blank"
+        tdActionsGoA.href = `/lessons/${lesson.id}`
+        tdActionsGoButton.type = "button"
+        tdActionsGoButton.classList.add("btn", "btn-primary")
+        tdActionsGoButton.innerHTML = '<i class="bi bi-chevron-right"></i>'
+        tdActionsGoA.insertAdjacentElement("beforeend", tdActionsGoButton)
+        tr.insertAdjacentElement("beforeend", tdName)
+        tr.insertAdjacentElement("beforeend", tdDate)
+        tr.insertAdjacentElement("beforeend", tdTeacher)
+        tr.insertAdjacentElement("beforeend", tdListeners)
+        tr.insertAdjacentElement("beforeend", tdActions)
+        tdActions.insertAdjacentElement("beforeend", tdActionsGoA)
+        tdName.innerHTML = lesson.name
+        tdDate.innerHTML = getDateTime(lesson)
+        tdTeacher.innerHTML = `<a target="_blank" href="/profile/${lesson.teacher.id}">${lesson.teacher.first_name} ${lesson.teacher.last_name}</a>`
+        tdListeners.innerHTML = getListeners(lesson.listeners)
+        return tr
+    }
+
+    lessonsTableBody.innerHTML = ""
+    list.forEach(lesson => {
+        lessonsTableBody.insertAdjacentElement("beforeend", getLessonElement(lesson))
     })
 }
 
