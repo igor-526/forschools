@@ -14,13 +14,11 @@ def get_menu(user):
     admin_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
+        {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
+        {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
+        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
-        {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
-            {'name': 'Программы обучения', 'url': reverse('learning_programs')},
-            {'name': 'Планы обучения', 'url': reverse('learning_plans')},
-        ]},
         {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
@@ -30,13 +28,11 @@ def get_menu(user):
     teacher_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
+        {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
+        {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
+        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
-        {'name': 'Инструменты', 'type': 'dropdown', 'menu': [
-            {'name': 'Программы обучения', 'url': reverse('learning_programs')},
-            {'name': 'Планы обучения', 'url': reverse('learning_plans')},
-        ]},
         {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
         ]},

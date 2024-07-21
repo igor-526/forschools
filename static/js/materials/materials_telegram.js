@@ -2,6 +2,7 @@ function materialsTelegramMain(){
     telegramAPIGetUsers().then(request => {
         switch (request.status){
             case 200:
+                console.log(request.response)
                 materialsTelegramUsersShow(request.response)
                 break
             default:
@@ -92,7 +93,7 @@ function sendMaterialTelegram(){
     telegramAPISendMaterials(materialTelegramSelectedUsersArray, materialsTelegramMatArray).then(request => {
         switch (request.status) {
             case 200:
-                showSuccessToast("Материал успешно отправлен")
+                showSuccessToast("Материалы успешно отправлен")
                 break
             default:
                 showErrorToast()
@@ -113,3 +114,5 @@ const materialsModalTelegramSearchClean = materialModalTelegram.querySelector("#
 
 let materialTelegramSelectedUsersArray = []
 let materialsTelegramMatArray = []
+
+materialsTelegramMain()

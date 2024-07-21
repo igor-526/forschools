@@ -20,18 +20,20 @@ async function telegramAPIGetUsers(){
 }
 
 async function telegramAPISendMaterials(users, materials){
+    const fd = new FormData()
+    users.forEach(user => {
+        fd.append("users", user)
+    })
+    materials.forEach(mat => {
+        fd.append("materials", mat)
+    })
     const request = await fetch("/api/v1/telegram/sendmaterial/", {
         method: 'post',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            users: users,
-            mat_id: materials
-        })
+        body: fd
     })
     return APIGetToObject(request)
 }

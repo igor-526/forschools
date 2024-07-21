@@ -4,7 +4,7 @@ from material.models import Material
 from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot
 import async_to_sync as sync
-from tgbot.keyboards.materials import get_show_key
+from tgbot.keyboards.materials import get_show_key, get_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons
 from dls.utils import get_tg_id_sync
 
@@ -48,11 +48,11 @@ async def get_group_and_perms(user_id) -> dict:
     }
 
 
-def send_material(user_id: int, material: Material) -> dict:
+def send_materials(user_id: int, materials) -> dict:
     user = Telegram.objects.get(user_id=user_id)
     return sync_funcs.send_tg_message_sync(tg_id=user.tg_id,
-                                           message=f"Вам направлен материал <b>{material.name}</b>",
-                                           reply_markup=get_show_key(material.id))
+                                           message=f"Вам направлены материалы:",
+                                           reply_markup=get_keyboard_query(materials))
 
 
 def send_homework_tg(user: NewUser, homeworks: list[Homework]) -> dict:

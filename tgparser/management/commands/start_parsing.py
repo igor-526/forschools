@@ -106,7 +106,7 @@ class ChannelMessage:
             if fi != "text":
                 await self.msg_object.download_media(path)
             else:
-                with open(path, "w") as f:
+                with open(path, "w", encoding="utf-8") as f:
                     f.write(self.get_text_without_hashtags())
             categories = await self.get_categories()
             mat = await Material.objects.acreate(
@@ -126,7 +126,7 @@ class ChannelMessage:
 
 
 def get_dialog(dialogs: TotalList):
-    out = list(filter(lambda d: d.name == settings.TGPARSER_CHANNEL_NAME, dialogs))
+    out = list(filter(lambda d: d.name == "Вводно-фонетический курс kitai_school", dialogs))
     return out[0]
 
 
@@ -153,7 +153,7 @@ def log_result(saved: int | None = None, passed: int | None = None, failed: int 
     if failed:
         filename = 'failed.txt'
         res = failed
-    with open(f"tgparser/logs/{filename}", 'a') as f:
+    with open(f"tgparser/logs/{filename}", 'a', encoding="utf-8") as f:
         f.write(f'{res}\n')
 
 
@@ -191,7 +191,7 @@ async def parse_manual(messages: list, owner: NewUser):
         action = ""
         msg_object = ChannelMessage(msg, prefix, owner)
         while action != "q":
-            with open("tgparser/logs/saved.txt", "r") as f:
+            with open("tgparser/logs/saved.txt", "r", encoding="utf-8") as f:
                 if str(msg.id) in [e.strip("\n") for e in f.readlines()]:
                     break
             if not msg_object.file_info and not msg_object.category and not msg_object.get_text_without_hashtags():
@@ -205,7 +205,7 @@ async def parse_manual(messages: list, owner: NewUser):
                     print("СОХРАНЕНО")
                     log_result(saved=msg_object.msg_object.id)
                 else:
-                    print("НЕ СОХРАНЕНОй")
+                    print("НЕ СОХРАНЕНО")
                     log_result(failed=msg_object.msg_object.id)
                 break
             if action == "2":
@@ -224,7 +224,10 @@ async def parse_manual(messages: list, owner: NewUser):
 async def main(client):
     print("Получение всех диалогов")
     dialogs = await client.get_dialogs()
-    print(f'Поиск диалога: "{settings.TGPARSER_CHANNEL_NAME}"')
+    # print(f'Поиск диалога: "{settings.TGPARSER_CHANNEL_NAME}"')
+    print(f'Поиск диалога: "Вводно - фонетический курс kitai_school"')
+    # Вводно - фонетический курс kitai_school
+
     dialog = get_dialog(dialogs)
     print("Получение всех сообщений")
     messages = client.iter_messages(dialog)

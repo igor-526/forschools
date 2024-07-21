@@ -217,6 +217,19 @@ class Telegram(models.Model):
     nickname = models.CharField(verbose_name='ник',
                                 null=True,
                                 blank=True)
+    notifications_changed_lesson = models.BooleanField(verbose_name="Уведомление об изменении занятия",
+                                                       null=False,
+                                                       blank=False,
+                                                       default=True)
+    notifications_lesson_day = models.BooleanField(verbose_name="Уведомление о занятии за сутки",
+                                                   null=False,
+                                                   blank=False,
+                                                   default=True)
+    notifications_lessons_hour = models.BooleanField(verbose_name="Уведомление о занятии за час",
+                                                     null=False,
+                                                     blank=False,
+                                                     default=True)
+
 
     class Meta:
         verbose_name = 'Привязанный Telegram'

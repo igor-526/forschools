@@ -16,14 +16,14 @@
                                 <li class="list-group-item">Описание: {{ lesson.description }}</li>
                             {% endif %}
                             {% if lesson.date %}
-                                <li class="list-group-item">Дата: {{ lesson.date }}</li>
+                                <li class="list-group-item">Дата: {{ lesson.date }}<button id="LessonItemChangeTimeButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button></li>
                             {% else %}
-                                <li class="list-group-item">Дата: не установлена</li>
+                                <li class="list-group-item">Дата: не установлена<button id="LessonItemChangeTimeButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button></li>
                             {% endif %}
                             {% if lesson.start_time %}
-                                <li class="list-group-item">Время: {{ lesson.start_time }} - {{ lesson.end_time }}</li>
+                                <li class="list-group-item">Время: {{ lesson.start_time }} - {{ lesson.end_time }}<button id="LessonItemChangeTimeButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button></li>
                             {% else %}
-                                <li class="list-group-item">Время: не установлено</li>
+                                <li class="list-group-item">Время: не установлено<button id="LessonItemChangeTimeButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button></li>
                             {% endif %}
                             {% if lesson.status == 0 %}
                                 <li id="lessonItemStatus" class="list-group-item list-group-item-warning">Занятие не проведено</li>
@@ -73,23 +73,22 @@
             </div>
             <div class="col-6">
                 <div class="card mb-3">
-                    <div class="card-header">Материалы
-                        {% if can_edit_materials %}
-                            <button id="LessonItemAddMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="bi bi-plus-lg"></i></button>
-                            {% include "materials_embed_modal.html" %}
-                        {% endif %}
-                        <button id="LessonItemSendMaterialsButton" type="button" class="btn btn-primary btn-sm ms-2 lesson-item-not-passed"><i class="bi bi-telegram"></i></button>
+                    <div class="card-header">
+                        <div>Материалы</div>
+                        <div>
+                            <button id="LessonItemCheckMaterialsButton" type="button" class="btn btn-primary btn-sm m-1" data-action="check"><i class="bi bi-check-square"></i></button>
+                            {% if can_edit_materials %}
+                                <button id="LessonItemAddMaterialsButton" type="button" class="btn btn-warning btn-sm m-1" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="bi bi-pencil"></i></button>
+                                {% include "materials_embed_modal.html" %}
+                                <button id="LessonItemDeleteMaterialsButton" type="button" class="btn btn-danger btn-sm m-1" disabled><i class="bi bi-x-lg"></i> Убрать</button>
+                                {% include "lesson_item_modal_delete_materials.html" %}
+                            {% endif %}
+                            <button id="LessonItemSendMaterialsButton" type="button" class="btn btn-primary btn-sm m-1" disabled><i class="bi bi-telegram"></i> Отпр. ученику</button>
+                            {% include "lesson_item_modal_sendtg.html" %}
+                        </div>
                     </div>
                     <div class="card-body">
-                        <ul class="list-group list-group-flush" id="lessonItemMaterialsList">
-                            {% if can_see_materials %}
-                                {% for material in lesson.materials.all %}
-                                    <li class="list-group-item">
-                                        <a href="/materials/{{ material.id }}">{{ material.name }}</a>
-                                    </li>
-                                {% endfor %}
-                            {% endif %}
-                        </ul>
+                        <ul class="list-group list-group-flush" id="lessonItemMaterialsList"></ul>
                     </div>
                 </div>
 
@@ -105,7 +104,7 @@
                             {% for hw in lesson.homeworks.all %}
                                 <li class="list-group-item">
                                     {% if can_add_hw %}
-                                        <button type="button" class="btn btn-danger btn-sm me-2"><i class="bi bi-trash3"></i></button>
+                                        <button type="button" class="btn btn-danger btn-sm me-2"><i class="bi bi-x-lg"></i></button>
                                     {% endif %}
                                     <a href="/homeworks/{{ hw.id }}">{{ hw.name }}</a>
                                 </li>
@@ -122,6 +121,7 @@
     <script>
         const csrftoken = '{{ csrf_token }}'
         const lessonID = '{{ lesson.id }}'
+        const can_see_materials = {% if can_see_materials %}true{% else %}false{% endif %}
     </script>
     <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/toasts.js' %}"></script>
@@ -161,6 +161,9 @@
         <script src="{% static 'js/programs/programsAPI.js' %}"></script>
         <script src="{% static 'js/materials/materials_utils.js' %}"></script>
         <script src="{% static 'js/materials/materials_embed.js' %}"></script>
+        <script src="{% static 'js/lessons/lesson_item_delete_materials.js' %}"></script>
+        <script src="{% static 'js/lessons/lesson_item_send_materials.js' %}"></script>
+        <script src="{% static 'js/lessons/lesson_item_delete_hw.js' %}"></script>
     {% endif %}
     <script src="{% static 'js/lessons/lesson_item.js' %}"></script>
     {% if can_add_hw %}

@@ -3,6 +3,7 @@ from django.utils import timezone
 from profile_management.models import NewUser
 from material.models import Material
 from homework.models import Homework
+from learning_program.models import LearningProgramLesson
 
 
 LESSON_STATUS_CHOICES = (
@@ -98,6 +99,11 @@ class Lesson(models.Model):
                                  null=False,
                                  blank=True,
                                  choices=LESSON_STATUS_CHOICES)
+    from_program_lesson = models.ForeignKey(LearningProgramLesson,
+                                            verbose_name="Шаблон урока программы",
+                                            null=True,
+                                            blank=True,
+                                            on_delete=models.DO_NOTHING)
 
     class Meta:
         verbose_name = 'Занятие'

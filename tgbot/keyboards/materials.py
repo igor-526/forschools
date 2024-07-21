@@ -152,6 +152,18 @@ def get_keyboard_query_hw(materials: list, hw_id: int, current_page=1, next_butt
     return builder.as_markup()
 
 
+def get_keyboard_query(materials) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for mat in materials:
+        builder.button(
+            text=mat.name,
+            callback_data=MaterialItemCallback(mat_id=mat.id,
+                                               action="show")
+        )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
 def get_show_key(mat_id) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(

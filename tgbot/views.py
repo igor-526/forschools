@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from material.models import Material
 from .serializers import UserTelegramSerializer
 from profile_management.models import NewUser
-from tgbot.utils import send_material
+from tgbot.utils import send_materials
 
 
 class UserTelegramListAPIView(LoginRequiredMixin, ListAPIView):   # API для вывода списка пользователей c привязанным TG
@@ -13,12 +13,12 @@ class UserTelegramListAPIView(LoginRequiredMixin, ListAPIView):   # API для �
     serializer_class = UserTelegramSerializer
 
 
-class SendMaterialTGView(LoginRequiredMixin, APIView):
+class SendMaterialsTGView(LoginRequiredMixin, APIView):
     def post(self, request) -> JsonResponse:
-        users = request.data.get("users")
-        mat_id = request.data.get("mat_id")
-        print(users, mat_id)
-        material = Material.objects.get(id=mat_id)
-        for user in users:
-            send_material(user, material)
+        users = request.POST.getlist("users")
+        mat_ids = request.POST.getlist("materials")
+        materials = Material.objects.filter(id__in=mat_ids)
+        if materials:
+            for user in users:
+                send_materials(user, materials)
         return JsonResponse({'status': 'success'})
