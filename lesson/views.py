@@ -204,11 +204,11 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
             return {"status": "ok", "errors": "", "warnings": ""}
         if req_date == "":
             errors += "<li>Необходимо указать дату занятия, либо выключить ручной выбор даты и времени</li>"
-        else:
-            req_date = datetime.strptime(req_date, "%Y-%m-%d")
-            today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-            if req_date < today:
-                errors += "<li>Дата занятия не может быть раньше, чем сегодня</li>"
+        # else:
+            # req_date = datetime.strptime(req_date, "%Y-%m-%d")
+            # today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+            # if req_date < today:
+            #     errors += "<li>Дата занятия не может быть раньше, чем сегодня</li>"
         if req_start is not None and req_start == "":
             errors += "<li>Необходимо указать время начала занятия, либо выключить ручной выбор даты и времени</li>"
         if req_end is not None and req_end == "":
@@ -248,14 +248,13 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
             lesson = Lesson.objects.get(pk=lesson_id)
         except Lesson.DoesNotExist:
             return JsonResponse({"errors": "Занятие не найдено<br>Обновите страницу и повторите попытку"})
-        self.validate_plan_rescheduling(request.query_params, *args, **kwargs)
-        return JsonResponse({"errors": "test", "warnings": "test"}, status=status.HTTP_400_BAD_REQUEST)
-        # return JsonResponse(
-        #     plan_rescheduling_info(
-        #         datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
-        #         get_schedule(request.query_params),
-        #         lesson
-        #     ), status=status.HTTP_200_OK)
+        validation = self.validate_plan_rescheduling(request.query_params, *args, **kwargs)
+        return JsonResponse(
+            plan_rescheduling_info(
+                datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
+                get_schedule(request.query_params),
+                lesson
+            ), status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         lessons = self.get_lessons(self, *args, **kwargs)

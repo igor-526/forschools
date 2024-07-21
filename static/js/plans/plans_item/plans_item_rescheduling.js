@@ -147,16 +147,16 @@ function plansItemReschedulingValidation(errors){
                 "Необходимо указать начальную дату продолжения обучения",
                 [plansItemReschedulingModalDate]
             )
-            return
+            // return
         }
-        const date = new Date(plansItemReschedulingModalDate.value).setUTCHours(0, 0, 0, 0)
-        const today = new Date().setUTCHours(0, 0, 0, 0)
-        if (today > date){
-            setInvalid(
-                "Дата продолжения обучения не может быть ранее, чем сегодня",
-                [plansItemReschedulingModalDate]
-            )
-        }
+        // const date = new Date(plansItemReschedulingModalDate.value).setUTCHours(0, 0, 0, 0)
+        // const today = new Date().setUTCHours(0, 0, 0, 0)
+        // if (today > date){
+        //     setInvalid(
+        //         "Дата продолжения обучения не может быть ранее, чем сегодня",
+        //         [plansItemReschedulingModalDate]
+        //     )
+        // }
     }
 
     function validateDays() {
@@ -406,8 +406,7 @@ function plansItemReschedulingValidation(errors){
         validateSaturday()
         validateSunday()
     }
-    return true
-    // return validationStatus
+    return validationStatus
 }
 
 function plansItemRescheduling(){
@@ -450,10 +449,9 @@ function plansItemRescheduling(){
                     <li class="list-group">Осталось ${request.response.total_hours} часов обучения</li>
                     <li class="list-group">Плановая дата окончания ${new Date(request.response.last_date).toLocaleDateString()}</li>
                     `
-                            // plansItemReschedulingSetButton("set")
+                            plansItemReschedulingSetButton("set")
                             break
                         case 400:
-                            console.log("psfiok'gaeriiogarei")
                             console.log(request.response)
                             plansItemReschedulingValidation(request.response)
                             break
