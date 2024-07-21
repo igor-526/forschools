@@ -14,6 +14,7 @@ function lessonItemMain(){
                 }
                 if (can_see_materials){
                     lessonItemSetMaterials(request.response.materials)
+                    lessonItemSetHomeworks(request.response.homeworks)
                 }
                 break
             default:
@@ -105,7 +106,6 @@ function lessonItemSetMaterials(materials, del=false){
         li.insertAdjacentElement("beforeend", a)
         return li
     }
-
     switch (del){
         case true:
             materials.forEach(material => {
@@ -127,6 +127,42 @@ function lessonItemSetMaterials(materials, del=false){
             })
     }}
 
+function lessonItemSetHomeworks(homeworks, del=false){
+    function getHomeworklElement(homework){
+        const li = document.createElement("li")
+        const a = document.createElement("a")
+        const button = document.createElement("button")
+        li.classList.add("list-group-item")
+        li.setAttribute("data-hw-list-id", homework.id)
+        a.href = `/homeworks/${homework.id}`
+        a.innerHTML = homework.name
+        a.target = "_blank"
+        button.classList.add("btn", "btn-danger", "btn-sm", "me-3")
+        button.type = "button"
+        button.innerHTML = '<i class="bi bi-x-lg"></i>'
+        button.addEventListener("click", function () {
+            lessonItemDeleteHWModalSet(homework.id)
+        })
+        li.insertAdjacentElement("beforeend", button)
+        li.insertAdjacentElement("beforeend", a)
+        return li
+    }
+
+    switch (del){
+        case true:
+            homeworks.forEach(homework => {
+                const elem = lessonItemHomeworkList.querySelector(`[data-hw-list-id="${homework}"]`)
+                elem.remove()
+            })
+            break
+        case false:
+            homeworks.forEach(homework => {
+                if (homework.status !== 6){
+                    lessonItemHomeworkList.insertAdjacentElement("beforeend", getHomeworklElement(homework))
+                }
+            })
+    }}
+
 //Buttons
 const lessonItemAddMaterialsButton = document.querySelector("#LessonItemAddMaterialsButton")
 const lessonItemSendMaterialsButton = document.querySelector("#LessonItemSendMaterialsButton")
@@ -136,6 +172,7 @@ const lessonItemRestoreButton = document.querySelector("#lessonItemRestoreButton
 
 //Lists
 const lessonItemMaterialsList = document.querySelector("#lessonItemMaterialsList")
+const lessonItemHomeworkList = document.querySelector("#lessonItemHomeworkList")
 
 //Arrays
 let lessonItemCheckedMaterials = []

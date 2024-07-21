@@ -145,3 +145,23 @@ class UserHWListAPIView(LoginRequiredMixin, ListAPIView):
     def get_queryset(self, *args, **kwargs):
         userID = self.kwargs.get('pk')
         return Homework.objects.filter(listener__id=userID)
+
+
+class HomeworkSetCancelledAPIView(LoginRequiredMixin, APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            hw = Homework.objects.get(pk=kwargs.get('pk'))
+        except Homework.DoesNotExist:
+            return JsonResponse({'status': 'Ошибка! ДЗ не найдено'}, status=status.HTTP_400_BAD_REQUEST)
+        if hw.get_status().status in [4, 6]:
+            return JsonResponse({'status': 'Невозможно отменить ДЗ, так как оно либо принято, либо уже отменено'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            HomeworkLog.objects.create(
+                homework=hw,
+                user=request.user,
+                comment="Домшнее задание отменено",
+                status=6
+            )
+            return JsonResponse({'status': 'ok'}, status=status.HTTP_200_OK)
+
+

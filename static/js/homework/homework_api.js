@@ -84,3 +84,14 @@ async function homeworkAPIReplaceTeacher(teacherID, homework){
     })
     return await APIPostPatchToObject(request)
 }
+
+async function homeworkAPISetCancelled(homeworkID){
+        const request = await fetch(`/api/v1/homeworks/${homeworkID}/set_cancelled/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        }
+    })
+    return await APIPostPatchToObject(request)
+}

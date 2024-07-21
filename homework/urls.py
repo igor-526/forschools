@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (HomeworksPage, HomeworkListCreateAPIView,
                     HomeworkItemPage, HomeworkLogListCreateAPIView,
-                    HomeworkReplaceTeacher)
+                    HomeworkReplaceTeacher, HomeworkSetCancelledAPIView)
 
 urlpatterns = [
     path('', HomeworksPage.as_view(), name='homeworks'),    # страница с домашними заданиями
@@ -12,4 +12,5 @@ apiv1patterns = [
     path('', HomeworkListCreateAPIView.as_view()),
     path('<int:pk>/logs/', HomeworkLogListCreateAPIView.as_view()),
     path('<int:pk>/rt/', HomeworkReplaceTeacher.as_view()),
+    path('<int:pk>/set_cancelled/', HomeworkSetCancelledAPIView.as_view()),
 ]
