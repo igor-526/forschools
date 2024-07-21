@@ -37,3 +37,20 @@ async function telegramAPISendMaterials(users, materials){
     })
     return APIGetToObject(request)
 }
+
+async function telegramAPISendLessonMaterials(lesson, materials=[]){
+    const fd = new FormData()
+    fd.append("lesson_id", lesson)
+    materials.forEach(mat => {
+        fd.append("materials", mat)
+    })
+    const request = await fetch("/api/v1/telegram/sendmaterial/", {
+        method: 'post',
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIGetToObject(request)
+}

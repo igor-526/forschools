@@ -27,7 +27,11 @@ function lessonItemMain(){
             lessonItemDeleteMaterialsSetModal(lessonItemCheckedMaterials)
         })
     }
-
+    if (lessonItemSendMaterialsButton){
+        lessonItemSendMaterialsButton.addEventListener("click", function () {
+            lessonItemSendMaterialsSetModal(lessonItemCheckedMaterials)
+        })
+    }
 }
 
 function lessonItemSetButtons() {
@@ -64,7 +68,7 @@ function lessonItemSelectAllMaterialsListener(){
     lessonItemSetButtons()
 }
 
-function lessonItemSetMaterials(materials){
+function lessonItemSetMaterials(materials, del=false){
     function checkListener(){
         const index = lessonItemCheckedMaterials.indexOf(this.value)
         switch (this.checked){
@@ -99,10 +103,26 @@ function lessonItemSetMaterials(materials){
         return li
     }
 
-    materials.forEach(material => {
-        lessonItemMaterialsList.insertAdjacentElement("beforeend", getMaterialElement(material))
-    })
-}
+    switch (del){
+        case true:
+            materials.forEach(material => {
+                const elem = lessonItemMaterialsList.querySelector(`input[value="${material}"]`)
+                elem.parentElement.remove()
+            })
+            const checks = lessonItemMaterialsList.querySelectorAll("input")
+            checks.forEach(check => {
+                check.checked = false
+            })
+            lessonItemSendMaterialsButton.disabled = true
+            LessonItemDeleteMaterialsButton.disabled = true
+            lessonItemCheckedMaterials = []
+            LessonItemCheckMaterialsButton.attributes.getNamedItem("data-action").value = "check"
+            break
+        case false:
+            materials.forEach(material => {
+                lessonItemMaterialsList.insertAdjacentElement("beforeend", getMaterialElement(material))
+            })
+    }}
 
 //Buttons
 const lessonItemAddMaterialsButton = document.querySelector("#LessonItemAddMaterialsButton")

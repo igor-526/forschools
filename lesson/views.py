@@ -96,7 +96,7 @@ class LessonAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = LessonSerializer
 
 
-class LessonAddMaterialsAPIView(LoginRequiredMixin, APIView):
+class LessonSetMaterialsAPIView(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
@@ -105,6 +105,16 @@ class LessonAddMaterialsAPIView(LoginRequiredMixin, APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return JsonResponse({'status': 'ok'})
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            lesson = Lesson.objects.get(pk=kwargs.get("pk"))
+            materials = request.data.get('materials')
+            lesson.materials.remove(*materials)
+            lesson.save()
+            return JsonResponse({'status': 'ok'}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LessonReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):

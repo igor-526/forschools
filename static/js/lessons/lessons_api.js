@@ -1,5 +1,4 @@
 async function lessonsAPIAddMaterials(materials=[], lesson){
-    console.log(materials)
     const response = await fetch(`/api/v1/lessons/${lesson}/materials/`, {
         method: "post",
         credentials: 'same-origin',
@@ -20,6 +19,22 @@ async function lessonsAPIAddMaterials(materials=[], lesson){
     } else {
         return {status: response.status}
     }
+}
+
+async function lessonsAPIDeleteMaterials(materials=[], lesson){
+    const response = await fetch(`/api/v1/lessons/${lesson}/materials/`, {
+        method: "DELETE",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            materials: materials
+        })
+    })
+    return await APIDeleteToObject(response)
 }
 
 async function lessonsAPIReplaceTeacher(teacherID, lesson){
