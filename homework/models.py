@@ -2,6 +2,7 @@ from django.db import models
 from profile_management.models import NewUser
 from material.models import Material, File
 from django.db.models.signals import post_save
+from learning_program.models import LearningProgramHomework
 
 
 HOMEWORK_STATUS_CHOISES = (
@@ -42,6 +43,11 @@ class Homework(models.Model):
     deadline = models.DateField(verbose_name='Срок',
                                 null=True,
                                 blank=True)
+    from_programs_hw = models.ForeignKey(LearningProgramHomework,
+                                         verbose_name="Шаблон домашнего задания",
+                                         null=True,
+                                         blank=True,
+                                         on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'Домашнее задание'

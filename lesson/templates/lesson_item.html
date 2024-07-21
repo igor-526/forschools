@@ -9,7 +9,12 @@
         <div class="row">
             <div class="col-6">
                 <div class="card mb-3">
-                    <div class="card-header">Занятие</div>
+                    <div class="card-header">Занятие
+                        {% if True %}
+                            <button id="lessonItemRestoreButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-box-arrow-down"></i> Восстановить из шаблона</button>
+                            {% include "lesson_item_modal_restore.html" %}
+                        {% endif %}
+                    </div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
                             {% if lesson.description %}
@@ -165,6 +170,9 @@
         <script src="{% static 'js/lessons/lesson_item_delete_materials.js' %}"></script>
         <script src="{% static 'js/lessons/lesson_item_send_materials.js' %}"></script>
         <script src="{% static 'js/lessons/lesson_item_delete_hw.js' %}"></script>
+        {% if True %}
+            <script src="{% static 'js/lessons/lesson_item_restore.js' %}"></script>
+        {% endif %}
     {% endif %}
     <script src="{% static 'js/lessons/lesson_item.js' %}"></script>
     {% if can_add_hw %}

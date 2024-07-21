@@ -17,7 +17,7 @@ from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
                           can_see_lesson_materials, can_add_homework, can_set_passed, can_set_not_held)
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class LessonPage(LoginRequiredMixin, TemplateView):  # страница занятий
@@ -312,3 +312,60 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
                 return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
             pass
         return JsonResponse({'errors': 'Функция в разработке'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LessonRestoreAPIView(LoginRequiredMixin, APIView):
+    def restore_info(self, lesson):
+        pr_lesson = lesson.from_program_lesson
+        lesson.name = pr_lesson.name
+        lesson.description = pr_lesson.description
+        lesson.save()
+
+    def restore_materials(self, lesson):
+        pr_lesson = lesson.from_program_lesson
+        lesson.materials.set(pr_lesson.materials.all())
+        lesson.save()
+
+    def restore_homeworks(self, lesson):
+        pr_lesson = lesson.from_program_lesson
+        homeworks = lesson.homeworks.all()
+        teacher = lesson.get_teacher()
+        listeners = lesson.get_listeners()
+        for homework in homeworks:
+            logs = homework.log.all()
+            logs.delete()
+        homeworks.delete()
+        pr_homeworks = pr_lesson.homeworks.all()
+        for hw in pr_homeworks:
+            for listener in listeners:
+                new_hw = lesson.homeworks.create(
+                    name=hw.name,
+                    description=hw.description,
+                    teacher=teacher,
+                    listener=listener,
+                    from_programs_hw_id=hw.id,
+                    deadline=lesson.date + timedelta(days=7)
+                )
+                new_hw.materials.set(hw.materials.all())
+                new_hw.save()
+
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            lesson = Lesson.objects.get(pk=kwargs.get("pk"))
+        except Lesson.DoesNotExist:
+            return JsonResponse({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
+        if not lesson.from_program_lesson:
+            return JsonResponse({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
+        restore_info = request.POST.get("info")
+        restore_materials = request.POST.get("materials")
+        restore_homeworks = request.POST.get("homeworks")
+        if restore_info:
+            self.restore_info(lesson)
+        if restore_materials:
+            if lesson.status != 3:
+                self.restore_materials(lesson)
+        if restore_homeworks:
+            if lesson.status == 0:
+                self.restore_homeworks(lesson)
+        return JsonResponse(LessonSerializer(lesson).data, status=status.HTTP_200_OK)

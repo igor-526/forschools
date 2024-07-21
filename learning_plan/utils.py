@@ -182,6 +182,7 @@ class ProgramSetter:
                     date=lp_lesson_date,
                     start_time=lesson_dict.get("dt").get("start"),
                     end_time=lesson_dict.get("dt").get("end"),
+                    from_program_lesson_id=pr_lesson.id,
                     place_id=self.schedule[lp_lesson_date.weekday()]["place"]
                 )
                 lp_lesson.materials.set(pr_lesson.materials.all())
@@ -194,6 +195,7 @@ class ProgramSetter:
                             description=homework.get("object").description,
                             teacher=self.plan.teacher,
                             listener=listener,
+                            from_programs_hw_id=homework.get("object").id,
                             deadline=homework.get("deadline")
                         )
                         lp_hw.materials.set(homework.get("object").materials.all())

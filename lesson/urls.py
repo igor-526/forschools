@@ -3,7 +3,7 @@ from .views import (LessonPage, LessonItemPage,
                     LessonListAPIView, LessonSetMaterialsAPIView,
                     LessonReplaceTeacherAPIView, LessonAPIView,
                     LessonSetPassedAPIView, PlansItemRescheduling,
-                    LessonSetNotHeldAPIView)
+                    LessonSetNotHeldAPIView, LessonRestoreAPIView)
 
 urlpatterns = [
     path('', LessonPage.as_view(), name='lessons'),
@@ -18,4 +18,5 @@ apiv1patterns = [
     path('<int:pk>/rt/', LessonReplaceTeacherAPIView.as_view()),
     path('<int:pk>/set_passed/', LessonSetPassedAPIView.as_view()),
     path('<int:pk>/set_not_held/', LessonSetNotHeldAPIView.as_view()),
+    path('<int:pk>/restore/', LessonRestoreAPIView.as_view()),
 ]

@@ -32,6 +32,9 @@ function lessonItemMain(){
             lessonItemSendMaterialsSetModal(lessonItemCheckedMaterials)
         })
     }
+    if (lessonItemRestoreButton){
+        lessonItemRestoreButton.addEventListener("click", lessonItemRestoreModalSet)
+    }
 }
 
 function lessonItemSetButtons() {
@@ -129,6 +132,7 @@ const lessonItemAddMaterialsButton = document.querySelector("#LessonItemAddMater
 const lessonItemSendMaterialsButton = document.querySelector("#LessonItemSendMaterialsButton")
 const LessonItemDeleteMaterialsButton = document.querySelector("#LessonItemDeleteMaterialsButton")
 const LessonItemCheckMaterialsButton = document.querySelector("#LessonItemCheckMaterialsButton")
+const lessonItemRestoreButton = document.querySelector("#lessonItemRestoreButton")
 
 //Lists
 const lessonItemMaterialsList = document.querySelector("#lessonItemMaterialsList")
