@@ -115,6 +115,7 @@ async function usersAdminEditSaveUser(userID) {
 
 async function usersAdminShowUser(){
     formUserEdit.reset()
+    formUserShowLessonsA.classList.add("d-none")
     const userId = this.attributes.getNamedItem('data-user-id').value
     let userObj
     await usersAPIGetItem(userId).then(response => {
@@ -152,7 +153,7 @@ async function usersAdminShowUser(){
         formUserEditUsernameField.value = userObj.username
         formUserEditLastNameField.value = userObj.last_name
         formUserEditFirstNameField.value = userObj.first_name
-        userObj.groups.map(group => {
+        userObj.groups.forEach(group => {
             switch (group.name) {
                 case "Admin":
                     formUserCheckboxAdmin.checked = true
@@ -162,12 +163,16 @@ async function usersAdminShowUser(){
                     break
                 case "Teacher":
                     formUserCheckboxTeacher.checked = true
+                    formUserShowLessonsA.classList.remove("d-none")
+                    formUserShowLessonsA.href = `/lessons#teacher=${userObj.id}`
                     break
                 case "Curator":
                     formUserCheckboxCurator.checked = true
                     break
                 case "Listener":
                     formUserCheckboxListener.checked = true
+                    formUserShowLessonsA.classList.remove("d-none")
+                    formUserShowLessonsA.href = `/lessons#listener=${userObj.id}`
                     break
             }
         })
@@ -263,6 +268,7 @@ const formUserEditSaveButton = formUserEdit.querySelector("#UserShowSaveButton")
 const formUserEditActivateButton = formUserEdit.querySelector("#UserShowActivateButton")
 const formUserEditChangePasswordButton = formUserEdit.querySelector("#UserShowChangePasswordButton")
 const formUserEditTelegramButton = formUserEdit.querySelector("#UserShowTelegramButton")
+const formUserShowLessonsA = formUserEdit.querySelector("#UserShowLessonsA")
 
 const formPhoto = document.querySelector("#formUserPhoto")
 const photoChange = formPhoto.querySelector("#UserShowPhotoChangeField")

@@ -1,28 +1,35 @@
 function lessonsMain(){
-    lessonsSetUpcoming()
+    const teacher = getHashValue("teacher")
+    const listener = getHashValue("listener")
+    if (teacher || listener){
+        lessonsSetSearch(teacher, listener)
+    } else {
+        lessonsSetUpcoming()
+    }
     lessonsTabUpcoming.addEventListener("click", lessonsSetUpcoming)
     lessonsTabPassed.addEventListener("click", lessonsSetPassed)
+}
+
+function lessonsSetSearch(teacher, listener){
+    lessonsTabUpcoming.classList.add("active")
+    lessonsTabPassed.classList.remove("active")
+    lessonsGet(0, teacher?[teacher]:[], listener?[listener]:[])
 }
 
 function lessonsSetUpcoming(){
     lessonsTabUpcoming.classList.add("active")
     lessonsTabPassed.classList.remove("active")
-    lessonsAPIGetAll(0).then(request => {
-        switch (request.status){
-            case 200:
-                lessonsShow(request.response)
-                break
-            default:
-                showErrorToast()
-                break
-        }
-    })
+    lessonsGet(0)
 }
 
 function lessonsSetPassed(){
     lessonsTabUpcoming.classList.remove("active")
     lessonsTabPassed.classList.add("active")
-    lessonsAPIGetAll(1).then(request => {
+    lessonsGet(1)
+}
+
+function lessonsGet(status=currentStatus, teachers=[], listeners=[]){
+    lessonsAPIGetAll(status, teachers, listeners).then(request => {
         switch (request.status){
             case 200:
                 lessonsShow(request.response)
@@ -31,6 +38,7 @@ function lessonsSetPassed(){
                 showErrorToast()
                 break
         }
+        currentStatus = status
     })
 }
 
@@ -103,6 +111,8 @@ const lessonsTabPassed = document.querySelector("#LessonsTabPassed")
 
 //Table
 const lessonsTableBody = document.querySelector("#LessonsTableBody")
+
+let currentStatus = 0
 
 
 lessonsMain()

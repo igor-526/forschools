@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
+from django.db.models import Q
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -17,8 +18,8 @@ from django.http import Http404
 from .permissions import CanSeeUserPageMixin, get_editable_perm, get_deactivate_perm
 from .forms import SignUpForm
 from .models import NewUser
-from .serializers import (NewUserDetailSerializer,
-                          NewUserListSerializer)
+from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
+                          NewUserNameOnlyListSerializer)
 
 
 def user_login(request):    # страница авторизации и логин
@@ -219,6 +220,40 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
             return NewUser.objects.filter(groups__name='Listener').filter(is_active=True)
         elif group == 'teachers':
             return NewUser.objects.filter(groups__name='Teacher').filter(is_active=True)
+
+
+class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):
+    serializer_class = NewUserNameOnlyListSerializer
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name__in=['Admin', 'Metodist']).exists():
+            print(self.request.query_params)
+            if self.request.query_params.get('group') == 'teacher':
+                return NewUser.objects.filter(groups__name='Teacher',
+                                              is_active=True).distinct()
+            elif self.request.query_params.get('group') == 'listener':
+                return NewUser.objects.filter(groups__name='Listener',
+                                              is_active=True).distinct()
+        if self.request.user.groups.filter(name="Teacher").exists():
+            if self.request.query_params.get('group') == 'teacher':
+                return NewUser.objects.filter(pk=self.request.user.id).distinct()
+            elif self.request.query_params.get('group') == 'listener':
+                return NewUser.objects.filter(
+                    Q(plan_listeners__teacher=self.request.user,
+                      is_active=True) |
+                    Q(plan_listeners__phases__lessons__replace_teacher=self.request.user,
+                      is_active=True)
+                ).distinct()
+        if self.request.user.groups.filter(name='Listener').exists():
+            if self.request.query_params.get('group') == 'teacher':
+                return NewUser.objects.filter(
+                    Q(plan_listeners__listeners=self.request.user,
+                      is_active=True) |
+                    Q(replace_teacher__learningphases__learningplan__listeners=self.request.user,
+                      is_active=True)).distinct()
+            elif self.request.query_params.get('group') == 'listener':
+                return NewUser.objects.filter(pk=self.request.user.id).distinct()
+        return None
 
 
 class UserDetailAPIView(LoginRequiredMixin, RetrieveUpdateAPIView):    # API для вывода/изменения/удаления пользователя

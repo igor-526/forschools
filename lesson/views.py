@@ -73,22 +73,28 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
     serializer_class = LessonListSerializer
 
     def get_queryset(self, *args, **kwargs):
-        queryset = Lesson.objects.filter(status=kwargs.get("status"))
-        if kwargs.get("groups") == 'Teacher':
+        queryset = Lesson.objects.filter(status=self.request.query_params.get("status"))
+        if self.request.user.groups.filter(name="Teacher").exists():
             queryset = queryset.filter(Q(learningphases__learningplan__teacher=kwargs.get("user")) |
                                        Q(replace_teacher=kwargs.get("user")))
-        elif kwargs.get("groups") == 'Listener':
+        elif self.request.user.groups.filter(name="Listener").exists():
             queryset = queryset.filter(learningphases__learningplan__listeners=kwargs.get("user"),
                                        date__isnull=False)
-        return queryset
 
-    def list(self, request, *args, **kwargs):
-        group = request.user.groups.first().name
-        queryset = self.get_queryset(status=request.query_params.get('status'),
-                                     group=group,
-                                     user=request.user)
-        serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        teachers = self.request.query_params.getlist("teacher")
+        listeners = self.request.query_params.getlist("listener")
+        if teachers:
+            queryset = queryset.filter(
+                Q(learningphases__learningplan__teacher_id__in=teachers) |
+                Q(replace_teacher_id__in=teachers)
+            )
+        if listeners:
+            queryset = queryset.filter(learningphases__learningplan__listeners__in=listeners)
+        print(queryset)
+        print(teachers)
+        print(listeners)
+        return queryset.distinct()
+
 
 
 class LessonAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):

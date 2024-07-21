@@ -53,8 +53,19 @@ async function lessonsAPIReplaceTeacher(teacherID, lesson){
     return await APIPostPatchToObject(request)
 }
 
-async function lessonsAPIGetAll(status){
-    const request = await fetch(`/api/v1/lessons?status=${status}`)
+async function lessonsAPIGetAll(status, teachers=[], listeners=[]){
+    let url = `/api/v1/lessons?status=${status}`
+    if (teachers.length !== 0){
+        teachers.forEach(teacher => {
+            url +=`&teacher=${teacher}`
+        })
+    }
+    if (listeners.length !== 0){
+        listeners.forEach(listener => {
+            url +=`&listener=${listener}`
+        })
+    }
+    const request = await fetch(url)
     return await APIGetToObject(request)
 }
 
@@ -106,7 +117,7 @@ async function lessonsAPIReschedulingCancel(lessonID, fd){
 }
 
 async function lessonsAPISetNotHeld(lessonID){
-        const request = await fetch(`/api/v1/lessons/${lessonID}/set_not_held/`, {
+    const request = await fetch(`/api/v1/lessons/${lessonID}/set_not_held/`, {
         method: "POST",
         credentials: 'same-origin',
         headers:{
@@ -117,7 +128,7 @@ async function lessonsAPISetNotHeld(lessonID){
 }
 
 async function lessonsAPIRestore(lessonID, fd){
-        const request = await fetch(`/api/v1/lessons/${lessonID}/restore/`, {
+    const request = await fetch(`/api/v1/lessons/${lessonID}/restore/`, {
         method: "PATCH",
         credentials: 'same-origin',
         headers:{

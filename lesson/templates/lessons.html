@@ -8,7 +8,7 @@
             </div>
             <div class="col-auto">
                 {% if plans_button %}
-                <a href="{% url 'learning_plans' %}"><button type="button" class="btn btn-primary mt-1">Планы обучения</button></a>
+                    <a href="{% url 'learning_plans' %}"><button type="button" class="btn btn-primary mt-1">Планы обучения</button></a>
                 {% endif %}
             </div>
         </div>
@@ -22,6 +22,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="#" id="LessonsTabPassed">Проведённые</a>
             </li>
+            <li class="nav-item">
+                <button id="lessonsTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i>Сбросить</button>
+            </li>
         </ul>
 
         <div class="container-xxl">
@@ -30,8 +33,30 @@
                 <tr>
                     <th scope="col">Наименование</th>
                     <th scope="col">Дата и время</th>
-                    <th scope="col">Преподаватель</th>
-                    <th scope="col">Ученик</th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Преподаватель</b></button>
+                            <ul id="lessonsTableFilterTeacherList" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <input id="lessonsTableFilterTeacherSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="lessonsTableFilterTeacherSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Ученик</b></button>
+                            <ul id="lessonsTableFilterListenerList" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <input id="lessonsTableFilterListenerSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="lessonsTableFilterListenerSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
                     <th scope="col">Действие</th>
                 </tr>
                 </thead>
@@ -39,14 +64,17 @@
             </table>
         </div>
     </div>
-{% include 'toast.html' %}
+    {% include 'toast.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
         const csrftoken = '{{ csrf_token }}';
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/hashutils.js' %}"></script>
     <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_main.js' %}"></script>
+    <script src="{% static 'js/lessons/lessons_main_filters.js' %}"></script>
 {% endblock %}

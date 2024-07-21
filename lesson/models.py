@@ -65,7 +65,7 @@ class Lesson(models.Model):
                                         on_delete=models.SET_NULL,
                                         null=True,
                                         blank=True,
-                                        related_name='lessons')
+                                        related_name='replace_teacher')
     materials = models.ManyToManyField(Material,
                                        verbose_name='Материалы',
                                        related_name='lesson',
