@@ -7,6 +7,8 @@
                 <h1>{{ title }}</h1>
             </div>
             <div class="col-auto">
+                <button id="plansItemAddLessonsButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#plansItemAddLessonsModal">Добавить занятия</button>
+                {% include 'plans_item_modal_addlessons.html' %}
                 {% if can_generate_from_program %}
                     <button id="PlansItemGenerateButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#plansItemFromProgramModal">Сгенерировать из программы</button>
                     {% include 'modals_program.html' %}
@@ -141,6 +143,7 @@
         <script src="{% static 'js/plans/plans_item/plans_item_listeners.js' %}"></script>
         <script src="{% static 'js/plans/plans_item/plan_item_modals.js' %}"></script>
         <script src="{% static 'js/plans/plans_item/plans_item_rescheduling.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_add_lessons.js' %}"></script>
 
         {% if can_generate_from_program %}
             <script src="{% static 'js/programs/programsAPI.js' %}"></script>

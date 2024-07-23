@@ -8,6 +8,9 @@ function planItemMain(){
                 showErrorToast()
         }
     })
+    plansItemAddLessonsButton.addEventListener("click", function (){
+        plansItemAddLessonsSetModal()
+    })
 }
 
 function planItemGetPhaseElement(phase){
@@ -232,5 +235,7 @@ function planItemChangeLesson(lesson=null, id=null, phaseID=null){
 
 //Tables
 const plansItemTableBody = document.querySelector("#PlansItemTableBody")
+
+const plansItemAddLessonsButton = document.querySelector("#plansItemAddLessonsButton")
 
 planItemMain()

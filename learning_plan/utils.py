@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, time
 from learning_program.models import LearningProgram
-from learning_plan.models import LearningPlan
+from learning_plan.models import LearningPlan, LearningPhases
 from lesson.models import Lesson, Place
 
 
@@ -248,3 +248,63 @@ class Rescheduling:
                 lesson.place = None
             lesson.save()
             self.set_hw_deadline(lesson.homeworks.all(), hw_date)
+
+
+class AddLessons:
+    last_date: datetime
+    schedule: dict
+    plan: LearningPlan
+
+    def __init__(self,
+                 first_date: datetime,
+                 schedule: dict,
+                 plan: LearningPlan):
+        self.last_date = first_date
+        self.schedule = schedule
+        self.plan = plan
+
+    def get_next_date(self, show=False) -> dict:
+        ld = self.last_date
+        while ld.weekday() not in self.schedule.keys():
+            ld = ld + timedelta(days=1)
+        else:
+            result = {
+                "date": ld,
+                "start": self.schedule.get(ld.weekday()).get("start"),
+                "end": self.schedule.get(ld.weekday()).get("end")
+            }
+            if not show:
+                self.last_date = ld + timedelta(days=1)
+            return result
+
+    def get_phase(self):
+        plan_phases = self.plan.phases.order_by("-pk").first()
+        if plan_phases:
+            return plan_phases
+        else:
+            phase = LearningPhases.objects.create(
+                name="Этап 1",
+                purpose="Без цели"
+            )
+            self.plan.phases.add(phase)
+            self.plan.save()
+        return phase
+
+    def add_lessons(self, count):
+        count = int(count)
+        phase = self.get_phase()
+        counter = 1
+        while count > 0:
+            next_date = self.get_next_date(False)
+            phase.lessons.create(
+                name=f'Занятие {counter}',
+                start_time=next_date.get("start"),
+                end_time=next_date.get("end"),
+                date=next_date.get("date"),
+                place_id=self.schedule[next_date.get("date").weekday()]["place"]
+            )
+            print(self.schedule[next_date.get("date").weekday()]["place"])
+            counter += 1
+            count -= 1
+
+

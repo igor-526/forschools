@@ -9,7 +9,7 @@ from .permissions import CanSeePlansPageMixin, can_edit_plan, can_generate_from_
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer
 from dls.utils import get_menu
-from .utils import plan_calculated_info, ProgramSetter, get_schedule, Rescheduling
+from .utils import plan_calculated_info, ProgramSetter, get_schedule, Rescheduling, AddLessons
 from learning_program.models import LearningProgram
 from datetime import datetime
 
@@ -159,3 +159,15 @@ class PlansItemSetProgram(LoginRequiredMixin, APIView):
             return JsonResponse({"status": "ok"}, status=201)
         else:
             return JsonResponse({"error": "Вы не можете сгенерировать план на основе программы"}, status=400)
+
+
+class PlanItemAddLessons(LoginRequiredMixin, APIView):
+    def post(self, request, *args, **kwargs):
+        plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
+        lessons_generator = AddLessons(
+            datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
+            get_schedule(request.POST),
+            plan
+        )
+        lessons_generator.add_lessons(request.POST.get("count"))
+        return JsonResponse({"status": "ok"}, status=201)
