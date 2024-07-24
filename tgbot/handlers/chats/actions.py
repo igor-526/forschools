@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 from chat.models import Message
+from tgbot.create_bot import bot
 from tgbot.funcs.chats import chats_send_ask, chats_send, chats_show_unread_messages
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatAnswerCallback
@@ -30,10 +31,15 @@ async def h_chats_show_unread(callback: CallbackQuery,
 async def h_chats_answer(callback: CallbackQuery,
                          callback_data: ChatAnswerCallback,
                          state: FSMContext) -> None:
-    chat_message = await (Message.objects.select_related("receiver").select_related("sender")
-                          .aget(pk=callback_data.chat_message_id))
-    await chat_message.aset_read()
-    await chats_send_ask(callback, chat_message.sender.id, state)
+    print(callback_data.chat_message_id)
+    try:
+        chat_message = await (Message.objects.select_related("receiver").select_related("sender")
+                              .aget(pk=callback_data.chat_message_id))
+        await chat_message.aset_read()
+        await chats_send_ask(callback, chat_message.sender.id, state)
+    except Exception as e:
+        await bot.send_message(chat_id=callback.chat.id, text=str(callback_data))
+        await bot.send_message(chat_id=callback.chat.id, text=str(e))
 
 
 @router.message(StateFilter(ChatsFSM.send_message),
