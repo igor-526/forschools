@@ -5,6 +5,7 @@ from tgbot.finite_states.menu import MenuFSM
 from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.menu import send_menu
 from tgbot.funcs.homeworks import show_homework_queryset
+from tgbot.funcs.chats import chats_show
 
 router = Router(name=__name__)
 
@@ -29,6 +30,13 @@ async def h_mainmenu_lessons(message: types.Message) -> None:
                               "Это даст возможность узнать время и дату занятия без уведомления. "
                               "Преподаватели же смогут увидеть своё расписание на сегодняшний и завтрашний день. "
                               "Также возможность отметить присутствующих и отсутствующих учеников")
+
+
+@router.message(StateFilter(MenuFSM.main_menu),
+                F.text.contains("Чаты"))
+async def h_mainmenu_chats(message: types.Message) -> None:
+    await chats_show(message)
+    await message.delete()
 
 
 @router.message(StateFilter(MenuFSM.main_menu),

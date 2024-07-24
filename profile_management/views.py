@@ -227,7 +227,6 @@ class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):
 
     def get_queryset(self):
         if self.request.user.groups.filter(name__in=['Admin', 'Metodist']).exists():
-            print(self.request.query_params)
             if self.request.query_params.get('group') == 'teacher':
                 return NewUser.objects.filter(groups__name='Teacher',
                                               is_active=True).distinct()
@@ -247,7 +246,7 @@ class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):
         if self.request.user.groups.filter(name='Listener').exists():
             if self.request.query_params.get('group') == 'teacher':
                 return NewUser.objects.filter(
-                    Q(plan_listeners__listeners=self.request.user,
+                    Q(plan_teacher__listeners=self.request.user,
                       is_active=True) |
                     Q(replace_teacher__learningphases__learningplan__listeners=self.request.user,
                       is_active=True)).distinct()

@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 from random import randint
+
+from django.db.models import Q
 from django.utils import timezone
 
 
@@ -200,6 +202,71 @@ class NewUser(AbstractUser):
     def delete_photo(self):
         self.photo = 'profile_pictures/base_avatar.png'
         self.save()
+
+    def get_users_for_chat(self):
+        users = []
+        if self.groups.filter(name__in=['Admin', 'Metodist']).exists():
+            users = [{
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "unreaded": 0
+            } for u in NewUser.objects.filter(is_active=True)]
+        elif self.groups.filter(name="Teacher").exists():
+            users = [{
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "unreaded": 0
+            } for u in NewUser.objects.filter(
+                Q(plan_listeners__teacher=self,
+                  is_active=True) |
+                Q(plan_listeners__phases__lessons__replace_teacher=self,
+                  is_active=True)).distinct()]
+        elif self.groups.filter(name='Listener').exists():
+            users = [{
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "unreaded": 0
+            } for u in NewUser.objects.filter(
+                Q(plan_listeners__listeners=self,
+                  is_active=True) |
+                Q(replace_teacher__learningphases__learningplan__listeners=self,
+                  is_active=True)).distinct()]
+        return users
+
+    async def aget_users_for_chat(self):
+        admin_or_metodist = await self.groups.filter(name__in=['Admin', 'Metodist']).aexists()
+        if admin_or_metodist:
+            return [{
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "unreaded": 0
+            } async for u in NewUser.objects.filter(is_active=True)]
+        teacher = await self.groups.filter(name="Teacher").aexists()
+        if teacher:
+            print("teacher")
+            return [{
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "unreaded": 0
+            } async for u in NewUser.objects.filter(
+                Q(plan_listeners__teacher=self,
+                  is_active=True) |
+                Q(groups__name__in=["Admin", "Metodist"]) |
+                Q(plan_listeners__phases__lessons__replace_teacher=self,
+                  is_active=True)).distinct()]
+        listener = await self.groups.filter(name='Listener').aexists()
+        if listener:
+            return [{
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "unreaded": 0
+            } async for u in NewUser.objects.filter(
+                Q(plan_teacher__listeners=self,
+                  is_active=True) |
+                Q(groups__name="Admin",
+                  is_active=True) |
+                Q(replace_teacher__learningphases__learningplan__listeners=self,
+                  is_active=True)).distinct()]
 
 
 class Telegram(models.Model):

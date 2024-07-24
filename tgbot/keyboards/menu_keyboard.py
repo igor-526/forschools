@@ -8,7 +8,7 @@ settings_button = KeyboardButton(text="Настройки")
 menu_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[materials_button], [hw_button]])
 
 
-def get_menu_keyboard(materials=False, homeworks=False, lessons=False):
+def get_menu_keyboard(chats: int, materials=False, homeworks=False, lessons=False):
     keys = []
     if materials:
         keys.append([materials_button])
@@ -16,6 +16,7 @@ def get_menu_keyboard(materials=False, homeworks=False, lessons=False):
         keys.append([hw_button])
     if lessons:
         keys.append([lessons_button])
+    keys.append([KeyboardButton(text=f'Чаты ({chats})')])
     keys.append([settings_button])
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=keys)
 

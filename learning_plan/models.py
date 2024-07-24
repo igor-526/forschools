@@ -64,6 +64,7 @@ class LearningPlan(models.Model):
                                 verbose_name="Преподаватель",
                                 blank=False,
                                 null=True,
+                                related_name="plan_teacher",
                                 on_delete=models.SET_NULL)
     purpose = models.CharField(verbose_name="Цель",
                                blank=True,
