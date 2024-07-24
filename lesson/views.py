@@ -9,7 +9,8 @@ from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpda
 from rest_framework.views import APIView
 from learning_plan.permissions import plans_button
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
-from tgbot.utils import send_homework_tg
+from material.models import Material
+from tgbot.utils import send_homework_tg, send_materials
 from .models import Lesson, Place
 from dls.utils import get_menu
 from dls.settings import MATERIAL_FORMATS
@@ -90,11 +91,7 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
             )
         if listeners:
             queryset = queryset.filter(learningphases__learningplan__listeners__in=listeners)
-        print(queryset)
-        print(teachers)
-        print(listeners)
         return queryset.distinct()
-
 
 
 class LessonAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
@@ -106,8 +103,15 @@ class LessonSetMaterialsAPIView(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
-            lesson.materials.set(request.data.get('materials'))
+            lesson_materials_old = [mat.id for mat in lesson.materials.all()]
+            lesson_materials_new = request.data.get('materials')
+            lesson.materials.set(lesson_materials_new)
             lesson.save()
+            if lesson.status == 1:
+                new_materials = list(filter(lambda mat: mat not in lesson_materials_old, lesson_materials_new))
+                if new_materials:
+                    for listener in lesson.get_learning_plan().listeners.all():
+                        send_materials(listener.id, Material.objects.filter(id__in=new_materials))
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return JsonResponse({'status': 'ok'})

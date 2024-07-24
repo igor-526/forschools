@@ -174,7 +174,6 @@ function lessonItemSetStatusCancelledSet(){
                     }, 500)
                     break
                 case 400:
-                    console.log(request.response)
                     lessonItemSetStatusCancelledValidation(request.response)
                     break
                 default:

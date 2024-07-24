@@ -41,7 +41,7 @@ def replace_teacher_button(request):
 
 
 def can_edit_lesson_materials(request, lesson: Lesson):
-    if lesson.status == 1:
+    if lesson.status == 3:
         return False
     return can_add_homework(request, lesson)
 
