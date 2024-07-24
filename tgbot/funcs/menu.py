@@ -20,8 +20,9 @@ async def send_menu(message: types.Message, state: FSMContext) -> None:
         lessons = True
     await state.clear()
     await message.delete()
-    await message.answer(text="Выберите действие: ", reply_markup=get_menu_keyboard(0,
-                                                                                    materials,
-                                                                                    homeworks,
-                                                                                    lessons))
+    await message.answer(text="Выберите действие: ",
+                         reply_markup=get_menu_keyboard(await user.aget_unread_messages_count(),
+                                                        materials,
+                                                        homeworks,
+                                                        lessons))
     await state.set_state(MenuFSM.main_menu)

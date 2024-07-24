@@ -50,7 +50,8 @@ async def chats_send_ask(callback: CallbackQuery,
                          to_user_id: int,
                          state: FSMContext):
     await bot.send_message(callback.message.chat.id,
-                           "Напишите сообщение")
+                           "Напишите сообщение",
+                           reply_markup=cancel_keyboard)
     await state.set_state(ChatsFSM.send_message)
     await state.set_data({"message_for": to_user_id})
 
@@ -64,3 +65,14 @@ async def chats_notificate(chat_message_id: int):
                                     f"{chat_message.sender.last_name}</b>\n"
                                     f"{chat_message.message}",
                                reply_markup=chats_get_answer_button(chat_message.sender.id))
+
+
+async def chats_show_unread_messages(callback: CallbackQuery,
+                                     callback_data: ChatListCallback):
+    user = await get_user(callback.message.chat.id)
+    messages = [msg async for msg in Message.objects.filter(receiver=user,
+                                                            sender__id=callback_data.user_id,
+                                                            read__isnull=True)]
+    for msg in messages:
+        await chats_notificate(msg.id)
+        await msg.aset_read()

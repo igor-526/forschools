@@ -31,7 +31,7 @@ class Message(models.Model):
     class Meta:
         verbose_name = 'Сообщение'
         verbose_name_plural = 'Сообщения'
-        ordering = ['-date']
+        ordering = ['-read', '-date']
 
     def __str__(self):
         return self.message
@@ -43,4 +43,3 @@ class Message(models.Model):
     async def aset_read(self):
         self.read = timezone.now()
         await self.asave()
-

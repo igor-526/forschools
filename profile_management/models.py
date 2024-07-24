@@ -15,7 +15,7 @@ class Programs(models.Model):
         verbose_name = 'Программа работы',
         verbose_name_plural = 'Программы работы',
         ordering = ['name']
- 
+
     def __str__(self):
         return self.name
 
@@ -209,13 +209,13 @@ class NewUser(AbstractUser):
             users = [{
                 "id": u.id,
                 "name": f"{u.first_name} {u.last_name}",
-                "unreaded": 0
+                "unreaded": self.get_unread_messages_count(u)
             } for u in NewUser.objects.filter(is_active=True)]
         elif self.groups.filter(name="Teacher").exists():
             users = [{
                 "id": u.id,
                 "name": f"{u.first_name} {u.last_name}",
-                "unreaded": 0
+                "unreaded": self.get_unread_messages_count(u)
             } for u in NewUser.objects.filter(
                 Q(plan_listeners__teacher=self,
                   is_active=True) |
@@ -225,7 +225,7 @@ class NewUser(AbstractUser):
             users = [{
                 "id": u.id,
                 "name": f"{u.first_name} {u.last_name}",
-                "unreaded": 0
+                "unreaded": self.get_unread_messages_count(u)
             } for u in NewUser.objects.filter(
                 Q(plan_listeners__listeners=self,
                   is_active=True) |
@@ -239,15 +239,14 @@ class NewUser(AbstractUser):
             return [{
                 "id": u.id,
                 "name": f"{u.first_name} {u.last_name}",
-                "unreaded": 0
+                "unreaded": await self.aget_unread_messages_count(u)
             } async for u in NewUser.objects.filter(is_active=True)]
         teacher = await self.groups.filter(name="Teacher").aexists()
         if teacher:
-            print("teacher")
             return [{
                 "id": u.id,
                 "name": f"{u.first_name} {u.last_name}",
-                "unreaded": 0
+                "unreaded": await self.aget_unread_messages_count(u)
             } async for u in NewUser.objects.filter(
                 Q(plan_listeners__teacher=self,
                   is_active=True) |
@@ -259,7 +258,7 @@ class NewUser(AbstractUser):
             return [{
                 "id": u.id,
                 "name": f"{u.first_name} {u.last_name}",
-                "unreaded": 0
+                "unreaded": await self.aget_unread_messages_count(u)
             } async for u in NewUser.objects.filter(
                 Q(plan_teacher__listeners=self,
                   is_active=True) |
@@ -267,6 +266,20 @@ class NewUser(AbstractUser):
                   is_active=True) |
                 Q(replace_teacher__learningphases__learningplan__listeners=self,
                   is_active=True)).distinct()]
+
+    def get_unread_messages_count(self, sender=None):
+        if sender is None:
+            return self.message_receiver.filter(read__isnull=True).count()
+        else:
+            return self.message_receiver.filter(read__isnull=True,
+                                                sender=sender).count()
+
+    async def aget_unread_messages_count(self, sender=None):
+        if sender is None:
+            return await self.message_receiver.filter(read__isnull=True).acount()
+        else:
+            return await self.message_receiver.filter(read__isnull=True,
+                                                      sender=sender).acount()
 
 
 class Telegram(models.Model):
