@@ -176,10 +176,6 @@ def get_show_key(mat_id) -> InlineKeyboardMarkup:
 
 def get_keyboard_material_item(material, send_tg=False) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(
-        text="В браузере",
-        url="https://yandex.ru/"
-    )
     if send_tg:
         builder.button(
             text="Отправить в TG",

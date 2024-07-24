@@ -221,8 +221,6 @@ function materialsMainShowTable(list = [], action="clear"){
         const tdType = document.createElement("td")
         const tdActions = document.createElement("td")
         const tdNameA = document.createElement("a")
-        const tdActionsDownload = document.createElement("a")
-        const tdActionsDownloadButton = document.createElement("button")
         const tdActionsShow = document.createElement("button")
         const tdActionsEdit = document.createElement("button")
         const tdActionsBG = document.createElement('div')
@@ -235,14 +233,6 @@ function materialsMainShowTable(list = [], action="clear"){
         tdActionsEdit.innerHTML = '<i class="bi bi-pencil"></i>'
         tdActionsEdit.setAttribute("data-material-id", material.id)
         tdActionsEdit.addEventListener('click', getActionsEditListener)
-
-        tdActionsDownload.href = material.file
-        tdActionsDownload.download = ""
-        tdActionsDownloadButton.type = "button"
-        tdActionsDownloadButton.classList.add('btn', 'btn-outline-primary')
-        tdActionsDownloadButton.innerHTML = '<i class="bi bi-download"></i>'
-        tdActionsDownload.insertAdjacentElement('beforeend', tdActionsDownloadButton)
-
         tdActionsShow.type = "button"
         tdActionsShow.classList.add("btn", "btn-outline-primary")
         tdActionsShow.setAttribute("data-material-id", material.id)
@@ -253,7 +243,6 @@ function materialsMainShowTable(list = [], action="clear"){
 
         tdActions.insertAdjacentElement('beforeend', tdActionsBG)
         tdActionsBG.insertAdjacentElement('beforeend', tdActionsEdit)
-        tdActionsBG.insertAdjacentElement('beforeend', tdActionsDownload)
         tdActionsBG.insertAdjacentElement('beforeend', tdActionsShow)
 
         const tdCheckboxCheck = document.createElement('input')
