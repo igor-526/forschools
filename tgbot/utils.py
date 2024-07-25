@@ -1,9 +1,12 @@
+from chat.models import Message
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
 from material.models import Material
 from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot
 import async_to_sync as sync
+
+from tgbot.keyboards.chats import chats_get_answer_button
 from tgbot.keyboards.materials import get_show_key, get_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons
 from dls.utils import get_tg_id_sync
@@ -77,3 +80,13 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
         return sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
                                                message=msg,
                                                reply_markup=get_homeworks_buttons([homework]))
+
+
+def send_chat_message(message: Message):
+    user_tg_id = get_tg_id_sync(message.receiver)
+    if user_tg_id:
+        sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
+                                        message=f"<b>Новое сообщение от {message.sender.first_name} "
+                                             f"{message.sender.last_name}</b>\n"
+                                             f"{message.message}",
+                                        reply_markup=chats_get_answer_button(message.sender.id))

@@ -203,30 +203,33 @@ class NewUser(AbstractUser):
         self.photo = 'profile_pictures/base_avatar.png'
         self.save()
 
+    def _get_user_chat_info(self, u):
+        info = {
+            "id": u.id,
+            "name": f"{u.first_name} {u.last_name}",
+            "unread": self.get_unread_messages_count(u),
+            "photo": u.photo.url,
+            "last_message_text": None,
+            "last_message_date": None
+        }
+        last_message = self.message_receiver.first()
+        if last_message:
+            info["last_message_text"] = last_message.message if last_message.message else ""
+            info["last_message_date"] = last_message.date
+        return info
+
     def get_users_for_chat(self):
         users = []
         if self.groups.filter(name__in=['Admin', 'Metodist']).exists():
-            users = [{
-                "id": u.id,
-                "name": f"{u.first_name} {u.last_name}",
-                "unreaded": self.get_unread_messages_count(u)
-            } for u in NewUser.objects.filter(is_active=True)]
+            users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(is_active=True)]
         elif self.groups.filter(name="Teacher").exists():
-            users = [{
-                "id": u.id,
-                "name": f"{u.first_name} {u.last_name}",
-                "unreaded": self.get_unread_messages_count(u)
-            } for u in NewUser.objects.filter(
+            users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(
                 Q(plan_listeners__teacher=self,
                   is_active=True) |
                 Q(plan_listeners__phases__lessons__replace_teacher=self,
                   is_active=True)).distinct()]
         elif self.groups.filter(name='Listener').exists():
-            users = [{
-                "id": u.id,
-                "name": f"{u.first_name} {u.last_name}",
-                "unreaded": self.get_unread_messages_count(u)
-            } for u in NewUser.objects.filter(
+            users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(
                 Q(plan_listeners__listeners=self,
                   is_active=True) |
                 Q(replace_teacher__learningphases__learningplan__listeners=self,

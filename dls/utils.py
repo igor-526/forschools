@@ -14,6 +14,7 @@ def get_menu(user):
     admin_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
+        {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
@@ -28,6 +29,7 @@ def get_menu(user):
     teacher_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
+        {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
@@ -41,6 +43,7 @@ def get_menu(user):
     listener_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
+        {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
         {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
