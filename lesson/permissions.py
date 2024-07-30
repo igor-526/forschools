@@ -70,9 +70,8 @@ def can_add_homework(request, lesson: Lesson):
     if ("Admin" in usergroups) or ("Metodist" in usergroups):
         return True
     if "Teacher" in usergroups:
-        teacher = lesson.learningphases_set.filter(learningplan__teacher=request.user).exists()
-        replace_teacher = lesson.replace_teacher == request.user
-        return teacher or replace_teacher
+        teacher = lesson.get_teacher() == request.user
+        return teacher
     return False
 
 
@@ -89,9 +88,8 @@ def can_set_passed(request, lesson: Lesson):
     if ("Admin" in usergroups) or ("Metodist" in usergroups):
         return True
     if "Teacher" in usergroups:
-        teacher = lesson.learningphases_set.filter(learningplan__teacher=request.user).exists()
-        replace_teacher = lesson.replace_teacher == request.user
-        return teacher or replace_teacher
+        teacher = lesson.get_teacher() == request.user
+        return teacher
     return False
 
 
