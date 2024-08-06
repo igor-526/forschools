@@ -18,6 +18,7 @@ from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
                           can_see_lesson_materials, can_add_homework, can_set_passed, can_set_not_held)
+from django.utils import timezone
 from datetime import datetime, timedelta
 
 
@@ -75,12 +76,14 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
 
     def get_queryset(self, *args, **kwargs):
         queryset = Lesson.objects.filter(status=self.request.query_params.get("status"))
+        user = self.request.user
         if self.request.user.groups.filter(name="Teacher").exists():
-            queryset = queryset.filter(Q(learningphases__learningplan__teacher=kwargs.get("user")) |
-                                       Q(replace_teacher=kwargs.get("user")))
+            queryset = queryset.filter(Q(learningphases__learningplan__teacher_id=user) |
+                                       Q(replace_teacher=user))
         elif self.request.user.groups.filter(name="Listener").exists():
-            queryset = queryset.filter(learningphases__learningplan__listeners=kwargs.get("user"),
-                                       date__isnull=False)
+            queryset = queryset.filter(learningphases__learningplan__listeners=user,
+                                       date__gte=timezone.now().date() - timedelta(days=1),
+                                       date__lte=timezone.now().date() + timedelta(days=7))
 
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")
@@ -91,7 +94,7 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
             )
         if listeners:
             queryset = queryset.filter(learningphases__learningplan__listeners__in=listeners)
-        return queryset.distinct()
+        return queryset.distinct()[:50]
 
 
 class LessonAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
