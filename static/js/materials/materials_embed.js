@@ -16,8 +16,20 @@ function materialsEmbedMain(){
     materialsEmbedShowAllButton.addEventListener("click", async function () {
         await materialsEmbedCollapseAction(0, materialsEmbedShowAllButton)
     })
-
     materialsEmbedModalAddButton.addEventListener("click", materialEmbedChange)
+    materialsEmbedTabAddInput.addEventListener("change", materialsEmbedAddMaterial)
+    materialsEmbedAllowedTypesArray = materialsEmbedAllowedTypesArray
+        .concat(
+            mediaFormats.imageFormats,
+            mediaFormats.videoFormats,
+            mediaFormats.animationFormats,
+            mediaFormats.archiveFormats,
+            mediaFormats.pdfFormats,
+            mediaFormats.voiceFormats,
+            mediaFormats.audioFormats,
+            mediaFormats.textFormats,
+            mediaFormats.presentationFormats
+        )
 }
 
 function materialsEmbedSelectListener(element, updonly = false){
@@ -80,6 +92,17 @@ function materialsEmbedGetAll(type=currentType, offset = currentOffset){
         currentOffset = offset
     }
 
+    switch (type){
+        case 1:
+            materialsEmbedTabMy.classList.remove("active")
+            materialsEmbedTabGeneral.classList.add("active")
+            break
+        case 2:
+            materialsEmbedTabMy.classList.add("active")
+            materialsEmbedTabGeneral.classList.remove("active")
+            break
+    }
+
     materialsAPIGetAll(
         type, offset,
         materialsEmbedTableFilterNameField.value,
@@ -96,6 +119,58 @@ function materialsEmbedGetAll(type=currentType, offset = currentOffset){
             )
         }
     })
+}
+
+function materialsEmbedAddMaterial(){
+    function validate(errors){
+        materialsEmbedTabAddInputErrors.classList.add("d-none")
+        materialsEmbedTabAddInputErrors.innerHTML = ""
+        if (errors){
+            materialsEmbedTabAddInputErrors.classList.remove("d-none")
+            materialsEmbedTabAddInputErrors.innerHTML = errors.join("<br>")
+        } else {
+            const filename = materialsEmbedTabAddInput.value.split(/([\\./])/g)
+            const type = filename[filename.length-1]
+            if (!materialsEmbedAllowedTypesArray.includes(type.toLowerCase())){
+                materialsEmbedTabAddInputErrors.classList.remove("d-none")
+                materialsEmbedTabAddInputErrors.innerHTML = "Формат файла не поддерживается"
+                return false
+            }
+            return true
+        }
+    }
+    if (validate()){
+        const fd = new FormData()
+        fd.set("type", "2")
+        fd.set("file", materialsEmbedTabAddInput.files[0])
+        const filename = materialsEmbedTabAddInput.value.split(/([\\./])/g)
+        fd.set("name", filename[filename.length-3])
+        materialsEmbedTabAddInputErrors.classList.remove("d-none")
+        materialsEmbedTabAddInputErrors.innerHTML = `
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+        `
+        materialsAPICreate(fd).then(request => {
+            switch (request.status){
+                case 201:
+                    bsMaterialsEmbedTabAddInputDropdown.hide()
+                    materialsEmbedTabAddInputErrors.classList.add("d-none")
+                    materialsEmbedTabAddInputErrors.innerHTML = ""
+                    materialsEmbedTabAddInput.value = ""
+                    materialsEmbedSelectedArray.push(Number(request.response.id))
+                    materialsEmbedGetAll(2)
+                    break
+                case 400:
+                    let errors = []
+                    const keys = Object.keys(request.response)
+                    keys.forEach(k => {
+                        errors = errors.concat(request.response[k])
+                    })
+                    validate(errors)
+            }
+        })
+    }
 }
 
 async function materialsEmbedCollapseAction(matID, button) {
@@ -273,20 +348,14 @@ function materialsEmbedSet(selected = []){
     if (see_general){
         materialsEmbedTabGeneral.addEventListener('click', function () {
             materialsEmbedGetAll(1, 0)
-            this.classList.add('active')
-            materialsEmbedTabMy.classList.remove('active')
         })
         materialsEmbedGetAll(1, 0)
     } else {
-        materialsEmbedTabGeneral.classList.remove("active")
         materialsEmbedTabGeneral.classList.add("disabled")
-        materialsEmbedTabMy.classList.add("active")
         materialsEmbedGetAll(2, 0)
     }
     materialsEmbedTabMy.addEventListener('click', function () {
             materialsEmbedGetAll(2, 0)
-            materialsEmbedTabMy.classList.add('active')
-            materialsEmbedTabGeneral.classList.remove('active')
         }
     )
     materialsEmbedReset()
@@ -789,6 +858,7 @@ async function materialEmbedChange(){
 
 let currentType
 let currentOffset = 0
+let materialsEmbedAllowedTypesArray = []
 
 
 //Bootstrap Elements
@@ -798,6 +868,12 @@ const bsMaterialsEmbedModal = new bootstrap.Modal(materialsEmbedModal)
 //Tabs
 const materialsEmbedTabGeneral = materialsEmbedModal.querySelector("#materialsEmbedTabGeneral")
 const materialsEmbedTabMy = materialsEmbedModal.querySelector("#materialsEmbedTabMy")
+
+//Add
+const materialsEmbedTabAddInput = materialsEmbedModal.querySelector("#materialsEmbedTabAddInput")
+const materialsEmbedTabAddInputErrors = materialsEmbedModal.querySelector("#materialsEmbedTabAddInputErrors")
+const materialsEmbedTabAddInputDropdown = materialsEmbedModal.querySelector("#materialsEmbedTabAddInputDropdown")
+const bsMaterialsEmbedTabAddInputDropdown = new bootstrap.Dropdown(materialsEmbedTabAddInputDropdown)
 
 //Filters
 const materialsEmbedTableFilterNameField = materialsEmbedModal.querySelector("#materialsEmbedTableFilterNameField")
@@ -831,7 +907,6 @@ const materialEmbedTableFilterProgramsLessonlistSearchErase = materialEmbedTable
 let materialsEmbedFilterProgramsSelectedProgsArray = []
 let materialsEmbedFilterProgramsSelectedPhasesArray = []
 let materialsEmbedFilterProgramsSelectedLessonsArray = []
-
 
 //Table
 const materialsEmbedModalTableBody = materialsEmbedModal.querySelector("#MaterialsEmbedModalTableBody")
