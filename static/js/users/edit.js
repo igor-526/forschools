@@ -11,13 +11,6 @@ function usersAdminEditMain(){
     })
 
     if (canSetNewEngChLvlPrg){
-        formUserEditProgramSelect.addEventListener('change', function () {
-            if (this.value === 'new'){
-                formUserEditProgramInput.classList.remove('d-none')
-            } else {
-                formUserEditProgramInput.classList.add('d-none')
-            }
-        })
         formUserEditEngagementChannelSelect.addEventListener('change', function () {
             if (this.value === 'new'){
                 formUserEditEngagementChannelInput.classList.remove('d-none')
@@ -113,97 +106,91 @@ async function usersAdminEditSaveUser(userID) {
     }
 }
 
-async function usersAdminShowUser(){
+async function usersAdminShowUser(userID){
     formUserEdit.reset()
-    formUserShowLessonsA.classList.add("d-none")
-    const userId = this.attributes.getNamedItem('data-user-id').value
-    let userObj
-    await usersAPIGetItem(userId).then(response => {
-        if (response.status === 200){
-            userObj = response.response
-        } else {
-            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+    await usersAPIGetItem(userID).then(request => {
+        switch (request.status){
+            case 200:
+                if (request.response.can_deactivate){
+                    formUserEditActivateButton.classList.remove("d-none")
+                    if (request.response.is_active){
+                        formUserEditActivateButton.classList.add("btn-danger")
+                        formUserEditActivateButton.classList.remove("btn-warning")
+                        formUserEditActivateButton.innerHTML = "Деактивировать"
+                        formUserEditActivateButton.setAttribute("data-action", "deactivate")
+                    } else {
+                        formUserEditActivateButton.classList.remove("btn-danger")
+                        formUserEditActivateButton.classList.add("btn-warning")
+                        formUserEditActivateButton.innerHTML = "Активировать"
+                        formUserEditActivateButton.setAttribute("data-action", "activate")
+                    }
+                }
+                else {
+                    formUserEditActivateButton.classList.add("d-none")
+                }
+
+                if (request.response.engagement_channel){
+                    formUserEditEngagementChannelSelect.value = request.response.engagement_channel.name
+                }
+                if (request.response.level){
+                    formUserEditLevelSelect.value = request.response.level.name
+                }
+                formUserEditUsernameField.value = request.response.username
+                formUserEditLastNameField.value = request.response.last_name
+                formUserEditFirstNameField.value = request.response.first_name
+                request.response.groups.forEach(group => {
+                    switch (group.name) {
+                        case "Admin":
+                            formUserCheckboxAdmin.checked = true
+                            break
+                        case "Metodist":
+                            formUserCheckboxMetodist.checked = true
+                            break
+                        case "Teacher":
+                            formUserCheckboxTeacher.checked = true
+                            break
+                        case "Curator":
+                            formUserCheckboxCurator.checked = true
+                            break
+                        case "Listener":
+                            formUserCheckboxListener.checked = true
+                            break
+                    }
+                })
+                formUserEditEmailField.value = request.response.email
+                formUserEditBDate.value = request.response.bdate
+                photoImage.src = request.response.photo
+                const activityDate = new Date(request.response.last_activity)
+                const registrationDate = new Date(request.response.date_joined)
+                formUserShowLastActivity.innerHTML = `Последняя активность: ${activityDate.toLocaleString()}`
+                formUserShowRegistrationDate.innerHTML = `Дата регистрации: ${registrationDate.toLocaleDateString()}`
+                bsOffcanvasUser.show()
+                console.log(request.response)
+                break
+            default:
+                showErrorToast()
+                break
         }
     })
-    if (userObj){
-        if (userObj.can_deactivate){
-            formUserEditActivateButton.classList.remove("d-none")
-            if (userObj.is_active){
-                formUserEditActivateButton.classList.add("btn-danger")
-                formUserEditActivateButton.classList.remove("btn-warning")
-                formUserEditActivateButton.innerHTML = "Деактивировать"
-                formUserEditActivateButton.setAttribute("data-action", "deactivate")
-            } else {
-                formUserEditActivateButton.classList.remove("btn-danger")
-                formUserEditActivateButton.classList.add("btn-warning")
-                formUserEditActivateButton.innerHTML = "Активировать"
-                formUserEditActivateButton.setAttribute("data-action", "activate")
-            }
-        }
-        else {
-            formUserEditActivateButton.classList.add("d-none")
-        }
-
-        if (userObj.engagement_channel){
-            formUserEditEngagementChannelSelect.value = userObj.engagement_channel.name
-        }
-        if (userObj.level){
-            formUserEditLevelSelect.value = userObj.level.name
-        }
-        formUserEditUsernameField.value = userObj.username
-        formUserEditLastNameField.value = userObj.last_name
-        formUserEditFirstNameField.value = userObj.first_name
-        userObj.groups.forEach(group => {
-            switch (group.name) {
-                case "Admin":
-                    formUserCheckboxAdmin.checked = true
-                    break
-                case "Metodist":
-                    formUserCheckboxMetodist.checked = true
-                    break
-                case "Teacher":
-                    formUserCheckboxTeacher.checked = true
-                    formUserShowLessonsA.classList.remove("d-none")
-                    formUserShowLessonsA.href = `/lessons#teacher=${userObj.id}`
-                    break
-                case "Curator":
-                    formUserCheckboxCurator.checked = true
-                    break
-                case "Listener":
-                    formUserCheckboxListener.checked = true
-                    formUserShowLessonsA.classList.remove("d-none")
-                    formUserShowLessonsA.href = `/lessons#listener=${userObj.id}`
-                    break
-            }
-        })
-        formUserEditEmailField.value = userObj.email
-        formUserEditBDate.value = userObj.bdate
-        formUserEditProgress.value = userObj.progress
-        formUserEditWorkExperience.value = userObj.work_experience
-        formUserEditPrivateLessons.checked = userObj.private_lessons
-        formUserEditGroupLessons.checked = userObj.group_lessons
-        formUserEditNote.value = userObj.note
-        photoImage.src = userObj.photo
-        userObj.programs.map(program => {
-            const option = formUserEditProgramSelect.querySelector(`[value="${program.name}"]`)
-            option.selected = true
-        })
-        const activityDate = new Date(userObj.last_activity)
-        const registrationDate = new Date(userObj.date_joined)
-        formUserShowLastActivity.innerHTML = `Последняя активность: ${activityDate.toLocaleString()}`
-        formUserShowRegistrationDate.innerHTML = `Дата регистрации: ${registrationDate.toLocaleDateString()}`
-
-        bsOffcanvasUser.show()
-        const actionButtons = [
-            formUserEditActivateButton,
-            formUserEditChangePasswordButton,
-            formUserEditTelegramButton,
-            formUserEditSaveButton,
-            formPhoto]
-        actionButtons.forEach(button => {
-            button.setAttribute("data-user-id", userObj.id)
-        })
-    }
+    // if (userObj){
+    //
+    //     formUserEditProgress.value = userObj.progress
+    //     formUserEditWorkExperience.value = userObj.work_experience
+    //     formUserEditPrivateLessons.checked = userObj.private_lessons
+    //     formUserEditGroupLessons.checked = userObj.group_lessons
+    //     formUserEditNote.value = userObj.note
+    //
+    //     bsOffcanvasUser.show()
+    //     const actionButtons = [
+    //         formUserEditActivateButton,
+    //         formUserEditChangePasswordButton,
+    //         formUserEditTelegramButton,
+    //         formUserEditSaveButton,
+    //         formPhoto]
+    //     actionButtons.forEach(button => {
+    //         button.setAttribute("data-user-id", userObj.id)
+    //     })
+    // }
 
 }
 
@@ -247,9 +234,6 @@ const formUserEditPrivateLessons = formUserEdit.querySelector("#UserShowPrivateL
 const formUserEditPrivateLessonsBlock = formUserEdit.querySelector("#UserShowPrivateLessonsBlock")
 const formUserEditGroupLessons = formUserEdit.querySelector("#UserShowGroupLessonsField")
 const formUserEditGroupLessonsBlock = formUserEdit.querySelector("#UserShowGroupLessonsBlock")
-const formUserEditProgramSelect = formUserEdit.querySelector("#UserShowProgramsField")
-const formUserEditProgramInput = formUserEdit.querySelector("#UserNewProgramField")
-const formUserEditProgramBlock = formUserEdit.querySelector(".UserShowProgramsBlock")
 const formUserEditProgress = formUserEdit.querySelector("#UserShowProgressField")
 const formUserEditProgressBlock = formUserEdit.querySelector(".UserShowProgressBlock")
 const formUserEditLevelSelect = formUserEdit.querySelector("#UserShowLevelField")
@@ -268,7 +252,6 @@ const formUserEditSaveButton = formUserEdit.querySelector("#UserShowSaveButton")
 const formUserEditActivateButton = formUserEdit.querySelector("#UserShowActivateButton")
 const formUserEditChangePasswordButton = formUserEdit.querySelector("#UserShowChangePasswordButton")
 const formUserEditTelegramButton = formUserEdit.querySelector("#UserShowTelegramButton")
-const formUserShowLessonsA = formUserEdit.querySelector("#UserShowLessonsA")
 
 const formPhoto = document.querySelector("#formUserPhoto")
 const photoChange = formPhoto.querySelector("#UserShowPhotoChangeField")

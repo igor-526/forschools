@@ -32,6 +32,7 @@ async def h_chats_answer(callback: CallbackQuery,
     try:
         chat_message = await (Message.objects.select_related("receiver").select_related("sender")
                               .aget(pk=callback_data.chat_message_id))
+        await chat_message.aset_read()
         await chats_send_ask(callback, chat_message.sender.id, state)
     except Exception as e:
         await bot.send_message(chat_id=callback.from_user.id, text=str(callback_data))

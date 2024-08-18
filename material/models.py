@@ -1,6 +1,5 @@
 from django.db import models
 from datetime import datetime
-from profile_management.models import NewUser
 
 
 MATERIAL_TYPE_CHOISES = (
@@ -27,7 +26,7 @@ class MaterialLevel(models.Model):
 
 
 class Material(models.Model):
-    owner = models.ForeignKey(NewUser,
+    owner = models.ForeignKey("profile_management.NewUser",
                               verbose_name='Владелец',
                               on_delete=models.CASCADE,
                               related_name='material_owner',
@@ -73,7 +72,7 @@ class Material(models.Model):
                                   default=True,
                                   null=False,
                                   blank=True)
-    access = models.ManyToManyField(NewUser,
+    access = models.ManyToManyField("profile_management.NewUser",
                                     related_name='material_access',
                                     verbose_name='Доступ',
                                     blank=True)
@@ -122,7 +121,7 @@ class File(models.Model):
                             null=False,
                             blank=False,
                             unique=True)
-    owner = models.ForeignKey(NewUser,
+    owner = models.ForeignKey("profile_management.NewUser",
                               verbose_name='Владелец',
                               on_delete=models.CASCADE,
                               null=True,

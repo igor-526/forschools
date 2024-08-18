@@ -160,12 +160,12 @@ class Command(BaseCommand):
 
         self.admin_perms += (
             edit_plans_all, see_teachers_comment,
-            see_plans_all,
+            see_plans_all, edit_plans_self
         )
 
         self.metodist_perms += (
             edit_plans_all, see_teachers_comment,
-            see_plans_all,
+            see_plans_all, edit_plans_self
         )
 
         self.teacher_perms += (

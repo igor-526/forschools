@@ -1,27 +1,13 @@
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from django.db.models import Q
-
 from tgbot.keyboards.callbacks.chats import ChatListCallback
-from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.chats import chats_get_users_buttons, chats_get_answer_button
-from tgbot.keyboards.materials import get_keyboard_query_user
-from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
-                                      get_hwlogs_buttons)
-from tgbot.keyboards.default import ready_cancel_keyboard, cancel_keyboard
-from tgbot.finite_states.homework import HomeworkFSM
+from tgbot.keyboards.default import cancel_keyboard
 from tgbot.funcs.menu import send_menu
-from tgbot.utils import get_tg_id, get_user
-from profile_management.models import NewUser
-from homework.models import Homework, HomeworkLog
-from material.models import File
+from tgbot.utils import get_tg_id
 from tgbot.create_bot import bot
-from tgbot.utils import get_group_and_perms, get_user
-from homework.utils import status_code_to_string
-from material.utils.get_type import get_type
-from aiogram.utils.media_group import MediaGroupBuilder
-from dls.settings import MEDIA_ROOT
+from tgbot.utils import get_user
 from tgbot.finite_states.chats import ChatsFSM
 from chat.models import Message
 
@@ -43,7 +29,7 @@ async def chats_send(message: types.Message, state: FSMContext):
     )
     await chats_notificate(chat_message.id)
     await message.answer("Сообщение отправлено")
-    await send_menu(message, state)
+    await send_menu(message, state, False)
 
 
 async def chats_send_ask(callback: CallbackQuery,
@@ -64,7 +50,7 @@ async def chats_notificate(chat_message_id: int):
                                text=f"<b>Новое сообщение от {chat_message.sender.first_name} "
                                     f"{chat_message.sender.last_name}</b>\n"
                                     f"{chat_message.message}",
-                               reply_markup=chats_get_answer_button(chat_message.sender.id))
+                               reply_markup=chats_get_answer_button(chat_message.id))
 
 
 async def chats_show_unread_messages(callback: CallbackQuery,

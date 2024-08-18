@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from learning_plan.permissions import plans_button
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from material.models import Material
+from profile_management.models import NewUser
 from tgbot.utils import send_homework_tg, send_materials
 from .models import Lesson, Place
 from dls.utils import get_menu
@@ -76,14 +77,25 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
 
     def get_queryset(self, *args, **kwargs):
         queryset = Lesson.objects.filter(status=self.request.query_params.get("status"))
-        user = self.request.user
-        if self.request.user.groups.filter(name="Teacher").exists():
-            queryset = queryset.filter(Q(learningphases__learningplan__teacher_id=user) |
-                                       Q(replace_teacher=user))
-        elif self.request.user.groups.filter(name="Listener").exists():
-            queryset = queryset.filter(learningphases__learningplan__listeners=user,
-                                       date__gte=timezone.now().date() - timedelta(days=1),
-                                       date__lte=timezone.now().date() + timedelta(days=7))
+        ds = self.request.query_params.get("date_start")
+        de = self.request.query_params.get("date_end")
+        if ds:
+            ds = datetime.strptime(ds, "%Y-%m-%d")
+            queryset = queryset.filter(date__gte=ds)
+
+        if de:
+            ds = datetime.strptime(de, "%Y-%m-%d")
+            queryset = queryset.filter(date__lte=ds)
+        foruser = self.request.query_params.get("foruser")
+        user = NewUser.objects.get(pk=foruser) if foruser else self.request.user
+        if not user.groups.filter(name__in=["Admin", "Metodist"]).exists():
+            if user.groups.filter(name="Teacher").exists():
+                queryset = queryset.filter(Q(learningphases__learningplan__teacher_id=user) |
+                                           Q(replace_teacher=user))
+            elif user.groups.filter(name="Listener").exists():
+                queryset = queryset.filter(learningphases__learningplan__listeners=user,
+                                           date__gte=timezone.now().date() - timedelta(days=1),
+                                           date__lte=timezone.now().date() + timedelta(days=7))
 
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")

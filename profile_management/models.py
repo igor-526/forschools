@@ -1,23 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 from random import randint
-
 from django.db.models import Q
 from django.utils import timezone
-
-
-class Programs(models.Model):
-    name = models.CharField(verbose_name='Наименование',
-                            null=False,
-                            blank=False)
-
-    class Meta:
-        verbose_name = 'Программа работы',
-        verbose_name_plural = 'Программы работы',
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
+from chat.models import Message
 
 
 class Level(models.Model):
@@ -62,7 +48,26 @@ class EngagementChannel(models.Model):
         return self.name
 
 
+class Cities(models.Model):
+    name = models.CharField(verbose_name="Город",
+                            null=False,
+                            blank=False,
+                            unique=True)
+    tz = models.IntegerField(verbose_name="Часовой пояс",
+                             null=False,
+                             blank=False,
+                             default=0)
+
+
 class NewUser(AbstractUser):
+    patronymic = models.CharField(verbose_name="Отчество",
+                                  null=True,
+                                  blank=True)
+    city = models.ForeignKey(Cities,
+                             verbose_name="Город",
+                             on_delete=models.SET_NULL,
+                             null=True,
+                             blank=True)
     photo = models.ImageField(verbose_name='Фотография профиля',
                               upload_to='profile_pictures/',
                               null=False,
@@ -80,9 +85,6 @@ class NewUser(AbstractUser):
     work_experience = models.CharField(verbose_name='Опыт работы',
                                        null=True,
                                        blank=True)
-    programs = models.ManyToManyField(Programs,
-                                      verbose_name='Программы работы',
-                                      blank=True)
     listener_category = models.ManyToManyField(ListenerCategory,
                                                verbose_name='Категории учеников',
                                                blank=True)
@@ -178,22 +180,6 @@ class NewUser(AbstractUser):
         else:
             return "Произошла ошибка при определении наименования"
 
-    def set_programs(self, programslist: list, new=None):
-        all_progs = []
-        if "new" in programslist:
-            programslist.remove("new")
-
-        for prog in programslist:
-            if not prog.strip(" ") == "":
-                try:
-                    all_progs.append(Programs.objects.get(name=prog))
-                except Programs.DoesNotExist:
-                    return "Программа обучения не найдена"
-        if new and new.strip(" ") != "":
-            all_progs.append(Programs.objects.get_or_create(name=new)[0])
-        self.programs.set(all_progs)
-        return "success"
-
     def set_lessons_type(self, private, group):
         self.private_lessons = True if private else False
         self.group_lessons = True if group else False
@@ -212,7 +198,9 @@ class NewUser(AbstractUser):
             "last_message_text": None,
             "last_message_date": None
         }
-        last_message = self.message_receiver.first()
+        last_message = Message.objects.filter(
+            Q(sender=u, receiver=self) | Q(receiver=u, sender=self)
+        ).order_by('-date').first()
         if last_message:
             info["last_message_text"] = last_message.message if last_message.message else ""
             info["last_message_date"] = last_message.date
@@ -221,19 +209,23 @@ class NewUser(AbstractUser):
     def get_users_for_chat(self):
         users = []
         if self.groups.filter(name__in=['Admin', 'Metodist']).exists():
-            users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(is_active=True)]
+            users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(is_active=True).exclude(id=self.id)]
         elif self.groups.filter(name="Teacher").exists():
             users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(
                 Q(plan_listeners__teacher=self,
                   is_active=True) |
                 Q(plan_listeners__phases__lessons__replace_teacher=self,
-                  is_active=True)).distinct()]
+                  is_active=True) |
+                Q(groups__name__in=['Admin', 'Metodist'],
+                  is_active=True)).exclude(id=self.id).distinct()]
         elif self.groups.filter(name='Listener').exists():
             users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(
-                Q(plan_listeners__listeners=self,
+                Q(plan_teacher__listeners=self,
                   is_active=True) |
                 Q(replace_teacher__learningphases__learningplan__listeners=self,
-                  is_active=True)).distinct()]
+                  is_active=True) |
+                Q(groups__name__in=['Admin'],
+                  is_active=True)).exclude(id=self.id).distinct()]
         return users
 
     async def aget_users_for_chat(self):

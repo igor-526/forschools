@@ -2,12 +2,10 @@ async function main(){
     await getLevels()
     await getMaterialCategories()
     await getMaterialLevels()
-    await getLearningPrograms()
     await getEngagementChannels()
     await getLessonPlaces()
     tabLevels.addEventListener('click', setLevels)
     tabMaterialCategories.addEventListener('click', setMaterialCategories)
-    tabLearningPrograms.addEventListener('click', setLearningPrograms)
     tabEngagementChannels.addEventListener('click', setEngagementChannels)
     tabPlaces.addEventListener('click', setLessonPlaces)
     tabMaterialLevels.addEventListener('click', setMaterialLevels)
@@ -25,7 +23,6 @@ const bsModalEditPlace = new bootstrap.Modal(modalEditPlace)
 //Collections Sets
 let levelsSet
 let materialCategoriesSet
-let learningProgramsSet
 let engagementChannelsSet
 let lessonPlacesSet
 let materialLevelsSet
@@ -33,7 +30,6 @@ let materialLevelsSet
 //Tabs
 const tabLevels = document.querySelector("#CollectionsTabLevels")
 const tabMaterialCategories = document.querySelector("#CollectionsTabMaterialCategories")
-const tabLearningPrograms = document.querySelector("#CollectionsTabLearningPrograms")
 const tabEngagementChannels = document.querySelector("#CollectionsTabEngagementChannels")
 const tabPlaces = document.querySelector("#CollectionsTabPlaces")
 const tabMaterialLevels = document.querySelector("#CollectionsTabMaterialLevels")

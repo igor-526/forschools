@@ -28,8 +28,8 @@ function lessonsSetPassed(){
     lessonsGet(1)
 }
 
-function lessonsGet(status=currentStatus, teachers=[], listeners=[]){
-    lessonsAPIGetAll(status, teachers, listeners).then(request => {
+function lessonsGet(status=currentStatus, teachers=[], listeners=[], ds=null, de=null){
+    lessonsAPIGetAll(status, teachers, listeners, ds, de).then(request => {
         switch (request.status){
             case 200:
                 lessonsShow(request.response)

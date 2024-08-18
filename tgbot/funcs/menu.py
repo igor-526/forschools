@@ -5,7 +5,7 @@ from tgbot.keyboards import get_menu_keyboard
 from tgbot.utils import get_user, get_group_and_perms
 
 
-async def send_menu(message: types.Message, state: FSMContext) -> None:
+async def send_menu(message: types.Message, state: FSMContext, delete=True) -> None:
     user = await get_user(message.from_user.id)
     perms = await get_group_and_perms(user.id)
     materials = False
@@ -19,7 +19,8 @@ async def send_menu(message: types.Message, state: FSMContext) -> None:
         homeworks = True
         lessons = True
     await state.clear()
-    await message.delete()
+    if delete:
+        await message.delete()
     await message.answer(text="Выберите действие: ",
                          reply_markup=get_menu_keyboard(await user.aget_unread_messages_count(),
                                                         materials,

@@ -53,7 +53,7 @@ async function lessonsAPIReplaceTeacher(teacherID, lesson){
     return await APIPostPatchToObject(request)
 }
 
-async function lessonsAPIGetAll(status, teachers=[], listeners=[]){
+async function lessonsAPIGetAll(status, teachers=[], listeners=[], ds= null, de= null, foruser){
     let url = `/api/v1/lessons?status=${status}`
     if (teachers.length !== 0){
         teachers.forEach(teacher => {
@@ -64,6 +64,15 @@ async function lessonsAPIGetAll(status, teachers=[], listeners=[]){
         listeners.forEach(listener => {
             url +=`&listener=${listener}`
         })
+    }
+    if (foruser){
+        url +=`&foruser=${foruser}`
+    }
+    if (ds){
+        url +=`&date_start=${ds}`
+    }
+    if (de){
+        url +=`&date_end=${de}`
     }
     const request = await fetch(url)
     return await APIGetToObject(request)

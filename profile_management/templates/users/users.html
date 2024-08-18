@@ -47,12 +47,14 @@
             <th scope="col">Username</th>
             <th scope="col">Фамилия и имя</th>
             <th scope="col">Роль</th>
+            <th scope="col">Действие</th>
         </tr>
         </thead>
         <tbody id="UsersTableBody">
         </tbody>
     </table>
     {% include 'users/offcanvas_user.html' %}
+    {% include 'users/users_modal_learninginfo.html' %}
     {% include 'users/modal_telegram.html' %}
     {% include 'users/users_modal_change_password.html' %}
     {% include 'toast.html' %}
@@ -66,7 +68,9 @@
     <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/collections/collections_api.js' %}"></script>
+    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
     <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
+    <script src="{% static 'js/users/users_learninginfo.js' %}"></script>
 
     <script>
         const canSetNewEngChLvlPrg = true

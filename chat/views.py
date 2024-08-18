@@ -28,7 +28,7 @@ class ChatUsersListView(LoginRequiredMixin, ListAPIView):
         return JsonResponse(chats, safe=False, status=status.HTTP_200_OK)
 
 
-class ChatMessagedListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
+class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = ChatMessageSerializer
 
     def get_queryset(self, *args, **kwargs):
@@ -38,8 +38,14 @@ class ChatMessagedListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             Q(receiver=self.request.user,
               sender_id=self.kwargs.get("user"))
         ).order_by('-date')
-        queryset.filter(sender_id=self.kwargs.get("user")).update(read=timezone.now())
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        queryset.filter(sender_id=self.kwargs.get("user"),
+                        read__isnull=True).update(read=timezone.now())
+        serializer = self.get_serializer(queryset, many=True)
+        return JsonResponse(serializer.data, status=200, safe=False)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data,

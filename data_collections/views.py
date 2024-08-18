@@ -4,18 +4,14 @@ from django.views.generic import TemplateView
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView
 from dls.utils import get_menu
 from profile_management.models import (EngagementChannel,
-                                       Level,
-                                       Programs,
-                                       )
+                                       Level)
 from material.models import MaterialCategory, MaterialLevel
 from lesson.models import Place
 from .serializers import (LevelSerializer,
                           MaterialCategorySerializer,
-                          ProgramSerializer,
                           EngagementChannelSerializer,
                           PlaceSerializer,
-                          MaterialLevelSerializer,
-                          )
+                          MaterialLevelSerializer)
 
 
 class CollectionPageView(LoginRequiredMixin, TemplateView):
@@ -44,16 +40,6 @@ class MaterialCategoryListAPIView(LoginRequiredMixin, ListCreateAPIView):
 class MaterialCategoryAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     queryset = MaterialCategory.objects.all()
     serializer_class = MaterialCategorySerializer
-
-
-class ProgramListAPIView(LoginRequiredMixin, ListCreateAPIView):
-    queryset = Programs.objects.all()
-    serializer_class = ProgramSerializer
-
-
-class ProgramAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
-    queryset = Programs.objects.all()
-    serializer_class = ProgramSerializer
 
 
 class EngagementChannelListAPIView(LoginRequiredMixin, ListCreateAPIView):

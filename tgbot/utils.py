@@ -1,7 +1,6 @@
 from chat.models import Message
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
-from material.models import Material
 from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot
 import async_to_sync as sync
@@ -89,4 +88,4 @@ def send_chat_message(message: Message):
                                         message=f"<b>Новое сообщение от {message.sender.first_name} "
                                              f"{message.sender.last_name}</b>\n"
                                              f"{message.message}",
-                                        reply_markup=chats_get_answer_button(message.sender.id))
+                                        reply_markup=chats_get_answer_button(message.id))

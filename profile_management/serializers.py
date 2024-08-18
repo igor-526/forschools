@@ -3,7 +3,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from .models import NewUser, Telegram
 from django.contrib.auth.models import Group
-from data_collections.serializers import EngagementChannelSerializer, LevelSerializer, ProgramSerializer
+from data_collections.serializers import EngagementChannelSerializer, LevelSerializer
 from .permissions import get_editable_perm, get_can_add_new_engch_lvl_prg_perm, get_deactivate_perm
 
 
@@ -23,7 +23,6 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
     groups = NewUserGroupSerializer(many=True, read_only=True)
     engagement_channel = EngagementChannelSerializer(read_only=True)
     level = LevelSerializer(read_only=True)
-    programs = ProgramSerializer(many=True, read_only=True)
     telegram = TelegramSerializer(many=True, read_only=True)
     can_deactivate = serializers.SerializerMethodField(read_only=True)
 
@@ -69,17 +68,6 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
         if status != "success":
             raise ValidationError({'lvl': status})
 
-    def set_programs(self, instance: NewUser, can_create=False):
-        request = self.context.get("request")
-        print(request.POST)
-        programlist = request.POST.getlist('prog')
-        program_new = request.POST.get('prog_new')
-        if program_new and not can_create:
-            raise ValidationError({'prog': "Вы не можете создавать программы обучения"})
-        status = instance.set_programs(programlist, program_new)
-        if status != "success":
-            raise ValidationError({'prog': status})
-
     def update(self, instance: NewUser, validated_data):
         request = self.context.get("request")
         if get_editable_perm(request.user, instance):
@@ -87,7 +75,6 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
             self.set_groups(instance)
             self.set_level(instance, can_create)
             self.set_engagement_channel(instance, can_create)
-            self.set_programs(instance, can_create)
             instance.set_lessons_type(request.POST.get('private_lessons'),
                                       request.POST.get('group_lessons'))
             return super(NewUserDetailSerializer, self).update(instance, validated_data)
@@ -98,16 +85,20 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
 class NewUserListSerializer(serializers.ModelSerializer):
     groups = NewUserGroupSerializer(many=True)
     editable = serializers.SerializerMethodField(read_only=True)
+    tg = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = NewUser
-        fields = ['id', 'first_name', 'last_name',
+        fields = ['id', 'first_name', 'last_name', 'patronymic', 'city',
                   'username', 'groups', 'is_active',
-                  'editable']
+                  'editable', 'tg']
 
     def get_editable(self, obj):
         request = self.context.get('request')
         return get_editable_perm(request.user, obj)
+
+    def get_tg(self, obj):
+        return obj.telegram.exists()
 
 
 class NewUserNameOnlyListSerializer(serializers.ModelSerializer):

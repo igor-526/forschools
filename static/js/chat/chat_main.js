@@ -27,8 +27,9 @@ function chatGetDateTimeString(dt){
             break
         default:
             datestring = `${date.getDate().toString().padStart(2, "0")}.${date.getMonth().toString().padStart(2, "0")}`
+            break
     }
-    datestring += `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`
+    datestring += ` ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`
     return datestring
 }
 
@@ -102,6 +103,7 @@ function chatGetMessages(userID, fromUserID){
     chatAPIGetMessages(userID, fromUserID).then(request => {
         switch (request.status){
             case 200:
+                console.log(request.response)
                 chatShowMessages(request.response, userID)
                 selectedUserId = userID
                 if (!fromUserID){

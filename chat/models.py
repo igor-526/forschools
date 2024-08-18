@@ -1,16 +1,14 @@
 from django.db import models
 from django.utils import timezone
-
-from profile_management.models import NewUser
 from material.models import File
 
 
 class Message(models.Model):
-    sender = models.ForeignKey(NewUser,
+    sender = models.ForeignKey("profile_management.NewUser",
                                on_delete=models.DO_NOTHING,
                                verbose_name="Отправитель",
                                related_name='message_sender')
-    receiver = models.ForeignKey(NewUser,
+    receiver = models.ForeignKey("profile_management.NewUser",
                                  on_delete=models.DO_NOTHING,
                                  verbose_name="Получатель",
                                  related_name='message_receiver')

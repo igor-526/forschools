@@ -22,8 +22,3 @@ async function collectionsAPIGetLevels(){
     const request = await fetch("/api/v1/collections/levels/")
     return await APIGetToObject(request)
 }
-
-async function collectionsAPIGetPrograms(){
-    const request = await fetch("/api/v1/collections/learn_progs/")
-    return await APIGetToObject(request)
-}

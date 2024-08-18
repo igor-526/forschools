@@ -1,12 +1,8 @@
-async function usersAdminTelegramMain(){
+function usersAdminTelegramMain(){
     usersShowTelegramButtonDisconnect.addEventListener('click', function (){
         bsTelegramDisconnectConfirmModal.show()
     })
     if (tgAction === "admin"){
-        formUserEditTelegramButton.addEventListener('click', async function(){
-            const userID = formUserEditTelegramButton.attributes.getNamedItem("data-user-id").value
-            await usersAdminTelegramOpen(userID)
-        })
         userShowTelegramDisconnectConfirmDeleteButton.addEventListener('click', async function(){
             const userID = formUserEditTelegramButton.attributes.getNamedItem("data-user-id").value
             await disconnectTelegram(userID)
@@ -17,7 +13,7 @@ async function usersAdminTelegramMain(){
 }
 
 
-async function usersAdminTelegramOpen(userID) {
+async function usersAdminTelegramSet(userID) {
     await telegramAPIGetUser(userID).then(response => {
         if (response.status === 200){
             if (response.response.status === "disconnected"){
