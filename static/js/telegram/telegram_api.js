@@ -54,3 +54,13 @@ async function telegramAPISendLessonMaterials(lesson, materials=[]){
     })
     return APIGetToObject(request)
 }
+
+async function telegramAPIGetJournal(){
+    const request = await fetch('/api/v1/tgjournal/')
+    return APIGetToObject(request)
+}
+
+async function telegramAPIGetJournalNote(noteID){
+    const request = await fetch(`/api/v1/tgjournal/${noteID}`)
+    return APIGetToObject(request)
+}

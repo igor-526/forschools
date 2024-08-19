@@ -6,18 +6,19 @@ from tgbot.create_bot import bot
 import async_to_sync as sync
 
 from tgbot.keyboards.chats import chats_get_answer_button
-from tgbot.keyboards.materials import get_show_key, get_keyboard_query
+from tgbot.keyboards.materials import get_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons
 from dls.utils import get_tg_id_sync
+from tgbot.models import TgBotJournal
 
 
 class AsyncClass:
     async def send_tg_message_sync(self, tg_id, message, reply_markup=None) -> dict:
         try:
-            await bot.send_message(chat_id=tg_id, text=message, reply_markup=reply_markup)
-            return {'status': 'success', 'errors': []}
+            msg = await bot.send_message(chat_id=tg_id, text=message, reply_markup=reply_markup)
+            return {'status': 'success', 'errors': [], 'msg_id': msg.message_id}
         except Exception as e:
-            return {'status': 'error', 'errors': [str(e)]}
+            return {'status': 'error', 'errors': [str(e)], 'msg_id': None}
 
 
 sync_funcs = sync.methods(AsyncClass())
@@ -84,8 +85,47 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
 def send_chat_message(message: Message):
     user_tg_id = get_tg_id_sync(message.receiver)
     if user_tg_id:
-        sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
-                                        message=f"<b>Новое сообщение от {message.sender.first_name} "
-                                             f"{message.sender.last_name}</b>\n"
-                                             f"{message.message}",
-                                        reply_markup=chats_get_answer_button(message.id))
+        msg_text = (f"<b>Новое сообщение от {message.sender.first_name} "
+                    f"{message.sender.last_name}</b>\n{message.message}")
+        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
+                                                     message=msg_text,
+                                                     reply_markup=chats_get_answer_button(message.id))
+        if msg_result.get("status") == "success":
+            TgBotJournal.objects.create(
+                recipient=message.receiver,
+                initiator=message.sender,
+                event=7,
+                data={
+                    "status": "success",
+                    "text": msg_text,
+                    "msg_id": msg_result.get("msg_id"),
+                    "errors": [],
+                    "attachments": []
+                }
+            )
+        else:
+            TgBotJournal.objects.create(
+                recipient=message.receiver,
+                initiator=message.sender,
+                event=7,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": msg_result.get("errors"),
+                    "attachments": []
+                }
+            )
+    else:
+        TgBotJournal.objects.create(
+            recipient=message.receiver,
+            initiator=message.sender,
+            event=7,
+            data={
+                "status": "error",
+                "text": None,
+                "msg_id": None,
+                "errors": ["У пользователя не привязан Telegram"],
+                "attachments": []
+            }
+        )

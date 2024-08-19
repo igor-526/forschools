@@ -19,7 +19,9 @@ from learning_program.urls import (urlpatterns as learning_program_urlpatterns,
                                    apiv1patterns as learning_program_apiv1patterns)
 from chat.urls import (urlpatterns as chat_urlpatterns,
                        apiv1patterns as chat_apiv1patterns)
-from tgbot.urls import apiv1patterns as tgbot_apiv1patterns
+from tgbot.urls import (apiv1patterns as tgbot_apiv1patterns,
+                        urlpatterns as tgbot_urlpatterns,
+                        apiv1journalpatterns as tgbot_journal_apiv1patterns)
 from automatic_fields.urls import apiv1patterns as automatic_fields_apiv1patterns
 
 
@@ -33,8 +35,10 @@ urlpatterns = [
     path('learning_plans/', include(learning_plan_urlpatterns)),
     path('messages/', include(chat_urlpatterns)),
     path('learning_programs/', include(learning_program_urlpatterns)),
-    path('api/v1/learning_programs/', include(learning_program_apiv1patterns)),
+    path('tgjournal/', include(tgbot_urlpatterns)),
 
+    path('api/v1/tgjournal/', include(tgbot_journal_apiv1patterns)),
+    path('api/v1/learning_programs/', include(learning_program_apiv1patterns)),
     path('api/v1/learning_plans/', include(learning_plan_apiv1patterns)),
     path('api/v1/messages/', include(chat_apiv1patterns)),
     path('api/v1/users/', include(profile_apiv1patterns)),

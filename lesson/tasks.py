@@ -2,6 +2,7 @@ from dls.celery import app
 from .models import Lesson
 from tgbot.utils import sync_funcs as tg
 import datetime
+from tgbot.models import TgBotJournal
 
 
 @app.task
@@ -23,9 +24,45 @@ def notification_listeners_lessons():
                 if lesson.place:
                     msg += (f'<a href="{lesson.place.url}">Ссылка на занятие</a>\n'
                             f'<b>Просьба не подключаться заранее</b>')
-                tg.send_tg_message_sync(
+                result = tg.send_tg_message_sync(
                     tg_id=telegram.tg_id,
                     message=msg
+                )
+                if result.get('status') == 'success':
+                    TgBotJournal.objects.create(
+                        recipient=listener,
+                        event=2,
+                        data={
+                            "status": "success",
+                            "text": msg,
+                            "msg_id": result.get('msg_id'),
+                            "errors": [],
+                            "attachments": []
+                        }
+                    )
+                else:
+                    TgBotJournal.objects.create(
+                        recipient=listener,
+                        event=2,
+                        data={
+                            "status": "error",
+                            "text": msg,
+                            "msg_id": None,
+                            "errors": result.get('errors'),
+                            "attachments": []
+                        }
+                    )
+            else:
+                TgBotJournal.objects.create(
+                    recipient=listener,
+                    event=2,
+                    data={
+                        "status": "error",
+                        "text": None,
+                        "msg_id": None,
+                        "errors": ["У пользователя не привязан Telegram"],
+                        "attachments": []
+                    }
                 )
 
 
@@ -44,29 +81,105 @@ def notification_tomorrow_schedule():
             telegram_l = listener.telegram.first()
             if telegram_l:
                 if notifications_l.get(telegram_l.tg_id):
-                    notifications_l[telegram_l.tg_id] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                          f"{lesson.end_time.strftime('%H:%M')}</b>: {teacher}")
+                    notifications_l[telegram_l.tg_id]["msg"] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
+                                                                 f"{lesson.end_time.strftime('%H:%M')}</b>: {teacher}")
                 else:
-                    notifications_l[telegram_l.tg_id] = (f"<b>Завтра запланированы следующие занятия:</b>\n"
-                                                         f"<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                         f"{lesson.end_time.strftime('%H:%M')}</b>: {teacher}")
+                    notifications_l[telegram_l.tg_id] = {
+                        "msg": (f"<b>Завтра запланированы следующие занятия:</b>\n"
+                                f"<b>{lesson.start_time.strftime('%H:%M')}-"
+                                f"{lesson.end_time.strftime('%H:%M')}</b>: {teacher}"),
+                        "usr_id": listener.id
+                    }
+            else:
+                TgBotJournal.objects.create(
+                    recipient=listener,
+                    event=1,
+                    data={
+                        "status": "error",
+                        "text": None,
+                        "msg_id": None,
+                        "errors": ["У пользователя не привязан Telegram"],
+                        "attachments": []
+                    }
+                )
         telegram_t = teacher.telegram.first()
         if telegram_t:
             listeners_str = ', '.join([str(listener) for listener in listeners])
             if notifications_t.get(telegram_t.tg_id):
-                notifications_t[telegram_t.tg_id] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                      f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}")
+                notifications_t[telegram_t.tg_id]["msg"] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
+                                                             f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}")
             else:
-                notifications_t[telegram_t.tg_id] = (f"<b>Ваше расписание на завтра:</b>\n"
-                                                     f"<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                     f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}")
+                notifications_t[telegram_t.tg_id] = {"msg": (f"<b>Ваше расписание на завтра:</b>\n"
+                                                             f"<b>{lesson.start_time.strftime('%H:%M')}-"
+                                                             f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}"),
+                                                     "usr_id": teacher.id}
+        else:
+            TgBotJournal.objects.create(
+                recipient=teacher,
+                event=1,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": ["У пользователя не привязан Telegram"],
+                    "attachments": []
+                }
+            )
     for tg_id in notifications_l:
-        tg.send_tg_message_sync(
+        msg_result = tg.send_tg_message_sync(
             tg_id=tg_id,
-            message=notifications_l[tg_id]
+            message=notifications_l[tg_id]["msg"]
         )
+        if msg_result.get("status") == "success":
+            TgBotJournal.objects.create(
+                recipient_id=notifications_l[tg_id]["usr_id"],
+                event=1,
+                data={
+                    "status": "success",
+                    "text": notifications_l[tg_id]["msg"],
+                    "msg_id": msg_result.get("msg_id"),
+                    "errors": [],
+                    "attachments": []
+                }
+            )
+        else:
+            TgBotJournal.objects.create(
+                recipient_id=notifications_l[tg_id]["usr_id"],
+                event=1,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": msg_result.get("errors"),
+                    "attachments": []
+                }
+            )
     for tg_id in notifications_t:
-        tg.send_tg_message_sync(
+        msg_result = tg.send_tg_message_sync(
             tg_id=tg_id,
-            message=notifications_t[tg_id]
+            message=notifications_t[tg_id]["msg"]
         )
+        if msg_result.get("status") == "success":
+            TgBotJournal.objects.create(
+                recipient_id=notifications_t[tg_id]["usr_id"],
+                event=1,
+                data={
+                    "status": "success",
+                    "text": notifications_t[tg_id]["msg"],
+                    "msg_id": msg_result.get("msg_id"),
+                    "errors": [],
+                    "attachments": []
+                }
+            )
+        else:
+            TgBotJournal.objects.create(
+                recipient_id=notifications_t[tg_id]["usr_id"],
+                event=1,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": msg_result.get("errors"),
+                    "attachments": []
+                }
+            )

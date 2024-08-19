@@ -14,6 +14,6 @@ app.conf.beat_schedule = {
     },
     'notification_tomorrow_schedule': {
         'task': 'lesson.tasks.notification_tomorrow_schedule',
-        'schedule': crontab(hour='20', minute='0')
+        'schedule': crontab(hour='20', minute='00')
     }
 }

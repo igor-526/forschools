@@ -23,6 +23,7 @@ def get_menu(user):
         {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
+            {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
@@ -37,6 +38,7 @@ def get_menu(user):
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
+            {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]

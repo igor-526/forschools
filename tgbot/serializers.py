@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from profile_management.models import NewUser, Telegram
+from .models import TgBotJournal
+from profile_management.serializers import NewUserNameOnlyListSerializer
 
 
 class TelegramSerializer(serializers.ModelSerializer):
@@ -18,3 +20,13 @@ class UserTelegramSerializer(serializers.ModelSerializer):
 
     def get_is_self_tg(self, user):
         return self.context['request'].user == user
+
+
+class TgJournalSerializer(serializers.ModelSerializer):
+    initiator = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    recipient = NewUserNameOnlyListSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = TgBotJournal
+        fields = '__all__'
+

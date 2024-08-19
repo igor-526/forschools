@@ -5,6 +5,7 @@ from tgbot.keyboards.callbacks.chats import ChatListCallback
 from tgbot.keyboards.chats import chats_get_users_buttons, chats_get_answer_button
 from tgbot.keyboards.default import cancel_keyboard
 from tgbot.funcs.menu import send_menu
+from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id
 from tgbot.create_bot import bot
 from tgbot.utils import get_user
@@ -46,11 +47,50 @@ async def chats_notificate(chat_message_id: int):
     chat_message = await Message.objects.select_related("receiver").select_related("sender").aget(pk=chat_message_id)
     tg_id = await get_tg_id(chat_message.receiver)
     if tg_id:
-        await bot.send_message(chat_id=tg_id,
-                               text=f"<b>Новое сообщение от {chat_message.sender.first_name} "
-                                    f"{chat_message.sender.last_name}</b>\n"
-                                    f"{chat_message.message}",
-                               reply_markup=chats_get_answer_button(chat_message.id))
+        msg_text = (f"<b>Новое сообщение от {chat_message.sender.first_name} "
+                    f"{chat_message.sender.last_name}</b>\n{chat_message.message}")
+        try:
+            msg_result = await bot.send_message(chat_id=tg_id,
+                                                text=msg_text,
+                                                reply_markup=chats_get_answer_button(chat_message.id))
+            await TgBotJournal.objects.acreate(
+                recipient=chat_message.receiver,
+                initiator=chat_message.sender,
+                event=7,
+                data={
+                    "status": "success",
+                    "text": msg_text,
+                    "msg_id": msg_result.message_id,
+                    "errors": [],
+                    "attachments": []
+                }
+            )
+        except Exception as e:
+            await TgBotJournal.objects.acreate(
+                recipient=chat_message.receiver,
+                initiator=chat_message.sender,
+                event=7,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": [str(e)],
+                    "attachments": []
+                }
+            )
+    else:
+        await TgBotJournal.objects.acreate(
+            recipient=chat_message.receiver,
+            initiator=chat_message.sender,
+            event=7,
+            data={
+                "status": "error",
+                "text": None,
+                "msg_id": None,
+                "errors": ["У пользователя не привязан Telegram"],
+                "attachments": []
+            }
+        )
 
 
 async def chats_show_unread_messages(callback: CallbackQuery,

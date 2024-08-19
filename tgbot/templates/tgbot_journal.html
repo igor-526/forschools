@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <div class="row justify-content-between">
+            <h1>Журнал действий Telegram</h1>
+        </div>
+    </div>
+    <div class="container-xxl">
+        <div class="container-xxl">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <td>Событие</td>
+                    <td>Время</td>
+                    <td>Инициатор</td>
+                    <td>Получатель</td>
+                    <td>Статус</td>
+                </tr>
+                </thead>
+                <tbody id="tgJournalTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    {% include 'toast.html' %}
+    {% include 'tgbot_journal_status.html' %}
+
+{% endblock %}
+{% block static_js %}
+    <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/timeutils.js' %}"></script>
+    <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
+    <script src="{% static 'js/telegram/telegram_journal.js' %}"></script>
+    <script src="{% static 'js/telegram/telegram_journal_filter.js' %}"></script>
+    <script src="{% static 'js/telegram/telegram_journal_status.js' %}"></script>
+{% endblock %}
