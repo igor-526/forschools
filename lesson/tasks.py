@@ -10,8 +10,8 @@ def notification_listeners_lessons():
     lessons = Lesson.objects.filter(
         status=0,
         date=datetime.date.today(),
-        start_time__gte=datetime.datetime.now() + datetime.timedelta(minutes=5),
-        start_time__lte=datetime.datetime.now() + datetime.timedelta(hours=1, minutes=5)
+        start_time__gt=datetime.datetime.now() + datetime.timedelta(hours=1),
+        start_time__lte=datetime.datetime.now() + datetime.timedelta(hours=1, minutes=15)
     )
     for lesson in lessons:
         listeners = lesson.get_listeners()
@@ -19,7 +19,7 @@ def notification_listeners_lessons():
             telegram = listener.telegram.first()
             if telegram:
                 msg = (f"<b>Напоминание о занятии</b>\n"
-                       f"Сегодня в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+                       f"<b>Сегодня</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
                        f"преподавателем <b>{lesson.get_teacher()}</b>\n\n")
                 if lesson.place:
                     msg += (f'<a href="{lesson.place.url}">Ссылка на занятие</a>\n'
@@ -67,29 +67,52 @@ def notification_listeners_lessons():
 
 
 @app.task
-def notification_tomorrow_schedule():
+def notification_listeners_tomorrow_lessons():
     lessons = Lesson.objects.filter(
         status=0,
         date=datetime.date.today() + datetime.timedelta(days=1),
+        start_time__gte=datetime.datetime.now(),
+        start_time__lte=datetime.datetime.now() + datetime.timedelta(hours=1)
     )
-    notifications_l = {}
-    notifications_t = {}
     for lesson in lessons:
         listeners = lesson.get_listeners()
-        teacher = lesson.get_teacher()
         for listener in listeners:
-            telegram_l = listener.telegram.first()
-            if telegram_l:
-                if notifications_l.get(telegram_l.tg_id):
-                    notifications_l[telegram_l.tg_id]["msg"] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                                 f"{lesson.end_time.strftime('%H:%M')}</b>: {teacher}")
+            telegram = listener.telegram.first()
+            if telegram:
+                msg = (f"<b>Напоминание о занятии</b>\n"
+                       f"<b>Завтра</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+                       f"преподавателем <b>{lesson.get_teacher()}</b>\n\n")
+                if lesson.place:
+                    msg += (f'<a href="{lesson.place.url}">Ссылка на занятие</a>\n'
+                            f'<b>Просьба не подключаться заранее</b>')
+                result = tg.send_tg_message_sync(
+                    tg_id=telegram.tg_id,
+                    message=msg
+                )
+                if result.get('status') == 'success':
+                    TgBotJournal.objects.create(
+                        recipient=listener,
+                        event=1,
+                        data={
+                            "status": "success",
+                            "text": msg,
+                            "msg_id": result.get('msg_id'),
+                            "errors": [],
+                            "attachments": []
+                        }
+                    )
                 else:
-                    notifications_l[telegram_l.tg_id] = {
-                        "msg": (f"<b>Завтра запланированы следующие занятия:</b>\n"
-                                f"<b>{lesson.start_time.strftime('%H:%M')}-"
-                                f"{lesson.end_time.strftime('%H:%M')}</b>: {teacher}"),
-                        "usr_id": listener.id
-                    }
+                    TgBotJournal.objects.create(
+                        recipient=listener,
+                        event=1,
+                        data={
+                            "status": "error",
+                            "text": msg,
+                            "msg_id": None,
+                            "errors": result.get('errors'),
+                            "attachments": []
+                        }
+                    )
             else:
                 TgBotJournal.objects.create(
                     recipient=listener,
@@ -102,6 +125,18 @@ def notification_tomorrow_schedule():
                         "attachments": []
                     }
                 )
+
+
+@app.task
+def notification_tomorrow_schedule():
+    lessons = Lesson.objects.filter(
+        status=0,
+        date=datetime.date.today() + datetime.timedelta(days=1),
+    )
+    notifications_t = {}
+    for lesson in lessons:
+        listeners = lesson.get_listeners()
+        teacher = lesson.get_teacher()
         telegram_t = teacher.telegram.first()
         if telegram_t:
             listeners_str = ', '.join([str(listener) for listener in listeners])
@@ -122,35 +157,6 @@ def notification_tomorrow_schedule():
                     "text": None,
                     "msg_id": None,
                     "errors": ["У пользователя не привязан Telegram"],
-                    "attachments": []
-                }
-            )
-    for tg_id in notifications_l:
-        msg_result = tg.send_tg_message_sync(
-            tg_id=tg_id,
-            message=notifications_l[tg_id]["msg"]
-        )
-        if msg_result.get("status") == "success":
-            TgBotJournal.objects.create(
-                recipient_id=notifications_l[tg_id]["usr_id"],
-                event=1,
-                data={
-                    "status": "success",
-                    "text": notifications_l[tg_id]["msg"],
-                    "msg_id": msg_result.get("msg_id"),
-                    "errors": [],
-                    "attachments": []
-                }
-            )
-        else:
-            TgBotJournal.objects.create(
-                recipient_id=notifications_l[tg_id]["usr_id"],
-                event=1,
-                data={
-                    "status": "error",
-                    "text": None,
-                    "msg_id": None,
-                    "errors": msg_result.get("errors"),
                     "attachments": []
                 }
             )
