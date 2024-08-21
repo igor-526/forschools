@@ -55,8 +55,44 @@ async function telegramAPISendLessonMaterials(lesson, materials=[]){
     return APIGetToObject(request)
 }
 
-async function telegramAPIGetJournal(){
-    const request = await fetch('/api/v1/tgjournal/')
+async function telegramAPIGetJournal(
+    event = [],
+    date = "",
+    timeFrom = "",
+    timeTo = "",
+    initiator = [],
+    recipient = [],
+    status = []
+){
+    let url = '/api/v1/tgjournal'
+    let qp = []
+
+    event.forEach(ev => {
+        qp.push(`event=${ev}`)
+    })
+    if (date !== ""){
+        qp.push(`date=${date}`)
+    }
+    if (timeFrom !== ""){
+        qp.push(`timeFrom=${timeFrom}`)
+    }
+    if (timeTo !== ""){
+        qp.push(`timeTo=${timeTo}`)
+    }
+    initiator.forEach(init => {
+        qp.push(`initiator=${init}`)
+    })
+    recipient.forEach(rec => {
+        qp.push(`recipient=${rec}`)
+    })
+    status.forEach(stat => {
+        qp.push(`status=${stat}`)
+    })
+
+    if (qp.length !== 0){
+        url += `?${qp.join("&")}`
+    }
+    const request = await fetch(url)
     return APIGetToObject(request)
 }
 

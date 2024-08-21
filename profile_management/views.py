@@ -255,6 +255,29 @@ class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):
         return None
 
 
+class UsersForJournalListAPIView(LoginRequiredMixin, ListAPIView):
+    serializer_class = NewUserNameOnlyListSerializer
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name='Admin').exists():
+            return NewUser.objects.filter(is_active=True).distinct()
+        if self.request.user.groups.filter(name="Metodist").exists():
+            return NewUser.objects.filter(
+                Q(is_active=True,
+                  groups__name__in=['Teacher', 'Listener']) |
+                Q(id=self.request.user.id)
+            ).distinct()
+        if self.request.user.groups.filter(name="Teacher").exists():
+            return NewUser.objects.filter(
+                Q(plan_listeners__teacher=self.request.user,
+                  is_active=True) |
+                Q(plan_listeners__phases__lessons__replace_teacher=self.request.user,
+                  is_active=True) |
+                Q(id=self.request.user.id)
+            ).distinct()
+        return None
+
+
 class UserDetailAPIView(LoginRequiredMixin, RetrieveUpdateAPIView):    # API для вывода/изменения/удаления пользователя
     queryset = NewUser.objects.all()
     serializer_class = NewUserDetailSerializer

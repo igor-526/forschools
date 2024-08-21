@@ -107,3 +107,8 @@ async function usersAPIGetTeachersListeners(type){
     const request = await fetch(`/api/v1/users/teacherslisteners/?group=${type}`)
     return await APIGetToObject(request)
 }
+
+async function usersAPIGetUsersForJournal(){
+    const request = await fetch(`/api/v1/users/forjournals/`)
+    return await APIGetToObject(request)
+}

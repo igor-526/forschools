@@ -1,10 +1,19 @@
 async function chatAPIGetChats(user=null){
-    const request = await fetch('/api/v1/messages/')
+    console.log(user)
+    let url = '/api/v1/messages/'
+    if (user){
+        url += `?fromUser=${user}`
+    }
+    const request = await fetch(url)
     return await APIGetToObject(request)
 }
 
-async function chatAPIGetMessages(userID, fromUserID){
+async function chatAPIGetMessages(userID, fromUserID= null){
     let url = `/api/v1/messages/${userID}`
+    console.log(fromUserID)
+    if (fromUserID){
+        url += `?fromUser=${fromUserID}`
+    }
     const request = await fetch(url)
     return await APIGetToObject(request)
 }

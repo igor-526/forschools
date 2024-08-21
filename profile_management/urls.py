@@ -7,7 +7,7 @@ from .views import (DashboardPage, user_login,
                     UserPhotoApiView, ProfilePage,
                     TelegramAPIView, DeactivateUserView,
                     ActivateUserView, ChangePasswordView,
-                    TeacherListenersListAPIView)
+                    TeacherListenersListAPIView, UsersForJournalListAPIView)
 from homework.views import UserHWListAPIView
 from lesson.views import UserLessonListAPIView
 
@@ -25,7 +25,8 @@ urlpatterns = [
 
 apiv1patterns = [
     path('', UserListAPIView.as_view()),  # API для вывода списка пользователей
-    path('teacherslisteners/', TeacherListenersListAPIView.as_view()),  # API для вывода преподавателей и учеников для фильтрации  занятиях
+    path('forjournals/', UsersForJournalListAPIView.as_view()),  # API для вывода пользователей для фильтрации в журналах
+    path('teacherslisteners/', TeacherListenersListAPIView.as_view()),  # API для вывода преподавателей и учеников для фильтрации в занятиях
     path('<int:pk>/', UserDetailAPIView.as_view()),     # API для вывода, изменения и удаления пользователя
     path('<int:pk>/photo/', UserPhotoApiView.as_view()),  # API для изменения фото профиля
     path('<int:pk>/telegram/', TelegramAPIView.as_view()),     # API для удаления привязки Telegram

@@ -99,11 +99,10 @@ function chatShowUsers(userlist = []){
     })
 }
 
-function chatGetMessages(userID, fromUserID){
+function chatGetMessages(userID){
     chatAPIGetMessages(userID, fromUserID).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 chatShowMessages(request.response, userID)
                 selectedUserId = userID
                 if (!fromUserID){
@@ -202,5 +201,6 @@ const chatMessagesNewSend = chatMessagesNew.querySelector("#chatMessagesNewSend"
 const chatMessagesNewTextError = chatMessagesNew.querySelector("#chatMessagesNewTextError")
 const chatMessagesUserName = document.querySelector("#chatMessagesUserName")
 let selectedUserId
+let fromUserID = null
 
 chatMain()

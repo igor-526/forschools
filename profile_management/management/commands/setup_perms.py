@@ -65,6 +65,9 @@ class Command(BaseCommand):
         see_moreinfo_listener = Permission.objects.get_or_create(codename="see_moreinfo_listener",
                                                                  name="Доп. информация ученика",
                                                                  content_type=content_type)[0]
+        can_read_all_messages = Permission.objects.get_or_create(codename="can_read_all_messages",
+                                                                 name="Чтение сообщений от имени других пользователей",
+                                                                 content_type=content_type)[0]
         self.admin_perms += (register_users, register_admin,
                              register_metodist, register_teacher,
                              register_listener, edit_admin,

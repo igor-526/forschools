@@ -2,8 +2,19 @@ function tgJournalMain(){
     tgJournalGet()
 }
 
-function tgJournalGet(){
-    telegramAPIGetJournal().then(request => {
+function tgJournalGet(
+    event = [],
+    date = "",
+    timeFrom = "",
+    timeTo = "",
+    initiator = [],
+    recipient = [],
+    status = []
+){
+    telegramAPIGetJournal(
+        event, date, timeFrom, timeTo,
+        initiator, recipient, status
+    ).then(request => {
         switch (request.status){
             case 200:
                 tgJournalShow(request.response)

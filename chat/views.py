@@ -3,7 +3,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
-
+from rest_framework.exceptions import PermissionDenied
+from profile_management.models import NewUser
 from .models import Message
 from .serializers import ChatMessageSerializer
 from django.shortcuts import render
@@ -24,6 +25,17 @@ class ChatPageTemplateView(LoginRequiredMixin, TemplateView):  # страниц�
 
 class ChatUsersListView(LoginRequiredMixin, ListAPIView):
     def list(self, request, *args, **kwargs):
+        from_user = self.request.query_params.get('fromUser')
+        if from_user:
+            if request.user.user_permissions.filter(codename="can_read_all_messages").exists():
+                try:
+                    from_user = NewUser.objects.get(pk=from_user)
+                    chats = from_user.get_users_for_chat()
+                    return JsonResponse(chats, safe=False, status=status.HTTP_200_OK)
+                except NewUser.DoesNotExist:
+                    raise PermissionDenied
+            else:
+                raise PermissionDenied()
         chats = request.user.get_users_for_chat()
         return JsonResponse(chats, safe=False, status=status.HTTP_200_OK)
 
@@ -32,12 +44,28 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = ChatMessageSerializer
 
     def get_queryset(self, *args, **kwargs):
-        queryset = Message.objects.filter(
-            Q(sender=self.request.user,
-              receiver_id=self.kwargs.get("user")) |
-            Q(receiver=self.request.user,
-              sender_id=self.kwargs.get("user"))
-        ).order_by('-date')
+        from_user = self.request.query_params.get('fromUser')
+        if from_user:
+            if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
+                try:
+                    from_user = NewUser.objects.get(pk=from_user)
+                    queryset = Message.objects.filter(
+                        Q(sender=from_user,
+                          receiver_id=self.kwargs.get("user")) |
+                        Q(receiver=from_user,
+                          sender_id=self.kwargs.get("user"))
+                    ).order_by('-date')
+                except NewUser.DoesNotExist:
+                    raise PermissionDenied
+            else:
+                raise PermissionDenied()
+        else:
+            queryset = Message.objects.filter(
+                Q(sender=self.request.user,
+                  receiver_id=self.kwargs.get("user")) |
+                Q(receiver=self.request.user,
+                  sender_id=self.kwargs.get("user"))
+            ).order_by('-date')
         return queryset
 
     def list(self, request, *args, **kwargs):
