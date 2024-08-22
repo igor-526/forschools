@@ -74,7 +74,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                                          context={'request': request})
         serializer.is_valid(raise_exception=True)
         hw = serializer.save()
-        send_homework_tg(hw.listener, [hw])
+        send_homework_tg(request.user, hw.listener, [hw])
         return Response(serializer.data, status.HTTP_201_CREATED)
 
 

@@ -10,6 +10,7 @@ from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_b
 from tgbot.keyboards.default import ready_cancel_keyboard, cancel_keyboard
 from tgbot.finite_states.homework import HomeworkFSM
 from tgbot.funcs.menu import send_menu
+from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id, get_user
 from profile_management.models import NewUser
 from homework.models import Homework, HomeworkLog
@@ -78,7 +79,7 @@ async def search_homeworks_query(message: types.Message):
                                 'hw_status': (await hw.aget_status()).status
                             } async for hw in Homework.objects.select_related("listener")
                             .filter(listener__id__in=[usr.id for usr in listeners],
-                                                                      teacher=await get_user(message.from_user.id))]))
+                                    teacher=await get_user(message.from_user.id))]))
     if not homeworks:
         await message.answer("По данному запросу не найдено ни одного домашнего задания")
     msg = "Вот домашние задания, которые требуют Вашей проверки от следующих учеников:"
@@ -252,14 +253,82 @@ async def hw_send(message: types.Message, state: FSMContext):
                              "Ожидайте ответа преподавателя")
         teacher_tg = await get_tg_id(hw.teacher)
         if teacher_tg:
-            await bot.send_message(chat_id=teacher_tg,
-                                   text=f"Пришёл новый ответ от ученика по ДЗ <b>'{hw.name}'</b>",
-                                   reply_markup=get_homeworks_buttons([hw]))
+            try:
+                msg = f"Пришёл новый ответ от ученика по ДЗ <b>'{hw.name}'</b>"
+                msg_object = await bot.send_message(chat_id=teacher_tg,
+                                                    text=msg,
+                                                    reply_markup=get_homeworks_buttons([hw]))
+                await TgBotJournal.objects.acreate(
+                    recipient=hw.teacher,
+                    initiator=hw.listener,
+                    event=4,
+                    data={
+                        "status": "success",
+                        "text": msg,
+                        "msg_id": msg_object.message_id,
+                        "errors": [],
+                        "attachments": []
+                    }
+                )
+            except Exception as e:
+                await TgBotJournal.objects.acreate(
+                    recipient=hw.teacher,
+                    initiator=hw.listener,
+                    event=4,
+                    data={
+                        "status": "error",
+                        "text": None,
+                        "msg_id": None,
+                        "errors": [str(e)],
+                        "attachments": []
+                    }
+                )
+
+        else:
+            await TgBotJournal.objects.acreate(
+                recipient=hw.teacher,
+                initiator=hw.listener,
+                event=4,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": ["У пользователя не привязан Telegram"],
+                    "attachments": []
+                }
+            )
     elif data.get('action') in ['check_accept', 'check_revision']:
         await message.answer("Ответ был отправлен")
         listener_tg = await get_tg_id(hw.listener)
         if listener_tg:
-            await bot.send_message(chat_id=listener_tg,
-                                   text=f"Пришёл новый ответ от преподавателя по ДЗ <b>'{hw.name}'</b>",
-                                   reply_markup=get_homeworks_buttons([hw]))
+            try:
+                msg = f"Пришёл новый ответ от преподавателя по ДЗ <b>'{hw.name}'</b>"
+                msg_object = await bot.send_message(chat_id=listener_tg,
+                                       text=msg,
+                                       reply_markup=get_homeworks_buttons([hw]))
+                await TgBotJournal.objects.acreate(
+                    recipient=hw.listener,
+                    initiator=hw.teacher,
+                    event=4,
+                    data={
+                        "status": "success",
+                        "text": msg,
+                        "msg_id": msg_object.message_id,
+                        "errors": [],
+                        "attachments": []
+                    }
+                )
+            except Exception as e:
+                await TgBotJournal.objects.acreate(
+                    recipient=hw.listener,
+                    initiator=hw.teacher,
+                    event=4,
+                    data={
+                        "status": "error",
+                        "text": None,
+                        "msg_id": None,
+                        "errors": [str(e)],
+                        "attachments": []
+                    }
+                )
     await send_menu(message, state)

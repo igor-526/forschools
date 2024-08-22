@@ -156,6 +156,6 @@ class SendMaterialsTGView(LoginRequiredMixin, APIView):
         mat_ids = request.POST.getlist("materials")
         materials = Material.objects.filter(id__in=mat_ids)
         if materials:
-            for user in users:
-                send_materials(user, materials)
+            for user in NewUser.objects.filter(id__in=users):
+                send_materials(request.user, user, materials, "manual")
         return JsonResponse({'status': 'success'}, status=status.HTTP_200_OK)

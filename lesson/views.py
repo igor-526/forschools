@@ -126,7 +126,7 @@ class LessonSetMaterialsAPIView(LoginRequiredMixin, APIView):
                 new_materials = list(filter(lambda mat: mat not in lesson_materials_old, lesson_materials_new))
                 if new_materials:
                     for listener in lesson.get_learning_plan().listeners.all():
-                        send_materials(listener.id, Material.objects.filter(id__in=new_materials))
+                        send_materials(request.user, listener, Material.objects.filter(id__in=new_materials), "auto")
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return JsonResponse({'status': 'ok'})
@@ -173,7 +173,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                 lesson.save()
                 for listener in lesson.get_learning_plan().listeners.all():
                     homeworks = lesson.homeworks.filter(listener=listener)
-                    send_homework_tg(listener, homeworks)
+                    send_homework_tg(request.user, listener, homeworks)
                 return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
                 return JsonResponse({'error': "Недостаточно прав для изменения статуса занятия"},

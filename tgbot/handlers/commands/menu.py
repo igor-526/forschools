@@ -25,11 +25,12 @@ async def h_mainmenu_homeworks(message: types.Message) -> None:
 @router.message(StateFilter(MenuFSM.main_menu),
                 F.text == "Занятия")
 async def h_mainmenu_lessons(message: types.Message) -> None:
-    await message.answer(text="Функиция пока не реализована. "
+    xx = await message.answer(text="Функиция пока не реализована. "
                               "Тут у ученика будут данные о предстоящих и нескольких прошедших занятиях. "
                               "Это даст возможность узнать время и дату занятия без уведомления. "
                               "Преподаватели же смогут увидеть своё расписание на сегодняшний и завтрашний день. "
                               "Также возможность отметить присутствующих и отсутствующих учеников")
+    print(xx)
 
 
 @router.message(StateFilter(MenuFSM.main_menu),
