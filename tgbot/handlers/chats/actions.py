@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from chat.models import Message
 from tgbot.create_bot import bot
-from tgbot.funcs.chats import chats_send_ask, chats_send, chats_show_unread_messages
+from tgbot.funcs.chats import chats_send_ask, chats_send, chats_show_unread_messages, chats_type_message
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatAnswerCallback
 from tgbot.finite_states.chats import ChatsFSM
@@ -45,6 +45,12 @@ async def h_chats_cancel(message: types.Message, state: FSMContext) -> None:
     await send_menu(message, state)
 
 
-@router.message(StateFilter(ChatsFSM.send_message))
+@router.message(StateFilter(ChatsFSM.send_message),
+                F.text == "Отправить")
 async def h_chats_send(message: types.Message, state: FSMContext) -> None:
     await chats_send(message, state)
+
+
+@router.message(StateFilter(ChatsFSM.send_message))
+async def h_chats_type(message: types.Message, state: FSMContext) -> None:
+    await chats_type_message(message, state)

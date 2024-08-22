@@ -1,4 +1,16 @@
 function chatMain(){
+    chatAttachmentTypesArray = chatAttachmentTypesArray
+        .concat(
+            mediaFormats.imageFormats,
+            mediaFormats.videoFormats,
+            mediaFormats.animationFormats,
+            mediaFormats.archiveFormats,
+            mediaFormats.pdfFormats,
+            mediaFormats.voiceFormats,
+            mediaFormats.audioFormats,
+            mediaFormats.textFormats,
+            mediaFormats.presentationFormats
+        )
     chatAPIGetChats().then(request => {
         switch (request.status){
             case 200:
@@ -10,6 +22,17 @@ function chatMain(){
         }
     })
     chatMessagesNewSend.addEventListener("click", chatMessageSend)
+    chatMessagesNewAttachmentButton.addEventListener("click", function (){
+        if (chatMessagesNewAttachmentInput.files.length === 0){
+            chatMessagesNewAttachmentInput.click()
+        } else {
+            chatMessagesNewAttachmentInput.value = ""
+            chatMessagesNewAttachmentButton.innerHTML = "Вложение (0)"
+        }
+    })
+    chatMessagesNewAttachmentInput.addEventListener("change", function (){
+        chatMessagesNewAttachmentButton.innerHTML = `Вложение (${chatMessagesNewAttachmentInput.files.length})`
+    })
 }
 
 function chatGetDateTimeString(dt){
@@ -103,6 +126,7 @@ function chatGetMessages(userID){
     chatAPIGetMessages(userID, fromUserID).then(request => {
         switch (request.status){
             case 200:
+                console.log(request.response)
                 chatShowMessages(request.response, userID)
                 selectedUserId = userID
                 if (!fromUserID){
@@ -114,6 +138,63 @@ function chatGetMessages(userID){
                 break
         }
     })
+}
+
+function chatShowMessagesGetAttachmentsElement(attachments = []){
+    let images = []
+    let audios = []
+    let videos = []
+    attachments.forEach(file => {
+        switch (file.type){
+            case "image_formats":
+                const a = document.createElement("a")
+                a.href = file.path
+                a.target = "_blank"
+                const img = document.createElement("img")
+                img.src = file.path
+                img.alt = "Вложение"
+                img.style = "object-fit: contain;"
+                img.classList.add("col-5", "mb-3")
+                a.insertAdjacentElement("beforeend", img)
+                images.push(a)
+                break
+            case "voice_formats" || "audio_formats":
+                const fig = document.createElement("figure")
+                const figcaption = document.createElement("figcaption")
+                figcaption.innerHTML = "Аудио"
+                const audio = document.createElement("audio")
+                audio.controls = true
+                audio.src = file.path
+                fig.insertAdjacentElement("beforeend", figcaption)
+                fig.insertAdjacentElement("beforeend", audio)
+                audios.push(fig)
+                break
+            case "video_formats":
+                const video = document.createElement("video")
+                video.controls = true
+                video.src = file.path
+                video.classList.add("col-5", "mb-3")
+                videos.push(video)
+                break
+        }
+    })
+    const attAll = document.createElement("div")
+    const attImg = document.createElement("div")
+    const attAud = document.createElement("div")
+    attImg.classList.add("row")
+    attAud.classList.add("row")
+    attAll.insertAdjacentElement("beforeend", attImg)
+    attAll.insertAdjacentElement("beforeend", attAud)
+    images.forEach(img => {
+        attImg.insertAdjacentElement("beforeend", img)
+    })
+    videos.forEach(vid => {
+        attImg.insertAdjacentElement("beforeend", vid)
+    })
+    audios.forEach(aud => {
+        attAud.insertAdjacentElement("beforeend", aud)
+    })
+    return attAll
 }
 
 function chatShowMessages(messages=[], userID, clear=true){
@@ -133,6 +214,9 @@ function chatShowMessages(messages=[], userID, clear=true){
             messageBodyData.innerHTML += ` | прочитано ${chatGetDateTimeString(message.read)}`
         }
         messageBody.insertAdjacentElement("beforeend", messageBodyText)
+        if (message.files.length !== 0){
+            messageBody.insertAdjacentElement("beforeend", chatShowMessagesGetAttachmentsElement(message.files))
+        }
         messageBody.insertAdjacentElement("beforeend", messageBodyData)
         return messageDiv
     }
@@ -153,7 +237,7 @@ function chatMessageValidation(errors){
     }
 
     function validateText(){
-        if (chatMessagesNewText.value.trim().length === 0){
+        if (chatMessagesNewText.value.trim().length === 0 && chatMessagesNewAttachmentInput.files.length === 0){
             setInvalid("Сообщение не может быть пустым")
             return
         }
@@ -163,12 +247,28 @@ function chatMessageValidation(errors){
         }
     }
 
+    function validateAttachments(){
+        const filelist = chatMessagesNewAttachmentInput.files
+        for (const file of filelist){
+            const filename = file.name.split(/([\\./])/g)
+            const type = filename[filename.length-1]
+            if (!chatAttachmentTypesArray.includes(type)){
+                setInvalid("Формат файла не поддерживается")
+                return
+            }
+        }
+    }
+
     let validationStatus = true
+    chatMessagesNewText.classList.remove("is-invalid")
+    chatMessagesNewTextError.innerHTML = ""
     if (errors){
 
     } else {
         validateText()
+        validateAttachments()
     }
+
     return validationStatus
 }
 
@@ -176,11 +276,17 @@ function chatMessageSend(){
     if (chatMessageValidation()){
         const fd = new FormData()
         fd.set("message", chatMessagesNewText.value.trim())
+        const files = chatMessagesNewAttachmentInput.files
+        for (const file of files){
+            fd.append("attachments", file)
+        }
         chatAPISendMessage(selectedUserId, fd).then(request => {
             switch (request.status){
                 case 201:
                     chatShowMessages([request.response], selectedUserId, false)
                     chatMessagesNewText.value = ""
+                    chatMessagesNewAttachmentInput.value = ""
+                    chatMessagesNewAttachmentButton.innerHTML = "Вложение (0)"
                     break
                 case 400:
                     chatMessageValidation(request.response)
@@ -200,7 +306,10 @@ const chatMessagesNewText = chatMessagesNew.querySelector("#chatMessagesNewText"
 const chatMessagesNewSend = chatMessagesNew.querySelector("#chatMessagesNewSend")
 const chatMessagesNewTextError = chatMessagesNew.querySelector("#chatMessagesNewTextError")
 const chatMessagesUserName = document.querySelector("#chatMessagesUserName")
+const chatMessagesNewAttachmentButton = document.querySelector("#chatMessagesNewAttachmentButton")
+const chatMessagesNewAttachmentInput = document.querySelector("#chatMessagesNewAttachmentInput")
 let selectedUserId
 let fromUserID = null
+let chatAttachmentTypesArray = []
 
 chatMain()

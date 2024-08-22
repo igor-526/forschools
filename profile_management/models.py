@@ -114,7 +114,7 @@ class NewUser(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ['-is_active', 'last_name', 'first_name']
+        ordering = ['-is_active', 'first_name', 'last_name']
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name

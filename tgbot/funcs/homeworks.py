@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
-
+from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.materials import get_keyboard_query_user
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
@@ -221,81 +221,6 @@ async def send_hw_check(callback: CallbackQuery,
     else:
         await bot.send_message(callback.from_user.id,
                                text="На данный момент Вы не можете проверить ДЗ")
-
-
-async def add_files(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    if message.text:
-        data.get('files').get('text').append(message.text)
-    if message.caption:
-        data.get('files').get('text').append(message.caption)
-    if message.voice:
-        data.get('files').get('voice').append(message.voice.file_id)
-    if message.photo:
-        data.get("files").get('photo').append(message.photo[-1].file_id)
-    if message.audio:
-        data.get("files").get('audio').append({'file_id': message.audio.file_id,
-                                               'format': message.audio.file_name.split(".")[-1]})
-    if message.video:
-        data.get("files").get('video').append(message.video.file_id)
-
-
-async def filedownloader(data, owner) -> dict:
-    photos = data.get("files").get("photo")
-    voices = data.get("files").get("voice")
-    text = data.get("files").get('text')
-    audio = data.get("files").get('audio')
-    videos = data.get("files").get('video')
-    comment = ""
-    if not text:
-        comment = "-"
-    else:
-        for msg in text:
-            comment += f"{msg}\n"
-    files_db = []
-    for photo in photos:
-        await bot.download(file=photo,
-                           destination=f"{MEDIA_ROOT}/files/{photo}.jpg")
-        file = await File.objects.acreate(name="ДЗ",
-                                          path=f"files/{photo}.jpg",
-                                          tg_url=photo,
-                                          owner=owner)
-        files_db.append(file)
-    for voice in voices:
-        await bot.download(file=voice,
-                           destination=f"{MEDIA_ROOT}/files/{voice}.ogg")
-        file = await File.objects.acreate(name="ДЗ",
-                                          path=f"files/{voice}.ogg",
-                                          tg_url=voice,
-                                          owner=owner)
-        files_db.append(file)
-    for aud in audio:
-        await bot.download(file=aud.get("file_id"),
-                           destination=f"{MEDIA_ROOT}/files/{aud.get('file_id')}.{aud.get('format')}")
-        file = await File.objects.acreate(name="ДЗ",
-                                          path=f"files/{aud.get('file_id')}.{aud.get('format')}",
-                                          tg_url=aud.get('file_id'),
-                                          owner=owner)
-        files_db.append(file)
-    for video in videos:
-        await bot.download(file=video,
-                           destination=f"{MEDIA_ROOT}/files/{video}.webm")
-        file = await File.objects.acreate(name="ДЗ",
-                                          path=f"files/{video}.webm",
-                                          tg_url=video,
-                                          owner=owner)
-        files_db.append(file)
-    return {'files_db': files_db,
-            'comment': comment}
-
-
-def filechecker(data) -> bool:
-    photos = data.get("files").get("photo")
-    voices = data.get("files").get("voice")
-    text = data.get("files").get('text')
-    audio = data.get("files").get('audio')
-    video = data.get("files").get('video')
-    return len(photos) + len(voices) + len(text) + len(audio) + len(video) != 0
 
 
 async def hw_send(message: types.Message, state: FSMContext):

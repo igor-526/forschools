@@ -10,6 +10,7 @@ function chatsFromUserMain(){
                 break
         }
     })
+    chatsFromUserCancelButton.addEventListener("click", chatsFromUserResetListener)
 }
 
 function chatsFromUserSetUsers(usersList){
@@ -21,6 +22,7 @@ function chatsFromUserSetUsers(usersList){
         a.classList.add("dropdown-item")
         a.innerHTML = `${user.first_name} ${user.last_name}`
         li.addEventListener("click", function () {
+            chatsFromUserListButton.innerHTML = `${user.first_name} ${user.last_name}`
             chatsFromUserSelectListener(user.id)
         })
         return li
@@ -51,6 +53,23 @@ function chatsFromUserSelectListener(userID){
         switch (request.status) {
             case 200:
                 fromUserID = userID
+                chatsFromUserCancelButton.disabled = false
+                chatShowUsers(request.response)
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
+}
+
+function chatsFromUserResetListener(){
+    chatAPIGetChats().then(request => {
+        switch (request.status) {
+            case 200:
+                fromUserID = null
+                chatsFromUserCancelButton.disabled = true
+                chatsFromUserListButton.innerHTML = "Выбрать пользователя"
                 chatShowUsers(request.response)
                 break
             default:
@@ -63,5 +82,7 @@ function chatsFromUserSelectListener(userID){
 const chatsFromUserList = document.querySelector("#chatsFromUserList")
 const chatsFromUserSearchField = document.querySelector("#chatsFromUserSearchField")
 const chatsFromUserSearchFieldErase = document.querySelector("#chatsFromUserSearchFieldErase")
+const chatsFromUserCancelButton = document.querySelector("#chatsFromUserCancelButton")
+const chatsFromUserListButton = document.querySelector("#chatsFromUserListButton")
 
 chatsFromUserMain()

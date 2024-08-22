@@ -5,6 +5,7 @@ from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot
 import async_to_sync as sync
 
+from tgbot.funcs.fileutils import send_file
 from tgbot.keyboards.chats import chats_get_answer_button
 from tgbot.keyboards.materials import get_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons
@@ -19,6 +20,9 @@ class AsyncClass:
             return {'status': 'success', 'errors': [], 'msg_id': msg.message_id}
         except Exception as e:
             return {'status': 'error', 'errors': [str(e)], 'msg_id': None}
+
+    async def send_tg_file_sync(self, tg_id, file_object):
+        await send_file(tg_id, file_object)
 
 
 sync_funcs = sync.methods(AsyncClass())
@@ -116,6 +120,8 @@ def send_chat_message(message: Message):
                     "attachments": []
                 }
             )
+        for att in message.files.all():
+            sync_funcs.send_tg_file_sync(user_tg_id, att)
     else:
         TgBotJournal.objects.create(
             recipient=message.receiver,

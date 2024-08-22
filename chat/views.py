@@ -1,9 +1,9 @@
-from aiogram.methods import Response
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
+from dls.settings import MATERIAL_FORMATS
 from profile_management.models import NewUser
 from .models import Message
 from .serializers import ChatMessageSerializer
@@ -19,7 +19,8 @@ class ChatPageTemplateView(LoginRequiredMixin, TemplateView):  # страниц�
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Сообщения',
-                   'menu': get_menu(request.user)}
+                   'menu': get_menu(request.user),
+                   'material_formats': MATERIAL_FORMATS}
         return render(request, self.template_name, context)
 
 

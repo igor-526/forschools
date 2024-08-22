@@ -2,8 +2,8 @@ from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from tgbot.funcs.homeworks import (send_hw_check, send_hw_answer,
-                                   add_files, hw_send)
+from tgbot.funcs.homeworks import send_hw_check, send_hw_answer, hw_send
+from tgbot.funcs.fileutils import add_files_to_state
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.finite_states.homework import HomeworkFSM
@@ -40,4 +40,4 @@ async def h_homework_send_ready(message: types.Message, state: FSMContext) -> No
 
 @router.message(StateFilter(HomeworkFSM.send_hw_files))
 async def h_homework_filekeeper(message: types.Message, state: FSMContext) -> None:
-    await add_files(message, state)
+    await add_files_to_state(message, state)

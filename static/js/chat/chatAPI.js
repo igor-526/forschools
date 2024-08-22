@@ -1,5 +1,4 @@
 async function chatAPIGetChats(user=null){
-    console.log(user)
     let url = '/api/v1/messages/'
     if (user){
         url += `?fromUser=${user}`
