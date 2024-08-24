@@ -126,7 +126,7 @@ class ChannelMessage:
 
 
 def get_dialog(dialogs: TotalList):
-    out = list(filter(lambda d: d.name == "Вводно-фонетический курс kitai_school", dialogs))
+    out = list(filter(lambda d: d.name == settings.TGPARSER_CHANNEL_NAME, dialogs))
     return out[0]
 
 
@@ -224,9 +224,7 @@ async def parse_manual(messages: list, owner: NewUser):
 async def main(client):
     print("Получение всех диалогов")
     dialogs = await client.get_dialogs()
-    # print(f'Поиск диалога: "{settings.TGPARSER_CHANNEL_NAME}"')
-    print(f'Поиск диалога: "Вводно - фонетический курс kitai_school"')
-    # Вводно - фонетический курс kitai_school
+    print(f'Поиск диалога: "{settings.TGPARSER_CHANNEL_NAME}"')
 
     dialog = get_dialog(dialogs)
     print("Получение всех сообщений")
