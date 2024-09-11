@@ -31,6 +31,7 @@ async def chats_send(message: types.Message, state: FSMContext):
     if not filechecker(data):
         await message.answer("Необходимо написать сообщение или отправить вложения, либо нажать кнопку 'Отмена'")
         return
+    message_status = await message.answer("Отправка...")
     hwdata = await filedownloader(data, owner=user, t="Сообщение")
     chat_message = await Message.objects.acreate(
         receiver_id=data.get('message_for'),
@@ -40,7 +41,7 @@ async def chats_send(message: types.Message, state: FSMContext):
     await chat_message.files.aset(hwdata.get("files_db"))
     await chat_message.asave()
     await chats_notificate(chat_message.id)
-    await message.answer("Сообщение отправлено")
+    await message_status.edit_text("Сообщение отправлено")
     await send_menu(message, state, False)
 
 
@@ -58,6 +59,8 @@ async def chats_send_ask(callback: CallbackQuery,
                               'voice': [],
                               'audio': [],
                               'video': [],
+                              'animation': [],
+                              'document': [],
                           }
                           })
 

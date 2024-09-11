@@ -1,7 +1,10 @@
+import os
+import shutil
+import cv2
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
-
+from PIL import Image
 from dls.settings import MEDIA_ROOT
 from material.models import File
 from material.utils.get_type import get_type
@@ -21,6 +24,19 @@ async def add_files_to_state(message: types.Message, state: FSMContext):
     if message.audio:
         data.get("files").get('audio').append({'file_id': message.audio.file_id,
                                                'format': message.audio.file_name.split(".")[-1]})
+    if message.animation:
+        print(message.animation)
+        file_format = message.animation.file_name.split(".")[-1] if message.animation.file_name else "mp4"
+        data.get("files").get('animation').append({'file_id': message.animation.file_id,
+                                                   'format': file_format})
+    if message.document:
+        if not message.animation:
+            file_type = get_type(message.document.file_name.split(".")[-1])
+            if file_type != "unsupported":
+                data.get("files").get('document').append({'file_id': message.document.file_id,
+                                                          'name': message.document.file_name})
+            else:
+                await message.answer("Данный файл не может быть отправлен, так как формат не поддерживается")
     if message.video:
         data.get("files").get('video').append(message.video.file_id)
 
@@ -31,7 +47,9 @@ def filechecker(data) -> bool:
     text = data.get("files").get('text')
     audio = data.get("files").get('audio')
     video = data.get("files").get('video')
-    return len(photos) + len(voices) + len(text) + len(audio) + len(video) != 0
+    animation = data.get("files").get('animation')
+    document = data.get("files").get('document')
+    return len(photos) + len(voices) + len(text) + len(audio) + len(video) + len(animation) + len(document) != 0
 
 
 async def filedownloader(data, owner, t="ДЗ") -> dict:
@@ -40,6 +58,8 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
     text = data.get("files").get('text')
     audio = data.get("files").get('audio')
     videos = data.get("files").get('video')
+    animations = data.get("files").get('animation')
+    documents = data.get("files").get('document')
     comment = ""
     if not text:
         comment = "-"
@@ -48,43 +68,92 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
             comment += f"{msg}\n"
     files_db = []
     for photo in photos:
-        await bot.download(file=photo,
-                           destination=f"{MEDIA_ROOT}/files/{photo}.jpg")
-        file = await File.objects.acreate(name=t,
-                                          path=f"files/{photo}.jpg",
-                                          tg_url=photo,
-                                          owner=owner)
+        file = await File.objects.filter(tg_url=photo).afirst()
+        if not file:
+            await bot.download(file=photo,
+                               destination=f"{MEDIA_ROOT}/files/{photo}.jpg")
+            file = await File.objects.acreate(name=t,
+                                              path=f"files/{photo}.jpg",
+                                              tg_url=photo,
+                                              owner=owner)
         files_db.append(file)
     for voice in voices:
-        await bot.download(file=voice,
-                           destination=f"{MEDIA_ROOT}/files/{voice}.ogg")
-        file = await File.objects.acreate(name="ДЗ",
-                                          path=f"files/{voice}.ogg",
-                                          tg_url=voice,
-                                          owner=owner)
+        file = await File.objects.filter(tg_url=voice).afirst()
+        if not file:
+            await bot.download(file=voice,
+                               destination=f"{MEDIA_ROOT}/files/{voice}.ogg")
+            file = await File.objects.acreate(name=t,
+                                              path=f"files/{voice}.ogg",
+                                              tg_url=voice,
+                                              owner=owner)
         files_db.append(file)
     for aud in audio:
-        await bot.download(file=aud.get("file_id"),
-                           destination=f"{MEDIA_ROOT}/files/{aud.get('file_id')}.{aud.get('format')}")
-        file = await File.objects.acreate(name="ДЗ",
-                                          path=f"files/{aud.get('file_id')}.{aud.get('format')}",
-                                          tg_url=aud.get('file_id'),
-                                          owner=owner)
+        file = await File.objects.filter(tg_url=aud.get('file_id')).afirst()
+        if not file:
+            await bot.download(file=aud.get("file_id"),
+                               destination=f"{MEDIA_ROOT}/files/{aud.get('file_id')}.{aud.get('format')}")
+            file = await File.objects.acreate(name=t,
+                                              path=f"files/{aud.get('file_id')}.{aud.get('format')}",
+                                              tg_url=aud.get('file_id'),
+                                              owner=owner)
         files_db.append(file)
     for video in videos:
-        await bot.download(file=video,
-                           destination=f"{MEDIA_ROOT}/files/{video}.webm")
-        file = await File.objects.acreate(name="ДЗ",
-                                          path=f"files/{video}.webm",
-                                          tg_url=video,
-                                          owner=owner)
+        file = await File.objects.filter(tg_url=video).afirst()
+        if not file:
+            await bot.download(file=video,
+                               destination=f"{MEDIA_ROOT}/files/{video}.webm")
+            file = await File.objects.acreate(name=t,
+                                              path=f"files/{video}.webm",
+                                              tg_url=video,
+                                              owner=owner)
+        files_db.append(file)
+    for animation in animations:
+        file = await File.objects.filter(tg_url=animation).afirst()
+        if not file:
+            file_format = animation.get('format')
+            path = os.path.join(MEDIA_ROOT, "files", f"{animation.get('file_id')}.{file_format}")
+            await bot.download(file=animation.get('file_id'),
+                               destination=path)
+            if file_format != "gif":
+                video = cv2.VideoCapture(path)
+                frames = []
+                while True:
+                    ret, frame = video.read()
+                    if not ret:
+                        break
+                    frames.append(frame)
+                for i in range(len(frames)):
+                    cv2.imwrite(f"{animation.get('file_id')}{i}.png", frames[i])
+                frame_images = [Image.open(f"{animation.get('file_id')}{i}.png") for i in range(len(frames))]
+                frame_images[0].save(f"{MEDIA_ROOT}/files/{animation.get('file_id')}.gif",
+                                     format='GIF',
+                                     append_images=frame_images[1:],
+                                     save_all=True,
+                                     duration=100,
+                                     loop=0)
+                for i in range(len(frames)):
+                    os.remove(f"{animation.get('file_id')}{i}.png")
+            file = await File.objects.acreate(name=t,
+                                              path=f"files/{animation.get('file_id')}.gif",
+                                              tg_url=animation.get('file_id'),
+                                              owner=owner)
+        files_db.append(file)
+    for document in documents:
+        file = await File.objects.filter(tg_url=document.get('file_id')).afirst()
+        if not file:
+            await bot.download(file=document.get("file_id"),
+                               destination=f"{MEDIA_ROOT}/files/{document.get('file_id')}."
+                                           f"{document.get('name').split('.')[-1]}")
+            file = await File.objects.acreate(name=document.get('name'),
+                                              path=f"files/{document.get('file_id')}.{document.get('name').split('.')[-1]}",
+                                              tg_url=document.get('file_id'),
+                                              owner=owner)
         files_db.append(file)
     return {'files_db': files_db,
             'comment': comment}
 
 
 async def send_file(tg_id: int, file_object: File) -> None:
-    print(file_object)
     file = file_object.tg_url if file_object.tg_url else FSInputFile(path=file_object.path.path)
     file_type = get_type(file_object.path.name.split(".")[-1])
     file_id = None

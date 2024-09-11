@@ -2,9 +2,8 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
-from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader
+from tgbot.funcs.fileutils import filechecker, filedownloader
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
-from tgbot.keyboards.materials import get_keyboard_query_user
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons)
 from tgbot.keyboards.default import ready_cancel_keyboard, cancel_keyboard
@@ -188,6 +187,8 @@ async def send_hw_answer(callback: CallbackQuery,
             'voice': [],
             'audio': [],
             'video': [],
+            'animation': [],
+            'document': []
         }, 'action': 'send',
             'hw_id': callback_data.hw_id})
     else:
@@ -217,6 +218,8 @@ async def send_hw_check(callback: CallbackQuery,
             'voice': [],
             'audio': [],
             'video': [],
+            'animation': [],
+            'document': []
         }, 'action': callback_data.action,
             'hw_id': callback_data.hw_id})
     else:

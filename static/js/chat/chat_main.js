@@ -126,7 +126,6 @@ function chatGetMessages(userID){
     chatAPIGetMessages(userID, fromUserID).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 chatShowMessages(request.response, userID)
                 selectedUserId = userID
                 if (!fromUserID){
@@ -142,9 +141,12 @@ function chatGetMessages(userID){
 
 function chatShowMessagesGetAttachmentsElement(attachments = []){
     let images = []
+    let animations = []
     let audios = []
     let videos = []
+    let files = []
     attachments.forEach(file => {
+        console.log(file.type)
         switch (file.type){
             case "image_formats":
                 const a = document.createElement("a")
@@ -157,6 +159,18 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
                 img.classList.add("col-5", "mb-3")
                 a.insertAdjacentElement("beforeend", img)
                 images.push(a)
+                break
+            case "animation_formats":
+                const aAnim = document.createElement("a")
+                aAnim.href = file.path
+                aAnim.target = "_blank"
+                const imgAnim = document.createElement("img")
+                imgAnim.src = file.path
+                imgAnim.alt = "Вложение"
+                imgAnim.style = "object-fit: contain;"
+                imgAnim.classList.add("col-12", "mb-3")
+                aAnim.insertAdjacentElement("beforeend", imgAnim)
+                images.push(aAnim)
                 break
             case "voice_formats" || "audio_formats":
                 const fig = document.createElement("figure")
@@ -176,6 +190,29 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
                 video.classList.add("col-5", "mb-3")
                 videos.push(video)
                 break
+            case "unsupported":
+                break
+            default:
+                const card = document.createElement("div")
+                card.classList.add("card")
+                const cardHeader = document.createElement("div")
+                const cardBody = document.createElement("div")
+                cardHeader.classList.add("card-header")
+                cardHeader.innerHTML = file.name
+                cardBody.classList.add("card-body")
+                const downloadButton = document.createElement("button")
+                const downloadButtonA = document.createElement("a")
+                downloadButtonA.href = file.path
+                downloadButtonA.target = "_blank"
+                downloadButton.type = "button"
+                downloadButton.classList.add("btn", "btn-primary")
+                downloadButton.innerHTML = '<i class="bi bi-download"></i> Скачать'
+                downloadButtonA.insertAdjacentElement("beforeend", downloadButton)
+                cardBody.insertAdjacentElement("beforeend", downloadButtonA)
+                card.insertAdjacentElement("beforeend", cardHeader)
+                card.insertAdjacentElement("beforeend", cardBody)
+                files.push(card)
+                break
         }
     })
     const attAll = document.createElement("div")
@@ -183,6 +220,7 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
     const attAud = document.createElement("div")
     attImg.classList.add("row")
     attAud.classList.add("row")
+    attAll.classList.add("px-3")
     attAll.insertAdjacentElement("beforeend", attImg)
     attAll.insertAdjacentElement("beforeend", attAud)
     images.forEach(img => {
@@ -193,6 +231,9 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
     })
     audios.forEach(aud => {
         attAud.insertAdjacentElement("beforeend", aud)
+    })
+    files.forEach(file => {
+        attAud.insertAdjacentElement("beforeend", file)
     })
     return attAll
 }
