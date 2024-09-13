@@ -24,7 +24,7 @@ async def command_start_handler(message: types.Message, state: FSMContext):
                                                           nickname=message.from_user.username)
                     await message.answer(text=f'Аккаунт успешно привязан!\n'
                                               f'Добро пожаловать, {user.first_name}!')
-                    await send_menu(message, state)
+                    await send_menu(message.from_user.id, state)
                 except Exception as ex:
                     await message.answer(text="Произошла нерпедвиденная ошибка. Попробуйте позже")
                     print(ex)
@@ -41,6 +41,6 @@ async def command_start_handler(message: types.Message, state: FSMContext):
 async def check_user(message: types, state: FSMContext):
     user = await Telegram.objects.filter(tg_id=message.from_user.id).afirst()
     if user:
-        await send_menu(message, state)
+        await send_menu(message.from_user.id, state)
     else:
         await message.answer(text='Для использования бота необходимо авторизоваться')

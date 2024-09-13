@@ -42,13 +42,13 @@ async def h_chats_answer(callback: CallbackQuery,
 @router.message(StateFilter(ChatsFSM.send_message),
                 F.text == "Отмена")
 async def h_chats_cancel(message: types.Message, state: FSMContext) -> None:
-    await send_menu(message, state)
+    await send_menu(message.from_user.id, state)
 
 
 @router.message(StateFilter(ChatsFSM.send_message),
                 F.text == "Отправить")
 async def h_chats_send(message: types.Message, state: FSMContext) -> None:
-    await chats_send(message, state)
+    await chats_send(message.from_user.id, state)
 
 
 @router.message(StateFilter(ChatsFSM.send_message))

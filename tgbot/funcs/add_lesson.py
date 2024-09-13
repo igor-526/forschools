@@ -29,6 +29,6 @@ async def new_lesson(message: types.Message, state: FSMContext) -> None:
                                  listener=data['listener'],
                                  zoom_url='https://1.ru')
     await message.answer("Занятие создан")
-    await send_menu(message, state)
+    await send_menu(message.from_user.id, state)
 
 

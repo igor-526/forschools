@@ -1,5 +1,4 @@
 import os
-import shutil
 import cv2
 from aiogram import types
 from aiogram.fsm.context import FSMContext
@@ -25,7 +24,6 @@ async def add_files_to_state(message: types.Message, state: FSMContext):
         data.get("files").get('audio').append({'file_id': message.audio.file_id,
                                                'format': message.audio.file_name.split(".")[-1]})
     if message.animation:
-        print(message.animation)
         file_format = message.animation.file_name.split(".")[-1] if message.animation.file_name else "mp4"
         data.get("files").get('animation').append({'file_id': message.animation.file_id,
                                                    'format': file_format})

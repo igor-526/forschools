@@ -24,8 +24,8 @@ async def h_material_add(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(StateFilter(MaterialFSM.material_search), F.text == "Меню")
-async def h_material_menu(message: types, state: FSMContext) -> None:
-    await send_menu(message, state)
+async def h_material_menu(message: types.Message, state: FSMContext) -> None:
+    await send_menu(message.from_user.id, state)
 
 
 @router.message(StateFilter(MaterialFSM.material_search))

@@ -334,4 +334,4 @@ async def hw_send(message: types.Message, state: FSMContext):
                         "attachments": []
                     }
                 )
-    await send_menu(message, state)
+    await send_menu(message.from_user.id, state)

@@ -29,7 +29,7 @@ async def h_homework_check_hw(callback: CallbackQuery,
 @router.message(StateFilter(HomeworkFSM.send_hw_files),
                 F.text == "Отмена")
 async def h_material_menu(message: types.Message, state: FSMContext) -> None:
-    await send_menu(message, state)
+    await send_menu(message.from_user.id, state)
 
 
 @router.message(StateFilter(HomeworkFSM.send_hw_files),

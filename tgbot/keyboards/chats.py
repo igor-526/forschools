@@ -3,10 +3,13 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatAnswerCallback
 
 
-def chats_get_users_buttons(chats: list) -> InlineKeyboardMarkup:
+def chats_get_users_buttons(chats: list, read=True) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for chat in chats:
-        action = "send" if chat.get("unreaded") == 0 else "show"
+        if read:
+            action = "send" if chat.get("unreaded") == 0 else "show"
+        else:
+            action = "send"
         builder.button(
             text=f"{chat.get('name')} ({chat.get('unreaded')})",
             callback_data=ChatListCallback(user_id=chat.get('id'),

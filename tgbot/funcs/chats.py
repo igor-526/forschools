@@ -14,24 +14,26 @@ from tgbot.finite_states.chats import ChatsFSM
 from chat.models import Message
 
 
-async def chats_show(message: types.Message):
+async def chats_show(message: types.Message, read=True):
     user = await get_user(message.from_user.id)
     chats = await user.aget_users_for_chat()
     await message.answer(text="Выберите пользователя:",
-                         reply_markup=chats_get_users_buttons(chats))
+                         reply_markup=chats_get_users_buttons(chats, read))
 
 
 async def chats_type_message(message: types.Message, state: FSMContext):
     await add_files_to_state(message, state)
 
 
-async def chats_send(message: types.Message, state: FSMContext):
-    user = await get_user(message.from_user.id)
+async def chats_send(user_tg_id: int, state: FSMContext):
+    user = await get_user(user_tg_id)
     data = await state.get_data()
     if not filechecker(data):
-        await message.answer("Необходимо написать сообщение или отправить вложения, либо нажать кнопку 'Отмена'")
+        await bot.send_message(chat_id=user_tg_id,
+                               text="Необходимо написать сообщение или отправить вложения, либо нажать кнопку 'Отмена'")
         return
-    message_status = await message.answer("Отправка...")
+    message_status = await bot.send_message(chat_id=user_tg_id,
+                                            text="Отправка...")
     hwdata = await filedownloader(data, owner=user, t="Сообщение")
     chat_message = await Message.objects.acreate(
         receiver_id=data.get('message_for'),
@@ -42,12 +44,17 @@ async def chats_send(message: types.Message, state: FSMContext):
     await chat_message.asave()
     await chats_notificate(chat_message.id)
     await message_status.edit_text("Сообщение отправлено")
-    await send_menu(message, state, False)
+    await send_menu(user_tg_id, state)
 
 
 async def chats_send_ask(callback: CallbackQuery,
                          to_user_id: int,
                          state: FSMContext):
+    data = await state.get_data()
+    if data.get("files"):
+        await state.update_data({"message_for": to_user_id})
+        await chats_send(callback.from_user.id, state)
+        return
     await bot.send_message(callback.message.chat.id,
                            "Напишите сообщение, после чего нажмите кнопку 'Отправить'",
                            reply_markup=message_typing_keyboard)
