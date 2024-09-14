@@ -11,7 +11,7 @@ from tgbot.keyboards.callbacks.material import (MaterialCategoryCallback,
 
 
 def get_keyboard_materials(add_mat=False) -> ReplyKeyboardMarkup:
-    add_button = KeyboardButton(text="Добавить")
+    add_button = KeyboardButton(text="Добавить материал")
     back_button = KeyboardButton(text="Меню")
     keyboard = []
     if add_mat:

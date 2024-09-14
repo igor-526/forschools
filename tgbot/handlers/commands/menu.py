@@ -6,10 +6,9 @@ from tgbot.finite_states.chats import ChatsFSM
 from tgbot.finite_states.menu import MenuFSM
 from tgbot.funcs.fileutils import add_files_to_state
 from tgbot.funcs.materials import get_user_materials
-from tgbot.funcs.menu import send_menu
 from tgbot.funcs.homeworks import show_homework_queryset
 from tgbot.funcs.chats import chats_show
-from tgbot.keyboards.default import message_typing_keyboard, cancel_keyboard
+from tgbot.keyboards.default import cancel_keyboard
 
 router = Router(name=__name__)
 

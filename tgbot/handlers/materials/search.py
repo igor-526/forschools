@@ -3,6 +3,7 @@ from aiogram.types import CallbackQuery
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from tgbot.finite_states.materials import MaterialFSM
+from tgbot.funcs.materials_add import add_material_message
 from tgbot.keyboards.callbacks.material import (MaterialCategoryCallback,
                                                 MaterialTypeCallback,
                                                 MaterialLevelCallback,
@@ -11,14 +12,13 @@ from tgbot.funcs.materials import (send_types,
                                    send_material_query,
                                    show_material_item,
                                    send_levels,
-                                   add_material_message,
                                    search_materials)
 from tgbot.funcs.menu import send_menu
 
 router = Router(name=__name__)
 
 
-@router.message(StateFilter(MaterialFSM.material_search), F.text == "Добавить")
+@router.message(StateFilter(MaterialFSM.material_search), F.text == "Добавить материал")
 async def h_material_add(message: types.Message, state: FSMContext) -> None:
     await add_material_message(message, state)
 

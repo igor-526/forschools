@@ -43,7 +43,8 @@ class Material(models.Model):
     file = models.FileField(verbose_name='Файл',
                             upload_to='materials/',
                             null=False,
-                            blank=False)
+                            blank=False,
+                            max_length=500)
     uploaded_at = models.DateTimeField(verbose_name='Дата и время загрузки',
                                        auto_now_add=True,
                                        null=False,

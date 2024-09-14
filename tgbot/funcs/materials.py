@@ -16,7 +16,6 @@ from tgbot.keyboards.materials import (get_keyboard_materials,
                                        get_keyboard_material_item,
                                        get_keyboard_tg_users,
                                        get_show_key, get_keyboard_query_hw)
-from tgbot.keyboards.default import cancel_keyboard
 from tgbot.finite_states.materials import MaterialFSM
 from material.utils.get_type import get_type
 from homework.models import Homework
@@ -174,7 +173,6 @@ async def navigate_user_materials(callback: CallbackQuery, state: FSMContext, us
 async def get_user_materials(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
     perms = await get_group_and_perms(user.id)
-    button_add = 'material.add_general' in perms['permissions']
     if 'Listener' in perms.get('groups'):
         materials = await aget_materials_for_listener(user.id, 1)
         next_materials = await aget_materials_for_listener_next(user.id, 1)
@@ -184,7 +182,7 @@ async def get_user_materials(message: types.Message, state: FSMContext):
                              reply_markup=get_keyboard_query_user(dicted_materials, user.id, 1, next_materials))
     else:
         await message.answer("Выберите категорию или напишите фразу для поиска:",
-                             reply_markup=get_keyboard_materials(add_mat=False))
+                             reply_markup=get_keyboard_materials(add_mat=True))
         await state.set_state(MaterialFSM.material_search)
         await send_categories(message)
 
@@ -202,21 +200,6 @@ async def get_hw_materials(callback: CallbackQuery, state: FSMContext, hw_id: in
         await bot.send_message(chat_id=callback.from_user.id,
                                text="К ДЗ прикреплены следующие материалы:",
                                reply_markup=get_keyboard_query_hw(dicted_materials, hw.id, page, next_materials))
-
-
-async def add_material_message(message: types.Message, state: FSMContext) -> None:
-    await message.delete()
-    user = await get_user(message.from_user.id)
-    perms = await get_group_and_perms(user.id)
-    if 'material.add_personal' in perms.get("permissions"):
-        await message.answer(text="Отправьте мне файл(ы) и я быстро добавлю их в Ваши личные материалы\n"
-                                  "Поддерживаются изображения, архивы, GIF-ки, PDF-документы, видео и аудио\n"
-                                  "Вы также можете переслать мне сообщение. Если файлов будет несколько, я "
-                                  "их заархивирую",
-                             reply_markup=cancel_keyboard)
-        await state.set_state(MaterialFSM.material_add)
-    else:
-        await message.answer(text="У вас нет прав на добавление материалов")
 
 
 async def send_tg_users(callback: CallbackQuery, state: FSMContext, mat_id) -> None:

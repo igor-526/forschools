@@ -18,6 +18,7 @@ async def send_menu(user_tg_id: int, state: FSMContext) -> None:
         homeworks = True
         lessons = True
     else:
+        materials = True
         homeworks = True
         lessons = True
     await state.clear()
