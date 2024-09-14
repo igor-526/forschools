@@ -1,7 +1,5 @@
 import os.path
 from datetime import datetime
-from pprint import pprint
-
 from PIL import Image
 import cv2
 from dls.settings import MEDIA_ROOT
@@ -42,7 +40,7 @@ def add_material_generate_success_message(material: Material) -> dict:
     }
 
 
-async def add_material_add(message: types.Message, state: FSMContext) -> None:
+async def add_material_add(message: types.Message) -> None:
     def get_path(file_format: str) -> dict:
         file_path_db = os.path.join(MEDIA_ROOT, "materials", f'{msgdata.get("name")}.{file_format}')
         file_path = os.path.join(MEDIA_ROOT, file_path_db)

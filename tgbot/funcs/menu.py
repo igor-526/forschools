@@ -13,19 +13,24 @@ async def send_menu(user_tg_id: int, state: FSMContext) -> None:
     materials = False
     homeworks = False
     lessons = False
+    messages = False
+    settings = False
     if 'Listener' in perms.get('groups'):
-        materials = True
+        materials = False
         homeworks = True
         lessons = True
+        messages = True
+        settings = False
     else:
         materials = True
         homeworks = True
         lessons = True
+        messages = True
+        settings = True
     await state.clear()
     await bot.send_message(chat_id=user_tg_id,
                            text="Выберите действие: ",
                            reply_markup=get_menu_keyboard(await user.aget_unread_messages_count(),
-                                                          materials,
-                                                          homeworks,
-                                                          lessons))
+                                                          materials, homeworks,
+                                                          lessons, messages, settings))
     await state.set_state(MenuFSM.main_menu)

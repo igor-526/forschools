@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from tgbot.finite_states.chats import ChatsFSM
 from tgbot.finite_states.menu import MenuFSM
 from tgbot.funcs.fileutils import add_files_to_state
+from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks import show_homework_queryset
 from tgbot.funcs.chats import chats_show
@@ -26,18 +27,13 @@ async def h_mainmenu_homeworks(message: types.Message) -> None:
 
 
 @router.message(StateFilter(MenuFSM.main_menu),
-                F.text == "Занятия")
-async def h_mainmenu_lessons(message: types.Message) -> None:
-    xx = await message.answer(text="Функиция пока не реализована. "
-                                   "Тут у ученика будут данные о предстоящих и нескольких прошедших занятиях. "
-                                   "Это даст возможность узнать время и дату занятия без уведомления. "
-                                   "Преподаватели же смогут увидеть своё расписание на сегодняшний и завтрашний день. "
-                                   "Также возможность отметить присутствующих и отсутствующих учеников")
-    print(xx)
+                F.text == "Расписание")
+async def h_mainmenu_lessons(message: types.Message, state: FSMContext) -> None:
+    await lessons_get_schedule(message.from_user.id, state)
 
 
 @router.message(StateFilter(MenuFSM.main_menu),
-                F.text.contains("Чаты"))
+                F.text.contains("Сообщения"))
 async def h_mainmenu_chats(message: types.Message) -> None:
     await chats_show(message)
     await message.delete()
@@ -67,7 +63,7 @@ async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
         }
         })
         await message.answer(text="При необходимости отправьте ещё сообщения. "
-                             "После выбора пользователя сообщение будет доставлено",
+                                  "После выбора пользователя сообщение будет доставлено",
                              reply_markup=cancel_keyboard)
         await chats_show(message, read=False)
         await state.set_state(ChatsFSM.send_message)

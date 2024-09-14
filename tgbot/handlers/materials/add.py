@@ -14,6 +14,6 @@ async def h_material_add_cancel(message: types.Message, state: FSMContext) -> No
 
 
 @router.message(StateFilter(MaterialFSM.material_add))
-async def h_material_add_new(message: types.Message, state: FSMContext) -> None:
-    await add_material_add(message, state)
+async def h_material_add_new(message: types.Message) -> None:
+    await add_material_add(message)
 

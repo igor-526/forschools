@@ -119,8 +119,20 @@ class Lesson(models.Model):
         else:
             return self.get_learning_plan().teacher
 
+    async def aget_teacher(self):
+        if self.replace_teacher:
+            return self.replace_teacher
+        else:
+            lp = await self.aget_learning_plan()
+            return lp.teacher
+
     def get_listeners(self):
         return self.get_learning_plan().listeners.all()
+
+    async def aget_listeners(self):
+        learning_phase = await self.learningphases_set.afirst()
+        learning_plan = await learning_phase.learningplan_set.afirst()
+        return [listener async for listener in learning_plan.listeners.all()]
 
     def get_hw_teacher(self):
         default_hw_teacher = self.get_learning_plan().default_hw_teacher
@@ -131,6 +143,11 @@ class Lesson(models.Model):
 
     def get_learning_plan(self):
         return self.learningphases_set.first().learningplan_set.first()
+
+    async def aget_learning_plan(self):
+        learning_phase = await self.learningphases_set.afirst()
+        learning_plan = await learning_phase.learningplan_set.select_related("teacher").afirst()
+        return learning_plan
 
     def get_hw_deadline(self):
         nl = self.get_learning_plan().get_next_lesson(self)
