@@ -1,3 +1,5 @@
+import datetime
+
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
@@ -5,25 +7,193 @@ from django.db.models import Q
 from tgbot.funcs.fileutils import filechecker, filedownloader
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
-                                      get_hwlogs_buttons)
-from tgbot.keyboards.default import ready_cancel_keyboard, cancel_keyboard
-from tgbot.finite_states.homework import HomeworkFSM
+                                      get_hwlogs_buttons, get_homework_menu_buttons, get_homework_listeners_buttons,
+                                      get_homework_newhwsetting_buttons)
+from tgbot.keyboards.default import ready_cancel_keyboard, cancel_keyboard, yes_cancel_keyboard
+from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
-from tgbot.utils import get_tg_id, get_user
-from profile_management.models import NewUser
+from tgbot.utils import get_tg_id
+from profile_management.models import NewUser, Telegram
 from homework.models import Homework, HomeworkLog
-from material.models import File
 from tgbot.create_bot import bot
 from tgbot.utils import get_group_and_perms, get_user
 from homework.utils import status_code_to_string
 from material.utils.get_type import get_type
 from aiogram.utils.media_group import MediaGroupBuilder
-from dls.settings import MEDIA_ROOT
 
 
-async def show_homework_queryset(message: types.Message):
+async def homeworks_send_menu(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
+    perms = await get_group_and_perms(user.id)
+    if "Listener" in perms.get("groups"):
+        await show_homework_queryset(message.from_user.id, state)
+    elif "Teacher" in perms.get("groups"):
+        await message.answer(text="Выберите функцию:",
+                             reply_markup=get_homework_menu_buttons())
+    else:
+        await message.answer("Функция для Вашей роли недоступна")
+
+
+async def add_homework_select_listener(tg_id):
+    user = await get_user(tg_id)
+    listeners = [{
+        "id": u.id,
+        "name": f"{u.first_name} {u.last_name}",
+    } async for u in NewUser.objects.filter(
+        Q(plan_listeners__teacher=user,
+          is_active=True) |
+        Q(plan_listeners__phases__lessons__replace_teacher=user,
+          is_active=True)).distinct()[:15]]
+    await bot.send_message(chat_id=tg_id,
+                           text="Выберите ученика:",
+                           reply_markup=get_homework_listeners_buttons(listeners))
+
+
+async def add_homework_set_homework_ready(message: types.Message, state: FSMContext):
+    statedata = await state.get_data()
+    teacher = await get_user(message.from_user.id)
+    new_hw = await Homework.objects.acreate(
+        name=statedata.get("new_hw").get("name"),
+        description=statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description") else "-",
+        deadline=statedata.get("new_hw").get("deadline"),
+        listener_id=statedata.get("new_hw").get("listener_id"),
+        teacher=teacher
+    )
+    await new_hw.materials.aset(statedata.get("new_hw").get("materials"))
+    await new_hw.asave()
+    await message.answer("ДЗ успешно задано")
+    await homework_tg_notificate(teacher,
+                                 statedata.get("new_hw").get("listener_id"),
+                                 [new_hw])
+
+
+async def add_homework_set_homework_message(tg_id: int,
+                                            state: FSMContext,
+                                            listener_id):
+    data = await state.get_data()
+    if not data.get("new_hw"):
+        last_count = await Homework.objects.acount()
+        await state.set_data({
+            "new_hw": {
+                "listener_id": listener_id,
+                "name": f'Домашнее задание {last_count + 1}',
+                "description": None,
+                "materials": [],
+                "deadline": datetime.date.today() + datetime.timedelta(days=6),
+            },
+            "messages_to_delete": []
+        })
+        await bot.send_message(chat_id=tg_id,
+                               text="После завершения настройки ДЗ <b>нажмите кнопку 'Готово'</b>",
+                               reply_markup=ready_cancel_keyboard)
+        data = await state.get_data()
+    keys = get_homework_newhwsetting_buttons(
+        name=data.get("new_hw").get("name"),
+        description=data.get("new_hw").get("description") if data.get("new_hw").get("description") else "отсутствует",
+        deadline=data.get("new_hw").get("deadline").strftime("%d.%m.%Y"),
+        matcount=0
+    )
+    await bot.send_message(chat_id=tg_id,
+                           text="Нажмите на поле для настройки ДЗ\nДля добавления новых материалов просто скиньте их "
+                                "сюда. Одно сообщение - один материал",
+                           reply_markup=keys)
+    for msg in data.get("messages_to_delete"):
+        await bot.delete_message(chat_id=tg_id,
+                                 message_id=msg)
+    await state.update_data({"messages_to_delete": []})
+    await state.set_state(HomeworkNewFSM.change_menu)
+
+
+async def add_homework_set_homework_change(callback: CallbackQuery,
+                                           state: FSMContext,
+                                           action: str):
+    data = await state.get_data()
+    if not data.get("new_hw"):
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text="У вас нет незаданных ДЗ. Пожалуйста, повторите попытку через главное меню")
+        await send_menu(callback.from_user.id, state)
+        return
+    if action == "name":
+        await callback.message.delete()
+        ask_msg = await bot.send_message(chat_id=callback.from_user.id,
+                                         text=f'Текущее наименование ДЗ: {data.get("new_hw").get("name")}\n'
+                                              f'Отправьте мне новое наименование или нажмите кнопку "Отмена"',
+                                         reply_markup=cancel_keyboard)
+        statedata = await state.get_data()
+        messages_to_delete = statedata.get("messages_to_delete")
+        messages_to_delete.append(ask_msg.message_id)
+        await state.update_data({"messages_to_delete": messages_to_delete})
+        await state.set_state(HomeworkNewFSM.change_name)
+    elif action == "description":
+        desc = data.get("new_hw").get("description") if data.get("new_hw").get("description") else "отсутствует"
+        await callback.message.delete()
+        ask_msg = await bot.send_message(chat_id=callback.from_user.id,
+                                         text=f'Текущее описание ДЗ: {desc}\n'
+                                              f'Отправьте мне новое описание или нажмите кнопку "Отмена"',
+                                         reply_markup=cancel_keyboard)
+        statedata = await state.get_data()
+        messages_to_delete = statedata.get("messages_to_delete")
+        messages_to_delete.append(ask_msg.message_id)
+        await state.update_data({"messages_to_delete": messages_to_delete})
+        await state.set_state(HomeworkNewFSM.change_description)
+    elif action == "deadline":
+        await callback.message.delete()
+        ask_msg = await bot.send_message(chat_id=callback.from_user.id,
+                                         text=f'Текущий срок выполнения ДЗ: '
+                                              f'{data.get("new_hw").get("deadline").strftime("%d.%m.%Y")}\n'
+                                              f'Отправьте мне новый срок выполнения в формате ДД.ММ.ГГГГ или нажмите '
+                                              f'кнопку "Отмена"',
+                                         reply_markup=cancel_keyboard)
+        statedata = await state.get_data()
+        messages_to_delete = statedata.get("messages_to_delete")
+        messages_to_delete.append(ask_msg.message_id)
+        await state.update_data({"messages_to_delete": messages_to_delete})
+        await state.set_state(HomeworkNewFSM.change_deadline)
+    elif action == "materials":
+        await callback.message.delete()
+        ask_msg = await bot.send_message(chat_id=callback.from_user.id,
+                                         text="Вы действительно хотите удалить <b>из ДЗ</b> все добавленные материалы?",
+                                         reply_markup=yes_cancel_keyboard)
+        statedata = await state.get_data()
+        messages_to_delete = statedata.get("messages_to_delete")
+        messages_to_delete.append(ask_msg.message_id)
+        await state.update_data({"messages_to_delete": messages_to_delete})
+        await state.set_state(HomeworkNewFSM.delete_materials)
+
+
+async def add_homework_set_homework_change_ready(message: types.Message,
+                                                 state: FSMContext,
+                                                 action: str):
+    def validate_datetime():
+        try:
+            deadline = datetime.datetime.strptime(message.text, "%d.%m.%Y")
+            return deadline
+        except Exception as e:
+            return False
+
+    statedata = await state.get_data()
+    if action == "name":
+        statedata["new_hw"]["name"] = message.text
+    elif action == "description":
+        statedata["new_hw"]["description"] = message.text
+    elif action == "deadline":
+        deadline = validate_datetime()
+        if deadline:
+            statedata["new_hw"]["deadline"] = deadline
+        else:
+            err_msg = await message.answer("Пожалуйста, укажите дату в формате ДД.ММ.ГГГГ")
+            messages_to_delete = statedata.get("messages_to_delete")
+            messages_to_delete.append(err_msg.message_id)
+            await state.update_data({"messages_to_delete": messages_to_delete})
+            return
+    elif action == "materials":
+        statedata["new_hw"]["materials"] = []
+    await add_homework_set_homework_message(message.from_user.id, state, statedata.get("new_hw").get("listener_id"))
+
+
+async def show_homework_queryset(tg_id: int, state: FSMContext):
+    user = await get_user(tg_id)
     gp = await get_group_and_perms(user.id)
     groups = gp.get('groups')
     if 'Listener' in groups:
@@ -34,10 +204,12 @@ async def show_homework_queryset(message: types.Message):
                                 } async for hw in Homework.objects.filter(listener=user)]))
         homeworks = [hw.get('hw') for hw in homeworks]
         if len(homeworks) == 0:
-            await message.answer(text="Нет домашних заданий для выполнения")
+            await bot.send_message(chat_id=tg_id,
+                                   text="Нет домашних заданий для выполнения")
         else:
-            await message.answer(text="Вот домашние задания, которые ждут Вашего выполнения:",
-                                 reply_markup=get_homeworks_buttons(homeworks))
+            await bot.send_message(chat_id=tg_id,
+                                   text="Вот домашние задания, которые ждут Вашего выполнения:",
+                                   reply_markup=get_homeworks_buttons(homeworks))
     elif 'Teacher' in groups:
         homeworks = list(filter(lambda hw: hw['hw_status'] == 3,
                                 [{
@@ -46,11 +218,16 @@ async def show_homework_queryset(message: types.Message):
                                 } async for hw in Homework.objects.filter(teacher=user)]))
         homeworks = [hw.get('hw') for hw in homeworks]
         if len(homeworks) == 0:
-            await message.answer(text="Нет домашних заданий для проверки")
-        await message.answer(text="Вот домашние задания, которые ждут Вашей проверки:",
-                             reply_markup=get_homeworks_buttons(homeworks, sb=True))
+            await bot.send_message(chat_id=tg_id,
+                                   text="Нет домашних заданий для проверки")
+            await send_menu(tg_id, state)
+        else:
+            await bot.send_message(chat_id=tg_id,
+                                   text="Вот домашние задания, которые ждут Вашей проверки:",
+                                   reply_markup=get_homeworks_buttons(homeworks, sb=True))
     else:
-        await message.answer("Для Вашей роли данная функция в Telegram недоступна")
+        await bot.send_message(chat_id=tg_id,
+                               text="Для Вашей роли данная функция в Telegram недоступна")
 
 
 async def search_homeworks_message(callback: CallbackQuery, state: FSMContext):
@@ -307,8 +484,8 @@ async def hw_send(message: types.Message, state: FSMContext):
             try:
                 msg = f"Пришёл новый ответ от преподавателя по ДЗ <b>'{hw.name}'</b>"
                 msg_object = await bot.send_message(chat_id=listener_tg,
-                                       text=msg,
-                                       reply_markup=get_homeworks_buttons([hw]))
+                                                    text=msg,
+                                                    reply_markup=get_homeworks_buttons([hw]))
                 await TgBotJournal.objects.acreate(
                     recipient=hw.listener,
                     initiator=hw.teacher,
@@ -335,3 +512,50 @@ async def hw_send(message: types.Message, state: FSMContext):
                     }
                 )
     await send_menu(message.from_user.id, state)
+
+
+async def homework_tg_notificate(initiator: NewUser, listener: int, homeworks: list[Homework]):
+    user_tg_note = await Telegram.objects.filter(user_id=listener).afirst()
+    if user_tg_note:
+        try:
+            msg = await bot.send_message(chat_id=user_tg_note.tg_id,
+                                         text=f"У вас новые домашние задания!",
+                                         reply_markup=get_homeworks_buttons([hw for hw in homeworks]))
+            await TgBotJournal.objects.acreate(
+                recipient_id=listener,
+                initiator=initiator,
+                event=3,
+                data={
+                    "status": "success",
+                    "text": "У вас новые домашние задания!",
+                    "msg_id": msg.message_id,
+                    "errors": [],
+                    "attachments": []
+                }
+            )
+        except Exception as e:
+            await TgBotJournal.objects.acreate(
+                recipient_id=listener,
+                initiator=initiator,
+                event=3,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": [str(e)],
+                    "attachments": []
+                }
+            )
+    else:
+        await TgBotJournal.objects.acreate(
+            recipient_id=listener,
+            initiator=initiator,
+            event=3,
+            data={
+                "status": "error",
+                "text": None,
+                "msg_id": None,
+                "errors": ["У пользователя не привязан Telegram"],
+                "attachments": []
+            }
+        )

@@ -21,12 +21,24 @@ async def send_menu(user_tg_id: int, state: FSMContext) -> None:
         lessons = True
         messages = True
         settings = False
-    else:
+    elif 'Teacher' in perms.get('groups'):
         materials = True
         homeworks = True
         lessons = True
         messages = True
-        settings = True
+        settings = False
+    elif 'Metodist' in perms.get('groups'):
+        materials = True
+        homeworks = False
+        lessons = True
+        messages = True
+        settings = False
+    elif 'Admin' in perms.get('groups'):
+        materials = True
+        homeworks = False
+        lessons = True
+        messages = True
+        settings = False
     await state.clear()
     await bot.send_message(chat_id=user_tg_id,
                            text="Выберите действие: ",

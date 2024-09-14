@@ -1,6 +1,55 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkLogCallback
+from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkLogCallback, HomeworkMenuCallback,
+                                                HomeworkNewCallback, HomeworkNewSettingCallback)
+
+
+def get_homework_menu_buttons() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=f"Проверка домашних заданий",
+        callback_data=HomeworkMenuCallback(action="show")
+    )
+    builder.button(
+        text=f"Задать новое ДЗ",
+        callback_data=HomeworkMenuCallback(action="new")
+    )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_homework_newhwsetting_buttons(name, description, deadline, matcount) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=f"Наименование: {name}",
+        callback_data=HomeworkNewSettingCallback(action="name")
+    )
+    builder.button(
+        text=f"Описание: {description}",
+        callback_data=HomeworkNewSettingCallback(action="description")
+    )
+    builder.button(
+        text=f"Срок: {deadline}",
+        callback_data=HomeworkNewSettingCallback(action="deadline")
+    )
+    builder.button(
+        text=f"Удалить материалы ({matcount})",
+        callback_data=HomeworkNewSettingCallback(action="materials")
+    )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_homework_listeners_buttons(listeners: list) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for listener in listeners:
+        builder.button(
+            text=listener.get('name'),
+            callback_data=HomeworkNewCallback(user_id=listener.get('id'))
+        )
+    builder.adjust(1)
+    return builder.as_markup()
+
 
 
 def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:

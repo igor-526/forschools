@@ -7,9 +7,10 @@ from tgbot.finite_states.menu import MenuFSM
 from tgbot.funcs.fileutils import add_files_to_state
 from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
-from tgbot.funcs.homeworks import show_homework_queryset
+from tgbot.funcs.homeworks import show_homework_queryset, homeworks_send_menu
 from tgbot.funcs.chats import chats_show
 from tgbot.keyboards.default import cancel_keyboard
+from tgbot.utils import get_user
 
 router = Router(name=__name__)
 
@@ -22,8 +23,8 @@ async def h_mainmenu_materials(message: types.Message, state: FSMContext) -> Non
 
 @router.message(StateFilter(MenuFSM.main_menu),
                 F.text == "Домашние задания")
-async def h_mainmenu_homeworks(message: types.Message) -> None:
-    await show_homework_queryset(message)
+async def h_mainmenu_homeworks(message: types.Message, state: FSMContext) -> None:
+    await homeworks_send_menu(message, state)
 
 
 @router.message(StateFilter(MenuFSM.main_menu),

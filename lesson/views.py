@@ -20,7 +20,7 @@ from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
                           can_see_lesson_materials, can_add_homework, can_set_passed, can_set_not_held)
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 
 class LessonPage(LoginRequiredMixin, TemplateView):  # страница занятий
@@ -82,10 +82,13 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         if ds:
             ds = datetime.strptime(ds, "%Y-%m-%d")
             queryset = queryset.filter(date__gte=ds)
-
+        else:
+            queryset = queryset.filter(date__gte=date.today() - timedelta(days=2))
         if de:
             ds = datetime.strptime(de, "%Y-%m-%d")
             queryset = queryset.filter(date__lte=ds)
+        else:
+            queryset = queryset.filter(date__lte=date.today() + timedelta(days=6))
         foruser = self.request.query_params.get("foruser")
         user = NewUser.objects.get(pk=foruser) if foruser else self.request.user
         if not user.groups.filter(name__in=["Admin", "Metodist"]).exists():

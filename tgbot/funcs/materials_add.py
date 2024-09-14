@@ -40,7 +40,13 @@ def add_material_generate_success_message(material: Material) -> dict:
     }
 
 
-async def add_material_add(message: types.Message) -> None:
+async def add_material_add(message: types.Message, state: FSMContext,  set_to: str = None, obj_id: int = None) -> None:
+    async def set_to_obj(mat_id):
+        if set_to == "statehw":
+            statedata = await state.get_data()
+            statedata["new_hw"]["materials"].append(mat_id)
+
+
     def get_path(file_format: str) -> dict:
         file_path_db = os.path.join(MEDIA_ROOT, "materials", f'{msgdata.get("name")}.{file_format}')
         file_path = os.path.join(MEDIA_ROOT, file_path_db)
@@ -120,6 +126,9 @@ async def add_material_add(message: types.Message) -> None:
         await statusmessage.edit_text(
             **add_material_generate_success_message(new_mat)
         )
+        if set_to:
+            await set_to_obj(new_mat.id)
+
 
     statusmessage = await message.reply("Начинаю загрузку материала..")
     msgdata = add_material_validate(message)
@@ -142,6 +151,8 @@ async def add_material_add(message: types.Message) -> None:
                 await statusmessage.edit_text(
                     **add_material_generate_success_message(new_mat)
                 )
+                if set_to:
+                    await set_to_obj(new_mat.id)
             except Exception as e:
                 await statusmessage.edit_text(
                     text=f'Произошла ошибка при добавлении материала:\n{e}'
