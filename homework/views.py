@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework.generics import ListCreateAPIView, ListAPIView
 
-from tgbot.utils import send_homework_tg
+from tgbot.utils import send_homework_tg, send_homework_edit
 from .models import Homework, HomeworkLog
 from .serializers import HomeworkListSerializer, HomeworkLogSerializer
 from rest_framework import status
@@ -93,6 +93,27 @@ class HomeworkItemPage(LoginRequiredMixin, TemplateView):
                    "can_check": status == 3 and hw.teacher == request.user,
                    "can_set_replace": replace_teacher_button(request)}
         return render(request, self.template_name, context)
+
+
+class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
+    def get(self, request, *args, **kwargs):
+        hw = Homework.objects.get(pk=kwargs.get('pk'))
+        status = hw.get_status().status
+        can_edit = (hw.teacher == request.user or
+                             request.user.groups.filter(name__in=["Metodist", "Admin"]).exists())
+        can_add_materials_tg = can_edit and request.user.telegram.exists()
+        return JsonResponse({
+            "status": status,
+            "can_edit": can_edit,
+            "can_add_materials_tg": can_add_materials_tg
+        })
+
+
+class HomeworkItemPageEditAPIView(LoginRequiredMixin, APIView):
+    def get(self, request, *args, **kwargs):
+        hw = Homework.objects.get(pk=kwargs.get('pk'))
+        send_homework_edit(hw, request.user)
+        return JsonResponse({})
 
 
 class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):

@@ -34,16 +34,20 @@ async def chats_send(user_tg_id: int, state: FSMContext):
         return
     message_status = await bot.send_message(chat_id=user_tg_id,
                                             text="Отправка...")
-    hwdata = await filedownloader(data, owner=user, t="Сообщение")
-    chat_message = await Message.objects.acreate(
-        receiver_id=data.get('message_for'),
-        sender_id=user.id,
-        message=hwdata.get("comment"),
-    )
-    await chat_message.files.aset(hwdata.get("files_db"))
-    await chat_message.asave()
-    await chats_notificate(chat_message.id)
-    await message_status.edit_text("Сообщение отправлено")
+    try:
+        hwdata = await filedownloader(data, owner=user, t="Сообщение")
+        chat_message = await Message.objects.acreate(
+            receiver_id=data.get('message_for'),
+            sender_id=user.id,
+            message=hwdata.get("comment"),
+        )
+        await chat_message.files.aset(hwdata.get("files_db"))
+        await chat_message.asave()
+        await chats_notificate(chat_message.id)
+        await message_status.edit_text("Сообщение отправлено")
+    except Exception as e:
+        await message_status.edit_text(f"Не удалось отправить сообщение\n"
+                                       f"Ошибка: {e}")
     await send_menu(user_tg_id, state)
 
 

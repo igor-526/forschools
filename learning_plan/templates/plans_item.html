@@ -35,6 +35,8 @@
                             {% else %}
                                 <li class="list-group-item">Срок: не установлен</li>
                             {% endif %}
+                            <li class="list-group-item"><button id="plansItemSetStatusButton" class="btn btn-danger d-none">Завершить обучение</button></li>
+                            {% include 'plans_item_modal_setstatus.html' %}
                         </ul>
                     </div>
                 </div>
@@ -44,9 +46,9 @@
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">Этапов всего: {{ plan.phases.count }}</li>
-                            <li class="list-group-item">Этапов пройдено:</li>
-                            <li class="list-group-item">Занятий всего:</li>
-                            <li class="list-group-item">Занятий пройдено:</li>
+                            <li class="list-group-item">Этапов пройдено: <span id="plansItemPhasesPassed"></span></li>
+                            <li class="list-group-item">Занятий всего: <span id="plansItemLessonsAll"></span></li>
+                            <li class="list-group-item">Занятий пройдено: <span id="plansItemLessonsPassed"></span></li>
                         </ul>
                     </div>
                 </div>

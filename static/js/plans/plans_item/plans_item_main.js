@@ -11,6 +11,43 @@ function planItemMain(){
     plansItemAddLessonsButton.addEventListener("click", function (){
         plansItemAddLessonsSetModal()
     })
+    planItemAPIGetInfo().then(request => {
+        switch (request.status){
+            case 200:
+                plansItemPhasesPassed.innerHTML = request.response.phases_passed
+                plansItemLessonsAll.innerHTML = request.response.lessons_all
+                plansItemLessonsPassed.innerHTML = request.response.lessons_passed
+                if (request.response.can_close){
+                    plansItemSetStatusModalFunc()
+                }
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
+}
+
+function plansItemSetStatusModalFunc(){
+    plansItemSetStatusButton.classList.remove("d-none")
+    plansItemSetStatusButton.addEventListener("click", function () {
+        bsPlansItemSetStatusModal.show()
+    })
+    plansItemSetStatusModalConfirmButton.addEventListener("click", function (){
+        plansItemAPIClosePlan().then(request => {
+            bsPlansItemSetStatusModal.hide()
+            switch (request.status){
+                case 200:
+                    showSuccessToast("Обучение закрыто")
+                    setTimeout(function () {
+                        location.reload()
+                    }, 500)
+                    break
+                default:
+                    showErrorToast()
+            }
+        })
+    })
 }
 
 function planItemGetPhaseElement(phase){
@@ -235,7 +272,13 @@ function planItemChangeLesson(lesson=null, id=null, phaseID=null){
 
 //Tables
 const plansItemTableBody = document.querySelector("#PlansItemTableBody")
-
 const plansItemAddLessonsButton = document.querySelector("#plansItemAddLessonsButton")
+const plansItemSetStatusButton = document.querySelector("#plansItemSetStatusButton")
+const plansItemPhasesPassed = document.querySelector("#plansItemPhasesPassed")
+const plansItemLessonsAll = document.querySelector("#plansItemLessonsAll")
+const plansItemLessonsPassed = document.querySelector("#plansItemLessonsPassed")
+const plansItemSetStatusModal = document.querySelector("#plansItemSetStatusModal")
+const bsPlansItemSetStatusModal = new bootstrap.Modal(plansItemSetStatusModal)
+const plansItemSetStatusModalConfirmButton = plansItemSetStatusModal.querySelector("#plansItemSetStatusModalConfirmButton")
 
 planItemMain()

@@ -52,20 +52,33 @@ async def add_homework_select_listener(tg_id):
 
 async def add_homework_set_homework_ready(message: types.Message, state: FSMContext):
     statedata = await state.get_data()
-    teacher = await get_user(message.from_user.id)
-    new_hw = await Homework.objects.acreate(
-        name=statedata.get("new_hw").get("name"),
-        description=statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description") else "-",
-        deadline=statedata.get("new_hw").get("deadline"),
-        listener_id=statedata.get("new_hw").get("listener_id"),
-        teacher=teacher
-    )
-    await new_hw.materials.aset(statedata.get("new_hw").get("materials"))
-    await new_hw.asave()
-    await message.answer("ДЗ успешно задано")
-    await homework_tg_notificate(teacher,
-                                 statedata.get("new_hw").get("listener_id"),
-                                 [new_hw])
+    hw_id = statedata.get("new_hw").get("hw_id")
+    if hw_id:
+        hw = await Homework.objects.aget(id=hw_id)
+        hw.name = statedata.get("new_hw").get("name")
+        hw.description = statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description") \
+            else "-"
+        hw.deadline = statedata.get("new_hw").get("deadline")
+        await hw.asave()
+        await hw.materials.aset(statedata.get("new_hw").get("materials"))
+        await hw.asave()
+        await message.answer("ДЗ успешно изменено")
+    else:
+        teacher = await get_user(message.from_user.id)
+        new_hw = await Homework.objects.acreate(
+            name=statedata.get("new_hw").get("name"),
+            description=statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description")
+            else "-",
+            deadline=statedata.get("new_hw").get("deadline"),
+            listener_id=statedata.get("new_hw").get("listener_id"),
+            teacher=teacher
+        )
+        await new_hw.materials.aset(statedata.get("new_hw").get("materials"))
+        await new_hw.asave()
+        await message.answer("ДЗ успешно задано")
+        await homework_tg_notificate(teacher,
+                                     statedata.get("new_hw").get("listener_id"),
+                                     [new_hw])
 
 
 async def add_homework_set_homework_message(tg_id: int,
@@ -76,6 +89,7 @@ async def add_homework_set_homework_message(tg_id: int,
         last_count = await Homework.objects.acount()
         await state.set_data({
             "new_hw": {
+                "hw_id": None,
                 "listener_id": listener_id,
                 "name": f'Домашнее задание {last_count + 1}',
                 "description": None,
@@ -84,20 +98,20 @@ async def add_homework_set_homework_message(tg_id: int,
             },
             "messages_to_delete": []
         })
-        await bot.send_message(chat_id=tg_id,
-                               text="После завершения настройки ДЗ <b>нажмите кнопку 'Готово'</b>",
-                               reply_markup=ready_cancel_keyboard)
         data = await state.get_data()
     keys = get_homework_newhwsetting_buttons(
         name=data.get("new_hw").get("name"),
         description=data.get("new_hw").get("description") if data.get("new_hw").get("description") else "отсутствует",
         deadline=data.get("new_hw").get("deadline").strftime("%d.%m.%Y"),
-        matcount=0
+        matcount=len(data.get("new_hw").get("materials"))
     )
     await bot.send_message(chat_id=tg_id,
                            text="Нажмите на поле для настройки ДЗ\nДля добавления новых материалов просто скиньте их "
                                 "сюда. Одно сообщение - один материал",
                            reply_markup=keys)
+    await bot.send_message(chat_id=tg_id,
+                           text="После завершения настройки ДЗ <b>нажмите кнопку 'Готово'</b>",
+                           reply_markup=ready_cancel_keyboard)
     for msg in data.get("messages_to_delete"):
         await bot.delete_message(chat_id=tg_id,
                                  message_id=msg)

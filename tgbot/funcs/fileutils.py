@@ -4,6 +4,8 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 from PIL import Image
+from django.db.models import Q
+
 from dls.settings import MEDIA_ROOT
 from material.models import File
 from material.utils.get_type import get_type
@@ -66,7 +68,8 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
             comment += f"{msg}\n"
     files_db = []
     for photo in photos:
-        file = await File.objects.filter(tg_url=photo).afirst()
+        file = await File.objects.filter(Q(tg_url=photo) |
+                                         Q(path=f"files/{photo}.jpg")).afirst()
         if not file:
             await bot.download(file=photo,
                                destination=f"{MEDIA_ROOT}/files/{photo}.jpg")
@@ -76,7 +79,8 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
                                               owner=owner)
         files_db.append(file)
     for voice in voices:
-        file = await File.objects.filter(tg_url=voice).afirst()
+        file = await File.objects.filter(Q(tg_url=voice) |
+                                         Q(path=f"files/{voice}.ogg")).afirst()
         if not file:
             await bot.download(file=voice,
                                destination=f"{MEDIA_ROOT}/files/{voice}.ogg")
@@ -86,7 +90,8 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
                                               owner=owner)
         files_db.append(file)
     for aud in audio:
-        file = await File.objects.filter(tg_url=aud.get('file_id')).afirst()
+        file = await File.objects.filter(Q(tg_url=aud.get('file_id')) |
+                                         Q(path=f"files/{aud.get('file_id')}.{aud.get('format')}")).afirst()
         if not file:
             await bot.download(file=aud.get("file_id"),
                                destination=f"{MEDIA_ROOT}/files/{aud.get('file_id')}.{aud.get('format')}")
@@ -96,7 +101,8 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
                                               owner=owner)
         files_db.append(file)
     for video in videos:
-        file = await File.objects.filter(tg_url=video).afirst()
+        file = await File.objects.filter(Q(tg_url=video) |
+                                         Q(path=f"files/{video}.webm")).afirst()
         if not file:
             await bot.download(file=video,
                                destination=f"{MEDIA_ROOT}/files/{video}.webm")
@@ -106,7 +112,8 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
                                               owner=owner)
         files_db.append(file)
     for animation in animations:
-        file = await File.objects.filter(tg_url=animation).afirst()
+        file = await File.objects.filter(Q(tg_url=animation) |
+                                         Q(path=f"files/{animation.get('file_id')}.gif")).afirst()
         if not file:
             file_format = animation.get('format')
             path = os.path.join(MEDIA_ROOT, "files", f"{animation.get('file_id')}.{file_format}")
@@ -137,13 +144,16 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
                                               owner=owner)
         files_db.append(file)
     for document in documents:
-        file = await File.objects.filter(tg_url=document.get('file_id')).afirst()
+        file = await File.objects.filter(Q(tg_url=document.get('file_id')) |
+                                         Q(path=f"files/{document.get('file_id')}."
+                                                f"{document.get('name').split('.')[-1]}")).afirst()
         if not file:
             await bot.download(file=document.get("file_id"),
                                destination=f"{MEDIA_ROOT}/files/{document.get('file_id')}."
                                            f"{document.get('name').split('.')[-1]}")
             file = await File.objects.acreate(name=document.get('name'),
-                                              path=f"files/{document.get('file_id')}.{document.get('name').split('.')[-1]}",
+                                              path=f"files/{document.get('file_id')}."
+                                                   f"{document.get('name').split('.')[-1]}",
                                               tg_url=document.get('file_id'),
                                               owner=owner)
         files_db.append(file)

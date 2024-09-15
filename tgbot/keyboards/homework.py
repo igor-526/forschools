@@ -124,3 +124,14 @@ def get_hwlogs_buttons(hwlogs: list[dict]) -> InlineKeyboardMarkup:
         )
     builder.adjust(1)
     return builder.as_markup()
+
+
+def get_homework_edit_button(hw_id) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=f"Редактировать",
+        callback_data=HomeworkCallback(hw_id=hw_id,
+                                       action="edit")
+    )
+    builder.adjust(1)
+    return builder.as_markup()

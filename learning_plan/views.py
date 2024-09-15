@@ -5,6 +5,9 @@ from django.views.generic import TemplateView
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
+
+from homework.models import Homework, HomeworkLog
+from lesson.models import Lesson
 from .permissions import CanSeePlansPageMixin, can_edit_plan, can_generate_from_program
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer
@@ -28,6 +31,40 @@ class PlansPageView(CanSeePlansPageMixin, TemplateView):
                    'menu': get_menu(request.user),
                    'can_set_teacher': self.get_teacher_set_permission()}
         return render(request, self.template_name, context)
+
+
+class PlansItemStatusAPIView(LoginRequiredMixin, APIView):
+    def get(self, request, *args, **kwargs):
+        plan = LearningPlan.objects.get(pk=kwargs.get('pk'))
+        phases_passed = 0
+        lessons_all =Lesson.objects.filter(learningphases__learningplan=plan).count()
+        lessons_passed = Lesson.objects.filter(learningphases__learningplan=plan,
+                                               status__in=[1, 2]).count()
+        return JsonResponse({
+            "phases_passed": phases_passed,
+            "lessons_all": lessons_all,
+            "lessons_passed": lessons_passed,
+            "can_close": lessons_all != lessons_passed and
+                         request.user.groups.filter(name__in=["Metodist", "Admin"]).exists()
+        })
+
+    def post(self, request, *args, **kwargs):
+        plan = LearningPlan.objects.get(pk=kwargs.get('pk'))
+        lessons = Lesson.objects.filter(learningphases__learningplan=plan,
+                                        status=0).all()
+        homeworks = Homework.objects.filter(lesson__in=[l.id for l in lessons])
+        hwlogs = HomeworkLog.objects.filter(homework__in=[h.id for h in homeworks])
+        for hwlog in hwlogs:
+            hwlog.delete()
+        for homework in homeworks:
+            homework.delete()
+        for lesson in lessons:
+            lesson.delete()
+        all_phases = plan.phases.all()
+        for phase in all_phases:
+            if phase.lessons.count() == 0:
+                phase.delete()
+        return JsonResponse({"status": "success"}, status=200)
 
 
 class PlansItemPageView(CanSeePlansPageMixin, TemplateView):

@@ -22,13 +22,15 @@
                             </li>
                             <li class="list-group-item">Ученик: <a href="/profile/{{ hw.listener.id }}">{{ hw.listener }}</a></li>
                             <li class="list-group-item">Выполнить до: {{ hw.deadline }}</li>
-                            <li class="list-group-item">Статус:</li>
+                            <li class="list-group-item">Статус: <span id="hwItemStatus"></span></li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="card mb-3">
-                    <div class="card-header">Материалы</div>
+                    <div class="card-header">Материалы
+                        <button id="hwItemAddMaterialsTG" class="btn-primary btn btn-sm d-none"><i class="bi bi-plus-lg"></i> <i class="bi bi-telegram"></i></button>
+                    </div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
                             {% for material in hw.materials.all %}

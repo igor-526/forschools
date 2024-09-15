@@ -41,6 +41,8 @@ async def command_start_handler(message: types.Message, state: FSMContext):
 async def check_user(message: types, state: FSMContext):
     user = await Telegram.objects.filter(tg_id=message.from_user.id).afirst()
     if user:
+        await message.answer(text=f'Добро пожаловать, {user}!\n'
+                                  f'Вы в главном меню!')
         await send_menu(message.from_user.id, state)
     else:
         await message.answer(text='Для использования бота необходимо авторизоваться')

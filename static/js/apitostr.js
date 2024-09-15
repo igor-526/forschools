@@ -1,11 +1,24 @@
 async function APIGetToObject(request){
-    return {status: request.status,
-        response: await request.json()}
+    if (request.status !== 500){
+        return {
+            status: request.status,
+            response: await request.json()
+        }
+    } else {
+        return {status: 500}
+    }
+
 }
 
 async function APIPostPatchToObject(request){
-    return {status: request.status,
-        response: await request.json()}
+    if (request.status !== 500){
+        return {
+            status: request.status,
+            response: await request.json()
+        }
+    } else {
+        return {status: 500}
+    }
 }
 
 async function APIDeleteToObject(request){

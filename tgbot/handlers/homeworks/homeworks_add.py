@@ -3,15 +3,36 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
+from homework.models import Homework
 from tgbot.create_bot import bot
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.homeworks import add_homework_select_listener, add_homework_set_homework_message, \
     add_homework_set_homework_change, add_homework_set_homework_change_ready, add_homework_set_homework_ready
 from tgbot.funcs.materials_add import add_material_add
 from tgbot.funcs.menu import send_menu
-from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNewCallback, HomeworkNewSettingCallback
+from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNewCallback, HomeworkNewSettingCallback, \
+    HomeworkCallback
 
 router = Router(name=__name__)
+
+
+@router.callback_query(HomeworkCallback.filter(F.action == "edit"))
+async def h_homework_edit(callback: CallbackQuery,
+                          callback_data: HomeworkCallback,
+                          state: FSMContext) -> None:
+    hw = await Homework.objects.select_related("listener").aget(pk=callback_data.hw_id)
+    await state.set_data({
+        "new_hw": {
+            "hw_id": hw.id,
+            "listener_id": hw.listener.id,
+            "name": hw.name,
+            "description": hw.description,
+            "materials": [m.id async for m in hw.materials.all()],
+            "deadline": hw.deadline,
+        },
+        "messages_to_delete": []
+    })
+    await add_homework_set_homework_message(callback.from_user.id, state, hw.listener.id)
 
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
@@ -28,7 +49,6 @@ async def h_homework_sethw_ready(message: types.Message, state: FSMContext) -> N
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
                 F.text == "Отмена")
 async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> None:
-    statedata = await state.get_data()
     await message.delete()
     await send_menu(message.from_user.id, state)
 

@@ -69,6 +69,16 @@ async function homeworkAPIGet(status){
     }
 }
 
+async function homeworkAPIGetInfo(homeworkID){
+    const request = await fetch(`/api/v1/homeworks/${homeworkID}/info/`)
+    return await APIGetToObject(request)
+}
+
+async function homeworkAPIEditTelegram(homeworkID){
+    const request = await fetch(`/api/v1/homeworks/${homeworkID}/edit/`)
+    return await APIGetToObject(request)
+}
+
 async function homeworkAPIReplaceTeacher(teacherID, homework){
     const request = await fetch(`/api/v1/homeworks/${homework}/rt/`, {
         method: "PATCH",
@@ -86,7 +96,7 @@ async function homeworkAPIReplaceTeacher(teacherID, homework){
 }
 
 async function homeworkAPISetCancelled(homeworkID){
-        const request = await fetch(`/api/v1/homeworks/${homeworkID}/set_cancelled/`, {
+    const request = await fetch(`/api/v1/homeworks/${homeworkID}/set_cancelled/`, {
         method: "POST",
         credentials: 'same-origin',
         headers:{

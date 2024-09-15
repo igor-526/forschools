@@ -83,6 +83,31 @@ async function homeworkItemMain(){
             HWItemCheckModalAnswerBody.innerHTML = homeworkItemLogHTML(lastLog)
         }
     }
+    homeworkAPIGetInfo(hwID).then(request => {
+        switch (request.status){
+            case 200:
+                if (request.response.can_add_materials_tg){
+                    hwItemAddMaterialsTG.classList.remove("d-none")
+                    hwItemAddMaterialsTG.addEventListener("click", function () {
+                        homeworkAPIEditTelegram(hwID).then(request => {
+                            switch (request.status){
+                                case 200:
+                                    showSuccessToast("Сообщение отправлено Вам в Telegram")
+                                    break
+                                default:
+                                    showErrorToast()
+                                    break
+                            }
+                        })
+                    })
+                }
+                hwItemStatus.innerHTML = homeworkItemShowLogsStrStatus(request.response.status)
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
 }
 
 function homeworkItemShowLogsStrStatus(status){
@@ -229,5 +254,8 @@ const HWItemLogModal = document.querySelector("#HWItemLogModal")
 const bsHWItemLogModal = new bootstrap.Modal(HWItemLogModal)
 const HWItemLogModalTitle = HWItemLogModal.querySelector("#HWItemLogModalTitle")
 const HWItemLogModalBody = HWItemLogModal.querySelector("#HWItemLogModalBody")
+
+const hwItemAddMaterialsTG = document.querySelector("#hwItemAddMaterialsTG")
+const hwItemStatus = document.querySelector("#hwItemStatus")
 
 homeworkItemMain()

@@ -8,6 +8,22 @@ async function plansAPIGet(){
     }
 }
 
+async function planItemAPIGetInfo() {
+    const request = await fetch(`/api/v1/learning_plans/${planID}/status/`)
+    return APIGetToObject(request)
+}
+
+async function plansItemAPIClosePlan(){
+    const request = await fetch(`/api/v1/learning_plans/${planID}/status/`, {
+        method: "post",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+    })
+    return APIPostPatchToObject(request)
+}
+
 async function plansAPICreate(fd){
     const request = await fetch('/api/v1/learning_plans/', {
         method: "post",
