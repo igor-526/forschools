@@ -3,10 +3,13 @@ from tgbot.handlers import router as main_router
 from tgbot.create_bot import dp, bot
 import asyncio
 import logging
+from tgbot.middlewares import LastMessageMiddleware, LastMessageCallbackMiddleware
 
 
 async def start() -> None:
     dp.include_routers(main_router)
+    dp.message.middleware.register(LastMessageMiddleware())
+    dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
     await dp.start_polling(bot)
 
 

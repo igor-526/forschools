@@ -1,15 +1,9 @@
-function tgJournalStatusMain(){
-
-}
-
 function tgJournalStatusReset(){
     tgJournalStatusModalTextCard.classList.add("d-none")
     tgJournalStatusModalErrorsCard.classList.add("d-none")
-    tgJournalStatusModalMsgInfoCard.classList.add("d-none")
     tgJournalStatusModalInfo.innerHTML = ""
     tgJournalStatusModalText.innerHTML = ""
     tgJournalStatusModalErrors.innerHTML = ""
-    tgJournalStatusModalMsgInfo.innerHTML = ""
 }
 
 function tgJournalStatusSetModal(noteID){
@@ -33,10 +27,6 @@ function tgJournalStatusSetModal(noteID){
                     tgJournalStatusModalErrorsCard.classList.remove("d-none")
                     tgJournalStatusModalErrors.innerHTML = request.response.data.errors.join("<br>")
                 }
-                if (request.response.data.status === "success"){
-                    tgJournalStatusModalMsgInfoCard.classList.remove("d-none")
-                    tgJournalStatusModalMsgInfo.innerHTML = "Сообщение не прочитано"
-                }
                 bsTgJournalStatusModal.show()
                 break
             default:
@@ -50,9 +40,7 @@ const tgJournalStatusModal = document.querySelector("#tgJournalStatusModal")
 const bsTgJournalStatusModal = new bootstrap.Modal(tgJournalStatusModal)
 const tgJournalStatusModalTextCard = tgJournalStatusModal.querySelector("#tgJournalStatusModalTextCard")
 const tgJournalStatusModalErrorsCard = tgJournalStatusModal.querySelector("#tgJournalStatusModalErrorsCard")
-const tgJournalStatusModalMsgInfoCard = tgJournalStatusModal.querySelector("#tgJournalStatusModalMsgInfoCard")
 const tgJournalStatusModalInfo = tgJournalStatusModal.querySelector("#tgJournalStatusModalInfo")
 const tgJournalStatusModalText = tgJournalStatusModal.querySelector("#tgJournalStatusModalText")
 const tgJournalStatusModalErrors = tgJournalStatusModal.querySelector("#tgJournalStatusModalErrors")
-const tgJournalStatusModalMsgInfo = tgJournalStatusModal.querySelector("#tgJournalStatusModalMsgInfo")
 let tgJournalStatusModalCurrentNoteId = 0

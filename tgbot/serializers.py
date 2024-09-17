@@ -25,6 +25,16 @@ class UserTelegramSerializer(serializers.ModelSerializer):
 class TgJournalSerializer(serializers.ModelSerializer):
     initiator = NewUserNameOnlyListSerializer(many=False, read_only=True)
     recipient = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    readed = serializers.SerializerMethodField(read_only=True)
+
+    def get_readed(self, obj):
+        if obj.data.get("status") == 'success':
+            tgnote = obj.recipient.telegram.first()
+            if tgnote.last_message_from_user_id and obj.data.get("msg_id"):
+                return obj.data.get("msg_id") <= tgnote.last_message_from_user_id
+            else:
+                return False
+        return False
 
     class Meta:
         model = TgBotJournal

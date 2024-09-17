@@ -304,6 +304,13 @@ class Telegram(models.Model):
                                                      null=False,
                                                      blank=False,
                                                      default=True)
+    last_message_from_user_time = models.DateTimeField(verbose_name="Время последнего взаимодействия с ботом",
+                                                       null=True,
+                                                       blank=True)
+    last_message_from_user_id = models.IntegerField(verbose_name="ID последнего сообщения от пользователя",
+                                                    null=True,
+                                                    blank=True)
+
 
 
     class Meta:
@@ -316,6 +323,15 @@ class Telegram(models.Model):
 
     async def get_user(self):
         return self.user
+
+    async def set_last_message(self, message_id: int):
+        self.last_message_from_user_time = timezone.now()
+        if not self.last_message_from_user_id:
+            self.last_message_from_user_id = message_id
+        else:
+            if self.last_message_from_user_id < message_id:
+                self.last_message_from_user_id = message_id
+        await self.asave()
 
 
 class UserLog(models.Model):

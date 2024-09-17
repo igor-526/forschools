@@ -18,7 +18,7 @@ def get_menu_keyboard(chats: int, materials=False, homeworks=False,
     if lessons:
         keys.append([lessons_button])
     if messages:
-        keys.append([KeyboardButton(text=f'Cообщения ({chats})')])
+        keys.append([KeyboardButton(text=f'Сообщения ({chats})')])
     if settings:
         keys.append([settings_button])
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=keys)

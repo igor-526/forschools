@@ -45,6 +45,3 @@ class TgBotJournal(models.Model):
                               null=False,
                               blank=False,
                               verbose_name="Дата и время")
-    read = models.DateTimeField(null=True,
-                                blank=True,
-                                verbose_name="Время прочтения сообщения")

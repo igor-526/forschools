@@ -49,8 +49,13 @@ function tgJournalShow(list=[], clear=true){
         const tdStatusButton = document.createElement("button")
         tdStatus.insertAdjacentElement("beforeend", tdStatusButton)
         tdStatusButton.type = "button"
-        tdStatusButton.classList.add("btn", note.data.status === "success"?"btn-primary":"btn-danger")
-        tdStatusButton.innerHTML = note.data.status === "success"?'<i class="bi bi-check"></i>':'<i class="bi bi-x-lg"></i>'
+        if (note.readed){
+            tdStatusButton.classList.add("btn", "btn-success")
+            tdStatusButton.innerHTML = '<i class="bi bi-check"></i>'
+        } else {
+            tdStatusButton.classList.add("btn", note.data.status === "success"?"btn-primary":"btn-danger")
+            tdStatusButton.innerHTML = note.data.status === "success"?'<i class="bi bi-check"></i>':'<i class="bi bi-x-lg"></i>'
+        }
         tdStatusButton.addEventListener("click", function (){
             tgJournalStatusSetModal(note.id)
         })
