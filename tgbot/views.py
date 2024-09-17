@@ -125,7 +125,7 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
         queryset = self.filter_initiator(queryset)
         queryset = self.filter_recipient(queryset)
         queryset = self.filter_status(queryset)
-        return queryset
+        return queryset[:50]
 
     serializer_class = TgJournalSerializer
 
