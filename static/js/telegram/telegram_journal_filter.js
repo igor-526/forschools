@@ -14,12 +14,18 @@ function tgJournalFilterEraseListeners(){
     })
     tgJournalFilterDateFieldErase.addEventListener("click", function () {
         tgJournalFilterDateField.value = ""
+        tgJournalFilterSelectedDate = ""
+        tgJournalFilterShowResult()
     })
     tgJournalFilterTimeFromFieldErase.addEventListener("click", function () {
         tgJournalFilterTimeFromField.value = ""
+        tgJournalFilterSelectedTimeFrom = ""
+        tgJournalFilterShowResult()
     })
     tgJournalFilterTimeToFieldErase.addEventListener("click", function () {
         tgJournalFilterTimeToField.value = ""
+        tgJournalFilterSelectedTimeTo = ""
+        tgJournalFilterShowResult()
     })
     tgJournalFilterInitiatorSearchFieldErase.addEventListener("click", function () {
         tgJournalFilterInitiatorSearchField.value = ""
@@ -32,6 +38,35 @@ function tgJournalFilterEraseListeners(){
         tgJournalFilterRecipientList.querySelectorAll("a").forEach(element => {
             element.parentElement.classList.remove("d-none")
         })
+    })
+
+    tgJournalFilterResetAll.addEventListener("click", function(){
+        tgJournalFilterEventSearchField.value = ""
+        tgJournalFilterEvent.querySelectorAll("a").forEach(element => {
+            element.parentElement.classList.remove("d-none")
+            element.classList.remove("active")
+        })
+        tgJournalFilterDateField.value = ""
+        tgJournalFilterTimeFromField.value = ""
+        tgJournalFilterTimeToField.value = ""
+        tgJournalFilterInitiatorSearchField.value = ""
+        tgJournalFilterInitiatorList.querySelectorAll("a").forEach(element => {
+            element.parentElement.classList.remove("d-none")
+            element.classList.remove("active")
+        })
+        tgJournalFilterRecipientSearchField.value = ""
+        tgJournalFilterRecipientList.querySelectorAll("a").forEach(element => {
+            element.parentElement.classList.remove("d-none")
+            element.classList.remove("active")
+        })
+        tgJournalFilterSelectedEvent = []
+        tgJournalFilterSelectedDate = ""
+        tgJournalFilterSelectedTimeFrom = ""
+        tgJournalFilterSelectedTimeTo = ""
+        tgJournalFilterSelectedInitiator = []
+        tgJournalFilterSelectedRecipient = []
+        tgJournalFilterSelectedStatus = []
+        tgJournalFilterShowResult()
     })
 }
 
@@ -255,6 +290,8 @@ const tgJournalFilterEvent = document.querySelector("#tgJournalFilterEvent")
 const tgJournalFilterStatus = document.querySelector("#tgJournalFilterStatus")
 const tgJournalFilterInitiatorList = document.querySelector("#tgJournalFilterInitiatorList")
 const tgJournalFilterRecipientList = document.querySelector("#tgJournalFilterRecipientList")
+
+const tgJournalFilterResetAll = document.querySelector("#tgJournalFilterResetAll")
 
 let tgJournalFilterSelectedEvent = []
 let tgJournalFilterSelectedDate = ""

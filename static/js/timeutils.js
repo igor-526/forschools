@@ -10,6 +10,7 @@ function compareTime(start, end){
 
 function timeUtilsDateTimeToStr(dt){
     const date = new Date(dt)
+    const month = date.getMonth() === 12 ? 1 : date.getMonth()+1
     let datestring
     const difference = (new Date()
         .setHours(0,0,0,0) - new Date(dt)
@@ -22,7 +23,7 @@ function timeUtilsDateTimeToStr(dt){
             datestring = "вчера в "
             break
         default:
-            datestring = `${date.getDate().toString().padStart(2, "0")}.${date.getMonth().toString().padStart(2, "0")}`
+            datestring = `${date.getDate().toString().padStart(2, "0")}.${month.toString().padStart(2, "0")}`
             break
     }
     datestring += ` ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`

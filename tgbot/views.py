@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import JsonResponse
@@ -14,6 +14,7 @@ from .serializers import UserTelegramSerializer, TgJournalSerializer
 from profile_management.models import NewUser
 from tgbot.utils import send_materials
 from .models import TgBotJournal
+from django.utils import timezone
 
 
 class TgJournalPage(LoginRequiredMixin, TemplateView):  # страница журнала действий Telegram
@@ -36,7 +37,7 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
         date = self.request.query_params.get("date")
         if date:
             date = datetime.strptime(date, "%Y-%m-%d")
-            return queryset.filter(dt__date=date.date())
+            return queryset.filter(dt__date=date)
         return queryset
 
     def filter_time_from(self, queryset):
