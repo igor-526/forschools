@@ -39,9 +39,9 @@ async def command_start_handler(message: types.Message, state: FSMContext):
 
 @router.message(StateFilter(None))   # авторизация
 async def check_user(message: types, state: FSMContext):
-    user = await Telegram.objects.filter(tg_id=message.from_user.id).afirst()
+    user = await Telegram.objects.select_related("user").filter(tg_id=message.from_user.id).afirst()
     if user:
-        await message.answer(text=f'Добро пожаловать, {user}!\n'
+        await message.answer(text=f'Добро пожаловать, {user.user}!\n'
                                   f'Вы в главном меню!')
         await send_menu(message.from_user.id, state)
     else:
