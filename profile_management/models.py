@@ -1,3 +1,6 @@
+from _operator import itemgetter
+from pprint import pprint
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 from random import randint
@@ -202,7 +205,7 @@ class NewUser(AbstractUser):
             Q(sender=u, receiver=self) | Q(receiver=u, sender=self)
         ).order_by('-date').first()
         if last_message:
-            info["last_message_text"] = last_message.message if last_message.message else ""
+            info["last_message_text"] = last_message.message[:50] if last_message.message else ""
             info["last_message_date"] = last_message.date
         return info
 

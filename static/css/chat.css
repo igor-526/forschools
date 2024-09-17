@@ -30,3 +30,13 @@
     font-size: 10px;
     float: right;
 }
+
+#chatMessagesCard{
+    height: 70vh;
+    overflow-y: scroll;
+}
+
+#chatUsersList{
+    height: 75vh;
+    overflow-y: scroll;
+}
