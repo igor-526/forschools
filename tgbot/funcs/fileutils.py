@@ -16,20 +16,25 @@ async def add_files_to_state(message: types.Message, state: FSMContext):
     data = await state.get_data()
     if message.text:
         data.get('files').get('text').append(message.text)
+        await state.update_data(data)
     if message.voice:
         data.get('files').get('voice').append(message.voice.file_id)
+        await state.update_data(data)
     if message.photo:
         data.get("files").get('photo').append({"file_id": message.photo[-1].file_id,
                                                "caption": message.caption if message.caption else None})
+        await state.update_data(data)
     if message.audio:
         data.get("files").get('audio').append({'file_id': message.audio.file_id,
                                                'format': message.audio.file_name.split(".")[-1],
                                                "caption": message.caption if message.caption else None})
+        await state.update_data(data)
     if message.animation:
         file_format = message.animation.file_name.split(".")[-1] if message.animation.file_name else "mp4"
         data.get("files").get('animation').append({'file_id': message.animation.file_id,
                                                    'format': file_format,
                                                    "caption": message.caption if message.caption else None})
+        await state.update_data(data)
     if message.document:
         if not message.animation:
             file_type = get_type(message.document.file_name.split(".")[-1])
@@ -37,11 +42,14 @@ async def add_files_to_state(message: types.Message, state: FSMContext):
                 data.get("files").get('document').append({'file_id': message.document.file_id,
                                                           'name': message.document.file_name,
                                                           "caption": message.caption if message.caption else None})
+                await state.update_data(data)
             else:
                 await message.answer("Данный файл не может быть отправлен, так как формат не поддерживается")
     if message.video:
         data.get("files").get('video').append({"file_id": message.video.file_id,
                                                "caption": message.caption if message.caption else None})
+        await state.update_data(data)
+    data = await state.get_data()
 
 
 def filechecker(data) -> bool:
