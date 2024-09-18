@@ -117,6 +117,11 @@ class File(models.Model):
                             null=False,
                             blank=False,
                             unique=False)
+    caption = models.CharField(verbose_name='Подпись',
+                               max_length=1000,
+                               null=True,
+                               blank=True,
+                               unique=False)
     path = models.FileField(verbose_name='Путь',
                             upload_to='files/',
                             null=False,

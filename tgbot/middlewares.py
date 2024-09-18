@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import Callable, Dict, Any, Awaitable
 from profile_management.models import Telegram
 from aiogram import BaseMiddleware

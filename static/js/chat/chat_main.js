@@ -141,26 +141,46 @@ function chatGetMessages(userID){
 
 function chatShowMessagesGetAttachmentsElement(attachments = []){
     let images = []
-    let animations = []
     let audios = []
     let videos = []
     let files = []
     attachments.forEach(file => {
-        console.log(file.type)
         switch (file.type){
             case "image_formats":
+                const cardImg = document.createElement("div")
+                const cardHeaderImg = document.createElement("div")
+                const cardBodyImg = document.createElement("div")
+                cardImg.classList.add("card", "col-5", "mb-3", "mx-1")
+                cardHeaderImg.classList.add("card-header")
+                cardHeaderImg.innerHTML = "Изображение"
+                cardBodyImg.classList.add("card-body")
                 const a = document.createElement("a")
                 a.href = file.path
                 a.target = "_blank"
                 const img = document.createElement("img")
                 img.src = file.path
                 img.alt = "Вложение"
-                img.style = "object-fit: contain;"
-                img.classList.add("col-5", "mb-3")
+                img.style = "object-fit: contain; max"
+                img.classList.add("img-fluid")
                 a.insertAdjacentElement("beforeend", img)
-                images.push(a)
+                cardImg.insertAdjacentElement("beforeend", cardHeaderImg)
+                cardImg.insertAdjacentElement("beforeend", cardBodyImg)
+                cardBodyImg.insertAdjacentElement("beforeend", a)
+                if (file.caption){
+                    const cardBodyImgCaption = document.createElement("span")
+                    cardBodyImgCaption.innerHTML = file.caption
+                    cardBodyImg.insertAdjacentElement("beforeend", cardBodyImgCaption)
+                }
+                images.push(cardImg)
                 break
             case "animation_formats":
+                const cardAnim = document.createElement("div")
+                const cardHeaderAnim = document.createElement("div")
+                const cardBodyAnim = document.createElement("div")
+                cardAnim.classList.add("card", "col-5", "mb-3", "mx-1")
+                cardHeaderAnim.classList.add("card-header")
+                cardHeaderAnim.innerHTML = "Анимация"
+                cardBodyAnim.classList.add("card-body")
                 const aAnim = document.createElement("a")
                 aAnim.href = file.path
                 aAnim.target = "_blank"
@@ -168,33 +188,66 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
                 imgAnim.src = file.path
                 imgAnim.alt = "Вложение"
                 imgAnim.style = "object-fit: contain;"
-                imgAnim.classList.add("col-12", "mb-3")
+                imgAnim.classList.add("img-fluid")
+                cardAnim.insertAdjacentElement("beforeend", cardHeaderAnim)
+                cardAnim.insertAdjacentElement("beforeend", cardBodyAnim)
+                cardBodyAnim.insertAdjacentElement("beforeend", aAnim)
                 aAnim.insertAdjacentElement("beforeend", imgAnim)
-                images.push(aAnim)
+                if (file.caption){
+                    const cardBodyAnimCaption = document.createElement("span")
+                    cardBodyAnimCaption.innerHTML = file.caption
+                    cardBodyAnim.insertAdjacentElement("beforeend", cardBodyAnimCaption)
+                }
+                images.push(cardAnim)
                 break
             case "voice_formats" || "audio_formats":
-                const fig = document.createElement("figure")
-                const figcaption = document.createElement("figcaption")
-                figcaption.innerHTML = "Аудио"
+                const cardAud = document.createElement("div")
+                const cardHeaderAud = document.createElement("div")
+                const cardBodyAud = document.createElement("div")
+                cardAud.classList.add("card", "mb-3")
+                cardHeaderAud.classList.add("card-header")
+                cardHeaderAud.innerHTML = "Аудио"
+                cardBodyAud.classList.add("card-body")
                 const audio = document.createElement("audio")
                 audio.controls = true
                 audio.src = file.path
-                fig.insertAdjacentElement("beforeend", figcaption)
-                fig.insertAdjacentElement("beforeend", audio)
-                audios.push(fig)
+                cardAud.insertAdjacentElement("beforeend", cardHeaderAud)
+                cardAud.insertAdjacentElement("beforeend", cardBodyAud)
+                cardBodyAud.insertAdjacentElement("beforeend", audio)
+                if (file.caption){
+                    const cardBodyAudCaption = document.createElement("span")
+                    cardBodyAudCaption.innerHTML = file.caption
+                    cardBodyAud.insertAdjacentElement("beforeend", cardBodyAudCaption)
+                }
+                audios.push(cardAud)
                 break
             case "video_formats":
+                const cardVideo = document.createElement("div")
+                const cardHeaderVideo = document.createElement("div")
+                const cardBodyVideo = document.createElement("div")
+                cardVideo.classList.add("card", "mb-3", "col-5", "mx-1")
+                cardHeaderVideo.classList.add("card-header")
+                cardHeaderVideo.innerHTML = "Видео"
+                cardBodyVideo.classList.add("card-body")
                 const video = document.createElement("video")
                 video.controls = true
                 video.src = file.path
-                video.classList.add("col-5", "mb-3")
-                videos.push(video)
+                video.classList.add("img-fluid")
+                cardVideo.insertAdjacentElement("beforeend", cardHeaderVideo)
+                cardVideo.insertAdjacentElement("beforeend", cardBodyVideo)
+                cardBodyVideo.insertAdjacentElement("beforeend", video)
+                if (file.caption){
+                    const cardBodyVideoCaption = document.createElement("span")
+                    cardBodyVideoCaption.innerHTML = file.caption
+                    cardBodyVideo.insertAdjacentElement("beforeend", cardBodyVideoCaption)
+                }
+                videos.push(cardVideo)
                 break
             case "unsupported":
                 break
             default:
                 const card = document.createElement("div")
-                card.classList.add("card")
+                card.classList.add("card", "mb-3")
                 const cardHeader = document.createElement("div")
                 const cardBody = document.createElement("div")
                 cardHeader.classList.add("card-header")
@@ -205,12 +258,19 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
                 downloadButtonA.href = file.path
                 downloadButtonA.target = "_blank"
                 downloadButton.type = "button"
-                downloadButton.classList.add("btn", "btn-primary")
+                downloadButton.classList.add("btn", "btn-primary", "me-3")
                 downloadButton.innerHTML = '<i class="bi bi-download"></i> Скачать'
                 downloadButtonA.insertAdjacentElement("beforeend", downloadButton)
                 cardBody.insertAdjacentElement("beforeend", downloadButtonA)
                 card.insertAdjacentElement("beforeend", cardHeader)
                 card.insertAdjacentElement("beforeend", cardBody)
+
+                if (file.caption){
+                    const cardBodyCaption = document.createElement("span")
+                    cardBodyCaption.innerHTML = file.caption
+                    cardBody.insertAdjacentElement("beforeend", cardBodyCaption)
+                }
+
                 files.push(card)
                 break
         }
@@ -265,9 +325,17 @@ function chatShowMessages(messages=[], userID, clear=true){
     if (clear){
         chatMessages.innerHTML = ""
     }
+    let last_message = null
     messages.forEach(message => {
-        chatMessages.insertAdjacentElement(clear?"afterbegin":"beforeend", getElement(message))
+        const element = getElement(message)
+        if (!last_message){
+            last_message = element
+        }
+        chatMessages.insertAdjacentElement(clear?"afterbegin":"beforeend", element)
     })
+    if (last_message){
+        last_message.scrollIntoView({block: "end", behavior: "auto"})
+    }
 }
 
 function chatMessageValidation(errors){

@@ -4,6 +4,7 @@ networks:
 
 volumes:
   kitaischool_pgdata:
+  kitaischool_redisdata:
 
 services:
   kitaischool_database:
@@ -53,6 +54,8 @@ services:
     restart: always
     networks:
       - kitaischool_network
+    volumes:
+      - kitaischool_redisdata:/data
 
   kitaischool_celery:
     build: .
@@ -109,6 +112,7 @@ services:
       - /home/sdo/kitaischool/media:/src/media
     depends_on:
       - kitaischool_celery
+      - kitaischool_redis
     networks:
       - kitaischool_network
     restart: always

@@ -27,7 +27,6 @@ async def command_start_handler(message: types.Message, state: FSMContext):
                     await send_menu(message.from_user.id, state)
                 except Exception as ex:
                     await message.answer(text="Произошла нерпедвиденная ошибка. Попробуйте позже")
-                    print(ex)
     except IndexError:
         await message.answer(text="Для привязки бота к Вашему аккаунту воспользуйтесь ссылкой в Вашем профиле")
         return

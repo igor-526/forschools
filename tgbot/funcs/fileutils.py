@@ -16,29 +16,32 @@ async def add_files_to_state(message: types.Message, state: FSMContext):
     data = await state.get_data()
     if message.text:
         data.get('files').get('text').append(message.text)
-    if message.caption:
-        data.get('files').get('text').append(message.caption)
     if message.voice:
         data.get('files').get('voice').append(message.voice.file_id)
     if message.photo:
-        data.get("files").get('photo').append(message.photo[-1].file_id)
+        data.get("files").get('photo').append({"file_id": message.photo[-1].file_id,
+                                               "caption": message.caption if message.caption else None})
     if message.audio:
         data.get("files").get('audio').append({'file_id': message.audio.file_id,
-                                               'format': message.audio.file_name.split(".")[-1]})
+                                               'format': message.audio.file_name.split(".")[-1],
+                                               "caption": message.caption if message.caption else None})
     if message.animation:
         file_format = message.animation.file_name.split(".")[-1] if message.animation.file_name else "mp4"
         data.get("files").get('animation').append({'file_id': message.animation.file_id,
-                                                   'format': file_format})
+                                                   'format': file_format,
+                                                   "caption": message.caption if message.caption else None})
     if message.document:
         if not message.animation:
             file_type = get_type(message.document.file_name.split(".")[-1])
             if file_type != "unsupported":
                 data.get("files").get('document').append({'file_id': message.document.file_id,
-                                                          'name': message.document.file_name})
+                                                          'name': message.document.file_name,
+                                                          "caption": message.caption if message.caption else None})
             else:
                 await message.answer("Данный файл не может быть отправлен, так как формат не поддерживается")
     if message.video:
-        data.get("files").get('video').append(message.video.file_id)
+        data.get("files").get('video').append({"file_id": message.video.file_id,
+                                               "caption": message.caption if message.caption else None})
 
 
 def filechecker(data) -> bool:
@@ -68,14 +71,15 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
             comment += f"{msg}\n"
     files_db = []
     for photo in photos:
-        file = await File.objects.filter(Q(tg_url=photo) |
-                                         Q(path=f"files/{photo}.jpg")).afirst()
+        file = await File.objects.filter(Q(tg_url=photo.get("file_id")) |
+                                         Q(path=f"files/{photo.get('file_id')}.jpg")).afirst()
         if not file:
-            await bot.download(file=photo,
-                               destination=f"{MEDIA_ROOT}/files/{photo}.jpg")
+            await bot.download(file=photo.get("file_id"),
+                               destination=f"{MEDIA_ROOT}/files/{photo.get('file_id')}.jpg")
             file = await File.objects.acreate(name=t,
-                                              path=f"files/{photo}.jpg",
-                                              tg_url=photo,
+                                              path=f"files/{photo.get('file_id')}.jpg",
+                                              tg_url=photo.get("file_id"),
+                                              caption=photo.get("caption"),
                                               owner=owner)
         files_db.append(file)
     for voice in voices:
@@ -98,17 +102,19 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
             file = await File.objects.acreate(name=t,
                                               path=f"files/{aud.get('file_id')}.{aud.get('format')}",
                                               tg_url=aud.get('file_id'),
+                                              caption=aud.get("caption"),
                                               owner=owner)
         files_db.append(file)
     for video in videos:
-        file = await File.objects.filter(Q(tg_url=video) |
-                                         Q(path=f"files/{video}.webm")).afirst()
+        file = await File.objects.filter(Q(tg_url=video.get('file_id')) |
+                                         Q(path=f"files/{video.get('file_id')}.webm")).afirst()
         if not file:
-            await bot.download(file=video,
-                               destination=f"{MEDIA_ROOT}/files/{video}.webm")
+            await bot.download(file=video.get('file_id'),
+                               destination=f"{MEDIA_ROOT}/files/{video.get('file_id')}.webm")
             file = await File.objects.acreate(name=t,
-                                              path=f"files/{video}.webm",
-                                              tg_url=video,
+                                              path=f"files/{video.get('file_id')}.webm",
+                                              tg_url=video.get('file_id'),
+                                              caption=video.get('caption'),
                                               owner=owner)
         files_db.append(file)
     for animation in animations:
@@ -141,6 +147,7 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
             file = await File.objects.acreate(name=t,
                                               path=f"files/{animation.get('file_id')}.gif",
                                               tg_url=animation.get('file_id'),
+                                              caption=animation.get("caption"),
                                               owner=owner)
         files_db.append(file)
     for document in documents:
@@ -155,6 +162,7 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
                                               path=f"files/{document.get('file_id')}."
                                                    f"{document.get('name').split('.')[-1]}",
                                               tg_url=document.get('file_id'),
+                                              caption=document.get('caption'),
                                               owner=owner)
         files_db.append(file)
     return {'files_db': files_db,
@@ -168,12 +176,14 @@ async def send_file(tg_id: int, file_object: File) -> None:
     if file_type == "image_formats":
         message = await bot.send_photo(chat_id=tg_id,
                                        photo=file,
-                                       protect_content=True)
+                                       protect_content=True,
+                                       caption=file_object.caption)
         file_id = message.photo[-1].file_id
     elif file_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
                                            animation=file,
-                                           protect_content=True)
+                                           protect_content=True,
+                                           caption=file_object.caption)
         if message.animation:
             file_id = message.animation.file_id
         else:
@@ -183,17 +193,20 @@ async def send_file(tg_id: int, file_object: File) -> None:
           file_type == "presentation_formats"):
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
-                                          protect_content=True)
+                                          protect_content=True,
+                                          caption=file_object.caption)
         file_id = message.document.file_id
     elif file_type == "video_formats":
         message = await bot.send_video(chat_id=tg_id,
                                        video=file,
-                                       protect_content=True)
+                                       protect_content=True,
+                                       caption=file_object.caption)
         file_id = message.video.file_id
     elif file_type == "audio_formats":
         message = await bot.send_audio(chat_id=tg_id,
                                        audio=file,
-                                       protect_content=True)
+                                       protect_content=True,
+                                       caption=file_object.caption)
         file_id = message.audio.file_id
     elif file_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,

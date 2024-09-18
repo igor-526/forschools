@@ -328,28 +328,36 @@ async def show_log_item(callback: CallbackQuery, log_id: int):
             file_type = get_type(file.path.path.split(".")[-1])
             if file_type == "image_formats":
                 if file.tg_url:
-                    album_builder.add_photo(media=file.tg_url)
+                    album_builder.add_photo(media=file.tg_url,
+                                            caption=file.caption)
                 else:
-                    album_builder.add_photo(media=types.FSInputFile(file.path.path))
+                    album_builder.add_photo(media=types.FSInputFile(file.path.path),
+                                            caption=file.caption)
             if file_type == "video_formats":
                 if file.tg_url:
-                    album_builder.add_video(media=file.tg_url)
+                    album_builder.add_video(media=file.tg_url,
+                                            caption=file.caption)
                 else:
-                    album_builder.add_video(media=types.FSInputFile(file.path.path))
+                    album_builder.add_video(media=types.FSInputFile(file.path.path),
+                                            caption=file.caption)
             elif file_type == "audio_formats":
                 if file.tg_url:
                     await bot.send_audio(chat_id=callback.from_user.id,
-                                         audio=file.tg_url)
+                                         audio=file.tg_url,
+                                         caption=file.caption)
                 else:
                     await bot.send_audio(chat_id=callback.from_user.id,
-                                         audio=types.FSInputFile(file.path.path))
+                                         audio=types.FSInputFile(file.path.path),
+                                         caption=file.caption)
             elif file_type == "voice_formats":
                 if file.tg_url:
                     await bot.send_voice(chat_id=callback.from_user.id,
-                                         voice=file.tg_url)
+                                         voice=file.tg_url,
+                                         caption=file.caption)
                 else:
                     await bot.send_voice(chat_id=callback.from_user.id,
-                                         voice=types.FSInputFile(file.path.path))
+                                         voice=types.FSInputFile(file.path.path),
+                                         caption=file.caption)
         photos = album_builder.build()
         if photos:
             await bot.send_media_group(chat_id=callback.from_user.id,
