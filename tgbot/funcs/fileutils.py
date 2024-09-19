@@ -15,6 +15,16 @@ from tgbot.create_bot import bot
 async def add_files_to_state(message: types.Message, state: FSMContext) -> str:
     data = await state.get_data()
     msgstring = ""
+    if not data.get("files"):
+        data["files"] = {
+            'text': [],
+            'voice': [],
+            'photo': [],
+            'audio': [],
+            'animation': [],
+            'video': [],
+            'document': []
+        }
     if message.text:
         data.get('files').get('text').append(message.text)
         await state.update_data(data)

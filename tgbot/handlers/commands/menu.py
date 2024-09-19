@@ -9,6 +9,7 @@ from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks import show_homework_queryset, homeworks_send_menu
 from tgbot.funcs.chats import chats_show
+from tgbot.keyboards.chats import chats_get_users_buttons
 from tgbot.keyboards.default import cancel_keyboard
 from tgbot.utils import get_user
 
@@ -63,7 +64,10 @@ async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
             'document': [],
         }
         })
-        await chats_show(message, state)
+        user = await get_user(message.from_user.id)
+        chats = await user.aget_users_for_chat()
+        await message.answer(text="Выберите пользователя для отправки сообщения:",
+                             reply_markup=chats_get_users_buttons(chats))
         await state.set_state(ChatsFSM.send_message)
     new_msg_data = await add_files_to_state(message, state)
     new_msg_data += "\nОтправьте мне ещё сообщения, либо <b>выберите пользователя</b> для отправки"

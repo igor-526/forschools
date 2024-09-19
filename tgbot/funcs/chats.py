@@ -22,29 +22,19 @@ async def chats_show(message: types.Message, state: FSMContext):
         ).order_by('sender', 'date')]
         for msg in unread_messages:
             await chats_notificate(msg, True)
-        await send_menu(message.from_user.id,
-                        state=state,
-                        custom_text="больше нет непрочитанных сообщений")
-
     user = await get_user(message.from_user.id)
-    chats = await user.aget_users_for_chat()
     unread = await user.aget_unread_messages_count()
     if unread > 0:
         await show_unread()
-    await message.answer(text="Выберите пользователя для отправки сообщения:",
-                         reply_markup=chats_get_users_buttons(chats))
+    await send_menu(message.from_user.id,
+                    state=state,
+                    custom_text="Непрочитанных сообщений нет")
 
 
 async def chats_type_message(message: types.Message, state: FSMContext):
-    data = await state.get_data()
     new_data_msg = await add_files_to_state(message, state)
-    if data.get('message_for'):
-        new_data_msg += "\nНажмите кнопку <b>'Отправить'</b> или отправьте мне ещё сообщения"
-        reply_markup = message_typing_keyboard
-    else:
-        new_data_msg += "\nОтправьте мне ещё сообщения, либо <b>выберите пользователя</b> для отправки"
-        reply_markup = cancel_keyboard
-    await message.reply(new_data_msg, reply_markup=reply_markup)
+    new_data_msg += "\nОтправьте мне ещё сообщения, либо <b>выберите пользователя</b> для отправки"
+    await message.reply(new_data_msg, reply_markup=cancel_keyboard)
 
 
 async def chats_send(user_tg_id: int, state: FSMContext):
