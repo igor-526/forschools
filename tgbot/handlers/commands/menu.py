@@ -35,8 +35,8 @@ async def h_mainmenu_lessons(message: types.Message, state: FSMContext) -> None:
 
 @router.message(StateFilter(MenuFSM.main_menu),
                 F.text.contains("Сообщения"))
-async def h_mainmenu_chats(message: types.Message) -> None:
-    await chats_show(message)
+async def h_mainmenu_chats(message: types.Message, state: FSMContext) -> None:
+    await chats_show(message, state)
     await message.delete()
 
 
@@ -63,10 +63,10 @@ async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
             'document': [],
         }
         })
-        await message.answer(text="При необходимости отправьте ещё сообщения. "
-                                  "После выбора пользователя сообщение будет доставлено",
-                             reply_markup=cancel_keyboard)
-        await chats_show(message, read=False)
+        await chats_show(message, state)
         await state.set_state(ChatsFSM.send_message)
-    await add_files_to_state(message, state)
+    new_msg_data = await add_files_to_state(message, state)
+    new_msg_data += "\nОтправьте мне ещё сообщения, либо <b>выберите пользователя</b> для отправки"
+    await message.answer(text=new_msg_data,
+                         reply_markup=cancel_keyboard)
 

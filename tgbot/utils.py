@@ -5,7 +5,7 @@ from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot
 import async_to_sync as sync
 from tgbot.funcs.fileutils import send_file
-from tgbot.keyboards.chats import chats_get_answer_button
+from tgbot.keyboards.chats import chats_get_show_message_button
 from tgbot.keyboards.materials import get_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_edit_button
 from dls.utils import get_tg_id_sync
@@ -219,7 +219,7 @@ def send_chat_message(message: Message):
                     f"{message.sender.last_name}</b>\n{message.message}")
         msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
                                                      message=msg_text,
-                                                     reply_markup=chats_get_answer_button(message.id))
+                                                     reply_markup=chats_get_show_message_button(message.id))
         if msg_result.get("status") == "success":
             TgBotJournal.objects.create(
                 recipient=message.receiver,

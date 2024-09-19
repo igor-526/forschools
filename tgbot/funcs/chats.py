@@ -3,8 +3,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
 from tgbot.keyboards.callbacks.chats import ChatListCallback
-from tgbot.keyboards.chats import chats_get_users_buttons, chats_get_answer_button
-from tgbot.keyboards.default import message_typing_keyboard
+from tgbot.keyboards.chats import chats_get_users_buttons, chats_get_show_message_button
+from tgbot.keyboards.default import message_typing_keyboard, cancel_keyboard
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id
@@ -14,15 +14,37 @@ from tgbot.finite_states.chats import ChatsFSM
 from chat.models import Message
 
 
-async def chats_show(message: types.Message, read=True):
+async def chats_show(message: types.Message, state: FSMContext):
+    async def show_unread():
+        unread_messages = [msg.id async for msg in Message.objects.filter(
+            receiver=user,
+            read__isnull=True
+        ).order_by('sender', 'date')]
+        for msg in unread_messages:
+            await chats_notificate(msg, True)
+        await send_menu(message.from_user.id,
+                        state=state,
+                        custom_text="больше нет непрочитанных сообщений")
+
     user = await get_user(message.from_user.id)
     chats = await user.aget_users_for_chat()
-    await message.answer(text="Выберите пользователя:",
-                         reply_markup=chats_get_users_buttons(chats, read))
+    unread = await user.aget_unread_messages_count()
+    if unread > 0:
+        await show_unread()
+    await message.answer(text="Выберите пользователя для отправки сообщения:",
+                         reply_markup=chats_get_users_buttons(chats))
 
 
 async def chats_type_message(message: types.Message, state: FSMContext):
-    await add_files_to_state(message, state)
+    data = await state.get_data()
+    new_data_msg = await add_files_to_state(message, state)
+    if data.get('message_for'):
+        new_data_msg += "\nНажмите кнопку <b>'Отправить'</b> или отправьте мне ещё сообщения"
+        reply_markup = message_typing_keyboard
+    else:
+        new_data_msg += "\nОтправьте мне ещё сообщения, либо <b>выберите пользователя</b> для отправки"
+        reply_markup = cancel_keyboard
+    await message.reply(new_data_msg, reply_markup=reply_markup)
 
 
 async def chats_send(user_tg_id: int, state: FSMContext):
@@ -76,32 +98,57 @@ async def chats_send_ask(callback: CallbackQuery,
                           })
 
 
-async def chats_notificate(chat_message_id: int):
+async def chats_notificate(chat_message_id: int, show=False):
     chat_message = await Message.objects.select_related("receiver").select_related("sender").aget(pk=chat_message_id)
     tg_id = await get_tg_id(chat_message.receiver)
     if tg_id:
-        msg_text = (f"<b>Новое сообщение от {chat_message.sender.first_name} "
-                    f"{chat_message.sender.last_name}</b>\n{chat_message.message}")
+        if show:
+            msg_text = (f"<b>Cообщение от {chat_message.sender.first_name} "
+                        f"{chat_message.sender.last_name} [{chat_message.date.strftime('%d.%m %H:%M')}]</b>:\n"
+                        f"{chat_message.message}")
+            reply_markup = None
+            await chat_message.aset_read()
+        else:
+            msg_text = (f"<b>Вам пришло сообщение от {chat_message.sender.first_name} "
+                        f"{chat_message.sender.last_name}</b>")
+            reply_markup = chats_get_show_message_button(chat_message.id)
         try:
             msg_result = await bot.send_message(chat_id=tg_id,
                                                 text=msg_text,
-                                                reply_markup=chats_get_answer_button(chat_message.id))
+                                                reply_markup=reply_markup)
             attachments = [f async for f in chat_message.files.all()]
-            for attachment in attachments:
-                await send_file(tg_id, attachment)
-            await TgBotJournal.objects.acreate(
-                recipient=chat_message.receiver,
-                initiator=chat_message.sender,
-                event=7,
-                data={
-                    "status": "success",
-                    "text": msg_text,
-                    "msg_id": msg_result.message_id,
-                    "errors": [],
-                    "attachments": [att.id for att in attachments]
-                }
-            )
+            if show:
+                for attachment in attachments:
+                    await send_file(tg_id, attachment)
+            if not show:
+                await TgBotJournal.objects.acreate(
+                    recipient=chat_message.receiver,
+                    initiator=chat_message.sender,
+                    event=7,
+                    data={
+                        "status": "success",
+                        "text": msg_text,
+                        "msg_id": msg_result.message_id,
+                        "errors": [],
+                        "attachments": [att.id for att in attachments]
+                    }
+                )
         except Exception as e:
+            if not show:
+                await TgBotJournal.objects.acreate(
+                    recipient=chat_message.receiver,
+                    initiator=chat_message.sender,
+                    event=7,
+                    data={
+                        "status": "error",
+                        "text": None,
+                        "msg_id": None,
+                        "errors": [str(e)],
+                        "attachments": []
+                    }
+                )
+    else:
+        if not show:
             await TgBotJournal.objects.acreate(
                 recipient=chat_message.receiver,
                 initiator=chat_message.sender,
@@ -110,23 +157,10 @@ async def chats_notificate(chat_message_id: int):
                     "status": "error",
                     "text": None,
                     "msg_id": None,
-                    "errors": [str(e)],
+                    "errors": ["У пользователя не привязан Telegram"],
                     "attachments": []
                 }
             )
-    else:
-        await TgBotJournal.objects.acreate(
-            recipient=chat_message.receiver,
-            initiator=chat_message.sender,
-            event=7,
-            data={
-                "status": "error",
-                "text": None,
-                "msg_id": None,
-                "errors": ["У пользователя не привязан Telegram"],
-                "attachments": []
-            }
-        )
 
 
 async def chats_show_unread_messages(callback: CallbackQuery,

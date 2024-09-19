@@ -12,29 +12,35 @@ from material.utils.get_type import get_type
 from tgbot.create_bot import bot
 
 
-async def add_files_to_state(message: types.Message, state: FSMContext):
+async def add_files_to_state(message: types.Message, state: FSMContext) -> str:
     data = await state.get_data()
+    msgstring = ""
     if message.text:
         data.get('files').get('text').append(message.text)
         await state.update_data(data)
+        msgstring += "Принято текстовое сообщение"
     if message.voice:
         data.get('files').get('voice').append(message.voice.file_id)
         await state.update_data(data)
+        msgstring += "Принято голосовое сообщение"
     if message.photo:
         data.get("files").get('photo').append({"file_id": message.photo[-1].file_id,
                                                "caption": message.caption if message.caption else None})
         await state.update_data(data)
+        msgstring += f"Принято изображение{' с подписью' if message.caption else ''}"
     if message.audio:
         data.get("files").get('audio').append({'file_id': message.audio.file_id,
                                                'format': message.audio.file_name.split(".")[-1],
                                                "caption": message.caption if message.caption else None})
         await state.update_data(data)
+        msgstring += f"Принята аудиозапись{' с подписью' if message.caption else ''}"
     if message.animation:
         file_format = message.animation.file_name.split(".")[-1] if message.animation.file_name else "mp4"
         data.get("files").get('animation').append({'file_id': message.animation.file_id,
                                                    'format': file_format,
                                                    "caption": message.caption if message.caption else None})
         await state.update_data(data)
+        msgstring += f"Принята анимация{' с подписью' if message.caption else ''}"
     if message.document:
         if not message.animation:
             file_type = get_type(message.document.file_name.split(".")[-1])
@@ -43,13 +49,15 @@ async def add_files_to_state(message: types.Message, state: FSMContext):
                                                           'name': message.document.file_name,
                                                           "caption": message.caption if message.caption else None})
                 await state.update_data(data)
+                msgstring += f"Принят документ{' с подписью' if message.caption else ''}"
             else:
                 await message.answer("Данный файл не может быть отправлен, так как формат не поддерживается")
     if message.video:
         data.get("files").get('video').append({"file_id": message.video.file_id,
                                                "caption": message.caption if message.caption else None})
         await state.update_data(data)
-    data = await state.get_data()
+        msgstring += f"Принята видеозапись{' с подписью' if message.caption else ''}"
+    return msgstring
 
 
 def filechecker(data) -> bool:
