@@ -8,9 +8,9 @@ from tgbot.funcs.fileutils import add_files_to_state
 from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks import show_homework_queryset, homeworks_send_menu
-from tgbot.funcs.chats import chats_show
+from tgbot.funcs.chats import chats_show, chats_type_message
 from tgbot.keyboards.chats import chats_get_users_buttons
-from tgbot.keyboards.default import cancel_keyboard
+from tgbot.keyboards.default import cancel_keyboard, message_typing_keyboard
 from tgbot.utils import get_user
 
 router = Router(name=__name__)
@@ -64,13 +64,6 @@ async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
             'document': [],
         }
         })
-        user = await get_user(message.from_user.id)
-        chats = await user.aget_users_for_chat()
-        await message.answer(text="Выберите пользователя для отправки сообщения:",
-                             reply_markup=chats_get_users_buttons(chats))
-        await state.set_state(ChatsFSM.send_message)
-    new_msg_data = await add_files_to_state(message, state)
-    new_msg_data += "\nОтправьте мне ещё сообщения, либо <b>выберите пользователя</b> для отправки"
-    await message.answer(text=new_msg_data,
-                         reply_markup=cancel_keyboard)
+    await state.set_state(ChatsFSM.send_message)
+    await chats_type_message(message, state)
 

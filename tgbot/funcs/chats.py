@@ -33,8 +33,8 @@ async def chats_show(message: types.Message, state: FSMContext):
 
 async def chats_type_message(message: types.Message, state: FSMContext):
     new_data_msg = await add_files_to_state(message, state)
-    new_data_msg += "\nОтправьте мне ещё сообщения, либо <b>выберите пользователя</b> для отправки"
-    await message.reply(new_data_msg, reply_markup=cancel_keyboard)
+    new_data_msg += "\nОтправьте мне ещё сообщения, либо нажмите кнопку '<b>Отправить</b>'"
+    await message.reply(new_data_msg, reply_markup=message_typing_keyboard)
 
 
 async def chats_send(user_tg_id: int, state: FSMContext):

@@ -28,7 +28,11 @@ async def h_homework_edit(callback: CallbackQuery,
             "name": hw.name,
             "description": hw.description,
             "materials": [m.id async for m in hw.materials.all()],
-            "deadline": hw.deadline,
+            "deadline": {
+                'day': hw.deadline.day,
+                'month': hw.deadline.month,
+                'year': hw.deadline.year,
+            },
         },
         "messages_to_delete": []
     })

@@ -9,6 +9,8 @@ from tgbot.funcs.chats import chats_send_ask, chats_send, chats_show_unread_mess
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatShowMessageCallback
 from tgbot.finite_states.chats import ChatsFSM
+from tgbot.keyboards.chats import chats_get_users_buttons
+from tgbot.utils import get_user
 
 router = Router(name=__name__)
 
@@ -39,7 +41,10 @@ async def h_chats_cancel(message: types.Message, state: FSMContext) -> None:
 @router.message(StateFilter(ChatsFSM.send_message),
                 F.text == "Отправить")
 async def h_chats_send(message: types.Message, state: FSMContext) -> None:
-    await chats_send(message.from_user.id, state)
+    user = await get_user(message.from_user.id)
+    chats = await user.aget_users_for_chat()
+    await message.answer(text="Выберите пользователя для отправки сообщения:",
+                         reply_markup=chats_get_users_buttons(chats))
 
 
 @router.message(StateFilter(ChatsFSM.send_message))

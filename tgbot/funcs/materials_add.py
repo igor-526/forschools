@@ -45,7 +45,7 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
         if set_to == "statehw":
             statedata = await state.get_data()
             statedata["new_hw"]["materials"].append(mat_id)
-
+            await state.update_data(statedata)
 
     def get_path(file_format: str) -> dict:
         file_path_db = os.path.join(MEDIA_ROOT, "materials", f'{msgdata.get("name")}.{file_format}')

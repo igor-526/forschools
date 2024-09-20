@@ -29,7 +29,7 @@ def get_homework_newhwsetting_buttons(name, description, deadline, matcount) -> 
         callback_data=HomeworkNewSettingCallback(action="description")
     )
     builder.button(
-        text=f"Срок: {deadline}",
+        text=f"Срок: {deadline.get('day')}.{deadline.get('month')}.{deadline.get('year')}",
         callback_data=HomeworkNewSettingCallback(action="deadline")
     )
     builder.button(
@@ -49,7 +49,6 @@ def get_homework_listeners_buttons(listeners: list) -> InlineKeyboardMarkup:
         )
     builder.adjust(1)
     return builder.as_markup()
-
 
 
 def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:

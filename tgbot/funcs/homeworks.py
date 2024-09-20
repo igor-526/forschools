@@ -53,12 +53,17 @@ async def add_homework_select_listener(tg_id):
 async def add_homework_set_homework_ready(message: types.Message, state: FSMContext):
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")
+    current_deadline = statedata.get("new_hw").get("deadline")
+    current_deadline_dt = datetime.datetime(
+        current_deadline.get("year"),
+        current_deadline.get("month"),
+        current_deadline.get("day"))
     if hw_id:
         hw = await Homework.objects.aget(id=hw_id)
         hw.name = statedata.get("new_hw").get("name")
         hw.description = statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description") \
             else "-"
-        hw.deadline = statedata.get("new_hw").get("deadline")
+        hw.deadline = current_deadline_dt
         await hw.asave()
         await hw.materials.aset(statedata.get("new_hw").get("materials"))
         await hw.asave()
@@ -69,7 +74,7 @@ async def add_homework_set_homework_ready(message: types.Message, state: FSMCont
             name=statedata.get("new_hw").get("name"),
             description=statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description")
             else "-",
-            deadline=statedata.get("new_hw").get("deadline"),
+            deadline=current_deadline_dt,
             listener_id=statedata.get("new_hw").get("listener_id"),
             teacher=teacher
         )
@@ -87,14 +92,19 @@ async def add_homework_set_homework_message(tg_id: int,
     data = await state.get_data()
     if not data.get("new_hw"):
         last_count = await Homework.objects.acount()
-        await state.set_data({
+        deadline = datetime.date.today() + datetime.timedelta(days=6)
+        await state.update_data({
             "new_hw": {
                 "hw_id": None,
                 "listener_id": listener_id,
                 "name": f'Домашнее задание {last_count + 1}',
                 "description": None,
                 "materials": [],
-                "deadline": datetime.date.today() + datetime.timedelta(days=6),
+                "deadline": {
+                    'day': deadline.day,
+                    'month': deadline.month,
+                    'year': deadline.year
+                },
             },
             "messages_to_delete": []
         })
@@ -102,7 +112,7 @@ async def add_homework_set_homework_message(tg_id: int,
     keys = get_homework_newhwsetting_buttons(
         name=data.get("new_hw").get("name"),
         description=data.get("new_hw").get("description") if data.get("new_hw").get("description") else "отсутствует",
-        deadline=data.get("new_hw").get("deadline").strftime("%d.%m.%Y"),
+        deadline=data.get("new_hw").get("deadline"),
         matcount=len(data.get("new_hw").get("materials"))
     )
     await bot.send_message(chat_id=tg_id,
@@ -153,9 +163,11 @@ async def add_homework_set_homework_change(callback: CallbackQuery,
         await state.set_state(HomeworkNewFSM.change_description)
     elif action == "deadline":
         await callback.message.delete()
+        cur_deadline = data.get("new_hw").get("deadline")
         ask_msg = await bot.send_message(chat_id=callback.from_user.id,
                                          text=f'Текущий срок выполнения ДЗ: '
-                                              f'{data.get("new_hw").get("deadline").strftime("%d.%m.%Y")}\n'
+                                              f'{cur_deadline.get("day")}.{cur_deadline.get("month")}.'
+                                              f'{cur_deadline.get("year")}\n'
                                               f'Отправьте мне новый срок выполнения в формате ДД.ММ.ГГГГ или нажмите '
                                               f'кнопку "Отмена"',
                                          reply_markup=cancel_keyboard)
@@ -182,7 +194,11 @@ async def add_homework_set_homework_change_ready(message: types.Message,
     def validate_datetime():
         try:
             deadline = datetime.datetime.strptime(message.text, "%d.%m.%Y")
-            return deadline
+            return {
+                'day': deadline.day,
+                'month': deadline.month,
+                'year': deadline.year,
+            }
         except Exception as e:
             return False
 
@@ -203,6 +219,7 @@ async def add_homework_set_homework_change_ready(message: types.Message,
             return
     elif action == "materials":
         statedata["new_hw"]["materials"] = []
+    await state.update_data(statedata)
     await add_homework_set_homework_message(message.from_user.id, state, statedata.get("new_hw").get("listener_id"))
 
 
