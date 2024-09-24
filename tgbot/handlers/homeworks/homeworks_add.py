@@ -40,7 +40,7 @@ async def h_homework_edit(callback: CallbackQuery,
 
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
-                F.text == "Готово")
+                F.text == "Отправить")
 async def h_homework_sethw_ready(message: types.Message, state: FSMContext) -> None:
     statedata = await state.get_data()
     messages_to_delete = statedata.get("messages_to_delete")
@@ -70,8 +70,7 @@ async def h_homework_add(callback: CallbackQuery,
 
 
 @router.callback_query(HomeworkMenuCallback.filter(F.action == 'new'))
-async def h_homework_add(callback: CallbackQuery,
-                         state: FSMContext) -> None:
+async def h_homework_add(callback: CallbackQuery) -> None:
     await callback.message.delete()
     await add_homework_select_listener(callback.from_user.id)
 

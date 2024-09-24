@@ -26,6 +26,9 @@ async def lessons_generate_schedule_message(lessons: list[Lesson], monday: datet
 
     msg = f"Расписание на неделю с {monday.strftime('%d.%m.%Y')} по {(monday+datetime.timedelta(days=6)).strftime('%d.%m.%Y')}"
     msg += f' для <b>{user}</b>\n' if user else '\n'
+    if not lessons:
+        msg += "<b>ОТСУТСТВУЕТ!</b>"
+        return msg
     schedule = {
         "monday": [],
         "tuesday": [],
@@ -94,19 +97,19 @@ async def lessons_get_schedule(tg_id: int, state: FSMContext, user: NewUser = No
             "last_name": user.last_name,
             "user_id": user.id,
         } async for user in NewUser.objects.filter(groups__name__in=["Teacher", "Listener"],
-                                       is_active=True)[:15]]
+                                                   is_active=True)[:15]]
         await bot.send_message(chat_id=tg_id,
                                text="Выберите пользователя, чьё расписание необходимо показать:",
-                             reply_markup=lessons_get_users_buttons(users))
+                               reply_markup=lessons_get_users_buttons(users))
         await bot.send_message(chat_id=tg_id,
-                               text="Если пользователя в списке нет, введите фразу для поиска или "
-                                  "<b>нажмите кноку 'Отмена'</b>",
-                             reply_markup=cancel_keyboard)
+                               text="Если пользователя в списке нет, введите фразу для поиска (фамилия или имя) или "
+                                    "<b>нажмите кноку 'Отмена'</b>",
+                               reply_markup=cancel_keyboard)
         await state.set_state(LessonsFSM.user_search)
     if "Teacher" in perms.get("groups"):
         lessons = [lesson async for lesson in Lesson.objects.filter(Q(learningphases__learningplan__teacher=user,
-                                                                    date__gte=monday,
-                                                                    date__lte=monday + datetime.timedelta(days=6)) |
+                                                                      date__gte=monday,
+                                                                      date__lte=monday + datetime.timedelta(days=6)) |
                                                                     Q(replace_teacher=user,
                                                                       date__gte=monday,
                                                                       date__lte=monday + datetime.timedelta(days=6))

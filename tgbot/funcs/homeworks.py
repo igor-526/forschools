@@ -5,11 +5,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
 from tgbot.funcs.fileutils import filechecker, filedownloader
+from tgbot.funcs.materials import show_material_item
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons, get_homework_menu_buttons, get_homework_listeners_buttons,
                                       get_homework_newhwsetting_buttons)
-from tgbot.keyboards.default import ready_cancel_keyboard, cancel_keyboard, yes_cancel_keyboard
+from tgbot.keyboards.default import cancel_keyboard, yes_cancel_keyboard, message_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
@@ -116,12 +117,12 @@ async def add_homework_set_homework_message(tg_id: int,
         matcount=len(data.get("new_hw").get("materials"))
     )
     await bot.send_message(chat_id=tg_id,
-                           text="Нажмите на поле для настройки ДЗ\nДля добавления новых материалов просто скиньте их "
-                                "сюда. Одно сообщение - один материал",
+                           text="Для добавления новых материалов просто скиньте их сюда.\n"
+                                "При необходимости, отредактируйте параметры ДЗ, с помощью кнопок:",
                            reply_markup=keys)
     await bot.send_message(chat_id=tg_id,
-                           text="После завершения настройки ДЗ <b>нажмите кнопку 'Готово'</b>",
-                           reply_markup=ready_cancel_keyboard)
+                           text="После завершения настройки ДЗ <b>нажмите кнопку 'Отправить'</b>",
+                           reply_markup=message_typing_keyboard)
     for msg in data.get("messages_to_delete"):
         await bot.delete_message(chat_id=tg_id,
                                  message_id=msg)
@@ -303,7 +304,6 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    materials = await hw.materials.acount()
     can_send = 'Listener' in gp['groups'] and hw_status.status in [1, 2, 5]
     can_check = 'Teacher' in gp['groups'] and hw_status.status in [3]
 
@@ -313,8 +313,9 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
                                 f"Описание: {hw.description}\n",
                            reply_markup=get_homework_item_buttons(hw.id,
                                                                   can_send,
-                                                                  can_check,
-                                                                  materials))
+                                                                  can_check))
+    for mat in [m.id async for m in hw.materials.all()]:
+        await show_material_item(callback, mat)
     if hw_status.status == 1 and gp['groups'] == 'Listener':
         await hw.aopen()
     await show_log_item(callback, hw_status.id)
@@ -393,9 +394,10 @@ async def send_hw_answer(callback: CallbackQuery,
     if 'Listener' in gp['groups'] and hw_status.status in [1, 2, 5]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие решение домашнего задания, "
-                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии, аудио, "
+                                    "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, "
+                                    "аудио, "
                                     "видео или голосовые сообщения",
-                               reply_markup=ready_cancel_keyboard)
+                               reply_markup=message_typing_keyboard)
         await state.set_state(HomeworkFSM.send_hw_files)
         await state.update_data({'files': {
             'text': [],
@@ -424,9 +426,9 @@ async def send_hw_check(callback: CallbackQuery,
     if 'Teacher' in gp['groups'] and hw_status.status in [3]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие проверку домашнего задания, "
-                                    "после чего нажмите кнопку 'Готово'\nВы можете отправить текст, фотографии, аудио, "
+                                    "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, аудио, "
                                     "видео или голосовые сообщения",
-                               reply_markup=ready_cancel_keyboard)
+                               reply_markup=message_typing_keyboard)
         await state.set_state(HomeworkFSM.send_hw_files)
         await state.update_data({'files': {
             'text': [],

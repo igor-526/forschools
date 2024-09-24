@@ -33,7 +33,7 @@ async def h_material_menu(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(StateFilter(HomeworkFSM.send_hw_files),
-                F.text == "Готово")
+                F.text == "Отправить")
 async def h_homework_send_ready(message: types.Message, state: FSMContext) -> None:
     await hw_send(message, state)
 

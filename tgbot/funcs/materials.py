@@ -15,10 +15,9 @@ from tgbot.keyboards.materials import (get_keyboard_materials,
                                        get_keyboard_levels,
                                        get_keyboard_material_item,
                                        get_keyboard_tg_users,
-                                       get_show_key, get_keyboard_query_hw)
+                                       get_show_key)
 from tgbot.finite_states.materials import MaterialFSM
 from material.utils.get_type import get_type
-from homework.models import Homework
 
 
 def generate_material_message(material: Material) -> str:
@@ -93,8 +92,8 @@ async def send_material_item(tg_id: int, material: Material) -> None:
         await material.asave()
 
 
-async def show_material_item(callback: CallbackQuery, callback_data: MaterialItemCallback):
-    material = await Material.objects.filter(id=callback_data.mat_id).afirst()
+async def show_material_item(callback: CallbackQuery, mat_id):
+    material = await Material.objects.filter(id=mat_id).afirst()
     if material:
         await send_material_item(callback.from_user.id, material)
     else:
@@ -185,21 +184,6 @@ async def get_user_materials(message: types.Message, state: FSMContext):
                              reply_markup=get_keyboard_materials(add_mat=True))
         await state.set_state(MaterialFSM.material_search)
         await send_categories(message)
-
-
-async def get_hw_materials(callback: CallbackQuery, state: FSMContext, hw_id: int, page=1, edit=False):
-    hw = await Homework.objects.select_related("listener").select_related("teacher").aget(id=hw_id)
-    materials = [mat async for mat in hw.materials.all()[(page - 1) * 9:page * 9]]
-    next_materials = await hw.materials.acount() > page * 9
-    dicted_materials = await filter_materials(materials, state)
-    if edit:
-        await callback.message.edit_text(text="К ДЗ прикреплены следующие материалы:",
-                                         reply_markup=get_keyboard_query_hw(dicted_materials, hw.id, page,
-                                                                            next_materials))
-    else:
-        await bot.send_message(chat_id=callback.from_user.id,
-                               text="К ДЗ прикреплены следующие материалы:",
-                               reply_markup=get_keyboard_query_hw(dicted_materials, hw.id, page, next_materials))
 
 
 async def send_tg_users(callback: CallbackQuery, state: FSMContext, mat_id) -> None:

@@ -60,4 +60,4 @@ async def h_material_type_callback(callback: CallbackQuery,
 @router.callback_query(MaterialItemCallback.filter(F.action == 'show'))
 async def h_material_show_callback(callback: CallbackQuery,
                                    callback_data: MaterialItemCallback) -> None:
-    await show_material_item(callback, callback_data)
+    await show_material_item(callback, callback_data.mat_id)
