@@ -12,6 +12,7 @@ HOMEWORK_STATUS_CHOISES = (
     (4, 'Принято'),
     (5, 'На доработке'),
     (6, 'Отменено'),
+    (7, 'Задано')
 )
 
 
@@ -51,18 +52,28 @@ class Homework(models.Model):
 
     class Meta:
         verbose_name = 'Домашнее задание'
-        verbose_name_plural = 'Домишние задания'
+        verbose_name_plural = 'Домашние задания'
         ordering = ['-id']
 
     def __str__(self):
         return f'{self.name}'
 
-    def get_status(self):
-        return HomeworkLog.objects.filter(homework=self).first()
+    def get_status(self, assigned=False):
+        if not assigned:
+            return HomeworkLog.objects.filter(homework=self).first()
+        else:
+            return HomeworkLog.objects.filter(homework=self,
+                                              status=7).first()
 
     async def aget_status(self):
         status = await HomeworkLog.objects.filter(homework=self).select_related("user").afirst()
         return status
+
+    def open(self):
+        HomeworkLog.objects.create(homework=self,
+                                   user=self.listener,
+                                   status=2,
+                                   comment="Домашнее задание открыто")
 
     async def aopen(self):
         await HomeworkLog.objects.acreate(homework=self,
@@ -70,11 +81,20 @@ class Homework(models.Model):
                                           status=2,
                                           comment="Домашнее задание открыто")
 
-    def open(self):
+    def get_lesson(self):
+        return self.lesson_set.first()
+
+    def set_assigned(self):
         HomeworkLog.objects.create(homework=self,
-                                   user=self.listener,
-                                   status=2,
-                                   comment="Домашнее задание открыто")
+                                   user=self.teacher,
+                                   comment="Домашнее задание задано",
+                                   status=7)
+
+    async def aset_assigned(self):
+        await HomeworkLog.objects.acreate(homework=self,
+                                          user=self.teacher,
+                                          comment="Домашнее задание задано",
+                                          status=7)
 
 
 class HomeworkLog(models.Model):

@@ -1,20 +1,19 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
-from rest_framework.views import APIView
-
+import datetime
 from lesson.permissions import CanReplaceTeacherMixin, replace_teacher_button
-from material.models import File
-from django.shortcuts import render
-from django.views.generic import TemplateView
-from rest_framework.generics import ListCreateAPIView, ListAPIView
-
-from tgbot.utils import send_homework_tg, send_homework_edit
-from .models import Homework, HomeworkLog
 from .serializers import HomeworkListSerializer, HomeworkLogSerializer
-from rest_framework import status
+from rest_framework.generics import ListCreateAPIView, ListAPIView
+from tgbot.utils import send_homework_tg, send_homework_edit
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
 from rest_framework.response import Response
-from dls.utils import get_menu
+from .models import Homework, HomeworkLog
 from dls.settings import MATERIAL_FORMATS
+from rest_framework.views import APIView
+from django.http import JsonResponse
+from django.shortcuts import render
+from rest_framework import status
+from material.models import File
+from dls.utils import get_menu
 
 
 class HomeworksPage(LoginRequiredMixin, TemplateView):  # страница домашних заданий
@@ -35,6 +34,41 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = Homework
     serializer_class = HomeworkListSerializer
 
+    def filter_queryset_teacher(self, queryset):
+        teachers = self.request.query_params.getlist("teacher")
+        if teachers:
+            queryset = queryset.filter(teacher__id__in=teachers)
+        return queryset
+
+    def filter_queryset_listener(self, queryset):
+        listeners = self.request.query_params.getlist("listener")
+        if listeners:
+            queryset = queryset.filter(listener__id__in=listeners)
+        return queryset
+
+    def filter_queryset_lesson(self, queryset):
+        lesson = self.request.query_params.get("lesson")
+        if lesson:
+            queryset = queryset.filter(lesson=lesson)
+        return queryset
+
+    def filter_queryset_assigned(self, queryset):
+        assigned_date_from = self.request.query_params.get("date_from")
+        assigned_date_to = self.request.query_params.get("date_to")
+        if assigned_date_from or assigned_date_to:
+            listed_queryset = list(queryset)
+            listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None, listed_queryset))
+            if assigned_date_from:
+                assigned_date_from = datetime.datetime.strptime(assigned_date_from, "%Y-%m-%d").date()
+                listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() >= assigned_date_from,
+                                              listed_queryset))
+            if assigned_date_to:
+                assigned_date_to = datetime.datetime.strptime(assigned_date_to, "%Y-%m-%d").date()
+                listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() <= assigned_date_to,
+                                              listed_queryset))
+            queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
+        return queryset
+
     def get_queryset(self, *args, **kwargs):
         hw_status = kwargs.get("status")
         group = kwargs.get("user").groups.first().name
@@ -45,10 +79,10 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         else:
             queryset = Homework.objects.all()
         st_filtered = []
-        if hw_status == "1":
+        if hw_status == "7":
             for hw in queryset:
                 status = hw.get_status()
-                if status.status in [1, 2, 5]:
+                if status.status in [7, 2, 5]:
                     st_filtered.append(status.homework.id)
         if hw_status == "3":
             for hw in queryset:
@@ -60,8 +94,13 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                 status = hw.get_status()
                 if status.status in [4, 6]:
                     st_filtered.append(status.homework.id)
-        queryset = queryset.filter(id__in=st_filtered)
-        return queryset
+        if st_filtered:
+            queryset = queryset.filter(id__in=st_filtered)
+        queryset = self.filter_queryset_lesson(queryset)
+        queryset = self.filter_queryset_teacher(queryset)
+        queryset = self.filter_queryset_listener(queryset)
+        queryset = self.filter_queryset_assigned(queryset)
+        return queryset[:50]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset(status=request.query_params.get('status'),

@@ -1,89 +1,162 @@
-async function homeworksMain(){
-    if (isTeacher){
-        await homeworksGetShow("checking")
+function homeworksMain(){
+    homeworksFilterCurrentLesson = new URLSearchParams(window.location.search).get("lesson")
+    if (isAdminOrMetodist){
+        homeworksSetTab("all")
     } else {
-        await homeworksGetShow("doing")
+        if (isTeacher){
+            homeworksSetTab("checking")
+        } else {
+            homeworksSetTab("doing")
+        }
     }
+    homeworksTabAll.addEventListener("click", function () {
+        homeworksSetTab("all")
+    })
     homeworksTabDoing.addEventListener("click", function () {
-        homeworksGetShow("doing")
+        homeworksSetTab("doing")
     })
     homeworksTabChecking.addEventListener("click", function () {
-        homeworksGetShow("checking")
+        homeworksSetTab("checking")
     })
     homeworksTabClosed.addEventListener("click", function () {
-        homeworksGetShow("closed")
+        homeworksSetTab("closed")
     })
 }
 
-async function homeworksGetShow(tab){
+async function homeworksGet(status = homeworksFilterCurrentStatus,
+                            teachers = homeworksFilterSelectedTeachers,
+                            listeners = homeworksFilterSelectedListeners,
+                            dateFrom = homeworksFilterDateFrom,
+                            dateTo = homeworksFilterDateTo){
+    homeworksFilterCurrentStatus = status
+    homeworkAPIGet(homeworksFilterCurrentLesson, status, teachers,
+        listeners, dateFrom, dateTo).then(request => {
+        switch (request.status){
+            case 200:
+                homeworksShow(request.response)
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
+}
+
+function homeworksSetTab(tab = "all"){
     switch (tab) {
+        case "all":
+            homeworksTabAll.classList.add("active")
+            homeworksTabDoing.classList.remove("active")
+            homeworksTabChecking.classList.remove("active")
+            homeworksTabClosed.classList.remove("active")
+            homeworksGet(null)
+            break
         case "doing":
+            homeworksTabAll.classList.remove("active")
             homeworksTabDoing.classList.add("active")
             homeworksTabChecking.classList.remove("active")
             homeworksTabClosed.classList.remove("active")
-            await homeworkAPIGet(1).then(request => {
-                if (request.status === 200) {
-                    homeworksSet = request.response
-                    homeworksShow(homeworksSet)
-                }
-            })
+            homeworksGet(7)
             break
         case "checking":
+            homeworksTabAll.classList.remove("active")
             homeworksTabDoing.classList.remove("active")
             homeworksTabChecking.classList.add("active")
             homeworksTabClosed.classList.remove("active")
-            await homeworkAPIGet(3)
-                .then(request => {
-                    if (request.status === 200) {
-                        homeworksSet = request.response
-                        homeworksShow(homeworksSet)
-                    }
-                })
+            homeworksGet(3)
             break
         case "closed":
+            homeworksTabAll.classList.remove("active")
             homeworksTabDoing.classList.remove("active")
             homeworksTabChecking.classList.remove("active")
             homeworksTabClosed.classList.add("active")
-            await homeworkAPIGet(4)
-                .then(request => {
-                    if (request.status === 200) {
-                        homeworksSet = request.response
-                        homeworksShow(homeworksSet)
-                    }
-                })
+            homeworksGet(4)
             break
     }
 }
 
-function homeworksShow(list = homeworksSet){
+function homeworksShow(homeworks){
+    function getElement(hw){
+        const tr = document.createElement("tr")
+        switch (hw.status){
+            case 1:
+                tr.classList.add("table-secondary")
+                break
+            case 2:
+                tr.classList.add("table-warning")
+                break
+            case 3:
+                tr.classList.add("table-warning")
+                break
+            case 5:
+                tr.classList.add("table-warning")
+                break
+            case 4:
+                tr.classList.add("table-success")
+                break
+            case 6:
+                tr.classList.add("table-danger")
+                break
+            case 7:
+                tr.classList.add("table-primary")
+                break
+        }
+        const tdName = document.createElement("td")
+        const tdTeacher = document.createElement("td")
+        const tdListener = document.createElement("td")
+        const tdAssigned = document.createElement("td")
+        const tdDeadline = document.createElement("td")
+        tr.insertAdjacentElement("beforeend", tdName)
+        tr.insertAdjacentElement("beforeend", tdTeacher)
+        tr.insertAdjacentElement("beforeend", tdListener)
+        tr.insertAdjacentElement("beforeend", tdAssigned)
+        tr.insertAdjacentElement("beforeend", tdDeadline)
+        if (hw.lesson_info){
+            const tdNameLessonButtonA = document.createElement("a")
+            const tdNameLessonButtonButton = document.createElement("button")
+            tdNameLessonButtonA.insertAdjacentElement("beforeend", tdNameLessonButtonButton)
+            tdNameLessonButtonA.target = "_blank"
+            tdNameLessonButtonA.href = `/lessons/${hw.lesson_info.id}`
+            tdNameLessonButtonButton.classList.add("btn", "btn-sm", "btn-primary", "me-2")
+            tdNameLessonButtonButton.innerHTML = '<i class="bi bi-file-earmark-text"></i>'
+            tdName.setAttribute("data-bs-toggle", "tooltip")
+            tdName.setAttribute("data-bs-placement", "top")
+            tdName.setAttribute("title", `Занятие от ${new Date(hw.lesson_info.date).toLocaleDateString()}`)
+            tdName.insertAdjacentElement("beforeend", tdNameLessonButtonA)
+            new bootstrap.Tooltip(tdName)
+        }
+        tdName.innerHTML += `<a target="_blank" href="/homeworks/${hw.id}">${hw.name}</a>`
+        tdTeacher.innerHTML = `<a target="_blank" href="/profile/${hw.teacher.id}">${hw.teacher.first_name} ${hw.teacher.last_name}</a>`
+        tdListener.innerHTML = `<a target="_blank" href="/profile/${hw.listener.id}">${hw.listener.first_name} ${hw.listener.last_name}</a>`
+        if (hw.assigned){
+            tdAssigned.innerHTML = new Date(hw.assigned).toLocaleDateString()
+            tdDeadline.innerHTML = new Date(hw.deadline).toLocaleDateString()
+        }
+        return tr
+    }
+
     homeworksTableBody.innerHTML = ''
-    list.forEach(hw => {
-        const deadline = new Date(hw.deadline).toLocaleDateString()
-        homeworksTableBody.insertAdjacentHTML("beforeend", `
-        <tr>
-            <td><a href="/homeworks/${hw.id}">${hw.name}</a></td>
-            <td><a href="/profile/${hw.teacher.id}">${hw.teacher.first_name} ${hw.teacher.last_name}</a></td>
-            <td><a href="/profile/${hw.listener.id}">${hw.listener.first_name} ${hw.listener.last_name}</a></td>
-            <td>${deadline}</td>
-        </tr>
-        `)
+    homeworks.forEach(hw => {
+        homeworksTableBody.insertAdjacentElement("beforeend", getElement(hw))
     })
 }
 
-//Sets
-let homeworksSet = []
+//Filtering
+let homeworksFilterCurrentLesson
+let homeworksFilterCurrentStatus = null
+let homeworksFilterSelectedTeachers = []
+let homeworksFilterSelectedListeners = []
+let homeworksFilterDateFrom = null
+let homeworksFilterDateTo = null
 
-//Search
-const homeworksCollapseSearchButton = document.querySelector("#HomeworksCollapseSearchButton")
-const homeworksCollapseSearch = document.querySelector("#HomeworksCollapseSearch")
-const homeworksCollapseSearchForm = homeworksCollapseSearch.querySelector("#HomeworksCollapseSearchForm")
 
 //Tabs
-const homeworksTabDoing = document.querySelector("#HomeworksTabDoing")
-const homeworksTabChecking = document.querySelector("#HomeworksTabChecking")
-const homeworksTabClosed = document.querySelector("#HomeworksTabClosed")
+const homeworksTabAll = document.querySelector("#homeworksTabAll")
+const homeworksTabDoing = document.querySelector("#homeworksTabDoing")
+const homeworksTabChecking = document.querySelector("#homeworksTabChecking")
+const homeworksTabClosed = document.querySelector("#homeworksTabClosed")
 
 //Table
-const homeworksTableBody = document.querySelector("#HomeworksTableBody")
+const homeworksTableBody = document.querySelector("#homeworksTableBody")
 
 homeworksMain()

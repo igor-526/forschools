@@ -124,6 +124,8 @@ function homeworkItemShowLogsStrStatus(status){
             return  "На доработке"
         case 6:
             return  "Отменено"
+        case 7:
+            return  "Задано"
         default:
             return ""
     }

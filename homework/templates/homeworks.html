@@ -12,31 +12,26 @@
                     {% include "homework_add_offcanvas.html" %}
                     {% include "materials_embed_modal.html" %}
                 {% endif %}
-                <button id="HomeworksCollapseSearchButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="collapse" data-bs-target="#HomeworksCollapseSearch"><i class="bi bi-search"></i></button>
             </div>
-        </div>
-    </div>
-
-    <div class="collapse mb-3" id="HomeworksCollapseSearch">
-        <div class="card card-body">
-            <form id="HomeworksCollapseSearchForm">
-                <div class="row">
-
-                </div>
-            </form>
         </div>
     </div>
 
     <div class="container-xxl">
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
-                <a class="nav-link" href="#" id="HomeworksTabDoing">Ожидают выполнения</a>
+                <a class="nav-link" href="#" id="homeworksTabAll">Все</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" id="HomeworksTabChecking">Ожидают проверки</a>
+                <a class="nav-link" href="#" id="homeworksTabDoing">Ожидают выполнения</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" id="HomeworksTabClosed">Завершены</a>
+                <a class="nav-link" href="#" id="homeworksTabChecking">Ожидают проверки</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="homeworksTabClosed">Завершены</a>
+            </li>
+            <li class="nav-item">
+                <button id="homeworksTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i>Сбросить</button>
             </li>
         </ul>
 
@@ -45,12 +40,54 @@
                 <thead>
                 <tr>
                     <th scope="col">Наименование</th>
-                    <th scope="col">Преподаватель</th>
-                    <th scope="col">Ученик</th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Преподаватель</b></button>
+                            <ul id="homeworksTableFilterTeacherList" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <button id="homeworksTableFilterTeacherSearchFieldReset" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                    <input id="homeworksTableFilterTeacherSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                    <button id="homeworksTableFilterTeacherSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Ученик</b></button>
+                            <ul id="homeworksTableFilterListenerList" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <button id="homeworksTableFilterListenerSearchFieldReset" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                    <input id="homeworksTableFilterListenerSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                    <button id="homeworksTableFilterListenerSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Задано</b></button>
+                            <ul class="dropdown-menu" style="min-width: 320px;">
+                                <li class="input-group px-1 mb-1">
+                                    <span class="input-group-text">Начало</span>
+                                    <input id="homeworksTableFilterDateStartField" type="date" class="form-control form-control-sm" aria-label="date start">
+                                    <button id="homeworksTableFilterDateStartFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                                <li class="input-group px-1">
+                                    <span class="input-group-text">Конец</span>
+                                    <input id="homeworksTableFilterDateEndField" type="date" class="form-control form-control-sm" aria-label="date end">
+                                    <button id="homeworksTableFilterDateEndFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
                     <th scope="col">Срок</th>
                 </tr>
                 </thead>
-                <tbody id="HomeworksTableBody"></tbody>
+                <tbody id="homeworksTableBody"></tbody>
             </table>
         </div>
     </div>
@@ -73,6 +110,7 @@
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/homework/homeworks.js' %}"></script>
+    <script src="{% static 'js/homework/homeworks_filter.js' %}"></script>
     {% if is_admin_or_metodist or is_teacher %}
         <script>
             const materialEmbedAction = "addToHW_"

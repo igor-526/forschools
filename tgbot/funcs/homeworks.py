@@ -81,6 +81,7 @@ async def add_homework_set_homework_ready(message: types.Message, state: FSMCont
         )
         await new_hw.materials.aset(statedata.get("new_hw").get("materials"))
         await new_hw.asave()
+        await new_hw.aset_assigned()
         await message.answer("ДЗ успешно задано")
         await homework_tg_notificate(teacher,
                                      statedata.get("new_hw").get("listener_id"),
@@ -229,7 +230,7 @@ async def show_homework_queryset(tg_id: int, state: FSMContext):
     gp = await get_group_and_perms(user.id)
     groups = gp.get('groups')
     if 'Listener' in groups:
-        homeworks = list(filter(lambda hw: hw['hw_status'] in [1, 2, 5],
+        homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 5],
                                 [{
                                     'hw': hw,
                                     'hw_status': (await hw.aget_status()).status
@@ -304,7 +305,7 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    can_send = 'Listener' in gp['groups'] and hw_status.status in [1, 2, 5]
+    can_send = 'Listener' in gp['groups'] and hw_status.status in [7, 2, 5]
     can_check = 'Teacher' in gp['groups'] and hw_status.status in [3]
 
     await bot.send_message(chat_id=callback.from_user.id,
@@ -316,7 +317,7 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
                                                                   can_check))
     for mat in [m.id async for m in hw.materials.all()]:
         await show_material_item(callback, mat)
-    if hw_status.status == 1 and gp['groups'] == 'Listener':
+    if hw_status.status == 7 and 'Listener' in gp.get('groups'):
         await hw.aopen()
     await show_log_item(callback, hw_status.id)
 
@@ -391,7 +392,7 @@ async def send_hw_answer(callback: CallbackQuery,
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    if 'Listener' in gp['groups'] and hw_status.status in [1, 2, 5]:
+    if 'Listener' in gp['groups'] and hw_status.status in [7, 2, 5]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие решение домашнего задания, "
                                     "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, "

@@ -52,10 +52,14 @@ class LessonListSerializer(serializers.ModelSerializer):
     can_set_not_held = serializers.SerializerMethodField(read_only=True)
     teacher = serializers.SerializerMethodField(read_only=True)
     listeners = serializers.SerializerMethodField(read_only=True)
+    hws = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Lesson
         exclude = ['materials', 'homeworks', 'evaluation', 'note_teacher', 'note_listener']
+
+    def get_hws(self, obj):
+        return obj.homeworks.count()
 
     def get_teacher(self, obj):
         teacher = obj.get_teacher()

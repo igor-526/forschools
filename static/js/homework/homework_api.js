@@ -59,14 +59,33 @@ async function homeworkAPISend(hw, fd, st){
     }
 }
 
-async function homeworkAPIGet(status){
-    const response = await fetch(`/api/v1/homeworks?status=${status}`)
-    if (response.status === 200){
-        return {status: 200,
-            response: await response.json()}
-    } else {
-        return {status: status}
+async function homeworkAPIGet(lesson, status, teachers, listeners, dateFrom, dateTo){
+    let url = "/api/v1/homeworks"
+    let queryArray = []
+    if (lesson){
+        queryArray.push(`lesson=${lesson}`)
     }
+    if (status){
+        queryArray.push(`status=${status}`)
+    }
+    if (dateFrom){
+        queryArray.push(`date_from=${dateFrom}`)
+    }
+    if (dateTo){
+        queryArray.push(`date_to=${dateTo}`)
+    }
+    teachers.forEach(teacher => {
+        queryArray.push(`teacher=${teacher}`)
+    })
+    listeners.forEach(listener => {
+        queryArray.push(`listener=${listener}`)
+    })
+    if (queryArray){
+        url += "?"
+        url += queryArray.join("&")
+    }
+    const request = await fetch(url)
+    return await APIGetToObject(request)
 }
 
 async function homeworkAPIGetInfo(homeworkID){

@@ -176,6 +176,8 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                 lesson.save()
                 for listener in lesson.get_learning_plan().listeners.all():
                     homeworks = lesson.homeworks.filter(listener=listener)
+                    for hw in homeworks:
+                        hw.set_assigned()
                     send_homework_tg(request.user, listener, homeworks)
                 return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:

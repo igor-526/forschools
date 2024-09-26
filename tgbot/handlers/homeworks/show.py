@@ -1,5 +1,4 @@
 from aiogram import Router, F
-from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from tgbot.funcs.homeworks import (show_homework, show_logs,
                                    show_log_item)

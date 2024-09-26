@@ -229,7 +229,13 @@ class NewUser(AbstractUser):
                   is_active=True) |
                 Q(groups__name__in=['Admin'],
                   is_active=True)).exclude(id=self.id).distinct()]
-        return users
+        unread_list = list(filter(lambda u: u.get("unread"), users))
+        has_messages_list = list(filter(lambda u: u.get("last_message_text") and u not in unread_list, users))
+        no_messages_list = list(filter(lambda u: u.get("last_message_text") is None, users))
+        unread_list = sorted(unread_list, key=itemgetter("last_message_date"), reverse=True)
+        has_messages_list = sorted(has_messages_list, key=itemgetter("last_message_date"), reverse=True)
+        no_messages_list = sorted(no_messages_list, key=itemgetter("name"))
+        return [*unread_list, *has_messages_list, *no_messages_list]
 
     async def aget_users_for_chat(self):
         admin_or_metodist = await self.groups.filter(name__in=['Admin', 'Metodist']).aexists()

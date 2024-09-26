@@ -5,7 +5,7 @@ from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
 from material.serializers import MaterialListSerializer
 from material.serializers import FileSerializer
-from tgbot.utils import send_homework_tg, send_homework_answer_tg
+from tgbot.utils import send_homework_answer_tg
 
 
 class HomeworkSerializer(serializers.ModelSerializer):
@@ -22,20 +22,47 @@ class HomeworkListSerializer(serializers.ModelSerializer):
     teacher = NewUserNameOnlyListSerializer(many=False, read_only=True)
     listener = NewUserNameOnlyListSerializer(many=False, read_only=True)
     status = serializers.SerializerMethodField(read_only=True)
+    lesson_info = serializers.SerializerMethodField(read_only=True)
+    assigned = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Homework
-        fields = ["id", "name", "deadline", "description", "teacher", "listener", "status"]
+        fields = ["id", "name", "deadline", "description", "teacher",
+                  "listener", "status", "lesson_info", "assigned"]
 
     def get_status(self, obj):
-        return obj.get_status().status
+        status = obj.get_status()
+        if status:
+            return status.status
+        else:
+            return None
+
+    def get_lesson_info(self, obj):
+        lesson = obj.get_lesson()
+        if lesson:
+            return {
+                "id": lesson.id,
+                "date": lesson.date,
+            }
+        else:
+            return None
+
+    def get_assigned(self, obj):
+        status = obj.get_status(True)
+        if status:
+            return status.dt
+        else:
+            return None
 
     def create(self, validated_data):
         request = self.context.get("request")
         lesson_id = request.POST.get('lesson')
+        set_assigned = True
         if lesson_id:
             try:
                 lesson = Lesson.objects.get(pk=int(lesson_id))
+                if lesson.status != 1:
+                    set_assigned = False
                 listeners = lesson.get_listeners()
                 teacher = lesson.get_hw_teacher()
             except Lesson.DoesNotExist:
@@ -63,6 +90,8 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         for homework in homeworks:
             homework.materials.set(self.context.get('request').POST.getlist('materials'))
             homework.save()
+            if set_assigned:
+                homework.set_assigned()
         return homeworks[0]
 
 

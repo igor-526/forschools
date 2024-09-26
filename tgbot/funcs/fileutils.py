@@ -93,8 +93,7 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
     if not text:
         comment = "-"
     else:
-        for msg in text:
-            comment += f"{msg}\n"
+        comment = "<br>__<br>".join(text)
     files_db = []
     for photo in photos:
         file = await File.objects.filter(Q(tg_url=photo.get("file_id")) |

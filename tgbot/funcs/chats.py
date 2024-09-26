@@ -103,6 +103,7 @@ async def chats_notificate(chat_message_id: int, show=False):
                         f"{chat_message.sender.last_name}</b>")
             reply_markup = chats_get_show_message_button(chat_message.id)
         try:
+            msg_text = msg_text.replace("<br>", "\n")
             msg_result = await bot.send_message(chat_id=tg_id,
                                                 text=msg_text,
                                                 reply_markup=reply_markup)

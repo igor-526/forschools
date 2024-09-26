@@ -77,19 +77,37 @@ function lessonsShow(list){
         const tdDate = document.createElement("td")
         const tdTeacher = document.createElement("td")
         const tdListeners = document.createElement("td")
+        const tdHomeworks = document.createElement("td")
+        const tdHomeworksA = document.createElement("a")
+        const tdHomeworksButton = document.createElement("button")
         const tdActions = document.createElement("td")
         const tdActionsGoA = document.createElement("a")
         const tdActionsGoButton = document.createElement("button")
+        tdHomeworksButton.classList.add("btn", "btn-primary")
+        tdHomeworksButton.innerHTML = lesson.hws
+        tdHomeworks.insertAdjacentElement("beforeend", tdHomeworksA)
+        switch (lesson.hws){
+            case 0:
+                tdHomeworksA.href = "#"
+                tdHomeworksButton.disabled = true
+                break
+            default:
+                tdHomeworksA.target = "_blank"
+                tdHomeworksA.href = `/homeworks/?lesson=${lesson.id}`
+                break
+        }
         tdActionsGoA.target = "_blank"
         tdActionsGoA.href = `/lessons/${lesson.id}`
         tdActionsGoButton.type = "button"
         tdActionsGoButton.classList.add("btn", "btn-primary")
         tdActionsGoButton.innerHTML = '<i class="bi bi-chevron-right"></i>'
         tdActionsGoA.insertAdjacentElement("beforeend", tdActionsGoButton)
+        tdHomeworksA.insertAdjacentElement("beforeend", tdHomeworksButton)
         tr.insertAdjacentElement("beforeend", tdName)
         tr.insertAdjacentElement("beforeend", tdDate)
         tr.insertAdjacentElement("beforeend", tdTeacher)
         tr.insertAdjacentElement("beforeend", tdListeners)
+        tr.insertAdjacentElement("beforeend", tdHomeworks)
         tr.insertAdjacentElement("beforeend", tdActions)
         tdActions.insertAdjacentElement("beforeend", tdActionsGoA)
         tdName.innerHTML = lesson.name
