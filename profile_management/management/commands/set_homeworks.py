@@ -13,7 +13,7 @@ class Command(BaseCommand):
         for lesson in lessons:
             homeworks = lesson.homeworks.all()
             for homework in homeworks:
-                if homework.get_status().status == 0:
+                if homework.get_status().status == 1:
                     homework.set_assigned()
                     counter += 1
         print(counter)
