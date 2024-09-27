@@ -46,7 +46,6 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
             statedata = await state.get_data()
             statedata["new_hw"]["materials"].append(mat_id)
             await state.update_data(statedata)
-            await message.answer("Оталдочная информация: материал прикреплен")
 
     def get_path(file_format: str) -> dict:
         file_path_db = os.path.join("materials", f'{msgdata.get("name")}.{file_format}')

@@ -1,8 +1,5 @@
-from aiogram import types
 from aiogram.fsm.context import FSMContext
-
 from tgbot.create_bot import bot
-from tgbot.finite_states.menu import MenuFSM
 from tgbot.keyboards import get_menu_keyboard
 from tgbot.utils import get_user, get_group_and_perms
 
@@ -45,4 +42,3 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
                            reply_markup=get_menu_keyboard(await user.aget_unread_messages_count(),
                                                           materials, homeworks,
                                                           lessons, messages, settings))
-    await state.set_state(MenuFSM.main_menu)

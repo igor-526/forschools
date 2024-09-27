@@ -34,14 +34,3 @@ async def command_start_handler(message: types.Message, state: FSMContext):
         await message.answer(text="Ошибка кода. "
                                   "Для привязки бота к Вашему аккаунту воспользуйтесь ссылкой в Вашем профиле")
         return
-
-
-@router.message(StateFilter(None))   # авторизация
-async def check_user(message: types, state: FSMContext):
-    user = await Telegram.objects.select_related("user").filter(tg_id=message.from_user.id).afirst()
-    if user:
-        await message.answer(text=f'Добро пожаловать, {user.user}!\n'
-                                  f'Вы в главном меню!')
-        await send_menu(message.from_user.id, state)
-    else:
-        await message.answer(text='Для использования бота необходимо авторизоваться')
