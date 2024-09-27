@@ -139,6 +139,7 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
         paths = get_path("txt")
         await statusmessage.edit_text("Определён текстовый материал")
         exists_validation = await material_exists_validator()
+        print(exists_validation)
         if exists_validation.get("status"):
             with open(paths.get("file_path"), "w", encoding="utf-8") as file:
                 file.write(msgdata.get("text"))
@@ -307,8 +308,9 @@ def add_material_validate(message: types.Message) -> dict:
         data["description"] = f'{description}\n{dt}'
         data["tg_url"] = message.video.file_id
     if data.get("name"):
-        for symbol in ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]:
-            if symbol in data["name"]:
-                data['name'] = data['name'].replace(symbol, "-")
-        data['name'] = data['name'][:200]
+        validated_name = data.get("name")
+        for symbol in ["<", ">", ":", '"', "/", "\\", "|", "?", "*", "\n"]:
+            if symbol in validated_name:
+                validated_name = validated_name.replace(symbol, "")
+        data['name'] = validated_name[:75]
     return data

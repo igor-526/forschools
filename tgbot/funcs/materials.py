@@ -82,7 +82,7 @@ async def send_material_item(tg_id: int, material: Material) -> None:
                                        protect_content=True)
         file_id = message.voice.file_id
     elif mat_type == "text_formats":
-        with open(str(material.file), "r") as textfile:
+        with open(material.file.path, "r") as textfile:
             await bot.send_message(chat_id=tg_id,
                                    text=textfile.read(),
                                    reply_markup=get_keyboard_material_item(material, send_tg),
