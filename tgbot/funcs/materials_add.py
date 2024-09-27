@@ -307,5 +307,8 @@ def add_material_validate(message: types.Message) -> dict:
         data["description"] = f'{description}\n{dt}'
         data["tg_url"] = message.video.file_id
     if data.get("name"):
+        for symbol in ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]:
+            if symbol in data["name"]:
+                data['name'] = data['name'].replace(symbol, "-")
         data['name'] = data['name'][:200]
     return data
