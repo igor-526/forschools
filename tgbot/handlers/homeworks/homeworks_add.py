@@ -6,12 +6,12 @@ from aiogram.types import CallbackQuery
 from homework.models import Homework
 from tgbot.create_bot import bot
 from tgbot.finite_states.homework import HomeworkNewFSM
-from tgbot.funcs.homeworks import add_homework_select_listener, add_homework_set_homework_message, \
+from tgbot.funcs.homeworks import add_homework_select_lesson, add_homework_set_homework_message, \
     add_homework_set_homework_change, add_homework_set_homework_change_ready, add_homework_set_homework_ready
 from tgbot.funcs.materials_add import add_material_add
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNewCallback, HomeworkNewSettingCallback, \
-    HomeworkCallback
+    HomeworkCallback, HomeworkNewSelectDateCallback
 
 router = Router(name=__name__)
 
@@ -63,23 +63,28 @@ async def h_homework_sethw_addmat(message: types.Message, state: FSMContext) -> 
 
 
 @router.callback_query(HomeworkNewSettingCallback.filter())
-async def h_homework_add(callback: CallbackQuery,
-                         callback_data: HomeworkNewSettingCallback,
-                         state: FSMContext) -> None:
+async def h_homework_add_setting(callback: CallbackQuery,
+                                 callback_data: HomeworkNewSettingCallback,
+                                 state: FSMContext) -> None:
     await add_homework_set_homework_change(callback, state, callback_data.action)
 
 
 @router.callback_query(HomeworkMenuCallback.filter(F.action == 'new'))
 async def h_homework_add(callback: CallbackQuery) -> None:
-    await callback.message.delete()
-    await add_homework_select_listener(callback.from_user.id)
+    await add_homework_select_lesson(callback)
+
+
+@router.callback_query(HomeworkNewSelectDateCallback.filter())
+async def h_homework_add_navigate(callback: CallbackQuery,
+                                  callback_data: HomeworkNewSelectDateCallback) -> None:
+    await add_homework_select_lesson(callback, callback_data.date)
 
 
 @router.callback_query(HomeworkNewCallback.filter())
 async def h_homework_sethw(callback: CallbackQuery,
                            callback_data: HomeworkNewCallback,
                            state: FSMContext) -> None:
-    await add_homework_set_homework_message(callback.from_user.id, state, callback_data.user_id)
+    await add_homework_set_homework_message(callback.from_user.id, state, callback_data.lesson_id)
     await callback.message.delete()
 
 

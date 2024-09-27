@@ -15,7 +15,11 @@ class HomeworkMenuCallback(CallbackData, prefix="hwmenu"):
 
 
 class HomeworkNewCallback(CallbackData, prefix="hwnew"):
-    user_id: int
+    lesson_id: int
+
+
+class HomeworkNewSelectDateCallback(CallbackData, prefix="hwnew_date"):
+    date: str
 
 
 class HomeworkNewSettingCallback(CallbackData, prefix="hwnewset"):

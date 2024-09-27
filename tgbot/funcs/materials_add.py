@@ -55,12 +55,12 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
             "file_path": file_path
         }
 
-    async def material_exists_validator() -> bool:
+    async def material_exists_validator() -> dict:
         mat = await Material.objects.filter(tg_url=msgdata.get('tg_url')).afirst() if msgdata.get('tg_url') else None
         if not mat:
             mat_name = await Material.objects.filter(name=msgdata.get('name')).afirst()
             if not mat_name:
-                return True
+                return {"status": True}
             else:
                 counter = 1
                 while True:
@@ -70,7 +70,7 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
                         counter += 1
                     else:
                         msgdata['name'] = new_name
-                        return True
+                        return {"status": True}
 
         else:
             await statusmessage.edit_text(
@@ -78,7 +78,8 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
                      f"Наименование: {mat.name}\n"
                      f"ID: {mat.id}"
             )
-            return False
+            return {"status": False,
+                    "material": mat}
 
     async def animation_convert():
         await statusmessage.edit_text("Идёт конвертация")
@@ -137,7 +138,7 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
         paths = get_path("txt")
         await statusmessage.edit_text("Определён текстовый материал")
         exists_validation = await material_exists_validator()
-        if exists_validation:
+        if exists_validation.get("status"):
             with open(paths.get("file_path"), "w", encoding="utf-8") as file:
                 file.write(msgdata.get("text"))
             try:
@@ -157,43 +158,55 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
                 await statusmessage.edit_text(
                     text=f'Произошла ошибка при добавлении материала:\n{e}'
                 )
+        else:
+            if set_to:
+                await set_to_obj(exists_validation.get("material").id)
     elif msgdata.get("type") == "voice":
         await statusmessage.edit_text("Определён тип голосового сообщения")
         paths = get_path("ogg")
         exists_validation = await material_exists_validator()
-        if exists_validation:
+        if exists_validation.get("status"):
             try:
                 await download_and_add(paths)
             except Exception as e:
                 await statusmessage.edit_text(
                     text=f'Произошла ошибка при добавлении материала:\n{e}'
                 )
+        else:
+            if set_to:
+                await set_to_obj(exists_validation.get("material").id)
     elif msgdata.get("type") == "photo":
         await statusmessage.edit_text("Определён тип изображения")
         paths = get_path("png")
         exists_validation = await material_exists_validator()
-        if exists_validation:
+        if exists_validation.get("status"):
             try:
                 await download_and_add(paths)
             except Exception as e:
                 await statusmessage.edit_text(
                     text=f'Произошла ошибка при добавлении материала:\n{e}'
                 )
+        else:
+            if set_to:
+                await set_to_obj(exists_validation.get("material").id)
     elif msgdata.get("type") == "audio":
         await statusmessage.edit_text("Определён тип аудиозаписи")
         paths = get_path("m4a")
         exists_validation = await material_exists_validator()
-        if exists_validation:
+        if exists_validation.get("status"):
             try:
                 await download_and_add(paths)
             except Exception as e:
                 await statusmessage.edit_text(
                     text=f'Произошла ошибка при добавлении материала:\n{e}'
                 )
+        else:
+            if set_to:
+                await set_to_obj(exists_validation.get("material").id)
     elif msgdata.get("type") == "animation":
         await statusmessage.edit_text("Определён тип анимации")
         exists_validation = await material_exists_validator()
-        if exists_validation:
+        if exists_validation.get("status"):
             try:
                 paths = await animation_convert()
                 await download_and_add(paths, False)
@@ -201,28 +214,37 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
                 await statusmessage.edit_text(
                     text=f'Произошла ошибка при добавлении материала:\n{e}'
                 )
+        else:
+            if set_to:
+                await set_to_obj(exists_validation.get("material").id)
     elif msgdata.get("type") == "document":
         await statusmessage.edit_text("Определён тип документа")
         paths = get_path(msgdata.get("format"))
         exists_validation = await material_exists_validator()
-        if exists_validation:
+        if exists_validation.get("status"):
             try:
                 await download_and_add(paths)
             except Exception as e:
                 await statusmessage.edit_text(
                     text=f'Произошла ошибка при добавлении материала:\n{e}'
                 )
+        else:
+            if set_to:
+                await set_to_obj(exists_validation.get("material").id)
     elif msgdata.get("type") == "video":
         await statusmessage.edit_text("Определён тип видеозаписи")
         paths = get_path("webm")
         exists_validation = await material_exists_validator()
-        if exists_validation:
+        if exists_validation.get("status"):
             try:
                 await download_and_add(paths)
             except Exception as e:
                 await statusmessage.edit_text(
                     text=f'Произошла ошибка при добавлении материала:\n{e}'
                 )
+        else:
+            if set_to:
+                await set_to_obj(exists_validation.get("material").id)
     elif msgdata.get("type") == "unsupported":
         await statusmessage.edit_text("Данный документ не может быть загружен, так как формат не поддерживается")
 
