@@ -89,7 +89,6 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
     videos = data.get("files").get('video')
     animations = data.get("files").get('animation')
     documents = data.get("files").get('document')
-    comment = ""
     if not text:
         comment = "-"
     else:

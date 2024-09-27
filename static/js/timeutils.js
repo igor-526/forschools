@@ -29,3 +29,28 @@ function timeUtilsDateTimeToStr(dt){
     datestring += ` ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`
     return datestring
 }
+
+
+function getPlus1HourTime(element){
+    const hours = Number(element.value.split(":")[0])
+    const minutes = Number(element.value.split(":")[1])
+    let newHours
+    switch (hours){
+        case 23:
+            newHours = 0
+            break
+        default:
+            newHours = hours + 1
+            break
+    }
+    return `${newHours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
+}
+
+
+function lessonTimeRangeToStr(timeStart, timeEnd){
+    const tsH = timeStart.split(":")[0]
+    const tsM = timeStart.split(":")[1]
+    const teH = timeEnd.split(":")[0]
+    const teM = timeEnd.split(":")[1]
+    return `${tsH.padStart(2, "0")}:${tsM.padStart(2, "0")} - ${teH.padStart(2, "0")}:${teM.padStart(2, "0")}`
+}

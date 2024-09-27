@@ -10,6 +10,10 @@
             <div class="col-6">
                 <div class="card mb-3">
                     <div class="card-header">Занятие
+                        {% if can_edit_materials %}
+                            <button id="lessonItemEditButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button>
+                            {% include "lesson_edit_modal.html" %}
+                        {% endif %}
                         {% if lesson.from_program_lesson %}
                             <button id="lessonItemRestoreButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-box-arrow-down"></i> Восстановить из шаблона</button>
                             {% include "lesson_item_modal_restore.html" %}
@@ -21,15 +25,22 @@
                                 <li class="list-group-item">Описание: {{ lesson.description }}</li>
                             {% endif %}
                             {% if lesson.date %}
-                                <li class="list-group-item">Дата: {{ lesson.date }}<button id="LessonItemChangeTimeButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button></li>
+                                <li class="list-group-item">Дата: {{ lesson.date }}</li>
                             {% else %}
-                                <li class="list-group-item">Дата: не установлена<button id="LessonItemChangeTimeButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button></li>
+                                <li class="list-group-item">Дата: не установлена</li>
                             {% endif %}
                             {% if lesson.start_time %}
-                                <li class="list-group-item">Время: {{ lesson.start_time }} - {{ lesson.end_time }}<button id="LessonItemChangeTimeButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button></li>
+                                <li class="list-group-item">Время: {{ lesson.start_time }} - {{ lesson.end_time }}</li>
                             {% else %}
-                                <li class="list-group-item">Время: не установлено<button id="LessonItemChangeTimeButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button></li>
+                                <li class="list-group-item">Время: не установлено</li>
                             {% endif %}
+
+                        {% if lesson.place %}
+                                <li class="list-group-item"><a href="{{ lesson.place.url }}">Ссылка на занятие</a><br><b>ПРОСЬБА НЕ ПОДКЛЮЧАТЬСЯ ЗАРАНЕЕ</b></li>
+                            {% else %}
+                                <li class="list-group-item">Место проведения: отсутствует</li>
+                            {% endif %}
+
                             {% if lesson.status == 0 %}
                                 <li id="lessonItemStatus" class="list-group-item list-group-item-warning">Занятие не проведено</li>
                             {% endif %}
@@ -155,6 +166,7 @@
                 presentationFormats: {{ material_formats.presentation_formats | safe }}
             }
         </script>
+        <script src="{% static 'js/timeutils.js' %}"></script>
         <script src="{% static 'js/collections/collections_api.js' %}"></script>
         <script src="{% static 'js/programs/programsAPI.js' %}"></script>
         <script src="{% static 'js/materials/materials_utils.js' %}"></script>
@@ -162,6 +174,7 @@
         <script src="{% static 'js/lessons/lesson_item_delete_materials.js' %}"></script>
         <script src="{% static 'js/lessons/lesson_item_send_materials.js' %}"></script>
         <script src="{% static 'js/lessons/lesson_item_delete_hw.js' %}"></script>
+        <script src="{% static 'js/lessons/lessons_edit_modal.js' %}"></script>
         {% if lesson.from_program_lesson %}
             <script src="{% static 'js/lessons/lesson_item_restore.js' %}"></script>
         {% endif %}

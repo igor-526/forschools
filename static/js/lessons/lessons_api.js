@@ -83,6 +83,18 @@ async function lessonsAPIGetItem(lessonID){
     return await APIGetToObject(request)
 }
 
+async function lessonsAPIUpdateLesson(fd, lessonID){
+    const request = await fetch(`/api/v1/lessons/${lessonID}/`, {
+        method: "PATCH",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
+}
+
 async function lessonsAPISetStatus(lessonID, fd){
     const request = await fetch(`/api/v1/lessons/${lessonID}/set_passed/`, {
         method: "POST",

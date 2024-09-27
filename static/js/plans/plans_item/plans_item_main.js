@@ -188,10 +188,19 @@ function planItemGetLessonElement(lesson){
         const tdActionsEdit = document.createElement("button")
         tdActionsEdit.type = "button"
         tdActionsEdit.classList.add("btn", "btn-warning", "mx-1")
-        tdActionsEdit.setAttribute("data-lesson-edit-id", lesson.id)
         tdActionsEdit.innerHTML = '<i class="bi bi-pencil"></i>'
         tdActions.insertAdjacentElement("beforeend", tdActionsEdit)
-        tdActionsEdit.addEventListener("click", planItemModalsLessonEditSet)
+        tdActionsEdit.addEventListener("click", function () {
+            lessonEditSetModalLesson(lesson.id, null, {
+                "name": tdName,
+                "date": tdDate,
+                "time": tdTime
+            })
+        })
+
+
+
+
         const tdActionsReschedule = document.createElement("button")
         tdActionsReschedule.type = "button"
         tdActionsReschedule.classList.add("btn", "btn-warning", "mx-1")

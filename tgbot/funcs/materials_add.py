@@ -48,7 +48,7 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
             await state.update_data(statedata)
 
     def get_path(file_format: str) -> dict:
-        file_path_db = os.path.join(MEDIA_ROOT, "materials", f'{msgdata.get("name")}.{file_format}')
+        file_path_db = os.path.join("materials", f'{msgdata.get("name")}.{file_format}')
         file_path = os.path.join(MEDIA_ROOT, file_path_db)
         return {
             "file_path_db": file_path_db,

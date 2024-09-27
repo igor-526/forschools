@@ -36,6 +36,11 @@ function lessonItemMain(){
     if (lessonItemRestoreButton){
         lessonItemRestoreButton.addEventListener("click", lessonItemRestoreModalSet)
     }
+    if (lessonItemEditButton){
+        lessonItemEditButton.addEventListener("click", function () {
+            lessonEditSetModalLesson(lessonID)
+        })
+    }
 }
 
 function lessonItemSetButtons() {
@@ -169,6 +174,7 @@ const lessonItemSendMaterialsButton = document.querySelector("#LessonItemSendMat
 const LessonItemDeleteMaterialsButton = document.querySelector("#LessonItemDeleteMaterialsButton")
 const LessonItemCheckMaterialsButton = document.querySelector("#LessonItemCheckMaterialsButton")
 const lessonItemRestoreButton = document.querySelector("#lessonItemRestoreButton")
+const lessonItemEditButton = document.querySelector("#lessonItemEditButton")
 
 //Lists
 const lessonItemMaterialsList = document.querySelector("#lessonItemMaterialsList")

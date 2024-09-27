@@ -115,18 +115,6 @@ async function planItemAPIDestroyLesson(lessonID){
     return APIDeleteToObject(request)
 }
 
-async function planItemAPIUpdateLesson(fd, lessonID){
-    const request = await fetch(`/api/v1/lessons/${lessonID}/`, {
-        method: "PATCH",
-        credentials: 'same-origin',
-        headers:{
-            "X-CSRFToken": csrftoken
-        },
-        body: fd
-    })
-    return APIPostPatchToObject(request)
-}
-
 async function planItemAPICalculateFromProgram(fd, planID){
     const params = new URLSearchParams(fd).toString()
     const request = await fetch(`/api/v1/learning_plans/${planID}/setprogram?${params}`)
