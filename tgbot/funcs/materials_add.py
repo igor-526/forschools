@@ -138,7 +138,6 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
         paths = get_path("txt")
         await statusmessage.edit_text("Определён текстовый материал")
         exists_validation = await material_exists_validator()
-        print(exists_validation)
         if exists_validation.get("status"):
             with open(paths.get("file_path"), "w", encoding="utf-8") as file:
                 file.write(msgdata.get("text"))

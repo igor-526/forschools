@@ -40,6 +40,6 @@ class LastMessageCallbackMiddleware(BaseMiddleware):
             event: CallbackQuery,
             data: Dict[str, Any]
     ) -> Any:
-        tguser_note = await middleware_authorization(event.from_user.id, event.message_id)
+        tguser_note = await middleware_authorization(event.from_user.id, event.message.message_id)
         if tguser_note:
             return await handler(event, data)
