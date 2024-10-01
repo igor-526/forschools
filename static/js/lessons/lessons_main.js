@@ -90,7 +90,7 @@ function lessonsShow(list){
                 break
             default:
                 tdHomeworksA.target = "_blank"
-                tdHomeworksA.href = `/homeworks/?lesson=${lesson.id}`
+                tdHomeworksA.href = `/homeworks/#lesson=${lesson.id}`
                 break
         }
         tdActionsGoA.target = "_blank"
