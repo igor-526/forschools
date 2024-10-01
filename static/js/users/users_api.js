@@ -13,7 +13,7 @@ async function usersAPIGetAll(){
     return await APIGetToObject(request)
 }
 
-async function usersAPIGetItem(userID){
+async function usersAPIGetUser(userID){
     const request = await fetch(`/api/v1/users/${userID}`)
     return await APIGetToObject(request)
 }
@@ -79,6 +79,11 @@ async function usersAPIDeactivate(userID, action){
         }
     })
     return await APIPostPatchToObject(request)
+}
+
+async function usersAPIAdminLogin(userID){
+    const request = await fetch(`/api/v1/users/${userID}/login/`)
+    return APIGetToObject(request)
 }
 
 async function usersAPIRegistration(fd){

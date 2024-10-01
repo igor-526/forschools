@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 from dls.utils import get_menu
 from json import dumps
 from django.http import Http404
-from .permissions import CanSeeUserPageMixin, get_editable_perm, get_deactivate_perm
+from .permissions import CanSeeUserPageMixin, get_editable_perm, get_secretinfo_perm
 from .forms import SignUpForm
 from .models import NewUser
 from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
@@ -23,6 +23,8 @@ from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
 
 
 def user_login(request):    # страница авторизации и логин
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse_lazy('dashboard'))
     if request.POST:
         username = request.POST['username']
         password = request.POST['password']
@@ -57,17 +59,17 @@ def register_view(request):     # API для регистрации пользо
                     raise ValidationError({'role': 'Вы не можете дать роль преподавателя'})
                 if ("Listener" in groups) and (not request.user.has_perm('auth.edit_listener')):
                     raise ValidationError({'role': 'Вы не можете редактировать учеников'})
+                email = request.POST.get('email')
+                username = request.POST.get('username')
+                if NewUser.objects.filter(email=email).exclude(username=username).exists():
+                    raise ValidationError({"email": "Пользователь с таким email уже существует"})
                 user = form.save()
                 user.update_tg_code()
                 status = user.set_groups(groups)
                 if status != "success":
                     raise ValidationError({'role': status})
             except ValidationError as err:
-                js = []
-                for message in err.messages:
-                    js.append({'role': message})
-
-                return JsonResponse(js, status=400, safe=False)
+                return JsonResponse(dict(err), status=400, safe=False)
             return JsonResponse({'status': 'success'})
         else:
             return JsonResponse(form.errors, status=400)
@@ -77,7 +79,7 @@ class DeactivateUserView(LoginRequiredMixin, APIView):
     def patch(self, request, *args, **kwargs):
         try:
             user = NewUser.objects.get(pk=kwargs.get('pk'))
-            if get_deactivate_perm(request.user, user):
+            if get_secretinfo_perm(request.user, user):
                 user.is_active = False
                 user.save()
                 return JsonResponse({'status': 'success'}, status=status.HTTP_200_OK)
@@ -99,6 +101,19 @@ class ActivateUserView(LoginRequiredMixin, APIView):
                 raise PermissionDenied
         except Exception as ex:
             return JsonResponse({'status': 'error', 'errors': ex}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminLoginAPIView(LoginRequiredMixin, APIView):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            user = NewUser.objects.get(pk=kwargs.get('pk'))
+            logout(request)
+            login(request, user)
+            return JsonResponse({"status": "OK"},
+                                status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({"error": "У вас нет прав для авторизации под этим пользователем"},
+                                status=status.HTTP_403_FORBIDDEN)
 
 
 class ChangePasswordView(LoginRequiredMixin, APIView):
@@ -197,7 +212,7 @@ class ProfilePage(LoginRequiredMixin, TemplateView):
 
 
 class UsersPage(CanSeeUserPageMixin, TemplateView):  # страница пользователей (администрирование)
-    template_name = "users/users.html"
+    template_name = "users/admin_users.html"
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Пользователи',

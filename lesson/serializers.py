@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
@@ -9,7 +11,7 @@ from data_collections.serializers import PlaceSerializer
 from lesson.models import Place
 from learning_plan.models import LearningPhases
 from learning_plan.permissions import can_edit_plan
-from .permissions import can_set_not_held
+from .permissions import can_set_not_held, can_set_passed
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -53,10 +55,14 @@ class LessonListSerializer(serializers.ModelSerializer):
     teacher = serializers.SerializerMethodField(read_only=True)
     listeners = serializers.SerializerMethodField(read_only=True)
     hws = serializers.SerializerMethodField(read_only=True)
+    awaiting_action = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Lesson
         exclude = ['materials', 'homeworks', 'evaluation', 'note_teacher', 'note_listener']
+
+    def get_awaiting_action(self, obj):
+        return can_set_passed(self.context.get('request'), obj)
 
     def get_hws(self, obj):
         return obj.homeworks.count()

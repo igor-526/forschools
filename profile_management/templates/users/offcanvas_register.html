@@ -1,57 +1,70 @@
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRegister" aria-labelledby="offcanvasRegisterLabel">
+<div class="offcanvas offcanvas-end" tabindex="-1" id="usersOffcanvasRegister" aria-labelledby="usersOffcanvasRegisterLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasRegisterLabel">Новый пользователь</h5>
+        <h5 class="offcanvas-title" id="usersOffcanvasRegisterLabel">Новый пользователь</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form id="formRegistration">
+        <form id="usersOffcanvasRegisterForm">
             {% csrf_token %}
 
             <div class="mb-3">
-                <label for="RegisterUserUsernameField" class="form-label">username/логин</label>
-                <input name="username" type="text" class="form-control" id="RegisterUserUsernameField">
-                <div class="form-text">Нужен для входа пользователя в систему</div>
-                <div class="invalid-feedback" id="RegisterUserUsernameError"></div>
+                <label for="usersOffcanvasRegisterFormLastNameField" class="form-label">Фамилия</label>
+                <input name="last_name" type="text" class="form-control" id="usersOffcanvasRegisterFormLastNameField">
+                <div class="invalid-feedback" id="usersOffcanvasRegisterFormLastNameError"></div>
             </div>
 
-            <div class="input-group mb-3">
-                <input id="RegisterUserLastNameField" name="last_name" type="text" class="form-control" aria-label="Фамилия" aria-describedby="RegisterUserName" placeholder="Фамилия">
-                <input id="RegisterUserFirstNameField" name="first_name" type="text" class="form-control" aria-label="Имя" aria-describedby="RegisterUserName" placeholder="Имя">
-                <div class="invalid-feedback" id="RegisterUserNameField"></div>
+            <div class="mb-3">
+                <label for="usersOffcanvasRegisterFormFirstNameField" class="form-label">Имя</label>
+                <input name="first_name" type="text" class="form-control" id="usersOffcanvasRegisterFormFirstNameField">
+                <div class="invalid-feedback" id="usersOffcanvasRegisterFormFirstNameError"></div>
             </div>
 
-            <div class="input-group mb-3">
-                <span class="input-group-text" id="ShowUserLastName">Пароль</span>
-                <input  id="RegisterUserPasswordField" name="password1" type="text" class="form-control" aria-label="Пароль" aria-describedby="RegisterUserPassword">
-                <div id="RegisterUserPasswordErrors" class="invalid-feedback">
-                </div>
+            <div class="mb-3">
+                <label for="usersOffcanvasRegisterFormPatronymicField" class="form-label">Отчество</label>
+                <input name="patronymic" type="text" class="form-control" id="usersOffcanvasRegisterFormPatronymicField">
+                <div class="form-text">Не обязательно к заполнению</div>
+                <div class="invalid-feedback" id="usersOffcanvasRegisterFormPatronymicError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="usersOffcanvasRegisterFormUsernameField" class="form-label">username/login</label>
+                <input name="username" type="text" class="form-control" id="usersOffcanvasRegisterFormUsernameField">
+                <div class="form-text">Нужен для входа пользователя в систему. Допускаются только английские буквы и точки</div>
+                <div class="invalid-feedback" id="usersOffcanvasRegisterFormUsernameError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="usersOffcanvasRegisterFormEmailField" class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" id="usersOffcanvasRegisterFormEmailField">
+                <div class="form-text">Не обязательно к заполнению. Вышлем данные для входа на платформу и инструкцию по привязке Telegram при вводе</div>
+                <div class="invalid-feedback" id="usersOffcanvasRegisterFormEmailError"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="usersOffcanvasRegisterFormPasswordField" class="form-label">Пароль</label>
+                <input name="password1" type="text" class="form-control" id="usersOffcanvasRegisterFormPasswordField">
+                <div class="invalid-feedback" id="usersOffcanvasRegisterFormPasswordErrors"></div>
             </div>
 
             <div class="mb-3">
                 {% if "auth.register_admin" in perms %}
-                    <input name="role" value="Admin" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxAdmin" autocomplete="off">
-                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxAdmin">Администратор</label>
+                    <input name="role" value="Admin" type="checkbox" class="btn-check" id="usersOffcanvasRegisterFormRoleCheckboxAdmin" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="usersOffcanvasRegisterFormRoleCheckboxAdmin">Администратор</label>
                 {% endif %}
                 {% if "auth.register_metodist" in perms %}
-                    <input name="role" value="Metodist" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxMetodist" autocomplete="off">
-                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxMetodist">Методист</label>
+                    <input name="role" value="Metodist" type="checkbox" class="btn-check" id="usersOffcanvasRegisterFormRoleCheckboxMetodist" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="usersOffcanvasRegisterFormRoleCheckboxMetodist">Методист</label>
                 {% endif %}
                 {% if "auth.register_teacher" in perms %}
-                    <input name="role" value="Teacher" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxTeacher" autocomplete="off">
-                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxTeacher">Преподаватель</label>
-                {% endif %}
-                {% if "auth.register_curator" in perms %}
-                    <input name="role" value="Curator" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxCurator" autocomplete="off" disabled>
-                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxCurator">Куратор</label>
+                    <input name="role" value="Teacher" type="checkbox" class="btn-check" id="usersOffcanvasRegisterFormRoleCheckboxTeacher" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="usersOffcanvasRegisterFormRoleCheckboxTeacher">Преподаватель</label>
                 {% endif %}
                 {% if "auth.register_listener" in perms %}
-                    <input name="role" value="Listener" type="checkbox" class="btn-check" id="UserRegisterRoleCheckboxListener" autocomplete="off">
-                    <label class="btn btn-outline-primary mb-1" for="UserRegisterRoleCheckboxListener">Ученик</label>
+                    <input checked name="role" value="Listener" type="checkbox" class="btn-check" id="usersOffcanvasRegisterFormRoleCheckboxListener" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="usersOffcanvasRegisterFormRoleCheckboxListener">Ученик</label>
                 {% endif %}
             </div>
-
-            <button id="UserRegistrationButton" type="button" class="btn btn-primary">Зарегистрировать</button>
-
         </form>
+        <button id="usersOffcanvasRegisterButton" type="button" class="btn btn-primary">Зарегистрировать</button>
     </div>
 </div>

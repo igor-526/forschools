@@ -53,26 +53,31 @@ async function lessonsAPIReplaceTeacher(teacherID, lesson){
     return await APIPostPatchToObject(request)
 }
 
-async function lessonsAPIGetAll(status, teachers=[], listeners=[], ds= null, de= null, foruser){
-    let url = `/api/v1/lessons?status=${status}`
-    if (teachers.length !== 0){
+async function lessonsAPIGetAll(status=null, teachers=[], listeners=[],
+                                ds= null, de= null, foruser=null){
+    let url = '/api/v1/lessons/'
+    const searchParams=[]
+    if (status){
+        searchParams.push(`status=${status}`)
+    }
+    if (teachers){
         teachers.forEach(teacher => {
-            url +=`&teacher=${teacher}`
+            searchParams.push(`teacher=${teacher}`)
         })
     }
-    if (listeners.length !== 0){
+    if (listeners){
         listeners.forEach(listener => {
-            url +=`&listener=${listener}`
+            searchParams.push(`listener=${listener}`)
         })
-    }
-    if (foruser){
-        url +=`&foruser=${foruser}`
     }
     if (ds){
-        url +=`&date_start=${ds}`
+        searchParams.push(`date_start=${ds}`)
     }
     if (de){
-        url +=`&date_end=${de}`
+        searchParams.push(`date_end=${de}`)
+    }
+    if (searchParams){
+        url += "?"+searchParams.join("&")
     }
     const request = await fetch(url)
     return await APIGetToObject(request)

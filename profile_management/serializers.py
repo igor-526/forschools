@@ -4,7 +4,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from .models import NewUser, Telegram
 from django.contrib.auth.models import Group
 from data_collections.serializers import EngagementChannelSerializer, LevelSerializer
-from .permissions import get_editable_perm, get_can_add_new_engch_lvl_prg_perm, get_deactivate_perm
+from .permissions import get_editable_perm, get_can_add_new_engch_lvl_prg_perm, get_secretinfo_perm
 
 
 class TelegramSerializer(serializers.ModelSerializer):
@@ -23,16 +23,16 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
     groups = NewUserGroupSerializer(many=True, read_only=True)
     engagement_channel = EngagementChannelSerializer(read_only=True)
     level = LevelSerializer(read_only=True)
-    telegram = TelegramSerializer(many=True, read_only=True)
-    can_deactivate = serializers.SerializerMethodField(read_only=True)
+    can_edit = serializers.SerializerMethodField(read_only=True)
+
 
     class Meta:
         model = NewUser
-        exclude = ['password']
+        exclude = ['password', 'is_superuser', 'is_staff', 'tg_code', 'user_permissions']
 
-    def get_can_deactivate(self, obj):
+    def get_can_edit(self, obj):
         request = self.context.get('request')
-        return get_deactivate_perm(request.user, obj)
+        return get_secretinfo_perm(request.user, obj)
 
     def set_groups(self, instance: NewUser):
         request = self.context.get("request")
@@ -84,16 +84,16 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
 
 class NewUserListSerializer(serializers.ModelSerializer):
     groups = NewUserGroupSerializer(many=True)
-    editable = serializers.SerializerMethodField(read_only=True)
+    can_edit = serializers.SerializerMethodField(read_only=True)
     tg = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = NewUser
         fields = ['id', 'first_name', 'last_name', 'patronymic', 'city',
                   'username', 'groups', 'is_active',
-                  'editable', 'tg']
+                  'can_edit', 'tg']
 
-    def get_editable(self, obj):
+    def get_can_edit(self, obj):
         request = self.context.get('request')
         return get_editable_perm(request.user, obj)
 

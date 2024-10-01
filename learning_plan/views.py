@@ -83,15 +83,35 @@ class PlansItemPageView(CanSeePlansPageMixin, TemplateView):
 class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = LearningPlanListSerializer
 
+    def filter_name(self, queryset):
+        q_name = self.request.query_params.get('name')
+        if q_name:
+            queryset = queryset.filter(name__icontains=q_name)
+        return queryset
+
+    def filter_teacher(self, queryset):
+        q_teacher = self.request.query_params.getlist('teacher')
+        if q_teacher:
+            queryset = queryset.filter(teacher__id__in=q_teacher)
+        return queryset
+
+    def filter_listeners(self, queryset):
+        q_listeners = self.request.query_params.getlist('listener')
+        if q_listeners:
+            queryset = queryset.filter(listeners__id__in=q_listeners)
+        return queryset
+
     def get_queryset(self):
         usergroups = [group.name for group in self.request.user.groups.all()]
         queryset = LearningPlan.objects.all()
-        if ("Admin" in usergroups) or ("Metodist" in usergroups):
-            return queryset
-        if "Teacher" in usergroups:
-            return queryset.filter(teacher=self.request.user)
         if "Listener" in usergroups:
             return None
+        elif "Teacher" in usergroups:
+            queryset = queryset.filter(teacher=self.request.user)
+        queryset = self.filter_name(queryset)
+        queryset = self.filter_teacher(queryset)
+        queryset = self.filter_listeners(queryset)
+        return queryset
 
 
 class PlansItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):

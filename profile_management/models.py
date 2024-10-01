@@ -1,10 +1,10 @@
 from _operator import itemgetter
-from pprint import pprint
-
+from rest_framework.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 from random import randint
 from django.db.models import Q
+from django.db.models.signals import pre_save
 from django.utils import timezone
 from chat.models import Message
 
@@ -65,7 +65,8 @@ class Cities(models.Model):
 class NewUser(AbstractUser):
     patronymic = models.CharField(verbose_name="Отчество",
                                   null=True,
-                                  blank=True)
+                                  blank=True,
+                                  max_length=50)
     city = models.ForeignKey(Cities,
                              verbose_name="Город",
                              on_delete=models.SET_NULL,
@@ -87,7 +88,8 @@ class NewUser(AbstractUser):
                              blank=True)
     work_experience = models.CharField(verbose_name='Опыт работы',
                                        null=True,
-                                       blank=True)
+                                       blank=True,
+                                       max_length=1000)
     listener_category = models.ManyToManyField(ListenerCategory,
                                                verbose_name='Категории учеников',
                                                blank=True)
@@ -99,7 +101,8 @@ class NewUser(AbstractUser):
                                         blank=True)
     note = models.TextField(verbose_name='Примечание',
                             null=True,
-                            blank=True)
+                            blank=True,
+                            max_length=1000)
     level = models.ForeignKey(Level,
                               verbose_name='Уровень',
                               blank=True,
@@ -107,7 +110,8 @@ class NewUser(AbstractUser):
                               on_delete=models.SET_NULL)
     progress = models.CharField(verbose_name='Прогресс',
                                 null=True,
-                                blank=True)
+                                blank=True,
+                                max_length=1000)
     engagement_channel = models.ForeignKey(EngagementChannel,
                                            verbose_name='Канал привлечения',
                                            blank=True,

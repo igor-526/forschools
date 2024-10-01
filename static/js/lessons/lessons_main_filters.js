@@ -234,9 +234,5 @@ const lessonsTableFilterDateStartFieldErase = document.querySelector("#lessonsTa
 const lessonsTableFilterDateEndField = document.querySelector("#lessonsTableFilterDateEndField")
 const lessonsTableFilterDateEndFieldErase = document.querySelector("#lessonsTableFilterDateEndFieldErase")
 const lessonsTableFilterResetAll = document.querySelector("#lessonsTableFilterResetAll")
-let lessonsTableFilterTeachersSelected = []
-let lessonsTableFilterListenersSelected = []
-let lessonsTableFilterDateStart = null
-let lessonsTableFilterDateEnd = null
 
 lessonsFiltersMain()

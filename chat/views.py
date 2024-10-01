@@ -74,7 +74,9 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         queryset.filter(sender_id=self.kwargs.get("user"),
                         read__isnull=True).update(read=timezone.now())
         serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(serializer.data, status=200, safe=False)
+        usr = NewUser.objects.get(pk=self.kwargs.get("user"))
+        return JsonResponse({'messages': serializer.data,
+                             'username': f'{usr.first_name} {usr.last_name}'}, status=200, safe=False)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data,

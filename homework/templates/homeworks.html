@@ -8,7 +8,7 @@
             </div>
             <div class="col-auto">
                 {% if is_admin_or_metodist or is_teacher %}
-                    <button id="HomeworksAddOffcanvasButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" data-bs-target="#HomeworksAddOffcanvas"><i class="bi bi-plus-lg"></i></button>
+                    <button id="homeworksAddOffcanvasButton" type="button" class="btn btn-primary mt-1"><i class="bi bi-plus-lg"></i></button>
                     {% include "homework_add_offcanvas.html" %}
                     {% include "materials_embed_modal.html" %}
                 {% endif %}
@@ -107,6 +107,7 @@
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/hashutils.js' %}"></script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/homework/homeworks.js' %}"></script>

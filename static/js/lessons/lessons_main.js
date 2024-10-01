@@ -28,7 +28,11 @@ function lessonsSetPassed(){
     lessonsGet(1)
 }
 
-function lessonsGet(status=currentStatus, teachers=[], listeners=[], ds=null, de=null){
+function lessonsGet(status=currentStatus,
+                    teachers=lessonsTableFilterTeachersSelected,
+                    listeners=lessonsTableFilterListenersSelected,
+                    ds=lessonsTableFilterDateStart,
+                    de=lessonsTableFilterDateEnd){
     lessonsAPIGetAll(status, teachers, listeners, ds, de).then(request => {
         switch (request.status){
             case 200:
@@ -43,27 +47,6 @@ function lessonsGet(status=currentStatus, teachers=[], listeners=[], ds=null, de
 }
 
 function lessonsShow(list){
-    function getDateTime(lesson){
-        let dt = ""
-        if (lesson.start_time !== null){
-            const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
-            const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
-            const dateDay = st.getDate().toString().padStart(2, "0")
-            const dateMonth = (st.getMonth()+1).toString().padStart(2, "0")
-            const stH = st.getHours().toString().padStart(2, "0")
-            const stM = st.getMinutes().toString().padStart(2, "0")
-            const etH = et.getHours().toString().padStart(2, "0")
-            const etM = et.getMinutes().toString().padStart(2, "0")
-            dt = `${dateDay}.${dateMonth} ${stH}:${stM}-${etH}:${etM}`
-        } else if (lesson.date !== null){
-            const date = new Date(lesson.date)
-            const dateDay = date.getDate().toString().padStart(2, "0")
-            const dateMonth = (date.getMonth()+1).toString().padStart(2, "0")
-            dt = `${dateDay}.${dateMonth}`
-        }
-        return dt
-    }
-
     function getListeners(listeners){
         const listenersArray = listeners.map(listener => {
             return `<a target="_blank" href="/profile/${listener.id}">${listener.first_name} ${listener.last_name}</a>`
@@ -83,6 +66,20 @@ function lessonsShow(list){
         const tdActions = document.createElement("td")
         const tdActionsGoA = document.createElement("a")
         const tdActionsGoButton = document.createElement("button")
+
+        switch (lesson.status){
+            case 0:
+                if (lesson.awaiting_action){
+                    tr.classList.add("table-warning")
+                }
+                break
+            case 1:
+                tr.classList.add("table-success")
+                break
+            case 2:
+                tr.classList.add("table-danger")
+                break
+        }
         tdHomeworksButton.classList.add("btn", "btn-primary")
         tdHomeworksButton.innerHTML = lesson.hws
         tdHomeworks.insertAdjacentElement("beforeend", tdHomeworksA)
@@ -111,7 +108,7 @@ function lessonsShow(list){
         tr.insertAdjacentElement("beforeend", tdActions)
         tdActions.insertAdjacentElement("beforeend", tdActionsGoA)
         tdName.innerHTML = lesson.name
-        tdDate.innerHTML = getDateTime(lesson)
+        tdDate.innerHTML = getLessonDateTimeRangeString(lesson)
         tdTeacher.innerHTML = `<a target="_blank" href="/profile/${lesson.teacher.id}">${lesson.teacher.first_name} ${lesson.teacher.last_name}</a>`
         tdListeners.innerHTML = getListeners(lesson.listeners)
         return tr
@@ -130,6 +127,11 @@ const lessonsTabPassed = document.querySelector("#LessonsTabPassed")
 //Table
 const lessonsTableBody = document.querySelector("#LessonsTableBody")
 
+//Filters
+let lessonsTableFilterTeachersSelected = []
+let lessonsTableFilterListenersSelected = []
+let lessonsTableFilterDateStart = null
+let lessonsTableFilterDateEnd = null
 let currentStatus = 0
 
 

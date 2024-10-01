@@ -1,5 +1,8 @@
 function homeworksMain(){
-    homeworksFilterCurrentLesson = new URLSearchParams(window.location.search).get("lesson")
+    homeworksFilterCurrentLesson = Number(getHashValue("lesson"))
+    homeworksFilterSelectedListeners = getHashValue("listener")?[Number(getHashValue("listener"))]:[]
+    homeworksFilterSelectedTeachers = getHashValue("teacher")?[Number(getHashValue("teacher"))]:[]
+
     if (isAdminOrMetodist){
         homeworksSetTab("all")
     } else {

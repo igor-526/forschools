@@ -19,7 +19,6 @@ from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
                           can_see_lesson_materials, can_add_homework, can_set_passed, can_set_not_held)
-from django.utils import timezone
 from datetime import datetime, timedelta, date
 
 
@@ -75,40 +74,61 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
     model = Lesson
     serializer_class = LessonListSerializer
 
-    def get_queryset(self, *args, **kwargs):
-        queryset = Lesson.objects.filter(status=self.request.query_params.get("status"))
+    def filter_status(self, queryset):
+        lesson_status = self.request.query_params.get("status")
+        if lesson_status:
+            queryset = queryset.filter(status=lesson_status)
+        return queryset
+
+    def filter_date_start(self, queryset):
         ds = self.request.query_params.get("date_start")
-        de = self.request.query_params.get("date_end")
         if ds:
             ds = datetime.strptime(ds, "%Y-%m-%d")
             queryset = queryset.filter(date__gte=ds)
         else:
             queryset = queryset.filter(date__gte=date.today() - timedelta(days=2))
+        return queryset
+
+    def filter_date_end(self, queryset):
+        de = self.request.query_params.get("date_end")
         if de:
             ds = datetime.strptime(de, "%Y-%m-%d")
             queryset = queryset.filter(date__lte=ds)
         else:
             queryset = queryset.filter(date__lte=date.today() + timedelta(days=6))
-        foruser = self.request.query_params.get("foruser")
-        user = NewUser.objects.get(pk=foruser) if foruser else self.request.user
-        if not user.groups.filter(name__in=["Admin", "Metodist"]).exists():
-            if user.groups.filter(name="Teacher").exists():
-                queryset = queryset.filter(Q(learningphases__learningplan__teacher_id=user) |
-                                           Q(replace_teacher=user))
-            elif user.groups.filter(name="Listener").exists():
-                queryset = queryset.filter(learningphases__learningplan__listeners=user,
-                                           date__gte=timezone.now().date() - timedelta(days=1),
-                                           date__lte=timezone.now().date() + timedelta(days=7))
+        return queryset
 
+    def filter_teachers(self, queryset):
         teachers = self.request.query_params.getlist("teacher")
-        listeners = self.request.query_params.getlist("listener")
         if teachers:
             queryset = queryset.filter(
                 Q(learningphases__learningplan__teacher_id__in=teachers) |
                 Q(replace_teacher_id__in=teachers)
             )
+        return queryset
+
+    def filter_listeners(self, queryset):
+        listeners = self.request.query_params.getlist("listener")
         if listeners:
             queryset = queryset.filter(learningphases__learningplan__listeners__in=listeners)
+        return queryset
+
+    def get_queryset(self, *args, **kwargs):
+        if self.request.user.groups.filter(name__in=["Admin", "Metodist"]).exists():
+            queryset = Lesson.objects.all()
+        else:
+            if self.request.user.groups.filter(name="Teacher").exists():
+                queryset = Lesson.objects.filter(Q(learningphases__learningplan__teacher_id=self.request.user) |
+                                                 Q(replace_teacher=self.request.user))
+            elif self.request.user.groups.filter(name="Listener").exists():
+                queryset = Lesson.objects.filter(learningphases__learningplan__listeners=self.request.user)
+            else:
+                queryset = None
+        queryset = self.filter_status(queryset)
+        queryset = self.filter_date_start(queryset)
+        queryset = self.filter_date_end(queryset)
+        queryset = self.filter_teachers(queryset)
+        queryset = self.filter_listeners(queryset)
         return queryset.distinct()[:50]
 
 
@@ -235,10 +255,10 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
         if req_date == "":
             errors += "<li>Необходимо указать дату занятия, либо выключить ручной выбор даты и времени</li>"
         # else:
-            # req_date = datetime.strptime(req_date, "%Y-%m-%d")
-            # today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-            # if req_date < today:
-            #     errors += "<li>Дата занятия не может быть раньше, чем сегодня</li>"
+        # req_date = datetime.strptime(req_date, "%Y-%m-%d")
+        # today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        # if req_date < today:
+        #     errors += "<li>Дата занятия не может быть раньше, чем сегодня</li>"
         if req_start is not None and req_start == "":
             errors += "<li>Необходимо указать время начала занятия, либо выключить ручной выбор даты и времени</li>"
         if req_end is not None and req_end == "":

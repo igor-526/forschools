@@ -37,6 +37,10 @@
         const userID = '{{ request.user.id }}'
     </script>
     <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/hashutils.js' %}"></script>
+    <script src="{% static 'js/userutils.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/plans/plans_api.js' %}"></script>
     {% if perms.lesson.edit_plans_self %}
         {% if can_set_teacher %}
             <script>const plansAddCanSetTeacher = true</script>
@@ -48,12 +52,9 @@
             </script>
         {% endif %}
         <script src="{% static 'js/automaticAPI.js' %}"></script>
+        <script src="{% static 'js/users/users_api.js' %}"></script>
         <script src="{% static 'js/plans/plans_add/plans_add_validation.js' %}"></script>
-        <script src="{% static 'js/plans/plans_add/plans_add_set.js' %}"></script>
         <script src="{% static 'js/plans/plans_add/plans_add_edit_delete.js' %}"></script>
     {% endif %}
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
-    <script src="{% static 'js/plans/plans_api.js' %}"></script>
     <script src="{% static 'js/plans/plans_main.js' %}"></script>
 {% endblock %}

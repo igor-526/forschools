@@ -59,8 +59,9 @@ async function homeworkAPISend(hw, fd, st){
     }
 }
 
-async function homeworkAPIGet(lesson, status, teachers, listeners, dateFrom, dateTo){
-    let url = "/api/v1/homeworks"
+async function homeworkAPIGet(lesson=null, status=null, teachers=[],
+                              listeners=[], dateFrom=null, dateTo=null){
+    let url = "/api/v1/homeworks/"
     let queryArray = []
     if (lesson){
         queryArray.push(`lesson=${lesson}`)

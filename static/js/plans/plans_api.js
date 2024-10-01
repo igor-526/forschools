@@ -1,11 +1,30 @@
-async function plansAPIGet(){
-    const request = await fetch("/api/v1/learning_plans/")
-    if (request.status === 200){
-        return {status: 200,
-            response: await request.json()}
-    } else {
-        return {status: request.status}
+async function plansAPIGet(name=null, teacher=[], listener=[]){
+    let url = "/api/v1/learning_plans/"
+    let searchParams = []
+    if (name){
+        searchParams.push(`name=${name}`)
     }
+    if (teacher){
+        teacher.forEach(teacher => {
+            searchParams.push(`teacher=${teacher}`)
+        })
+    }
+    if (listener){
+        listener.forEach(listener => {
+            searchParams.push(`listener=${listener}`)
+        })
+    }
+    if (searchParams){
+        url += "?"
+        url += searchParams.join("&")
+    }
+    const request = await fetch(url)
+    return APIGetToObject(request)
+}
+
+async function plansAPIGetItem(planID){
+    const request = await fetch(`/api/v1/learning_plans/${planID}`)
+    return APIGetToObject(request)
 }
 
 async function planItemAPIGetInfo() {
@@ -134,7 +153,7 @@ async function planItemAPISetPlanFromProgram(fd, planID){
 }
 
 async function planItemAPIAddLessons(fd, planID){
-        const request = await fetch(`/api/v1/learning_plans/${planID}/add_lessons/`, {
+    const request = await fetch(`/api/v1/learning_plans/${planID}/add_lessons/`, {
         method: "post",
         credentials: 'same-origin',
         headers:{

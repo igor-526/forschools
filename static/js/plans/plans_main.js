@@ -1,62 +1,87 @@
 async function learningPlansMain(){
-    const request = await plansAPIGet()
-    if (request.status === 200){
-        learningPlansArray = request.response
+    learningPlansSelectedListeners = getHashValue("listener")?[Number(getHashValue("listener"))]:[]
+    learningPlansSelectedTeachers = getHashValue("teacher")?[Number(getHashValue("teacher"))]:[]
+    if (getHashValue("new")){
+        plansAddSetOffcanvas()
     }
-    learningPlansShow()
+    learningPlansGet()
+
 }
 
-function learningPlansShowListenersHTML(listeners){
-    let listenersHTML = ''
-    listeners.map(listener => {
-        listenersHTML += `<a href="/profile/${listener.id}">${listener.first_name} ${listener.last_name}<br></a>`
+function learningPlansGet(){
+    plansAPIGet(null, learningPlansSelectedTeachers, learningPlansSelectedListeners).then(request => {
+        switch (request.status){
+            case 200:
+                learningPlansShow(request.response)
+                break
+            default:
+                showErrorToast()
+                break
+        }
     })
-    return listenersHTML
 }
 
-function learningPlansShowHTML(plan){
-    let planHTML
-    const listenersHTML = learningPlansShowListenersHTML(plan.listeners)
+function learningPlansShow(plans){
+    function getElement(plan){
+    const tr = document.createElement("tr")
+    const tdName = document.createElement("td")
+    const tdTeacher = document.createElement("td")
+    const tdListeners = document.createElement("td")
+    const tdActions = document.createElement("td")
+
+    tdName.innerHTML = plan.name
+    tdTeacher.innerHTML = getUsersString([plan.teacher])
+    tdListeners.innerHTML = getUsersString(plan.listeners)
+
     if (plan.deletable){
-        planHTML = `
-        <tr>
-            <td style="max-width: 300px;">${plan.name}</td>
-            <td><a href="/profile/${plan.teacher.id}">${plan.teacher.first_name} ${plan.teacher.last_name}</a></td>
-            <td>${listenersHTML}</td>
-            <td>
-                <button type="button" class="btn btn-danger plans-table-button-delete" data-bs-toggle="modal" href="#LearningPlanDeleteModal" data-plan-id="${plan.id}">
-                    <i class="bi bi-trash3"></i></button>
-                <button type="button" class="btn btn-primary plans-table-button-edit" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" data-plan-id="${plan.id}">
-                    <i class="bi bi-pencil"></i></button>
-                <a href="${plan.id}"><button type="button" class="btn btn-primary" id="PlansTableButtonGo">
-                    <i class="bi bi-chevron-right"></i></button></a>
-            </td>
-        </tr>`
-    } else {
-        planHTML = `
-        <tr>
-            <td style="max-width: 300px;">${plan.name}</td>
-            <td><a href="/profile/${plan.teacher.id}">${plan.teacher.first_name} ${plan.teacher.last_name}</a></td>
-            <td>${listenersHTML}</td>
-            <td>
-                <button type="button" class="btn btn-primary plans-table-button-edit" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" data-plan-id="${plan.id}">
-                    <i class="bi bi-pencil"></i></button>
-                <a href="${plan.id}"><button type="button" class="btn btn-primary plans-table-button-delete" id="PlansTableButtonGo">
-                    <i class="bi bi-chevron-right"></i></button></a>
-            </td>
-        </tr>`
+        const tdActionsDelete = document.createElement("button")
+        tdActionsDelete.classList.add("btn", "btn-danger", "mx-1")
+        tdActionsDelete.type = "button"
+        tdActionsDelete.innerHTML = '<i class="bi bi-trash3"></i>'
+        tdActionsDelete.addEventListener("click", function (){
+            plansAddDestroySetModal(plan.id)
+        })
+        tdActions.insertAdjacentElement("beforeend", tdActionsDelete)
     }
-    return planHTML
+
+    const tdActionsEdit = document.createElement("button")
+    tdActionsEdit.classList.add("btn", "btn-primary", "mx-1")
+    tdActionsEdit.type = "button"
+    tdActionsEdit.innerHTML = '<i class="bi bi-pencil"></i>'
+    tdActionsEdit.addEventListener("click", function (){
+        plansAddSetOffcanvas(plan.id)
+    })
+    tdActions.insertAdjacentElement("beforeend", tdActionsEdit)
+
+    const tdActionsGo = document.createElement("button")
+    const tdActionsGoA = document.createElement("a")
+    tdActionsGoA.insertAdjacentElement("beforeend", tdActionsGo)
+    tdActionsGoA.target = "_blank"
+    tdActionsGoA.href = `/learning_plans/${plan.id}`
+    tdActionsGo.classList.add("btn", "btn-primary", "mx-1")
+    tdActionsGo.type = "button"
+    tdActionsGo.innerHTML = '<i class="bi bi-chevron-right"></i>'
+    tdActions.insertAdjacentElement("beforeend", tdActionsGoA)
+
+
+    tr.insertAdjacentElement("beforeend", tdName)
+    tr.insertAdjacentElement("beforeend", tdTeacher)
+    tr.insertAdjacentElement("beforeend", tdListeners)
+    tr.insertAdjacentElement("beforeend", tdActions)
+    return tr
+
 }
 
-function learningPlansShow(list = learningPlansArray){
     plansTableBody.innerHTML = ''
-    list.map(plan => {
-        plansTableBody.insertAdjacentHTML("beforeend", learningPlansShowHTML(plan))
+    plans.forEach(plan => {
+        plansTableBody.insertAdjacentElement("beforeend", getElement(plan))
     })
 }
 
-let learningPlansArray = []
 const plansTableBody = document.querySelector("#PlansTableBody")
+
+//Filtering
+let learningPlansSelectedTeachers = []
+let learningPlansSelectedListeners = []
 
 learningPlansMain()

@@ -108,7 +108,7 @@ async function usersAdminEditSaveUser(userID) {
 
 async function usersAdminShowUser(userID){
     formUserEdit.reset()
-    await usersAPIGetItem(userID).then(request => {
+    await usersAPIGetUser(userID).then(request => {
         switch (request.status){
             case 200:
                 if (request.response.can_deactivate){

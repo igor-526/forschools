@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4">
+        <div class="row justify-content-between">
+            <div class="col-auto">
+                <h1>Пользователи</h1>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary mt-1" data-bs-toggle="collapse" data-bs-target="#UsersCollapseSearch"><i class="bi bi-search"></i></button>
+                {% if "auth.register_users" in perms %}
+                    <button id="usersAdminRegisterButton" type="button" class="btn btn-primary mt-1" role="button"><i class="bi bi-plus-lg"></i></button>
+                    {% include 'users/offcanvas_register.html' %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">username/login</th>
+                <th scope="col">ФИО</th>
+                <th scope="col">Роль</th>
+                <th scope="col">Действие</th>
+            </tr>
+        </thead>
+        <tbody id="UsersTableBody">
+        </tbody>
+    </table>
+    {% include 'users/offcanvas_user.html' %}
+    {% include 'users/users_modal_learninginfo.html' %}
+    {% include 'users/modal_telegram.html' %}
+    {% include 'users/users_edit_functions_modals.html' %}
+    {% include 'toast.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        const csrftoken = '{{ csrf_token }}'
+        const tgAction = "admin"
+        const canAddNewCollections = true
+        const canLogin = {% if request.user.is_superuser %}
+            true
+        {% else %}
+            false
+        {% endif %}
+    </script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/timeutils.js' %}"></script>
+    <script src="{% static 'js/transliteration.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/collections/collections_api.js' %}"></script>
+    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+    <script src="{% static 'js/plans/plans_api.js' %}"></script>
+    <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
+    <script src="{% static 'js/users/users_learninginfo.js' %}"></script>
+    <script src="{% static 'js/users/users_edit_functions.js' %}"></script>
+    <script src="{% static 'js/users/users.js' %}"></script>
+    <script src="{% static 'js/users/users_edit.js' %}"></script>
+    {#    <script src="{% static 'js/users/photo.js' %}"></script>#}
+    <script src="{% static 'js/users/telegram.js' %}"></script>
+    <script src="{% static 'js/users/registration.js' %}"></script>
+{% endblock %}

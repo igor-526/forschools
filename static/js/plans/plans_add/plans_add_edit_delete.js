@@ -1,106 +1,164 @@
-async function plansAddMain(){
-    await plansAddSetTeachers()
-    await plansAddSetListeners()
+function plansAddMain(){
+    plansAddSetTeacherListeners()
     plansAddButton.addEventListener('click', function () {
-        plansAddSetupOffcanvas(0)
+        plansAddSetOffcanvas(null)
     })
-    planNewSubmitButton.addEventListener('click', plansAddCreate)
+    planNewSubmitButton.addEventListener('click', function () {
+        plansAddEditCreate()
+    })
     planNewSubmitAndGoButton.addEventListener('click', function () {
-        plansAddCreate(true)
+        plansAddEditCreate(true)
     })
     planNewListenersSearchField.addEventListener('input', plansAddListenerSearch)
     plansModalDeleteButton.addEventListener('click', async function () {
         await plansAddDestroy(this.attributes.getNamedItem('data-plan-id').value)
     })
-    plansTableBody.querySelectorAll(".plans-table-button-delete")
-        .forEach(button => {
-            button.addEventListener('click', function () {
-                plansModalDeleteButton.attributes.getNamedItem('data-plan-id').value =
-                    button.attributes.getNamedItem('data-plan-id').value
-            })
-        })
-    plansTableBody.querySelectorAll(".plans-table-button-edit")
-        .forEach(button => {
-            button.addEventListener('click', async function () {
-                await plansAddSetupOffcanvas(button.attributes.getNamedItem('data-plan-id').value)
-            })
-        })
 }
 
-async function plansAddSetupOffcanvas(planID=0){
-    planNewSubmitButton.attributes.getNamedItem('data-plan-id').value = planID
-    planNewSubmitAndGoButton.attributes.getNamedItem('data-plan-id').value = planID
-    if (planID === 0){
-        formNewPlan.reset()
-        const autoName = await getAutoFieldLearningPlanName(userID)
-        if (autoName.status === 200){
-            planNewNameField.value = autoName.response.name
+
+
+function plansAddSetTeacherListeners(){
+    function getElement(user, selectedID=null) {
+        const option = document.createElement("option")
+        option.value = user.id
+        option.innerHTML = `${user.first_name} ${user.last_name}`
+        if (user.id === selectedID){
+            option.selected = true
         }
+        return option
+    }
+
+    const selectedListener = getHashValue("listener")?Number(getHashValue("listener")):null
+    const selectedTeacher = getHashValue("teacher")?Number(getHashValue("teacher")):null
+    if (plansAddCanSetTeacher){
+        usersAPIGetTeachers().then(request => {
+            switch (request.status) {
+                case 200:
+                    planNewTeacherField.innerHTML = '<option value="">Выберите преподавателя</option>'
+                    planNewHWTeacherField.innerHTML = '<option value="">Совпадает с преподавателем</option>'
+                    request.response.forEach(teacher => {
+                        planNewTeacherField.insertAdjacentElement("beforeend", getElement(teacher, selectedTeacher))
+                        planNewHWTeacherField.insertAdjacentElement("beforeend", getElement(teacher))
+                    })
+                    break
+                default:
+                    showErrorToast("Не удалось загрузить список преподавателей")
+                    break
+            }
+        })
     } else {
-        const plan = learningPlansArray.find(plan => plan.id === Number(planID))
-        planNewNameField.value = plan.name
-        planNewTeacherField.value = plan.teacher.id
-        planNewHWTeacherField.value = plan.default_hw_teacher.id
-        planNewPurposeField.value = plan.purpose
-        planNewDeadlineField.value = plan.deadline
-        planNewShLessonsField.value = plan.show_lessons
-        planNewShMaterialsField.value = plan.show_materials
-        plan.listeners.map(listener => {
-            planNewListenersSelect.querySelector(`[value="${listener.id}"]`)
-                .selected = true
+        planNewTeacherField.innerHTML = `<option value="${plansAddTeacher.id}" selected>${plansAddTeacher.name}</option>`
+        planNewHWTeacherField.innerHTML = `<option value="${plansAddTeacher.id}" selected>${plansAddTeacher.name}</option>`
+    }
+
+    usersAPIGetListeners().then(request => {
+        switch (request.status){
+            case 200:
+                request.response.forEach(listener => {
+                    planNewListenersSelect.insertAdjacentElement("beforeend", getElement(listener, selectedListener))
+                })
+                break
+            default:
+                showErrorToast("Не удалось загрузить список учеников")
+                break
+        }
+    })
+}
+
+function plansAddSetOffcanvas(planID=null){
+    planEditSelectedID = planID
+    formNewPlan.reset()
+    if (!planID){
+        getAutoFieldLearningPlanName(userID).then(request => {
+            if (request.status === 200){
+                planNewNameField.value = request.response.name
+            }
+        })
+    } else {
+        plansAPIGetItem(planID).then(request => {
+            switch (request.status){
+                case 200:
+                    console.log(request.response)
+                    planNewNameField.value = request.response.name
+                    planNewTeacherField.value = request.response.teacher.id
+                    planNewHWTeacherField.value = request.response.default_hw_teacher.id
+                    planNewPurposeField.value = request.response.purpose
+                    planNewDeadlineField.value = request.response.deadline
+                    planNewShLessonsField.value = request.response.show_lessons
+                    planNewShMaterialsField.value = request.response.show_materials
+                    request.response.listeners.forEach(listener => {
+                        planNewListenersSelect.querySelector(`[value="${listener.id}"]`)
+                            .selected = true
+                    })
+                    break
+                default:
+                    showErrorToast()
+                    break
+            }
         })
     }
-    dselect(planNewTeacherField)
-    dselect(planNewHWTeacherField)
+    bsOffcanvasNewPlan.show()
 }
 
-async function plansAddCreate(go = false){
+function plansAddEditCreate(go = false){
     if (plansAddClientValidation()) {
         const formData = new FormData(formNewPlan)
-        const planID = planNewSubmitButton.attributes.getNamedItem("data-plan-id").value
-        if (planID === "0"){
-            const request = await plansAPICreate(formData)
-            if (request.status === 201){
-                bsOffcanvasNewPlan.hide()
-                await learningPlansMain()
-                showToast("Успешно", "План обучения успешно добавлен")
-                if (go === true){
-                    window.open(`/learning_plans/${request.response.id}`, '_blank')
+
+        if (planEditSelectedID){
+            plansAPIUpdate(formData, planID).then(request => {
+                switch (request.status){
+                    case 200:
+                        bsOffcanvasNewPlan.hide()
+                        learningPlansMain()
+                        showSuccessToast("Успешно", "План обучения успешно изменён")
+                        if (go === true){
+                            window.open(`/learning_plans/${request.response.id}`, '_blank')
+                        }
+                        break
+                    case 400:
+                        plansAddServerValidation(request.response)
+                        break
+                    default:
+                        bsOffcanvasNewPlan.hide()
+                        showErrorToast()
+                        break
                 }
-            } else if (request.status === 400){
-                plansAddServerValidation(request.response)
-            } else {
-                bsOffcanvasNewPlan.hide()
-                showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-            }
+            })
         } else {
-            const request = await plansAPIUpdate(formData, planID)
-            if (request.status === 200){
-                bsOffcanvasNewPlan.hide()
-                await learningPlansMain()
-                showToast("Успешно", "План обучения успешно изменён")
-                if (go === true){
-                    window.open(`/learning_plans/${request.response.id}`, '_blank')
+            plansAPICreate(formData).then(request => {
+                switch (request.status){
+                    case 201:
+                        bsOffcanvasNewPlan.hide()
+                        learningPlansMain()
+                        showSuccessToast("Успешно", "План обучения успешно добавлен")
+                        if (go === true){
+                            window.open(`/learning_plans/${request.response.id}`, '_blank')
+                        }
+                        break
+                    case 400:
+                        plansAddServerValidation(request.response)
+                        break
+                    default:
+                        bsOffcanvasNewPlan.hide()
+                        showErrorToast()
+                        break
                 }
-            } else if (request.status === 400){
-                plansAddServerValidation(request.response)
-            } else {
-                bsOffcanvasNewPlan.hide()
-                showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-            }
+            })
         }
     }
 }
 
-async function plansAddDestroy(planID){
-    const request = await plansAPIDestroy(planID)
-    bsPlansModalDelete.hide()
-    if (request.status === 204){
-        showToast("Успешно", "План обучения удалён")
-        await learningPlansMain()
-    } else {
-        showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-    }
+function plansAddDestroy(){
+    plansAPIDestroy(planEditSelectedID).then(request => {
+        bsPlansModalDelete.hide()
+        switch (request.status){
+            case 204:
+                showSuccessToast("План обучения удалён")
+                break
+            default:
+                showErrorToast()
+        }
+    })
 }
 
 function plansAddListenerSearch(){
@@ -115,9 +173,13 @@ function plansAddListenerSearch(){
     })
 }
 
-//Sets
-let plansAddTeachers = []
-let plansAddListeners = []
+function plansAddDestroySetModal(planID){
+    planEditSelectedID = planID
+    bsPlansModalDelete.show()
+}
+
+//vars
+let planEditSelectedID = null
 
 //Bootstrap Elements
 const offcanvasNewPlan = document.querySelector("#offcanvasNewPlan")

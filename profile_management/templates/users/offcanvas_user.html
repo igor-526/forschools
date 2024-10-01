@@ -1,167 +1,168 @@
 {% load static %}
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUser" aria-labelledby="offcanvasUserLabel">
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasUsersEdit">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasUserLabel">Пользователь</h5>
+        <h5 class="offcanvas-title">Пользователь</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        <form id="formUserPhoto">
-            <div class="text-center" id="UserShowPhotoField">
-                <a data-bs-toggle="collapse" href="#UserShowPhotoCollapse">
-                    <img src="" alt="Фото профиля" class="base-profile-photo" id="UserShowPhotoImage">
-                </a>
-                <div class="collapse mt-3" id="UserShowPhotoCollapse">
-                    <div class="card card-body">
-                        <form id="formUserPhoto">
-                            <div class="input-group">
-                                <input name="photo" type="file" class="form-control" id="UserShowPhotoChangeField">
-                                <button class="btn btn-outline-danger" type="button" id="UserShowPhotoDelButton">Удалить</button>
-                            </div>
-                        </form>
+        <div class="text-center" id="offcanvasUsersEditPhotoField">
+            <a data-bs-toggle="collapse" href="#offcanvasUsersEditPhotoCollapse">
+                <img src="" alt="Фото профиля" class="base-profile-photo" id="offcanvasUsersEditPhotoImage">
+            </a>
+            <div class="collapse mt-3" id="offcanvasUsersEditPhotoCollapse">
+                <div class="card card-body">
+                    <div class="input-group">
+                        <input name="photo" type="file" class="form-control" id="offcanvasUsersEditPhotoChangeField">
+                        <button class="btn btn-outline-danger" type="button" id="offcanvasUsersEditPhotoDelButton">Удалить</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-        </form>
-
-        <form id="formUserEdit">
+        <form id="offcanvasUsersEditForm">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="UserShowUsernameField" class="form-label">Username</label>
-                <input name="username" type="text" class="form-control" id="UserShowUsernameField">
-                <div id="UserShowUsernameHelper" class="form-text">Нужен для входа в профиль</div>
-                <div id="UserShowUsernameErrors" class="invalid-feedback"></div>
+                <label for="offcanvasUsersEditUsernameField" class="form-label">Username</label>
+                <input name="username" type="text" class="form-control" id="offcanvasUsersEditUsernameField">
+                <div class="form-text">Нужен для входа в профиль</div>
+                <div id="offcanvasUsersEditUsernameErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
-                <label for="UserShowLastNameField" class="form-label">Фамилия</label>
-                <input name="last_name" type="text" class="form-control" id="UserShowLastNameField">
-                <div id="UserShowLastNameErrors" class="invalid-feedback"></div>
+                <label for="offcanvasUsersEditLastNameField" class="form-label">Фамилия</label>
+                <input name="last_name" type="text" class="form-control" id="offcanvasUsersEditLastNameField">
+                <div id="offcanvasUsersEditLastNameErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
-                <label for="UserShowFirstNameField" class="form-label">Имя</label>
-                <input name="first_name" type="text" class="form-control" id="UserShowFirstNameField">
-                <div id="UserShowFirstNameErrors" class="invalid-feedback"></div>
+                <label for="offcanvasUsersEditFirstNameField" class="form-label">Имя</label>
+                <input name="first_name" type="text" class="form-control" id="offcanvasUsersEditFirstNameField">
+                <div id="offcanvasUsersEditFirstNameErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
-                <label for="UserShowPatronymicField" class="form-label">Отчество</label>
-                <input name="patronymic" type="text" class="form-control" id="UserShowFirstNameField">
-                <div id="UserShowFirstNameErrors" class="invalid-feedback"></div>
+                <label for="offcanvasUsersEditPatronymicField" class="form-label">Отчество</label>
+                <input name="patronymic" type="text" class="form-control" id="offcanvasUsersEditPatronymicField">
+                <div id="offcanvasUsersEditPatronymicErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
-                <label for="UserShowEmailField" class="form-label">Email</label>
-                <input name="email" type="email" class="form-control" id="UserShowEmailField">
-                <div id="UserShowEmailErrors" class="invalid-feedback"></div>
+                <label for="offcanvasUsersEditEmailField" class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" id="offcanvasUsersEditEmailField">
+                <div id="offcanvasUsersEditEmailErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
-                <input name="role" value="Admin" type="checkbox" class="btn-check" id="UserShowRoleCheckboxAdmin" autocomplete="off">
-                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxAdmin">Администратор</label>
-                <input name="role" value="Metodist" type="checkbox" class="btn-check" id="UserShowRoleCheckboxMetodist" autocomplete="off">
-                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxMetodist">Методист</label>
-                <input name="role" value="Teacher" type="checkbox" class="btn-check" id="UserShowRoleCheckboxTeacher" autocomplete="off">
-                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxTeacher">Преподаватель</label>
-                <input name="role" value="Curator" type="checkbox" class="btn-check" id="UserShowRoleCheckboxCurator" autocomplete="off" disabled>
-                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxCurator">Куратор</label>
-                <input name="role" value="Listener" type="checkbox" class="btn-check" id="UserShowRoleCheckboxListener" autocomplete="off">
-                <label class="btn btn-outline-primary mb-1" for="UserShowRoleCheckboxListener">Ученик</label>
+                <input name="role" value="Admin" type="checkbox" class="btn-check" id="offcanvasUsersEditRoleCheckboxAdmin" autocomplete="off">
+                <label class="btn btn-outline-primary mb-1" for="offcanvasUsersEditRoleCheckboxAdmin">Администратор</label>
+                <input name="role" value="Metodist" type="checkbox" class="btn-check" id="offcanvasUsersEditRoleCheckboxMetodist" autocomplete="off">
+                <label class="btn btn-outline-primary mb-1" for="offcanvasUsersEditRoleCheckboxMetodist">Методист</label>
+                <input name="role" value="Teacher" type="checkbox" class="btn-check" id="offcanvasUsersEditRoleCheckboxTeacher" autocomplete="off">
+                <label class="btn btn-outline-primary mb-1" for="offcanvasUsersEditRoleCheckboxTeacher">Преподаватель</label>
+                <input name="role" value="Listener" type="checkbox" class="btn-check" id="offcanvasUsersEditRoleCheckboxListener" autocomplete="off">
+                <label class="btn btn-outline-primary mb-1" for="offcanvasUsersEditRoleCheckboxListener">Ученик</label>
             </div>
 
             <div class="mb-3">
-                <label for="UserShowBdateField" class="form-label">Дата рождения</label>
-                <input name="bdate" type="date" class="form-control" id="UserShowBDateField">
+                <label for="offcanvasUsersEditBDateField" class="form-label">Дата рождения</label>
+                <input name="bdate" type="date" class="form-control" id="offcanvasUsersEditBDateField">
+                <div id="offcanvasUsersEditBDateErrors" class="invalid-feedback"></div>
             </div>
 
             <div class="form-floating mb-3">
-                <select name="city" class="form-select" id="UserShowCityField">
-                    <option disabled selected> Выберите </option>
-                </select>
-                <label for="UserShowCityField">Город</label>
+                <select name="city" class="form-select" id="offcanvasUsersEditCityField"></select>
+                <label for="offcanvasUsersEditCityField">Город</label>
             </div>
 
-            <div class="mb-3">
-                <div class="form-check form-switch" id="UserShowPrivateLessonsBlock">
-                    <input name="private_lessons" class="form-check-input" type="checkbox" role="switch" id="UserShowPrivateLessonsField">
-                    <label class="form-check-label" for="UserShowPrivateLessonsField">Индивидуальные занятия</label>
+            <div class="mb-3" id="offcanvasUsersEditPrivateLessonsBlock">
+                <div class="form-check form-switch">
+                    <input name="private_lessons" class="form-check-input" type="checkbox" role="switch" id="offcanvasUsersEditPrivateLessonsField">
+                    <label class="form-check-label" for="offcanvasUsersEditPrivateLessonsField">Индивидуальные занятия</label>
                 </div>
-                <div class="form-check form-switch" id="UserShowGroupLessonsBlock">
-                    <input name="group_lessons" class="form-check-input" type="checkbox" role="switch" id="UserShowGroupLessonsField">
-                    <label class="form-check-label" for="UserShowGroupLessonsField">Групповые занятия</label>
+                <div class="form-check form-switch">
+                    <input name="group_lessons" class="form-check-input" type="checkbox" role="switch" id="offcanvasUsersEditGroupLessonsField">
+                    <label class="form-check-label" for="offcanvasUsersEditGroupLessonsField">Групповые занятия</label>
                 </div>
             </div>
 
-            <div class="accordion accordion-flush" id="accordionFlushExample">
+            <div class="accordion accordion-flush">
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="flush-headingOne">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#offcanvasUsersEditMoreInfoCollapse" aria-expanded="false" aria-controls="flush-collapseOne">
                             Дополнительно
                         </button>
                     </h2>
-                    <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                    <div id="offcanvasUsersEditMoreInfoCollapse" class="accordion-collapse collapse">
                         <div class="accordion-body">
 
-                            <div class="mb-3 UserShowProgressBlock">
-                                <label for="UserShowProgressField" class="form-label">Прогресс</label>
-                                <textarea name="progress" class="form-control" id="UserShowProgressField" rows="3"></textarea>
+                            <div class="mb-3" id="offcanvasUsersEditProgressBlock">
+                                <label for="offcanvasUsersEditProgressField" class="form-label">Прогресс</label>
+                                <textarea name="progress" class="form-control" id="offcanvasUsersEditProgressField" rows="3"></textarea>
+                                <div id="offcanvasUsersEditProgressErrors" class="invalid-feedback"></div>
                             </div>
 
-                            <div class="form-floating UserShowLevelBlock">
-                                <select name="lvl" class="form-select" id="UserShowLevelField">
-                                    <option disabled selected> Выберите </option>
-                                </select>
-                                <label for="UserShowLevelField">Уровень</label>
-                            </div>
-                            <div class="mb-3 UserShowLevelBlock">
-                                <input name="lvl_new" type="text" class="form-control d-none" id="UserNewLevelField" placeholder="Новый уровень">
-                            </div>
-
-                            <div class="mb-3 UserShowWorkExperienceBlock">
-                                <label for="UserShowWorkExperienceField" class="form-label">Опыт работы</label>
-                                <textarea name="work_experience" class="form-control" id="UserShowWorkExperienceField" rows="3"></textarea>
+                            <div id="offcanvasUsersEditLevelBlock">
+                                <div class="form-floating">
+                                    <select name="lvl" class="form-select" id="offcanvasUsersEditLevelField">
+                                    </select>
+                                    <label for="offcanvasUsersEditLevelField">Уровень</label>
+                                </div>
+                                <div class="mb-3">
+                                    <input name="lvl_new" type="text" class="form-control d-none" id="offcanvasUsersEditNewLevelField" placeholder="Новый уровень" aria-label="">
+                                    <div id="offcanvasUsersEditNewLevelErrors" class="invalid-feedback"></div>
+                                </div>
                             </div>
 
-                            <div class="mb-3 UserShowNoteBlock">
-                                <label for="UserShowNoteField" class="form-label">Примечания</label>
-                                <textarea name="note" class="form-control" id="UserShowNoteField" rows="3"></textarea>
+                            <div class="mb-3" id="offcanvasUsersEditWorkExperienceFieldBlock">
+                                <label for="offcanvasUsersEditWorkExperienceField" class="form-label">Опыт работы</label>
+                                <textarea name="work_experience" class="form-control" id="offcanvasUsersEditWorkExperienceField" rows="3"></textarea>
+                                <div id="offcanvasUsersEditWorkExperienceErrors" class="invalid-feedback"></div>
                             </div>
 
-                            <div class="form-floating UserShowEngagementChannelBlock">
-                                <select name="eng_channel" class="form-select" id="UserShowEngagementChannelField">
-                                    <option disabled selected> Выберите </option>
-                                </select>
-                                <label for="UserShowEngagementChannelField">Канал привлечения</label>
+                            <div class="mb-3" id="offcanvasUsersEditNoteFieldBlock">
+                                <label for="offcanvasUsersEditNoteField" class="form-label">Примечания</label>
+                                <textarea name="note" class="form-control" id="offcanvasUsersEditNoteField" rows="3"></textarea>
+                                <div id="offcanvasUsersEditNoteErrors" class="invalid-feedback"></div>
                             </div>
-                            <div class="mb-3 UserShowEngagementChannelBlock">
-                                <input name="eng_channel_new" type="text" class="form-control d-none" id="UserNewEngagementChannelField" placeholder="Новый канал привлечения" required>
+
+                            <div>
+                                <div class="form-floating" id="offcanvasUsersEditEngagementChannelBlock">
+                                    <select name="eng_channel" class="form-select" id="offcanvasUsersEditEngagementChannelField">
+                                    </select>
+                                    <label for="offcanvasUsersEditEngagementChannelField">Канал привлечения</label>
+                                </div>
+                                <div class="mb-3">
+                                    <input name="eng_channel_new" type="text" class="form-control d-none" id="offcanvasUsersEditNewEngagementChannelField" placeholder="Новый канал привлечения" aria-label="">
+                                    <div id="offcanvasUsersEditNewEngagementChannelErrors" class="invalid-feedback"></div>
+                                </div>
                             </div>
+
 
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="card mb-3">
-                <div class="card-header">Активность</div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item" id="UserShowLastActivity"></li>
-                        <li class="list-group-item" id="UserShowRegistrationDate"></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <button id="UserShowSaveButton" type="button" class="btn btn-success">Сохранить</button>
-                <button id="UserShowChangePasswordButton" type="button" class="btn btn-warning">Смена пароля</button>
-            </div>
-
-            <div class="mb-3">
-                <button id="UserShowLoginButton" type="button" class="btn btn-warning">Залогиниться</button>
-                <button id="UserShowActivateButton" type="button" class="btn"></button>
-            </div>
         </form>
+
+        <div class="card mb-3">
+            <div class="card-header">Активность</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Дата регистрации: <span id="offcanvasUsersEditLastActivity"></span></li>
+                    <li class="list-group-item">Последняя активность: <span id="offcanvasUsersEditRegistrationDate"></span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <button id="offcanvasUsersEditSaveButton" type="button" class="btn btn-success">Сохранить</button>
+            <button id="offcanvasUsersEditChangePasswordButton" type="button" class="btn btn-warning">Смена пароля</button>
+        </div>
+
+        <div class="mb-3">
+            <button id="offcanvasUsersEditLoginButton" type="button" class="btn btn-warning">Залогиниться</button>
+            <button id="offcanvasUsersEditActivateButton" type="button" class="btn btn-warning">Активация</button>
+        </div>
+
     </div>
 </div>

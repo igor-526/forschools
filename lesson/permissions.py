@@ -1,5 +1,4 @@
-from datetime import timedelta
-
+import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -62,7 +61,7 @@ def can_see_lesson_materials(request, lesson: Lesson):
                 return True
             else:
                 return lesson.materials_access
-        return timezone.now().timestamp() >= (lessondt - timedelta(days=learning_plan.show_materials)).timestamp()
+        return timezone.now().timestamp() >= (lessondt - datetime.timedelta(days=learning_plan.show_materials)).timestamp()
 
 
 def can_add_homework(request, lesson: Lesson):
@@ -76,20 +75,21 @@ def can_add_homework(request, lesson: Lesson):
 
 
 def can_set_passed(request, lesson: Lesson):
-    if lesson.status != 0:
-        return False
-    if not lesson.date or not lesson.start_time or not lesson.end_time:
-        return False
-    if lesson.date > timezone.now().date():
-        return False
-    if lesson.date == timezone.now().date() and lesson.end_time > timezone.now().time():
-        return False
-    usergroups = get_usergroups(request.user)
-    if ("Admin" in usergroups) or ("Metodist" in usergroups):
-        return True
-    if "Teacher" in usergroups:
-        teacher = lesson.get_teacher() == request.user
-        return teacher
+    if not request.user.groups.filter(name="Listener").exists():
+        if request.user.groups.filter(name__in=["Metodist", "Admin"]).exists() or lesson.get_teacher() == request.user:
+            lesson_end = lesson.date
+            if lesson.end_time:
+                lesson_end = datetime.datetime(
+                    year=lesson.date.year,
+                    month=lesson.date.month,
+                    day=lesson.date.day,
+                    hour=lesson.end_time.hour,
+                    minute=lesson.end_time.minute,
+                    second=0,
+                    microsecond=0)
+                return lesson_end < datetime.datetime.now()
+            else:
+                return lesson_end < datetime.date.today()
     return False
 
 

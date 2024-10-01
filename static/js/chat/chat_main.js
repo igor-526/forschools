@@ -1,5 +1,5 @@
 function chatMain(){
-    chatAttachmentTypesArray = chatAttachmentTypesArray
+    chatMessagesAttachmentTypesArray = chatMessagesAttachmentTypesArray
         .concat(
             mediaFormats.imageFormats,
             mediaFormats.videoFormats,
@@ -11,6 +11,10 @@ function chatMain(){
             mediaFormats.textFormats,
             mediaFormats.presentationFormats
         )
+    chatMessagesSelectedUserID = getHashValue("user")
+    if (chatMessagesSelectedUserID){
+        chatSelectUser(chatMessagesSelectedUserID)
+    }
     chatAPIGetChats().then(request => {
         switch (request.status){
             case 200:
@@ -61,7 +65,6 @@ function chatSelectUser(userID){
         const itemUserID = Number(item.attributes.getNamedItem("data-chat-id").value)
         if (itemUserID === userID){
             item.classList.add("active")
-            chatMessagesUserName.innerHTML = item.querySelector("h6").innerHTML
         } else {
             item.classList.remove("active")
         }
@@ -123,12 +126,14 @@ function chatShowUsers(userlist = []){
 }
 
 function chatGetMessages(userID){
-    chatAPIGetMessages(userID, fromUserID).then(request => {
+    chatAPIGetMessages(userID, chatMessagesFromUserID).then(request => {
         switch (request.status){
             case 200:
-                chatShowMessages(request.response, userID)
-                selectedUserId = userID
-                if (!fromUserID){
+
+                chatShowMessages(request.response.messages, userID)
+                chatMessagesUserName.innerHTML = request.response.username
+                chatMessagesSelectedUserID = userID
+                if (!chatMessagesFromUserID){
                     chatMessagesNew.classList.remove("d-none")
                 }
                 break
@@ -361,7 +366,7 @@ function chatMessageValidation(errors){
         for (const file of filelist){
             const filename = file.name.split(/([\\./])/g)
             const type = filename[filename.length-1]
-            if (!chatAttachmentTypesArray.includes(type)){
+            if (!chatMessagesAttachmentTypesArray.includes(type)){
                 setInvalid("Формат файла не поддерживается")
                 return
             }
@@ -389,10 +394,10 @@ function chatMessageSend(){
         for (const file of files){
             fd.append("attachments", file)
         }
-        chatAPISendMessage(selectedUserId, fd).then(request => {
+        chatAPISendMessage(chatMessagesSelectedUserID, fd).then(request => {
             switch (request.status){
                 case 201:
-                    chatShowMessages([request.response], selectedUserId, false)
+                    chatShowMessages([request.response], chatMessagesSelectedUserID, false)
                     chatMessagesNewText.value = ""
                     chatMessagesNewAttachmentInput.value = ""
                     chatMessagesNewAttachmentButton.innerHTML = "Вложение (0)"
@@ -417,8 +422,8 @@ const chatMessagesNewTextError = chatMessagesNew.querySelector("#chatMessagesNew
 const chatMessagesUserName = document.querySelector("#chatMessagesUserName")
 const chatMessagesNewAttachmentButton = document.querySelector("#chatMessagesNewAttachmentButton")
 const chatMessagesNewAttachmentInput = document.querySelector("#chatMessagesNewAttachmentInput")
-let selectedUserId
-let fromUserID = null
-let chatAttachmentTypesArray = []
+let chatMessagesSelectedUserID = null
+let chatMessagesFromUserID = null
+let chatMessagesAttachmentTypesArray = []
 
 chatMain()
