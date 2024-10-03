@@ -368,9 +368,10 @@ async def show_logs(callback: CallbackQuery, callback_data: HomeworkCallback):
 async def show_log_item(callback: CallbackQuery, log_id: int):
     log = await HomeworkLog.objects.select_related("user").select_related("homework").aget(pk=log_id)
     files = [_ async for _ in log.files.all()]
+    comment = log.comment.replace('<br>', '\n') if log.comment else '-'
     msg = (f"<b>{log.homework.name}</b>\n"
            f"<b>{log.user}: {status_code_to_string(log.status)}</b> - {log.dt.astimezone().strftime('%d.%m %H:%M')}\n\n"
-           f"{log.comment}\n")
+           f"{comment}\n")
     await bot.send_message(chat_id=callback.from_user.id,
                            text=msg)
     if len(files) > 0:
