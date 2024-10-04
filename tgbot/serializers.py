@@ -30,7 +30,7 @@ class TgJournalSerializer(serializers.ModelSerializer):
     def get_readed(self, obj):
         if obj.data.get("status") == 'success':
             tgnote = obj.recipient.telegram.first()
-            if tgnote.last_message_from_user_id and obj.data.get("msg_id"):
+            if tgnote and tgnote.last_message_from_user_id and obj.data.get("msg_id"):
                 return obj.data.get("msg_id") <= tgnote.last_message_from_user_id
             else:
                 return False

@@ -35,7 +35,7 @@ async function supportWSGILogsAPIGet(handling_status=null, dt_start=null, dt_end
 }
 
 async function supportWSGILogsAPIGetItem(wsgiErrorID){
-    const request = await fetch(`/api/v1/support/wsgierrors/${wsgiErrorID}`)
+    const request = await fetch(`/api/v1/support/wsgierrors/${wsgiErrorID}/`)
     return APIGetToObject(request)
 }
 

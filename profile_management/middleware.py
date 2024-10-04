@@ -44,7 +44,7 @@ class ErrorLogsMiddleware:
     def process_exception(self, request, exception):
         tb = exception.__traceback__
         traceback_log = traceback.format_exception(type(exception), exception, tb)
-        traceback_log = list(filter(lambda s: len(s) != s.count("^"), traceback_log))
+        traceback_log = list(filter(lambda s: len(s) != s.count("^")+s.count(" "), traceback_log))
         params = {}
         try:
             if request.method == "GET":
