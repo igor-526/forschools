@@ -193,20 +193,20 @@ async def filedownloader(data, owner, t="ДЗ") -> dict:
             'comment': comment}
 
 
-async def send_file(tg_id: int, file_object: File) -> None:
+async def send_file(tg_id: int, file_object: File, protect=False) -> None:
     file = file_object.tg_url if file_object.tg_url else FSInputFile(path=file_object.path.path)
     file_type = get_type(file_object.path.name.split(".")[-1])
     file_id = None
     if file_type == "image_formats":
         message = await bot.send_photo(chat_id=tg_id,
                                        photo=file,
-                                       protect_content=True,
+                                       protect_content=protect,
                                        caption=file_object.caption)
         file_id = message.photo[-1].file_id
     elif file_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
                                            animation=file,
-                                           protect_content=True,
+                                           protect_content=protect,
                                            caption=file_object.caption)
         if message.animation:
             file_id = message.animation.file_id
@@ -217,25 +217,25 @@ async def send_file(tg_id: int, file_object: File) -> None:
           file_type == "presentation_formats"):
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
-                                          protect_content=True,
+                                          protect_content=protect,
                                           caption=file_object.caption)
         file_id = message.document.file_id
     elif file_type == "video_formats":
         message = await bot.send_video(chat_id=tg_id,
                                        video=file,
-                                       protect_content=True,
+                                       protect_content=protect,
                                        caption=file_object.caption)
         file_id = message.video.file_id
     elif file_type == "audio_formats":
         message = await bot.send_audio(chat_id=tg_id,
                                        audio=file,
-                                       protect_content=True,
+                                       protect_content=protect,
                                        caption=file_object.caption)
         file_id = message.audio.file_id
     elif file_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,
                                        voice=file,
-                                       protect_content=True)
+                                       protect_content=protect)
         file_id = message.voice.file_id
     if not file_object.tg_url and file_id:
         file_object.tg_url = file_id
