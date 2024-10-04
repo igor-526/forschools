@@ -3,57 +3,70 @@ function usersAdminTelegramMain(){
         bsTelegramDisconnectConfirmModal.show()
     })
     if (tgAction === "admin"){
-        userShowTelegramDisconnectConfirmDeleteButton.addEventListener('click', async function(){
-            const userID = formUserEditTelegramButton.attributes.getNamedItem("data-user-id").value
-            await disconnectTelegram(userID)
-        })
+        userShowTelegramDisconnectConfirmDeleteButton.addEventListener('click', usersAdminTelegramDisconnect)
     } else if (tgAction === "profile"){
 
     }
 }
 
 
-async function usersAdminTelegramSet(userID) {
-    await telegramAPIGetUser(userID).then(response => {
+function usersAdminTelegramSet(userID) {
+    usersAdminTelegramSelectedUser = userID
+    telegramAPIGetUser(userID).then(request => {
+        switch (request.status){
+            case 200:
+                switch (request.response.status){
+                    case "disconnected":
+                        usersShowTelegramConnectedWindows.classList.add("d-none")
+                        usersShowTelegramNotConnectedWindows.classList.remove("d-none")
+                        userShowTelegramURL.innerHTML = `https://t.me/kitai_school_study_bot?start=${request.response.code}`
+                        userShowTelegramCode.innerHTML = `${request.response.code}`
+                        userShowTelegramURL.href = `https://t.me/kitai_school_study_bot?start=${request.response.code}`
+                        usersShowTelegramButtonDisconnect.classList.add("d-none")
+                        break
+                    case "connected":
+                        usersShowTelegramConnectedWindows.classList.remove("d-none")
+                        usersShowTelegramNotConnectedWindows.classList.add("d-none")
+                        usersShowTelegramButtonDisconnect.classList.remove("d-none")
+                        break
+                }
+                bsTelegramModal.show()
+                break
+            default:
+                showErrorToast()
+                break
+        }
+
+
         if (response.status === 200){
             if (response.response.status === "disconnected"){
-                usersShowTelegramConnectedWindows.classList.add("d-none")
-                usersShowTelegramNotConnectedWindows.classList.remove("d-none")
-                userShowTelegramURL.innerHTML = `https://t.me/kitai_school_study_bot?start=${response.response.code}`
-                userShowTelegramCode.innerHTML = `${response.response.code}`
-                userShowTelegramURL.href = `https://t.me/kitai_school_study_bot?start=${response.response.code}`
-                usersShowTelegramButtonDisconnect.classList.add("d-none")
-                bsTelegramModal.show()
+
             } else if (response.response.status === "connected"){
-                usersShowTelegramConnectedWindows.classList.remove("d-none")
-                usersShowTelegramNotConnectedWindows.classList.add("d-none")
-                usersShowTelegramButtonDisconnect.classList.remove("d-none")
-                userShowTelegramDisconnectConfirmDeleteButton.setAttribute("data-user-id", userID)
-                bsTelegramModal.show()
+
             }
         }
     })
 }
 
-async function disconnectTelegram(userID){
-    await telegramAPIDisconnect(userID).then(async request => {
-        if (request.status === 204){
-            bsTelegramDisconnectConfirmModal.hide()
-            bsTelegramModal.hide()
-            bsOffcanvasUser.hide()
-            showToast("Отвязка Telegram", "Telegram успешно отвязан")
-            await usersAdminGetAll()
-            usersAdminShow()
-        } else {
+function usersAdminTelegramDisconnect(){
+    telegramAPIDisconnect(usersAdminTelegramSelectedUser).then(request => {
         bsTelegramDisconnectConfirmModal.hide()
         bsTelegramModal.hide()
-        bsOffcanvasUser.hide()
-        showToast("Отвязка Telegram", "Произошла ошибка. Telegram не отвязан")
-    }
+        switch (request.status){
+            case 204:
+                showSuccessToast( "Telegram успешно отвязан")
+                usersAdminGetAll()
+                break
+            default:
+                bsOffcanvasUser.hide()
+                showErrorToast("Произошла ошибка. Telegram не отвязан")
+                break
+        }
     })
 }
 
 
+let usersAdminTelegramSelectedUser = null
 //BootStrapElements
 const telegramModal = document.querySelector("#UserShowTelegramModal")
 const bsTelegramModal = new bootstrap.Modal(telegramModal)
