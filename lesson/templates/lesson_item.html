@@ -123,23 +123,18 @@
             </div>
         </div>
     </div>
-    {% include 'toast.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const lessonID = '{{ lesson.id }}'
         const can_see_materials = {% if can_see_materials %}true{% else %}false{% endif %}
     </script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
-    <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
     <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
     {% if can_set_passed %}
         <script src="{% static 'js/collections/collections_api.js' %}"></script>
-        <script src="{% static 'js/timeutils.js' %}"></script>
         <script src="{% static 'js/lessons/lesson_item_set_status.js' %}"></script>
     {% endif %}
     {% if can_set_replace %}
@@ -166,7 +161,6 @@
                 presentationFormats: {{ material_formats.presentation_formats | safe }}
             }
         </script>
-        <script src="{% static 'js/timeutils.js' %}"></script>
         <script src="{% static 'js/collections/collections_api.js' %}"></script>
         <script src="{% static 'js/programs/programsAPI.js' %}"></script>
         <script src="{% static 'js/materials/materials_utils.js' %}"></script>

@@ -52,7 +52,7 @@ function chatsFromUserSelectListener(userID){
     chatAPIGetChats(userID).then(request => {
         switch (request.status) {
             case 200:
-                fromUserID = userID
+                chatMessagesFromUserID = userID
                 chatsFromUserCancelButton.disabled = false
                 chatShowUsers(request.response)
                 break
@@ -67,7 +67,7 @@ function chatsFromUserResetListener(){
     chatAPIGetChats().then(request => {
         switch (request.status) {
             case 200:
-                fromUserID = null
+                chatMessagesFromUserID = null
                 chatsFromUserCancelButton.disabled = true
                 chatsFromUserListButton.innerHTML = "Выбрать пользователя"
                 chatShowUsers(request.response)

@@ -88,12 +88,10 @@
             </div>
         </div>
     </div>
-    {% include 'toast.html' %}
     {% include 'protect_alert.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const material_id = {{ material.id }}
         const materialAction = 'edit'
         const user_id = {{ request.user.id }}
@@ -110,9 +108,7 @@
             presentationFormats: {{ material_formats.presentation_formats | safe }}
         }
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
     <script src="{% static 'js/protect_content.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/collections/collections_api.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
     {% if perms.materials.send_telegram %}

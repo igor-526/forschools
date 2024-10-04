@@ -29,17 +29,11 @@
             <tbody id="PlansTableBody"></tbody>
         </table>
     </div>
-    {% include 'toast.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const userID = '{{ request.user.id }}'
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/hashutils.js' %}"></script>
-    <script src="{% static 'js/userutils.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/plans/plans_api.js' %}"></script>
     {% if perms.lesson.edit_plans_self %}
         {% if can_set_teacher %}

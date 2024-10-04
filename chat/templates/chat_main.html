@@ -70,11 +70,9 @@
             </div>
         </div>
     </div>
-    {% include 'toast.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const mediaFormats = {
             imageFormats: {{ material_formats.image_formats | safe }},
             videoFormats: {{ material_formats.video_formats | safe }},
@@ -87,14 +85,10 @@
             presentationFormats: {{ material_formats.presentation_formats | safe }}
         }
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
-    <script src="{% static 'js/hashutils.js' %}"></script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/chat/chatAPI.js' %}"></script>
     <script src="{% static 'js/chat/chat_main.js' %}"></script>
     {% if "auth.can_read_all_messages" in perms %}
         <script src="{% static 'js/chat/chat_from_user.js' %}"></script>
     {% endif %}
-
 {% endblock %}

@@ -109,12 +109,10 @@
             </div>
         {% endif %}
     </div>
-    {% include 'toast.html' %}
     {% include 'users/users_edit_functions_modals.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const tgAction = 'profile'
         {% if self %}
             const userSelf = true
@@ -123,7 +121,6 @@
         {% endif %}
         const userID = {{ puser.id }}
     </script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     {% if self %}
         <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
@@ -135,7 +132,5 @@
     {% if can_see_data %}
         <script src="{% static 'js/users/profile/profile_data.js' %}"></script>
     {% endif %}
-
     <script src="{% static 'js/users/profile/profile.js' %}"></script>
-    <script src="{% static 'js/toasts.js' %}"></script>
 {% endblock %}

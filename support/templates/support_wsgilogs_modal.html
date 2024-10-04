@@ -1,0 +1,44 @@
+<div class="modal fade modal-xl" tabindex="-1" id="supportWSGIErrorsLogModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Лог</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card mb-3">
+                    <div class="card-header">Информация</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li id="supportWSGIErrorsLogModalID" class="list-group-item"></li>
+                            <li id="supportWSGIErrorsLogModalDateTime" class="list-group-item"></li>
+                            <li id="supportWSGIErrorsLogModalUser" class="list-group-item"></li>
+                            <li id="supportWSGIErrorsLogModalException" class="list-group-item"></li>
+                            <li id="supportWSGIErrorsLogModalURL" class="list-group-item"></li>
+                            <li id="supportWSGIErrorsLogModalMethod" class="list-group-item"></li>
+                            <li id="supportWSGIErrorsLogModalStatusCode" class="list-group-item"></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Параметры запроса</div>
+                    <div class="card-body">
+                        <ul id="supportWSGIErrorsLogModalParametersList" class="list-group list-group-flush"></ul>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Traceback</div>
+                    <div class="card-body">
+                        <span id="supportWSGIErrorsLogModalParametersTraceback" style="font-size: 10px;">TraceBack1TraceBack1TraceBack1TraceBack1<br>TraceBack1TraceBack1TraceBack1TraceBack1<br>TraceBack1TraceBack1TraceBack1TraceBack1<br></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="supportWSGIErrorsLogModalSetHandlingStatusButton" type="button" class="btn btn-warning"></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>

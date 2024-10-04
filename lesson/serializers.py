@@ -1,8 +1,5 @@
-import datetime
-
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-
 from .models import Lesson
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from material.serializers import MaterialListSerializer

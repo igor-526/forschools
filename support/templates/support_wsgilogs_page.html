@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <h1>{{ title }}</h1>
+    </div>
+
+    <div class="container-xxl">
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" id="">Все</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="supportWSGIErrorsNew">Новые</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="supportWSGIErrorsProcessing">В работе</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="supportWSGIErrorsFixed">Исправлено</a>
+            </li>
+            <li class="nav-item">
+                <button id="supportWSGIErrorsTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i>Сбросить</button>
+            </li>
+        </ul>
+
+        <div class="container-xxl">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Дата и время</b></button>
+                            <ul class="dropdown-menu" style="min-width: 320px;">
+                                <li class="input-group px-1 mb-1">
+                                    <span class="input-group-text">Начало</span>
+                                    <input id="" type="date" class="form-control form-control-sm" aria-label="date start">
+                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                                <li class="input-group px-1">
+                                    <span class="input-group-text">Конец</span>
+                                    <input id="" type="date" class="form-control form-control-sm" aria-label="date end">
+                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Пользователь</b></button>
+                            <ul id="" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <input id="" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Метод</b></button>
+                            <ul id="" class="dropdown-menu" style="min-width: 250px;"> </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Код</b></button>
+                            <ul id="" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <input id="" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>URL</b></button>
+                            <ul id="" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <input id="" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
+                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">Действие</th>
+                </tr>
+                </thead>
+                <tbody id="supportWSGIErrorsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    {% include 'support_wsgilogs_modal.html' %}
+{% endblock %}
+{% block static_js %}
+    <script src="{% static 'js/support/support_api.js' %}"></script>
+    <script src="{% static 'js/support/wsgilogs/wsgilogs.js' %}"></script>
+    <script src="{% static 'js/support/wsgilogs/wsgilogs_filters.js' %}"></script>
+{% endblock %}

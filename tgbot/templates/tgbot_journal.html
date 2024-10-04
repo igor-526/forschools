@@ -99,14 +99,10 @@
             </table>
         </div>
     </div>
-    {% include 'toast.html' %}
     {% include 'tgbot_journal_status.html' %}
 
 {% endblock %}
 {% block static_js %}
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
-    <script src="{% static 'js/timeutils.js' %}"></script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
     <script src="{% static 'js/telegram/telegram_journal.js' %}"></script>

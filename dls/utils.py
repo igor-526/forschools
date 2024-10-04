@@ -11,6 +11,27 @@ def get_tg_id_sync(user: NewUser) -> int | None:
 
 
 def get_menu(user):
+    superuser_menu = [
+        {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
+        {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
+        {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
+        {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
+        {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
+        {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
+        {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
+        {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
+        {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
+            {'name': 'Управление пользователями', 'url': reverse('admin_users')},
+            {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
+            {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
+        ]},
+        {'name': 'Техподдержка', 'type': 'dropdown', 'menu': [
+            {'name': 'Тикеты', 'url': "#"},
+            {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},
+            {'name': 'Ошибки Telegram', 'url': "#"},
+        ]},
+        {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
+    ]
     admin_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
@@ -20,6 +41,7 @@ def get_menu(user):
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
         {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
+        {'name': 'Техподдержка', 'url': "#", 'type': 'main', 'id': 'forschoolsSupport'},
         {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
@@ -36,6 +58,7 @@ def get_menu(user):
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
         {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
+        {'name': 'Техподдержка', 'url': "#", 'type': 'main', 'id': 'forschoolsSupport'},
         {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
@@ -48,8 +71,11 @@ def get_menu(user):
         {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
         {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
+        {'name': 'Техподдержка', 'url': "#", 'type': 'main', 'id': 'forschoolsSupportButton'},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
+    if user.is_superuser:
+        return superuser_menu
     if user.groups.filter(name__in=["Metodist", "Admin"]).exists():
         return admin_menu
     if user.groups.filter(name="Teacher").exists():

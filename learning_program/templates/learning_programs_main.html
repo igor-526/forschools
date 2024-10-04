@@ -34,11 +34,9 @@
 
     {% include 'materials_embed_program_modal.html' %}
     {% include 'learning_programs_modals.html' %}
-    {% include 'toast.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         let materialEmbedAction
         const see_general = {% if perms.material.see_all_general %}true{% else %}false{% endif %}
         const mediaFormats = {
@@ -53,8 +51,6 @@
             presentationFormats: {{ material_formats.presentation_formats | safe }}
         }
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/collections/collections_api.js' %}"></script>
     <script src="{% static 'js/programs/programsAPI.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
@@ -75,7 +71,7 @@
                 Этапы обучения</button>
         </h2>
         <div id="accordionCollapsePhases${phase.id}Lessons" class="accordion-collapse collapse">
-            <div class="accordion-body">dsdsdssd</div>
+            <div class="accordion-body"></div>
         </div>
     </div>
 </div>

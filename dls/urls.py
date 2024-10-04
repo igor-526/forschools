@@ -23,6 +23,8 @@ from tgbot.urls import (apiv1patterns as tgbot_apiv1patterns,
                         urlpatterns as tgbot_urlpatterns,
                         apiv1journalpatterns as tgbot_journal_apiv1patterns)
 from automatic_fields.urls import apiv1patterns as automatic_fields_apiv1patterns
+from support.urls import (urlpatterns as support_urlpatterns,
+                          apiv1patterns as support_apiv1patterns)
 
 
 urlpatterns = [
@@ -36,7 +38,9 @@ urlpatterns = [
     path('messages/', include(chat_urlpatterns)),
     path('learning_programs/', include(learning_program_urlpatterns)),
     path('tgjournal/', include(tgbot_urlpatterns)),
+    path('support/', include(support_urlpatterns)),
 
+    path('api/v1/support/', include(support_apiv1patterns)),
     path('api/v1/tgjournal/', include(tgbot_journal_apiv1patterns)),
     path('api/v1/learning_programs/', include(learning_program_apiv1patterns)),
     path('api/v1/learning_plans/', include(learning_plan_apiv1patterns)),

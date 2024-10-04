@@ -122,23 +122,18 @@
         {% include 'lesson_modal_delete.html' %}
         {% include 'plans_modal_rescheduling.html' %}
         {% include 'plans_modal_notheld.html' %}
-        {% include 'toast.html' %}
     {% endif %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const planID = {{ plan.id }}
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/plans/plans_api.js' %}"></script>
     <script src="{% static 'js/plans/plans_item/plans_item_main.js' %}"></script>
     {% if can_edit_plan %}
         <script>
             const canEditPlan = true
         </script>
-        <script src="{% static 'js/timeutils.js' %}"></script>
         <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script src="{% static 'js/collections/collections_api.js' %}"></script>
         <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
