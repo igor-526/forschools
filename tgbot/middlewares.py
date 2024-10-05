@@ -5,30 +5,34 @@ from aiogram.types import Message, CallbackQuery
 from tgbot.create_bot import bot
 
 
-async def middleware_authorization(tg_id, message_id):
+async def middleware_authorization(tg_id, message_id, msg_text=None):
     user = await Telegram.objects.select_related("user").filter(tg_id=tg_id).afirst()
     if user:
         await user.set_last_message(message_id=message_id)
         if user.user.is_active:
+            await user.user.aupdate_last_activity()
             return user
         else:
             await bot.send_message(chat_id=tg_id,
                                    text="Ваш аккаунт деактивирован. Свяжитесь с администратором для помощи")
     else:
-        await bot.send_message(chat_id=tg_id,
-                               text="Для использования бота необходимо авторизоваться. Свяжитесь с администратором "
-                                    "для помощи")
-        return False
+        if "/start" in msg_text:
+            return True
+        else:
+            await bot.send_message(chat_id=tg_id,
+                                   text="Для использования бота необходимо авторизоваться. Свяжитесь с администратором "
+                                        "для помощи")
+            return False
 
 
 class LastMessageMiddleware(BaseMiddleware):
     async def __call__(
-        self,
-        handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
-        event: Message,
-        data: Dict[str, Any]
+            self,
+            handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
+            event: Message,
+            data: Dict[str, Any]
     ) -> Any:
-        tguser_note = await middleware_authorization(event.from_user.id, event.message_id)
+        tguser_note = await middleware_authorization(event.from_user.id, event.message_id, event.text)
         if tguser_note:
             return await handler(event, data)
 

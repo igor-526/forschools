@@ -135,6 +135,10 @@ class NewUser(AbstractUser):
         self.last_activity = timezone.localtime(timezone.now())
         self.save()
 
+    async def aupdate_last_activity(self):
+        self.last_activity = timezone.localtime(timezone.now())
+        await self.asave()
+
     def set_groups(self, groups: list):
         try:
             groupslist = [Group.objects.get(name=group) for group in groups]
