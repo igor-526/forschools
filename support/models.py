@@ -50,7 +50,7 @@ class SupportTicketAnswers(models.Model):
                              on_delete=models.DO_NOTHING,
                              null=True,
                              blank=True,
-                             related_name="tickets_set")
+                             related_name="ticketsanswers_set")
     dt = models.DateTimeField(auto_now_add=True,
                               verbose_name="Дата и время",
                               null=False,
@@ -66,10 +66,15 @@ class SupportTicketAnswers(models.Model):
                                  choices=HANDLING_STATUS_CHOICES)
     read_by = models.ManyToManyField(NewUser,
                                      verbose_name="Прочитано",
-                                     related_name="tickets_read_by",)
+                                     related_name="ticketsanswers_read_by",)
 
 
 class SupportTicket(models.Model):
+    user = models.ForeignKey(NewUser,
+                             verbose_name="Пользователь",
+                             on_delete=models.DO_NOTHING,
+                             null=True,
+                             blank=True,)
     path_info = models.CharField(verbose_name="Путь",
                                  null=True)
     attachments = models.ManyToManyField(File,
@@ -87,3 +92,6 @@ class SupportTicket(models.Model):
                               verbose_name="Дата и время",
                               null=False,
                               blank=True)
+
+    def get_status(self):
+        return self.answers.order_by("-dt").first()

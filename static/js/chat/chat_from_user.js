@@ -1,9 +1,16 @@
 function chatsFromUserMain(){
     chatsFromUserSearchListeners()
-    usersAPIGetAll().then(request => {
+    usersAPIGetAll("messagesadmin").then(request => {
         switch (request.status){
             case 200:
-                chatsFromUserSetUsers(request.response)
+                const usersListWithDate = request.response.filter(function (user) {
+                    return user.last_message_date !== null
+                })
+                console.log(usersListWithDate)
+                const usersList = usersListWithDate.sort((a, b) => {
+                    return new Date(b.last_message_date) - new Date(a.last_message_date)
+                })
+                chatsFromUserSetUsers(usersList)
                 break
             default:
                 showErrorToast()
@@ -15,6 +22,7 @@ function chatsFromUserMain(){
 
 function chatsFromUserSetUsers(usersList){
     function getElement(user){
+        console.log(user)
         const li = document.createElement("li")
         const a = document.createElement("a")
         li.insertAdjacentElement("beforeend", a)
@@ -25,6 +33,9 @@ function chatsFromUserSetUsers(usersList){
             chatsFromUserListButton.innerHTML = `${user.first_name} ${user.last_name}`
             chatsFromUserSelectListener(user.id)
         })
+        if (user.last_message_date){
+            a.innerHTML += ` (${timeUtilsDateTimeToStr(user.last_message_date)})`
+        }
         return li
     }
 

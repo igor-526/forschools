@@ -3,8 +3,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
 from tgbot.keyboards.callbacks.chats import ChatListCallback
-from tgbot.keyboards.chats import chats_get_users_buttons, chats_get_show_message_button
-from tgbot.keyboards.default import message_typing_keyboard, cancel_keyboard
+from tgbot.keyboards.chats import chats_get_show_message_button
+from tgbot.keyboards.default import message_typing_keyboard
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id
@@ -33,7 +33,7 @@ async def chats_show(message: types.Message, state: FSMContext):
 
 async def chats_type_message(message: types.Message, state: FSMContext):
     new_data_msg = await add_files_to_state(message, state)
-    new_data_msg += "\nОтправьте мне ещё сообщения, либо нажмите кнопку '<b>Отправить</b>'"
+    new_data_msg += "\nДля отправки сообщения нажмите кнопку '<b>Отправить</b>' или добавьте ещё сообщение"
     await message.reply(new_data_msg, reply_markup=message_typing_keyboard)
 
 

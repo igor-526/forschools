@@ -36,7 +36,7 @@ async function homeworkAPIAdd(formData){
 }
 
 async function homeworkAPIGetLogs(hw){
-    const response = await fetch(`/api/v1/homeworks/${hw}/logs`)
+    const response = await fetch(`/api/v1/homeworks/${hw}/logs/`)
     return {status: response.status,
         response: await response.json()}
 }

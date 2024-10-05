@@ -293,6 +293,16 @@ class NewUser(AbstractUser):
             return await self.message_receiver.filter(read__isnull=True,
                                                       sender=sender).acount()
 
+    def get_last_message_date(self):
+        s_message = self.message_sender.order_by("-date").first()
+        r_message = self.message_receiver.order_by("-date").first()
+        if s_message and r_message:
+            return s_message.date if s_message.date > r_message.date else r_message.date
+        if s_message:
+            return s_message.date
+        if r_message:
+            return r_message.date
+
 
 class Telegram(models.Model):
     user = models.ForeignKey(NewUser,

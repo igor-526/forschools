@@ -19,7 +19,7 @@ from .permissions import CanSeeUserPageMixin, get_editable_perm, get_secretinfo_
 from .forms import SignUpForm
 from .models import NewUser
 from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
-                          NewUserNameOnlyListSerializer)
+                          NewUserNameOnlyListSerializer, NewUserLastMessageDateListSerializer)
 
 
 def user_login(request):    # страница авторизации и логин
@@ -222,7 +222,15 @@ class UsersPage(CanSeeUserPageMixin, TemplateView):  # страница поль
 
 
 class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для вывода списка пользователей
-    serializer_class = NewUserListSerializer
+    def get_serializer_class(self):
+        setting = self.request.query_params.get("setting")
+        if setting == 'messagesadmin':
+            if "auth.can_read_all_messages" in self.request.user.get_group_permissions():
+                return NewUserLastMessageDateListSerializer
+            else:
+                raise PermissionDenied
+        else:
+            return NewUserListSerializer
 
     def get_queryset(self):
         group = self.request.query_params.get('group')

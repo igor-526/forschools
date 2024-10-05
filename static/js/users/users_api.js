@@ -1,20 +1,24 @@
 async function usersAPIGetTeachers(){
-    const request = await fetch("/api/v1/users?group=teachers")
+    const request = await fetch("/api/v1/users/?group=teachers")
     return await APIGetToObject(request)
 }
 
 async function usersAPIGetListeners(){
-    const request = await fetch("/api/v1/users?group=listeners")
+    const request = await fetch("/api/v1/users/?group=listeners")
     return await APIGetToObject(request)
 }
 
-async function usersAPIGetAll(){
-    const request = await fetch("/api/v1/users")
+async function usersAPIGetAll(setting=null){
+    let url = "/api/v1/users/"
+    if (setting){
+        url += `?setting=${setting}`
+    }
+    const request = await fetch(url)
     return await APIGetToObject(request)
 }
 
 async function usersAPIGetUser(userID){
-    const request = await fetch(`/api/v1/users/${userID}`)
+    const request = await fetch(`/api/v1/users/${userID}/`)
     return await APIGetToObject(request)
 }
 
@@ -87,7 +91,7 @@ async function usersAPIAdminLogin(userID){
 }
 
 async function usersAPIRegistration(fd){
-    const request = await fetch("/register", {
+    const request = await fetch("/register/", {
         method: 'post',
         credentials: 'same-origin',
         headers:{
@@ -99,12 +103,12 @@ async function usersAPIRegistration(fd){
 }
 
 async function usersAPIGetLessons(userID){
-    const request = await fetch(`/api/v1/users/${userID}/lessons`)
+    const request = await fetch(`/api/v1/users/${userID}/lessons/`)
     return await APIGetToObject(request)
 }
 
 async function usersAPIGetHW(userID){
-    const request = await fetch(`/api/v1/users/${userID}/hw`)
+    const request = await fetch(`/api/v1/users/${userID}/hw/`)
     return await APIGetToObject(request)
 }
 

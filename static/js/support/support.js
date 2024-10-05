@@ -61,7 +61,6 @@ function supportValidation(errors = null){
     supportReset(true)
     let validationStatus = true
     if (errors){
-        console.log(errors)
         if (errors.hasOwnProperty("description")){
             validateDescription(errors.description)
         }
@@ -85,7 +84,7 @@ function supportSend(){
     }
 
     if (supportValidation()){
-        supportAPICreateTicket(getFD()).then(request => {
+        supportAPITicketCreate(getFD()).then(request => {
             switch (request.status){
                 case 201:
                     bsSupportNewTicketModal.hide()

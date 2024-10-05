@@ -14,7 +14,7 @@ async function supportWSGILogsAPIGet(handling_status=null, dt_start=null, dt_end
     if (path){
         searchParams.push(`path=${path}`)
     }
-        if (code){
+    if (code){
         searchParams.push(`code=${code}`)
     }
     if (users){
@@ -22,7 +22,7 @@ async function supportWSGILogsAPIGet(handling_status=null, dt_start=null, dt_end
             searchParams.push(`user=${user}`)
         })
     }
-        if (methods){
+    if (methods){
         methods.forEach(method => {
             searchParams.push(`method=${method}`)
         })
@@ -53,7 +53,7 @@ async function supportWSGILogsAPIUpdate(wsgiErrorID, newStatus){
     return APIPostPatchToObject(request)
 }
 
-async function supportAPICreateTicket(formData){
+async function supportAPITicketCreate(formData){
     const request = await fetch(`/api/v1/support/tickets/`, {
         method: "POST",
         credentials: 'same-origin',
@@ -63,4 +63,34 @@ async function supportAPICreateTicket(formData){
         body: formData
     })
     return APIPostPatchToObject(request)
+}
+
+async function supportAPITicketGet(description=null, statuses=[],
+                                   dt_start=null, dt_end=null, users=[]){
+    let url = "/api/v1/support/tickets/"
+    let searchParams = []
+    if (description){
+        searchParams.push(`description=${description}`)
+    }
+    if (dt_start){
+        searchParams.push(`dt_start=${dt_start}`)
+    }
+    if (dt_end){
+        searchParams.push(`dt_end=${dt_end}`)
+    }
+    if (users.length > 0){
+        users.forEach(user => {
+            searchParams.push(`user=${user}`)
+        })
+    }
+    if (statuses.length > 0){
+        statuses.forEach(status => {
+            searchParams.push(`status=${status}`)
+        })
+    }
+    if (searchParams.length > 0){
+        url += "?" + searchParams.join("&")
+    }
+    const request = await fetch(url)
+    return APIGetToObject(request)
 }

@@ -105,3 +105,14 @@ class NewUserNameOnlyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewUser
         fields = ['id', 'first_name', 'last_name']
+
+
+class NewUserLastMessageDateListSerializer(serializers.ModelSerializer):
+    last_message_date = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = NewUser
+        fields = ['id', 'first_name', 'last_name', 'last_message_date']
+
+    def get_last_message_date(self, obj):
+        return obj.get_last_message_date()

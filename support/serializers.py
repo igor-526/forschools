@@ -33,13 +33,17 @@ class SupportTicketAnswersSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SupportTicketSerializer(serializers.ModelSerializer):
-    answers = SupportTicketAnswersSerializer(required=False, many=True)
+class SupportTicketListSerializer(serializers.ModelSerializer):
+    user = NewUserNameOnlyListSerializer(required=False, many=False, read_only=True)
     attachments = FileSerializer(required=False, many=True, read_only=True)
+    status = serializers.SerializerMethodField(required=False, read_only=True)
 
     class Meta:
         model = SupportTicket
-        fields = "__all__"
+        exclude = ["answers"]
+
+    def get_status(self, obj):
+        return obj.get_status()
 
     def validate(self, data):
         attachments = self.context.get("request").FILES.getlist("attachments")
@@ -59,4 +63,5 @@ class SupportTicketSerializer(serializers.ModelSerializer):
                 data["attachments"].append(file)
             else:
                 data["attachments"] = [file]
+        data["user"] = self.context.get("request").user
         return data
