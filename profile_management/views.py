@@ -225,7 +225,7 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
     def get_serializer_class(self):
         setting = self.request.query_params.get("setting")
         if setting == 'messagesadmin':
-            if "auth.can_read_all_messages" in self.request.user.get_group_permissions():
+            if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
                 return NewUserLastMessageDateListSerializer
             else:
                 raise PermissionDenied
