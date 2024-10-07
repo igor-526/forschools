@@ -38,6 +38,8 @@ def get_secretinfo_perm(user, obj) -> bool:
         return True
     if "Teacher" in objgroups and user.has_perm("auth.deactivate_teacher"):
         return True
+    if "Listener" in objgroups and user.has_perm("auth.deactivate_listener"):
+        return True
     return False
 
 

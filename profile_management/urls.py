@@ -16,7 +16,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='dashboard')),  # редирект на дэшборд
     path('login', user_login, name='login'),    # страница авторизации
     path('logout', user_logout, name='logout'),  # логаут
-    path('register', register_view, name='register'),  # API для регистрации пользователя
+    path('register/', register_view, name='register'),  # API для регистрации пользователя
     path('dashboard', DashboardPage.as_view(), name='dashboard'),  # страница Dashboard
     path('profile/<int:pk>', ProfilePage.as_view()),     # страница профиля пользователя
     path('profile', ProfilePage.as_view(), name='profile'),  # страница профиля пользователя

@@ -64,7 +64,7 @@ async function telegramAPIGetJournal(
     recipient = [],
     status = []
 ){
-    let url = '/api/v1/tgjournal'
+    let url = '/api/v1/tgjournal/'
     let qp = []
 
     event.forEach(ev => {

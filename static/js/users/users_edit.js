@@ -136,8 +136,6 @@ function usersEditSetOffcanvas(userID=null, userElement=null){
             case 200:
                 selectedUserID = userID
                 selectedUserIDElement = userElement
-                console.log(selectedUserIDElement)
-                console.log(request.response)
                 usersEditReset()
                 offcanvasUsersEditUsernameField.value = request.response.username
                 offcanvasUsersEditLastNameField.value = request.response.last_name

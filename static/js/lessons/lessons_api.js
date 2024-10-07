@@ -84,7 +84,7 @@ async function lessonsAPIGetAll(status=null, teachers=[], listeners=[],
 }
 
 async function lessonsAPIGetItem(lessonID){
-    const request = await fetch(`/api/v1/lessons/${lessonID}`)
+    const request = await fetch(`/api/v1/lessons/${lessonID}/`)
     return await APIGetToObject(request)
 }
 
