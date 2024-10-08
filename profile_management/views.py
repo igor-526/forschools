@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -61,7 +61,7 @@ def register_view(request):     # API для регистрации пользо
                     raise ValidationError({'role': 'Вы не можете редактировать учеников'})
                 email = request.POST.get('email')
                 username = request.POST.get('username')
-                if NewUser.objects.filter(email=email).exclude(username=username).exists():
+                if email and username and NewUser.objects.filter(email=email).exclude(username=username).exists():
                     raise ValidationError({"email": "Пользователь с таким email уже существует"})
                 user = form.save()
                 user.update_tg_code()
@@ -232,17 +232,93 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
         else:
             return NewUserListSerializer
 
+    def filter_id(self, queryset):
+        q_id = self.request.query_params.get('id')
+        if q_id:
+            queryset = queryset.filter(id=q_id)
+        return queryset
+
+    def filter_tg(self, queryset):
+        q_tg = self.request.query_params.get('tg_status')
+        if q_tg == "connected":
+            queryset = queryset.annotate(tg_count=Count("telegram")).filter(tg_count__gt=0)
+        elif q_tg == "disconnected":
+            queryset = queryset.annotate(tg_count=Count("telegram")).filter(tg_count=0)
+        return queryset
+
+    def filter_username(self, queryset):
+        q_username = self.request.query_params.get('username')
+        if q_username:
+            queryset = queryset.filter(username__icontains=q_username)
+        return queryset
+
+    def filter_fullname(self, queryset):
+        q_fullname = self.request.query_params.get('full_name')
+        if q_fullname:
+            splitted_fullname = q_fullname.split(" ")
+            q = Q()
+            for query in splitted_fullname:
+                q |= Q(first_name__icontains=query)
+                q |= Q(last_name__icontains=query)
+                q |= Q(patronymic__icontains=query)
+            queryset = queryset.filter(q)
+        return queryset
+
+    def filter_roles(self, queryset):
+        q_roles = self.request.query_params.getlist('role')
+        if q_roles:
+            queryset = queryset.filter(groups__name__in=q_roles)
+        return queryset
+
+    def sort_username(self, queryset):
+        sort_username = self.request.query_params.get('sort_username')
+        if sort_username == "asc":
+            queryset = queryset.order_by('username')
+        elif sort_username == "desc":
+            queryset = queryset.order_by('-username')
+        return queryset
+
+    def sort_fullname(self, queryset):
+        sort_full_name = self.request.query_params.get('sort_full_name')
+        if sort_full_name == "asc":
+            queryset = queryset.order_by('last_name')
+        elif sort_full_name == "desc":
+            queryset = queryset.order_by('-last_name')
+        return queryset
+
+    def exclude_me(self, queryset):
+        exclude_me = self.request.query_params.get('exclude_me')
+        if exclude_me == "True":
+            queryset = queryset.exclude(id=self.request.user.id)
+        return queryset
+
     def get_queryset(self):
-        group = self.request.query_params.get('group')
-        if not group:
-            usergroups = [group.name for group in self.request.user.groups.all()]
-            if "Admin" in usergroups:
-                return NewUser.objects.exclude(id=self.request.user.pk)
-            return NewUser.objects.exclude(id=self.request.user.pk).filter(is_active=True)
-        elif group == 'listeners':
-            return NewUser.objects.filter(groups__name='Listener').filter(is_active=True)
-        elif group == 'teachers':
-            return NewUser.objects.filter(groups__name='Teacher').filter(is_active=True)
+        if self.request.user.groups.filter(name="Admin"):
+            queryset = NewUser.objects.all()
+        elif self.request.user.groups.filter(name="Metodist"):
+            queryset = NewUser.objects.filter(is_active=True)
+        elif self.request.user.groups.filter(name="Teacher"):
+            queryset = NewUser.objects.filter(
+                Q(plan_listeners__teacher=self,
+                  is_active=True) |
+                Q(plan_listeners__phases__lessons__replace_teacher=self,
+                  is_active=True) |
+                Q(groups__name__in=['Admin', 'Metodist'],
+                  is_active=True))
+        else:
+            queryset = None
+
+        if queryset:
+            queryset = self.exclude_me(queryset)
+            queryset = self.filter_id(queryset)
+            queryset = self.filter_tg(queryset)
+            queryset = self.filter_username(queryset)
+            queryset = self.filter_fullname(queryset)
+            queryset = self.filter_roles(queryset)
+            queryset = self.sort_username(queryset)
+            queryset = self.sort_fullname(queryset)
+            queryset = queryset.order_by("is_active")
+        return queryset
 
 
 class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):

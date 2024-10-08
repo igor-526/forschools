@@ -102,12 +102,11 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         return queryset
 
     def get_queryset(self):
-        usergroups = [group.name for group in self.request.user.groups.all()]
-        queryset = LearningPlan.objects.all()
-        if "Listener" in usergroups:
-            return None
-        elif "Teacher" in usergroups:
-            queryset = queryset.filter(teacher=self.request.user)
+        queryset = None
+        if self.request.user.groups.filter(name__in=["Admin", "Metodist"]).exists():
+            queryset = LearningPlan.objects.all()
+        elif self.request.user.groups.filter(name="Teacher").exists():
+            queryset = LearningPlan.objects.filter(teacher=self.request.user)
         queryset = self.filter_name(queryset)
         queryset = self.filter_teacher(queryset)
         queryset = self.filter_listeners(queryset)

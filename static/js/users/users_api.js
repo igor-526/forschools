@@ -1,17 +1,47 @@
 async function usersAPIGetTeachers(){
-    const request = await fetch("/api/v1/users/?group=teachers")
+    const request = await fetch("/api/v1/users/?role==Teacher")
     return await APIGetToObject(request)
 }
 
 async function usersAPIGetListeners(){
-    const request = await fetch("/api/v1/users/?group=listeners")
+    const request = await fetch("/api/v1/users/?role==Listener")
     return await APIGetToObject(request)
 }
 
-async function usersAPIGetAll(setting=null){
+async function usersAPIGetAll(setting=null, id=null, tg=null, username=null,
+                              fullName=null, roles=[], sortUsername=null,
+                              sortFullName=null, excludeMe=false){
     let url = "/api/v1/users/"
+    const query = []
+    if (id){
+        query.push(`id=${id}`)
+    }
     if (setting){
-        url += `?setting=${setting}`
+        query.push(`setting=${setting}`)
+    }
+    if (tg){
+        query.push(`tg_status=${tg}`)
+    }
+    if (username){
+        query.push(`username=${username}`)
+    }
+    if (fullName){
+        query.push(`full_name=${fullName}`)
+    }
+    if (sortUsername){
+        query.push(`sort_username=${sortUsername}`)
+    }
+    if (sortFullName){
+        query.push(`sort_full_name=${sortFullName}`)
+    }
+    if (excludeMe){
+        query.push(`exclude_me=True}`)
+    }
+    roles.forEach(role => {
+        query.push(`role=${role}`)
+    })
+    if (query.length > 0){
+        url += "?" + query.join("&")
     }
     const request = await fetch(url)
     return await APIGetToObject(request)

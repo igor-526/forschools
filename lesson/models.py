@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-from profile_management.models import NewUser
 from material.models import Material
 from homework.models import Homework
 from learning_program.models import LearningProgramLesson
@@ -60,7 +59,7 @@ class Lesson(models.Model):
     description = models.TextField(verbose_name='Описание занятия',
                                    null=True,
                                    blank=True)
-    replace_teacher = models.ForeignKey(NewUser,
+    replace_teacher = models.ForeignKey("profile_management.NewUser",
                                         verbose_name='Замещающий преподаватель',
                                         on_delete=models.SET_NULL,
                                         null=True,

@@ -1,6 +1,5 @@
 from django.db import models
 from lesson.models import Lesson
-from profile_management.models import NewUser
 from learning_program.models import LearningProgram
 
 
@@ -56,11 +55,11 @@ class LearningPlan(models.Model):
     schedule = models.JSONField(verbose_name="Расписание",
                                 null=True,
                                 blank=True)
-    listeners = models.ManyToManyField(NewUser,
+    listeners = models.ManyToManyField("profile_management.NewUser",
                                        verbose_name="Ученики",
                                        related_name="plan_listeners",
                                        blank=False)
-    teacher = models.ForeignKey(NewUser,
+    teacher = models.ForeignKey("profile_management.NewUser",
                                 verbose_name="Преподаватель",
                                 blank=False,
                                 null=True,
@@ -76,7 +75,7 @@ class LearningPlan(models.Model):
     show_materials = models.IntegerField(verbose_name="Видимость материалов",
                                          blank=True,
                                          null=True)
-    default_hw_teacher = models.ForeignKey(NewUser,
+    default_hw_teacher = models.ForeignKey("profile_management.NewUser",
                                            blank=True,
                                            null=True,
                                            on_delete=models.SET_NULL,

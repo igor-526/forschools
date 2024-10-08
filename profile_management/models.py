@@ -1,10 +1,8 @@
 from _operator import itemgetter
-from rest_framework.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 from random import randint
 from django.db.models import Q
-from django.db.models.signals import pre_save
 from django.utils import timezone
 from chat.models import Message
 
@@ -117,6 +115,10 @@ class NewUser(AbstractUser):
                                            blank=True,
                                            null=True,
                                            on_delete=models.SET_NULL)
+    parents = models.ManyToManyField("self",
+                                     verbose_name="Родители",
+                                     blank=True,
+                                     )
 
     class Meta:
         verbose_name = 'Пользователь'

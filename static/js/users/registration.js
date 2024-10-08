@@ -65,35 +65,10 @@ function usersRegistrationSetAutoUsernameListeners(){
     }
 
     function setUsername(){
-        let fnTranslit = null
-        let lnTranslit = null
-        let un = ""
-        let unReady = ""
-        if (usersOffcanvasRegisterFormLastNameField.value.trim() !== ""){
-            lnTranslit = transliterate(usersOffcanvasRegisterFormLastNameField.value)
-        }
-        if (usersOffcanvasRegisterFormFirstNameField.value.trim() !== ""){
-            fnTranslit = transliterate(usersOffcanvasRegisterFormFirstNameField.value)
-        }
-        if (fnTranslit && lnTranslit){
-            un = `${fnTranslit[0]}.${lnTranslit}`
-        } else {
-            if (fnTranslit){
-                un = fnTranslit
-            }
-            if (lnTranslit){
-                un = lnTranslit
-            }
-        }
-        for (let i = 0; i < un.length; i++) {
-            if ((un.charCodeAt(i) >= 'a'.charCodeAt(0) && un.charCodeAt(i) <= 'z'.charCodeAt(0)) ||
-                (un.charCodeAt(i) >= 'A'.charCodeAt(0) && un.charCodeAt(i) <= 'Z'.charCodeAt(0))) {
-                unReady += un[i];
-            } else if (un[i] === '.') {
-                unReady += '.';
-            }
-        }
-        usersOffcanvasRegisterFormUsernameField.value = unReady
+        usersOffcanvasRegisterFormUsernameField.value = getUsernameFromFirstLastName(
+            usersOffcanvasRegisterFormFirstNameField.value,
+            usersOffcanvasRegisterFormLastNameField.value
+        )
     }
 
     usersOffcanvasRegisterFormLastNameField.addEventListener("input", setUsername)
@@ -155,15 +130,6 @@ function usersRegistrationValidation(errors=null){
                         usersOffcanvasRegisterFormLastNameField,
                         usersOffcanvasRegisterFormLastNameError
                     )
-                } else {
-                    const noSpacesRegex = /^[^ ]+$/
-                    if (!noSpacesRegex.test(usersOffcanvasRegisterFormLastNameField.value.trim())){
-                        setInvalid(
-                            "Поле не может содержать пробелов",
-                            usersOffcanvasRegisterFormLastNameField,
-                            usersOffcanvasRegisterFormLastNameError
-                        )
-                    }
                 }
             } else {
                 setInvalid(
@@ -190,15 +156,6 @@ function usersRegistrationValidation(errors=null){
                         usersOffcanvasRegisterFormFirstNameField,
                         usersOffcanvasRegisterFormFirstNameError
                     )
-                } else {
-                    const noSpacesRegex = /^[^ ]+$/
-                    if (!noSpacesRegex.test(usersOffcanvasRegisterFormFirstNameField.value.trim())){
-                        setInvalid(
-                            "Поле не может содержать пробелов",
-                            usersOffcanvasRegisterFormFirstNameField,
-                            usersOffcanvasRegisterFormFirstNameError
-                        )
-                    }
                 }
             } else {
                 setInvalid(
@@ -225,15 +182,6 @@ function usersRegistrationValidation(errors=null){
                         usersOffcanvasRegisterFormPatronymicField,
                         usersOffcanvasRegisterFormPatronymicError
                     )
-                } else {
-                    const noSpacesRegex = /^[^ ]+$/
-                    if (!noSpacesRegex.test(usersOffcanvasRegisterFormPatronymicField.value.trim())){
-                        setInvalid(
-                            "Поле не может содержать пробелов",
-                            usersOffcanvasRegisterFormPatronymicField,
-                            usersOffcanvasRegisterFormPatronymicError
-                        )
-                    }
                 }
             }
         }

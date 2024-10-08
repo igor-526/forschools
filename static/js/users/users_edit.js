@@ -53,7 +53,6 @@ function usersEditSetCities(){
 
 function usersEditListeners(){
     offcanvasUsersEditLevelField.addEventListener("change", function () {
-        console.log(offcanvasUsersEditLevelField.value)
         offcanvasUsersEditLevelField.value === "new"?offcanvasUsersEditNewLevelField.classList.remove("d-none"):offcanvasUsersEditNewLevelField.classList.add("d-none")
     })
     offcanvasUsersEditEngagementChannelField.addEventListener("change", function () {
@@ -81,6 +80,19 @@ function usersEditListeners(){
             offcanvasUsersEditRoleCheckboxTeacher.checked = false
         }
     })
+    offcanvasUsersEditLastNameField.addEventListener("input", function (){
+        offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
+            offcanvasUsersEditFirstNameField.value,
+            offcanvasUsersEditLastNameField.value
+        )
+    })
+    offcanvasUsersEditFirstNameField.addEventListener("input", function (){
+        offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
+            offcanvasUsersEditFirstNameField.value,
+            offcanvasUsersEditLastNameField.value
+        )
+    })
+
 }
 
 function usersEditReset(validationOnly=false){

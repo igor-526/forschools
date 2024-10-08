@@ -4,7 +4,11 @@ function usersAdminMain(){
 
 
 function usersAdminGetAll(){
-    usersAPIGetAll().then(request => {
+    usersAPIGetAll(
+        null, usersAdminFilteringID, usersAdminFilteringTG, usersAdminFilteringUsername,
+        usersAdminFilteringFullName, usersAdminFilteringRole, usersAdminFilteringUsernameSort,
+        usersAdminFilteringFullNameSort,
+    ).then(request => {
         switch (request.status){
             case 200:
                 usersAdminShow(request.response)
@@ -118,8 +122,6 @@ function usersAdminShow(users = [], updateTD=null){
     }
 
     if (updateTD){
-        console.log(users)
-        console.log(updateTD)
         updateTD.replaceWith(getUserElement(users))
     } else {
         usersAdminTableBody.innerHTML = ""
@@ -130,5 +132,14 @@ function usersAdminShow(users = [], updateTD=null){
 }
 
 const usersAdminTableBody = document.querySelector('#UsersTableBody')
+
+//Filtering
+let usersAdminFilteringID = null
+let usersAdminFilteringTG = null
+let usersAdminFilteringUsername = null
+let usersAdminFilteringFullName = null
+const usersAdminFilteringRole = []
+let usersAdminFilteringUsernameSort = null
+let usersAdminFilteringFullNameSort = null
 
 usersAdminMain()
