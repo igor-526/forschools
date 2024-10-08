@@ -1,10 +1,10 @@
 async function usersAPIGetTeachers(){
-    const request = await fetch("/api/v1/users/?role==Teacher")
+    const request = await fetch("/api/v1/users/?role=Teacher")
     return await APIGetToObject(request)
 }
 
 async function usersAPIGetListeners(){
-    const request = await fetch("/api/v1/users/?role==Listener")
+    const request = await fetch("/api/v1/users/?role=Listener")
     return await APIGetToObject(request)
 }
 
