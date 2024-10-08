@@ -317,8 +317,8 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
             queryset = self.filter_roles(queryset)
             queryset = self.sort_username(queryset)
             queryset = self.sort_fullname(queryset)
-            queryset = queryset.order_by("is_active")
-        return queryset
+            queryset = queryset.order_by("-is_active")
+        return queryset.distinct()
 
 
 class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):
