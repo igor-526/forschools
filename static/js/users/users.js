@@ -65,7 +65,7 @@ function usersAdminShow(users = [], updateTD=null){
         const tdUsername = document.createElement("td")
         tdUsername.innerHTML = user.username
         const tdName = document.createElement("td")
-        tdName.innerHTML = `<a href="profile/${user.id}">${user.last_name} ${user.first_name}${user.patronymic?" "+user.patronymic:""}</a>`
+        tdName.innerHTML = `<a href="/profile/${user.id}">${user.last_name} ${user.first_name}${user.patronymic?" "+user.patronymic:""}</a>`
         const tdRole = document.createElement("td")
         const roles = getRoles(user.groups)
         tdRole.innerHTML = roles.str

@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta, time
+import datetime
 from learning_program.models import LearningProgram
 from learning_plan.models import LearningPlan, LearningPhases
 from lesson.models import Lesson, Place
 
 
-def plan_calculated_info(date: datetime, schedule: dict, program: LearningProgram) -> dict:
+def plan_calculated_info(date: datetime.datetime, schedule: dict, program: LearningProgram) -> dict:
     info = program.get_all_info()
     counter = info.get("lessons")
     last_date = None
@@ -13,17 +13,17 @@ def plan_calculated_info(date: datetime, schedule: dict, program: LearningProgra
     while counter > 0:
         if date.weekday() in days:
             last_date = date
-            st = datetime.strptime(
+            st = datetime.datetime.strptime(
                 schedule.get(date.weekday()).get("start"),
                 "%H:%M",
             )
-            et = datetime.strptime(
+            et = datetime.datetime.strptime(
                 schedule.get(date.weekday()).get("end"),
                 "%H:%M",
             )
             total_hours += (et - st).seconds / (60 * 60)
             counter -= 1
-        date = date + timedelta(days=1)
+        date = date + datetime.timedelta(days=1)
     return {
         "info": info,
         "last_date": last_date,
@@ -40,17 +40,17 @@ def plan_rescheduling_info(date: datetime, schedule: dict, lesson: Lesson) -> di
     while counter > 0:
         if date.weekday() in days:
             last_date = date
-            st = datetime.strptime(
+            st = datetime.datetime.strptime(
                 schedule.get(date.weekday()).get("start"),
                 "%H:%M",
             )
-            et = datetime.strptime(
+            et = datetime.datetime.strptime(
                 schedule.get(date.weekday()).get("end"),
                 "%H:%M",
             )
             total_hours += (et - st).seconds / (60 * 60)
             counter -= 1
-        date = date + timedelta(days=1)
+        date = date + datetime.timedelta(days=1)
     return {
         "count": counter2,
         "last_date": last_date,
@@ -130,7 +130,7 @@ class ProgramSetter:
     def get_next_date(self, show=False) -> dict:
         ld = self.last_date
         while ld.weekday() not in self.schedule.keys():
-            ld = ld + timedelta(days=1)
+            ld = ld + datetime.timedelta(days=1)
         else:
             result = {
                 "date": ld,
@@ -138,7 +138,7 @@ class ProgramSetter:
                 "end": self.schedule.get(ld.weekday()).get("end"),
             }
             if not show:
-                self.last_date = ld + timedelta(days=1)
+                self.last_date = ld + datetime.timedelta(days=1)
             return result
 
     def get_plan_dict(self):
@@ -153,7 +153,8 @@ class ProgramSetter:
             lessons = [{
                 'object': lesson,
                 'homeworks': [{"object": hw,
-                               "deadline": self.get_next_date(show=True).get("date") + timedelta(days=3)} for hw in lesson.homeworks.all()],
+                               "deadline": self.get_next_date(show=True).get("date") + datetime.timedelta(days=3)}
+                              for hw in lesson.homeworks.all()],
                 'dt': self.get_next_date()
             } for lesson in lessons]
 
@@ -218,7 +219,7 @@ class Rescheduling:
     def get_next_date(self, show=False) -> dict:
         ld = self.last_date
         while ld.weekday() not in self.schedule.keys():
-            ld = ld + timedelta(days=1)
+            ld = ld + datetime.timedelta(days=1)
         else:
             result = {
                 "date": ld,
@@ -226,7 +227,7 @@ class Rescheduling:
                 "end": self.schedule.get(ld.weekday()).get("end"),
             }
             if not show:
-                self.last_date = ld + timedelta(days=1)
+                self.last_date = ld + datetime.timedelta(days=1)
             return result
 
     def set_hw_deadline(self, homeworks, date):
@@ -266,7 +267,7 @@ class AddLessons:
     def get_next_date(self, show=False) -> dict:
         ld = self.last_date
         while ld.weekday() not in self.schedule.keys():
-            ld = ld + timedelta(days=1)
+            ld = ld + datetime.timedelta(days=1)
         else:
             result = {
                 "date": ld,
@@ -274,7 +275,7 @@ class AddLessons:
                 "end": self.schedule.get(ld.weekday()).get("end")
             }
             if not show:
-                self.last_date = ld + timedelta(days=1)
+                self.last_date = ld + datetime.timedelta(days=1)
             return result
 
     def get_phase(self):
@@ -290,12 +291,13 @@ class AddLessons:
             self.plan.save()
         return phase
 
-    def add_lessons(self, count):
-        count = int(count)
+    def add_lessons(self):
         phase = self.get_phase()
         counter = 1
-        while count > 0:
+        while True:
             next_date = self.get_next_date(False)
+            if next_date.get('date').year > datetime.date.today().year+1:
+                break
             phase.lessons.create(
                 name=f'Занятие {counter}',
                 start_time=next_date.get("start"),
@@ -303,8 +305,6 @@ class AddLessons:
                 date=next_date.get("date"),
                 place_id=self.schedule[next_date.get("date").weekday()]["place"]
             )
-            print(self.schedule[next_date.get("date").weekday()]["place"])
             counter += 1
-            count -= 1
 
 

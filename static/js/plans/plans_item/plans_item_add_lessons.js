@@ -49,6 +49,27 @@ function plansItemAddLessonsMain(){
         plansItemAddLessonsModalSundayTimeEnd.disabled = !plansItemAddLessonsModalSundayCheck.checked
         plansItemAddLessonsModalSundayPlace.disabled = !plansItemAddLessonsModalSundayCheck.checked
     })
+    plansItemAddLessonsModalMondayTimeStart.addEventListener("input", function () {
+        plansItemAddLessonsModalMondayTimeEnd.value = getPlus1HourTime(plansItemAddLessonsModalMondayTimeStart)
+    })
+    plansItemAddLessonsModalTuesdayTimeStart.addEventListener("input", function () {
+        plansItemAddLessonsModalTuesdayTimeEnd.value = getPlus1HourTime(plansItemAddLessonsModalTuesdayTimeStart)
+    })
+    plansItemAddLessonsModalWednesdayTimeStart.addEventListener("input", function () {
+        plansItemAddLessonsModalWednesdayTimeEnd.value = getPlus1HourTime(plansItemAddLessonsModalWednesdayTimeStart)
+    })
+    plansItemAddLessonsModalThursdayTimeStart.addEventListener("input", function () {
+        plansItemAddLessonsModalThursdayTimeEnd.value = getPlus1HourTime(plansItemAddLessonsModalThursdayTimeStart)
+    })
+    plansItemAddLessonsModalFridayTimeStart.addEventListener("input", function () {
+        plansItemAddLessonsModalFridayTimeEnd.value = getPlus1HourTime(plansItemAddLessonsModalFridayTimeStart)
+    })
+    plansItemAddLessonsModalSaturdayTimeStart.addEventListener("input", function () {
+        plansItemAddLessonsModalSaturdayTimeEnd.value = getPlus1HourTime(plansItemAddLessonsModalSaturdayTimeStart)
+    })
+    plansItemAddLessonsModalSundayTimeStart.addEventListener("input", function () {
+        plansItemAddLessonsModalSundayTimeEnd.value = getPlus1HourTime(plansItemAddLessonsModalSundayTimeStart)
+    })
     plansItemAddLessonsModalAddButton.addEventListener("click", plansItemAddLessonsCreate)
 }
 
@@ -58,9 +79,29 @@ function plansItemAddLessonsSetModal(){
 }
 
 function plansItemAddLessonsResetModal(validationOnly = false){
-    if (validationOnly === false){
+    function resetValidation(){
+        plansItemAddLessonsModalErrorsAlert.classList.add("d-none")
+        plansItemAddLessonsModalErrorsList.innerHTML = ""
+        plansItemAddLessonsModalDate.classList.remove("is-invalid")
+        plansItemAddLessonsModalMondayTimeStart.classList.remove("is-invalid")
+        plansItemAddLessonsModalMondayTimeEnd.classList.remove("is-invalid")
+        plansItemAddLessonsModalTuesdayTimeStart.classList.remove("is-invalid")
+        plansItemAddLessonsModalTuesdayTimeEnd.classList.remove("is-invalid")
+        plansItemAddLessonsModalWednesdayTimeStart.classList.remove("is-invalid")
+        plansItemAddLessonsModalWednesdayTimeEnd.classList.remove("is-invalid")
+        plansItemAddLessonsModalThursdayTimeStart.classList.remove("is-invalid")
+        plansItemAddLessonsModalThursdayTimeEnd.classList.remove("is-invalid")
+        plansItemAddLessonsModalFridayTimeStart.classList.remove("is-invalid")
+        plansItemAddLessonsModalFridayTimeEnd.classList.remove("is-invalid")
+        plansItemAddLessonsModalSaturdayTimeStart.classList.remove("is-invalid")
+        plansItemAddLessonsModalSaturdayTimeEnd.classList.remove("is-invalid")
+        plansItemAddLessonsModalSundayTimeStart.classList.remove("is-invalid")
+        plansItemAddLessonsModalSundayTimeEnd.classList.remove("is-invalid")
+    }
+
+    resetValidation()
+    if (!validationOnly){
         plansItemAddLessonsModalDate.value = ""
-        plansItemAddLessonsModalCount.value = ""
         plansItemAddLessonsModalMondayCheck.checked = false
         plansItemAddLessonsModalTuesdayCheck.checked = false
         plansItemAddLessonsModalWednesdayCheck.checked = false
@@ -113,12 +154,137 @@ function plansItemAddLessonsResetModal(validationOnly = false){
     }
 }
 
-function plansItemAddLessonsValidation(errors, warnings){
-    return true
+function plansItemAddLessonsValidation(errors=null, warnings=null){
+    function setInvalid(error=null, elements=[]){
+        if (error){
+            plansItemAddLessonsModalErrorsAlert.classList.remove("d-none")
+            plansItemAddLessonsModalErrorsList.innerHTML += `<li>${error}</li>`
+        }
+        elements.forEach(element => {
+            element.classList.add("is-invalid")
+        })
+        validationStatus = false
+    }
+
+    function validateStartDate() {
+        if (plansItemAddLessonsModalDate.value === ""){
+            setInvalid("Необходимо указать дату начала обучения",
+                [plansItemAddLessonsModalDate])
+        } else {
+            if (new Date().getDate() > new Date(plansItemAddLessonsModalDate.value).getDate()){
+                setInvalid("Дата начала обучения не может быть раньше, чем сегодня",
+                    [plansItemAddLessonsModalDate])
+            }
+        }
+    }
+
+    function validateChecks(){
+        if (
+            !plansItemAddLessonsModalMondayCheck.checked &&
+            !plansItemAddLessonsModalTuesdayCheck.checked &&
+            !plansItemAddLessonsModalWednesdayCheck.checked &&
+            !plansItemAddLessonsModalThursdayCheck.checked &&
+            !plansItemAddLessonsModalFridayCheck.checked &&
+            !plansItemAddLessonsModalSaturdayCheck.checked &&
+            !plansItemAddLessonsModalSundayCheck.checked
+        ){
+            setInvalid("Необходимо выбрать хотя бы один день недели")
+        }
+    }
+
+    function validateMonday() {
+        const val = timeUtilsValidateTimeInScheduleModals(
+            plansItemAddLessonsModalMondayCheck,
+            plansItemAddLessonsModalMondayTimeStart,
+            plansItemAddLessonsModalMondayTimeEnd
+        )
+        if (val.status === "error"){
+            setInvalid(`ПН: ${val.error}`, val.elements)
+        }
+    }
+
+    function validateTuesday() {
+        const val = timeUtilsValidateTimeInScheduleModals(
+            plansItemAddLessonsModalTuesdayCheck,
+            plansItemAddLessonsModalTuesdayTimeStart,
+            plansItemAddLessonsModalTuesdayTimeEnd
+        )
+        if (val.status === "error"){
+            setInvalid(`ВТ: ${val.error}`, val.elements)
+        }
+    }
+
+    function validateWednesday() {
+        const val = timeUtilsValidateTimeInScheduleModals(
+            plansItemAddLessonsModalWednesdayCheck,
+            plansItemAddLessonsModalWednesdayTimeStart,
+            plansItemAddLessonsModalWednesdayTimeEnd
+        )
+        if (val.status === "error"){
+            setInvalid(`СР: ${val.error}`, val.elements)
+        }
+    }
+
+    function validateThursday() {
+        const val = timeUtilsValidateTimeInScheduleModals(
+            plansItemAddLessonsModalThursdayCheck,
+            plansItemAddLessonsModalThursdayTimeStart,
+            plansItemAddLessonsModalThursdayTimeEnd
+        )
+        if (val.status === "error"){
+            setInvalid(`ЧТ: ${val.error}`, val.elements)
+        }
+    }
+
+    function validateFriday() {
+        const val = timeUtilsValidateTimeInScheduleModals(
+            plansItemAddLessonsModalFridayCheck,
+            plansItemAddLessonsModalFridayTimeStart,
+            plansItemAddLessonsModalFridayTimeEnd
+        )
+        if (val.status === "error"){
+            setInvalid(`ПТ: ${val.error}`, val.elements)
+        }
+    }
+
+    function validateSaturday() {
+        const val = timeUtilsValidateTimeInScheduleModals(
+            plansItemAddLessonsModalSaturdayCheck,
+            plansItemAddLessonsModalSaturdayTimeStart,
+            plansItemAddLessonsModalSaturdayTimeEnd
+        )
+        if (val.status === "error"){
+            setInvalid(`СБ: ${val.error}`, val.elements)
+        }
+    }
+
+    function validateSunday() {
+        const val = timeUtilsValidateTimeInScheduleModals(
+            plansItemAddLessonsModalSundayCheck,
+            plansItemAddLessonsModalSundayTimeStart,
+            plansItemAddLessonsModalSundayTimeEnd
+        )
+        if (val.status === "error"){
+            setInvalid(`ВС: ${val.error}`, val.elements)
+        }
+    }
+
+    let validationStatus = true
+    plansItemAddLessonsResetModal(true)
+    validateStartDate()
+    validateChecks()
+    validateMonday()
+    validateTuesday()
+    validateWednesday()
+    validateThursday()
+    validateFriday()
+    validateSaturday()
+    validateSunday()
+    return validationStatus
 }
 
 function plansItemAddLessonsCreate(){
-    if (plansItemAddLessonsValidation){
+    if (plansItemAddLessonsValidation()){
         planItemAPIAddLessons(new FormData(plansItemAddLessonsModalForm), planID).then(request => {
             switch (request.status){
                 case 201:
@@ -142,7 +308,6 @@ const plansItemAddLessonsModal = document.querySelector("#plansItemAddLessonsMod
 const bsPlansItemAddLessonsModal = new bootstrap.Modal(plansItemAddLessonsModal)
 const plansItemAddLessonsModalForm = plansItemAddLessonsModal.querySelector("#plansItemAddLessonsModalForm")
 const plansItemAddLessonsModalDate = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalDate")
-const plansItemAddLessonsModalCount = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalCount")
 const plansItemAddLessonsModalMondayCheck = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalMondayCheck")
 const plansItemAddLessonsModalMondayTimeStart = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalMondayTimeStart")
 const plansItemAddLessonsModalMondayTimeEnd = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalMondayTimeEnd")
@@ -172,5 +337,7 @@ const plansItemAddLessonsModalSundayTimeStart = plansItemAddLessonsModalForm.que
 const plansItemAddLessonsModalSundayTimeEnd = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalSundayTimeEnd")
 const plansItemAddLessonsModalSundayPlace = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalSundayPlace")
 const plansItemAddLessonsModalAddButton = plansItemAddLessonsModal.querySelector("#plansItemAddLessonsModalAddButton")
+const plansItemAddLessonsModalErrorsAlert = plansItemAddLessonsModal.querySelector("#plansItemAddLessonsModalErrorsAlert")
+const plansItemAddLessonsModalErrorsList = plansItemAddLessonsModal.querySelector("#plansItemAddLessonsModalErrorsList")
 
 plansItemAddLessonsMain()

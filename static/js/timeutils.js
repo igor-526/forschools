@@ -57,22 +57,53 @@ function lessonTimeRangeToStr(timeStart, timeEnd){
 
 
 function getLessonDateTimeRangeString(lesson){
-        let dt = ""
-        if (lesson.start_time !== null){
-            const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
-            const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
-            const dateDay = st.getDate().toString().padStart(2, "0")
-            const dateMonth = (st.getMonth()+1).toString().padStart(2, "0")
-            const stH = st.getHours().toString().padStart(2, "0")
-            const stM = st.getMinutes().toString().padStart(2, "0")
-            const etH = et.getHours().toString().padStart(2, "0")
-            const etM = et.getMinutes().toString().padStart(2, "0")
-            dt = `${dateDay}.${dateMonth} ${stH}:${stM}-${etH}:${etM}`
-        } else if (lesson.date !== null){
-            const date = new Date(lesson.date)
-            const dateDay = date.getDate().toString().padStart(2, "0")
-            const dateMonth = (date.getMonth()+1).toString().padStart(2, "0")
-            dt = `${dateDay}.${dateMonth}`
-        }
-        return dt
+    let dt = ""
+    if (lesson.start_time !== null){
+        const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
+        const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
+        const dateDay = st.getDate().toString().padStart(2, "0")
+        const dateMonth = (st.getMonth()+1).toString().padStart(2, "0")
+        const stH = st.getHours().toString().padStart(2, "0")
+        const stM = st.getMinutes().toString().padStart(2, "0")
+        const etH = et.getHours().toString().padStart(2, "0")
+        const etM = et.getMinutes().toString().padStart(2, "0")
+        dt = `${dateDay}.${dateMonth} ${stH}:${stM}-${etH}:${etM}`
+    } else if (lesson.date !== null){
+        const date = new Date(lesson.date)
+        const dateDay = date.getDate().toString().padStart(2, "0")
+        const dateMonth = (date.getMonth()+1).toString().padStart(2, "0")
+        dt = `${dateDay}.${dateMonth}`
     }
+    return dt
+}
+
+
+function timeUtilsValidateTimeInScheduleModals(check, ts, te){
+    if (check.checked){
+        if (ts.value !== "" && te.value !== ""){
+            if (compareTime(ts, te)){
+                return {
+                    status: "error",
+                    error: "Окончание занятия должно быть позже начала",
+                    elements: [ts, te]
+                }
+            }
+        } else {
+            if (ts.value === ""){
+                return {
+                    status: "error",
+                    error: "Начало занятия не может быть пустым",
+                    elements: [ts]
+                }
+            }
+            if (te.value === ""){
+                return {
+                    status: "error",
+                    error: "Окончание занятия не может быть пустым",
+                    elements: [te]
+                }
+            }
+        }
+    }
+    return {status: "success"}
+}

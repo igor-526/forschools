@@ -80,19 +80,20 @@ function usersEditListeners(){
             offcanvasUsersEditRoleCheckboxTeacher.checked = false
         }
     })
-    offcanvasUsersEditLastNameField.addEventListener("input", function (){
-        offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
-            offcanvasUsersEditFirstNameField.value,
-            offcanvasUsersEditLastNameField.value
-        )
-    })
-    offcanvasUsersEditFirstNameField.addEventListener("input", function (){
-        offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
-            offcanvasUsersEditFirstNameField.value,
-            offcanvasUsersEditLastNameField.value
-        )
-    })
-
+    if (userUtilsValidateUsername(offcanvasUsersEditUsernameField.value).status === "error"){
+        offcanvasUsersEditLastNameField.addEventListener("input", function (){
+            offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
+                offcanvasUsersEditFirstNameField.value,
+                offcanvasUsersEditLastNameField.value
+            )
+        })
+        offcanvasUsersEditFirstNameField.addEventListener("input", function (){
+            offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
+                offcanvasUsersEditFirstNameField.value,
+                offcanvasUsersEditLastNameField.value
+            )
+        })
+    }
 }
 
 function usersEditReset(validationOnly=false){
@@ -232,7 +233,7 @@ function usersEditSetOffcanvas(userID=null, userElement=null){
     })
 }
 
-function usersEditValidation(errors=[]){
+function usersEditValidation(errors=null){
     function setInvalid(errorString="Ошибка!", element=null, errorElement=null){
         if (element){
             element.classList.add("is-invalid")
@@ -251,26 +252,10 @@ function usersEditValidation(errors=[]){
                 offcanvasUsersEditUsernameErrors
             )
         } else {
-            if (offcanvasUsersEditUsernameField.value.trim() !== ""){
-                if (offcanvasUsersEditUsernameField.value.trim().length > 50){
-                    setInvalid(
-                        "Длина не может превышать 50 символов",
-                        offcanvasUsersEditUsernameField,
-                        offcanvasUsersEditUsernameErrors
-                    )
-                } else {
-                    const russianLettersRegex = /^[A-Za-z0-9.]+$/
-                    if (!russianLettersRegex.test(offcanvasUsersEditUsernameField.value.trim())){
-                        setInvalid(
-                            "Поле может содержать только маленькие английские буквы, цифры и точки",
-                            offcanvasUsersEditUsernameField,
-                            offcanvasUsersEditUsernameErrors
-                        )
-                    }
-                }
-            } else {
+            const validation = userUtilsValidateUsername(offcanvasUsersEditUsernameField.value)
+            if (validation.status === "error"){
                 setInvalid(
-                    "Поле не может быть пустым",
+                    validation.error,
                     offcanvasUsersEditUsernameField,
                     offcanvasUsersEditUsernameErrors
                 )
@@ -552,8 +537,6 @@ function usersEditSave(){
                     usersAdminShow(request.response, selectedUserIDElement)
                     break
                 case 400:
-                    console.log(request.response)
-                    formUserEditServerValidation(request.response)
                     break
                 default:
                     bsOffcanvasUsersEdit.hide()

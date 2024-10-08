@@ -225,5 +225,5 @@ class PlanItemAddLessons(LoginRequiredMixin, APIView):
             get_schedule(request.POST),
             plan
         )
-        lessons_generator.add_lessons(request.POST.get("count"))
+        lessons_generator.add_lessons()
         return JsonResponse({"status": "ok"}, status=201)
