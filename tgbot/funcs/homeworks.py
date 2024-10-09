@@ -506,7 +506,7 @@ async def hw_send(message: types.Message, state: FSMContext):
     if data.get('action') == 'send':
         await message.answer("Решение успешно отправлено\n"
                              "Ожидайте ответа преподавателя")
-        teacher_tg = await get_tg_id(hw.teacher, "main")
+        teacher_tg = await get_tg_id(hw.teacher.id, "main")
         if teacher_tg:
             try:
                 msg = f"Пришёл новый ответ от ученика по ДЗ <b>'{hw.name}'</b>"
@@ -554,11 +554,11 @@ async def hw_send(message: types.Message, state: FSMContext):
             )
     elif data.get('action') in ['check_accept', 'check_revision']:
         await message.answer("Ответ был отправлен")
-        listener_tg = await get_tg_id(hw.listener)
-        if listener_tg:
+        listener_tgs = await get_tg_id(hw.listener.id)
+        for listener_tg in listener_tgs:
             try:
                 msg = f"Пришёл новый ответ от преподавателя по ДЗ <b>'{hw.name}'</b>"
-                msg_object = await bot.send_message(chat_id=listener_tg,
+                msg_object = await bot.send_message(chat_id=listener_tg.get("tg_id"),
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([hw]))
                 await TgBotJournal.objects.acreate(
@@ -590,10 +590,10 @@ async def hw_send(message: types.Message, state: FSMContext):
 
 
 async def homework_tg_notificate(initiator: NewUser, listener: int, homeworks: list[Homework]):
-    user_tg_note = await Telegram.objects.filter(user_id=listener).afirst()
-    if user_tg_note:
+    listener_tgs = await get_tg_id(listener)
+    for user_tg_note in listener_tgs:
         try:
-            msg = await bot.send_message(chat_id=user_tg_note.tg_id,
+            msg = await bot.send_message(chat_id=user_tg_note.get("tg_id"),
                                          text=f"У вас новые домашние задания!",
                                          reply_markup=get_homeworks_buttons([hw for hw in homeworks]))
             await TgBotJournal.objects.acreate(

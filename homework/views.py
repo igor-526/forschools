@@ -1,4 +1,6 @@
 import datetime
+from pprint import pprint
+
 from lesson.permissions import CanReplaceTeacherMixin, replace_teacher_button
 from .serializers import HomeworkListSerializer, HomeworkLogSerializer
 from rest_framework.generics import ListCreateAPIView, ListAPIView
@@ -69,8 +71,23 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
         return queryset
 
+    def filter_queryset_status(self, queryset):
+        hw_status = self.request.query_params.get("status")
+        if hw_status:
+            filtering_statuses = []
+            if hw_status == '7':
+                filtering_statuses = [7, 2, 5]
+            if hw_status == '3':
+                filtering_statuses = [3]
+            if hw_status == '4':
+                filtering_statuses = [4, 6]
+            listed_queryset = [{"id": hw.id,
+                                "status": hw.get_status().status} for hw in queryset]
+            filtered_queryset = list(filter(lambda hw: hw.get("status") in filtering_statuses, listed_queryset))
+            queryset = Homework.objects.filter(id__in=[hw.get("id") for hw in filtered_queryset])
+        return queryset
+
     def get_queryset(self, *args, **kwargs):
-        hw_status = kwargs.get("status")
         group = kwargs.get("user").groups.first().name
         if group == "Teacher":
             queryset = Homework.objects.filter(teacher=kwargs.get("user"))
@@ -78,28 +95,36 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = Homework.objects.filter(listener=kwargs.get("user"))
         else:
             queryset = Homework.objects.all()
-        st_filtered = []
-        if hw_status == "7":
-            for hw in queryset:
-                status = hw.get_status()
-                if status.status in [7, 2, 5]:
-                    st_filtered.append(status.homework.id)
-        if hw_status == "3":
-            for hw in queryset:
-                status = hw.get_status()
-                if status.status == 3:
-                    st_filtered.append(status.homework.id)
-        if hw_status == "4":
-            for hw in queryset:
-                status = hw.get_status()
-                if status.status in [4, 6]:
-                    st_filtered.append(status.homework.id)
-        if st_filtered:
-            queryset = queryset.filter(id__in=st_filtered)
+        # st_filtered = []
+        # print(hw_status)
+        # if hw_status == "7":
+        #     print("selected 7")
+        #     for hw in queryset:
+        #         status = hw.get_status()
+        #         print(status.status)
+        #         if status.status in [7, 2, 5]:
+        #             st_filtered.append(status.homework.id)
+        # elif hw_status == "3":
+        #     print("selected 3")
+        #     for hw in queryset:
+        #         status = hw.get_status()
+        #         print(status.status)
+        #         if status.status == 3:
+        #             st_filtered.append(status.homework.id)
+        # elif hw_status == "4":
+        #     print("selected 4")
+        #     for hw in queryset:
+        #         status = hw.get_status()
+        #         print(status.status)
+        #         if status.status in [4, 6]:
+        #             st_filtered.append(status.homework.id)
+        # if st_filtered:
+        #     queryset = queryset.filter(id__in=st_filtered)
         queryset = self.filter_queryset_lesson(queryset)
         queryset = self.filter_queryset_teacher(queryset)
         queryset = self.filter_queryset_listener(queryset)
         queryset = self.filter_queryset_assigned(queryset)
+        queryset = self.filter_queryset_status(queryset)
         return queryset[:50]
 
     def list(self, request, *args, **kwargs):
@@ -113,7 +138,13 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                                          context={'request': request})
         serializer.is_valid(raise_exception=True)
         hw = serializer.save()
-        send_homework_tg(request.user, hw.listener, [hw])
+        lesson = hw.lesson_set.first()
+        if lesson:
+            if lesson.status == 1:
+                send_homework_tg(request.user, hw.listener, [hw])
+                hw.set_assigned()
+        else:
+            send_homework_tg(request.user, hw.listener, [hw])
         return Response(serializer.data, status.HTTP_201_CREATED)
 
 

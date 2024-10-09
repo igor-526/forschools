@@ -1,10 +1,10 @@
-from profile_management.models import NewUser, Telegram
+from profile_management.models import Telegram
 from django.urls import reverse
 
 
-def get_tg_id_sync(user: NewUser, usertype=None):
+def get_tg_id_sync(user_id: int, usertype=None):
     if usertype:
-        tg = Telegram.objects.filter(user=user,
+        tg = Telegram.objects.filter(user__id=user_id,
                                      usertype=usertype).first()
         if tg:
             return tg.tg_id
@@ -12,7 +12,7 @@ def get_tg_id_sync(user: NewUser, usertype=None):
             return None
     else:
         tg_ids = [{"tg_id": tgnote.tg_id,
-                   "usertype": tgnote.usertype} for tgnote in Telegram.objects.filter(user=user).all()]
+                   "usertype": tgnote.usertype} for tgnote in Telegram.objects.filter(user__id=user_id).all()]
         return tg_ids
 
 

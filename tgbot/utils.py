@@ -1,5 +1,3 @@
-from typing import List, Dict, Any
-
 from chat.models import Message
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
@@ -37,14 +35,14 @@ async def get_user(tg_id) -> NewUser or None:
         return None
 
 
-async def get_tg_id(user: NewUser, usertype=None):
+async def get_tg_id(user_id: int, usertype=None):
     if usertype:
-        tg_note = await Telegram.objects.filter(usertype=usertype, user=user).afirst()
+        tg_note = await Telegram.objects.filter(usertype=usertype, user__id=user_id).afirst()
         return tg_note.tg_id
     tg_ids = [{
         "tg_id": tgnote.tg_id,
         "usertype": tgnote.usertype
-    } async for tgnote in await Telegram.objects.filter(user=user).all()]
+    } async for tgnote in Telegram.objects.filter(user__id=user_id).all()]
     return tg_ids
 
 
@@ -60,10 +58,10 @@ async def get_group_and_perms(user_id) -> dict:
 
 
 def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype) -> dict:
-    user_tg = Telegram.objects.filter(user=recipient).first()
+    user_tgs = get_tg_id_sync(recipient.id)
     event = 5 if sendtype == "manual" else 6
-    if user_tg:
-        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg.tg_id,
+    for user_tg in user_tgs:
+        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg.get("tg_id"),
                                                      message="Вам направлены материалы:",
                                                      reply_markup=get_keyboard_query(materials))
         if msg_result.get("status") == "success":
@@ -92,8 +90,7 @@ def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype) 
                     "attachments": []
                 }
             )
-        return msg_result
-    else:
+    if not user_tgs:
         TgBotJournal.objects.create(
             recipient=recipient,
             initiator=initiator,
@@ -109,9 +106,9 @@ def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype) 
 
 
 def send_homework_tg(initiator: NewUser, listener: NewUser, homeworks: list[Homework]) -> dict:
-    tg_ids = get_tg_id_sync(listener)
+    tg_ids = get_tg_id_sync(listener.id)
     for tg_id in tg_ids:
-        msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id,
+        msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id.get("tg_id"),
                                                      message=f"У вас новые домашние задания!",
                                                      reply_markup=get_homeworks_buttons([hw for hw in homeworks]))
         if msg_result.get("status") == "success":
@@ -140,8 +137,7 @@ def send_homework_tg(initiator: NewUser, listener: NewUser, homeworks: list[Home
                     "attachments": []
                 }
             )
-        return msg_result
-    else:
+    if not tg_ids:
         TgBotJournal.objects.create(
             recipient=listener,
             initiator=initiator,
@@ -159,7 +155,7 @@ def send_homework_tg(initiator: NewUser, listener: NewUser, homeworks: list[Home
 
 
 def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> dict:
-    user_tg_id = get_tg_id_sync(user)
+    user_tg_ids = get_tg_id_sync(user.id)
     msg = None
     initiator = None
     recipient = None
@@ -171,8 +167,8 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
         msg = f"Пришёл новый ответ от преподавателя по ДЗ <b>'{homework.name}'</b>"
         initiator = homework.teacher
         recipient = homework.listener
-    if user_tg_id:
-        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
+    for user_tg_id in user_tg_ids:
+        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id.get("tg_id"),
                                                      message=msg,
                                                      reply_markup=get_homeworks_buttons([homework]))
         if msg_result.get("status") == "success":
@@ -202,7 +198,7 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
                 }
             )
         return msg_result
-    else:
+    if not user_tg_ids:
         TgBotJournal.objects.create(
             recipient=recipient,
             initiator=initiator,
@@ -218,7 +214,8 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
 
 
 def send_chat_message(message: Message):
-    user_tg_id = get_tg_id_sync(message.receiver)
+    if message.receiver:
+        user_tg_id = get_tg_id_sync(message.receiver.id, "main")
     if user_tg_id:
         msg_text = (f"<b>Новое сообщение от {message.sender.first_name} "
                     f"{message.sender.last_name}</b>\n{message.message}")
@@ -269,6 +266,6 @@ def send_chat_message(message: Message):
 
 
 def send_homework_edit(hw: Homework, user: NewUser):
-    sync_funcs.send_tg_message_sync(tg_id=user.telegram.first().tg_id,
+    sync_funcs.send_tg_message_sync(tg_id=user.telegram.filter(usertype="main").first().tg_id,
                                     message=f"ДЗ '{hw.name}'",
                                     reply_markup=get_homework_edit_button(hw.id))

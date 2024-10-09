@@ -91,7 +91,7 @@ async def chats_send_ask(callback: CallbackQuery,
 async def chats_notificate(chat_message_id: int, show=False):
     chat_message = await Message.objects.select_related("receiver").select_related("sender").aget(pk=chat_message_id)
     if chat_message.receiver:
-        tg_id = await get_tg_id(chat_message.receiver, "main")
+        tg_id = await get_tg_id(chat_message.receiver.id, "main")
     else:
         tg_id = None
     if tg_id:

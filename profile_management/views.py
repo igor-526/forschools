@@ -318,7 +318,10 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
             queryset = self.sort_username(queryset)
             queryset = self.sort_fullname(queryset)
             queryset = queryset.order_by("-is_active")
-        return queryset.distinct()
+        if queryset:
+            return queryset.distinct()
+        else:
+            return None
 
 
 class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):
