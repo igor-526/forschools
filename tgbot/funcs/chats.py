@@ -90,7 +90,10 @@ async def chats_send_ask(callback: CallbackQuery,
 
 async def chats_notificate(chat_message_id: int, show=False):
     chat_message = await Message.objects.select_related("receiver").select_related("sender").aget(pk=chat_message_id)
-    tg_id = await get_tg_id(chat_message.receiver)
+    if chat_message.receiver:
+        tg_id = await get_tg_id(chat_message.receiver, "main")
+    else:
+        tg_id = None
     if tg_id:
         if show:
             msg_text = (f"<b>Cообщение от {chat_message.sender.first_name} "

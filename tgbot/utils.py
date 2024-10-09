@@ -1,3 +1,5 @@
+from typing import List, Dict, Any
+
 from chat.models import Message
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
@@ -35,12 +37,15 @@ async def get_user(tg_id) -> NewUser or None:
         return None
 
 
-async def get_tg_id(user: NewUser) -> int | None:
-    tg_note = await Telegram.objects.filter(user=user).afirst()
-    if tg_note:
+async def get_tg_id(user: NewUser, usertype=None):
+    if usertype:
+        tg_note = await Telegram.objects.filter(usertype=usertype, user=user).afirst()
         return tg_note.tg_id
-    else:
-        return None
+    tg_ids = [{
+        "tg_id": tgnote.tg_id,
+        "usertype": tgnote.usertype
+    } async for tgnote in await Telegram.objects.filter(user=user).all()]
+    return tg_ids
 
 
 async def get_group_and_perms(user_id) -> dict:
@@ -104,9 +109,9 @@ def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype) 
 
 
 def send_homework_tg(initiator: NewUser, listener: NewUser, homeworks: list[Homework]) -> dict:
-    user_tg_id = get_tg_id_sync(listener)
-    if user_tg_id:
-        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
+    tg_ids = get_tg_id_sync(listener)
+    for tg_id in tg_ids:
+        msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id,
                                                      message=f"У вас новые домашние задания!",
                                                      reply_markup=get_homeworks_buttons([hw for hw in homeworks]))
         if msg_result.get("status") == "success":

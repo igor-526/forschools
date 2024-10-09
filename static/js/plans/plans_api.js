@@ -1,22 +1,21 @@
-async function plansAPIGet(name=null, teacher=[], listener=[]){
+async function plansAPIGet(name=null, teacher=[],
+                           listener=[], nameSort=null){
     let url = "/api/v1/learning_plans/"
     let searchParams = []
     if (name){
         searchParams.push(`name=${name}`)
     }
-    if (teacher){
-        teacher.forEach(teacher => {
-            searchParams.push(`teacher=${teacher}`)
-        })
+    teacher.forEach(teacher => {
+        searchParams.push(`teacher=${teacher}`)
+    })
+    listener.forEach(listener => {
+        searchParams.push(`listener=${listener}`)
+    })
+    if (nameSort){
+        searchParams.push(`sort_name=${nameSort}`)
     }
-    if (listener){
-        listener.forEach(listener => {
-            searchParams.push(`listener=${listener}`)
-        })
-    }
-    if (searchParams){
-        url += "?"
-        url += searchParams.join("&")
+    if (searchParams.length > 0){
+        url += "?" + searchParams.join("&")
     }
     const request = await fetch(url)
     return APIGetToObject(request)

@@ -506,7 +506,7 @@ async def hw_send(message: types.Message, state: FSMContext):
     if data.get('action') == 'send':
         await message.answer("Решение успешно отправлено\n"
                              "Ожидайте ответа преподавателя")
-        teacher_tg = await get_tg_id(hw.teacher)
+        teacher_tg = await get_tg_id(hw.teacher, "main")
         if teacher_tg:
             try:
                 msg = f"Пришёл новый ответ от ученика по ДЗ <b>'{hw.name}'</b>"

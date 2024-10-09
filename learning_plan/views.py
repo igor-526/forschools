@@ -101,6 +101,14 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = queryset.filter(listeners__id__in=q_listeners)
         return queryset
 
+    def order_by_name(self, queryset):
+        order_name = self.request.query_params.get('sort_name')
+        if order_name == "asc":
+            queryset = queryset.order_by('name')
+        elif order_name == "desc":
+            queryset = queryset.order_by('-name')
+        return queryset
+
     def get_queryset(self):
         queryset = None
         if self.request.user.groups.filter(name__in=["Admin", "Metodist"]).exists():
@@ -110,6 +118,7 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         queryset = self.filter_name(queryset)
         queryset = self.filter_teacher(queryset)
         queryset = self.filter_listeners(queryset)
+        queryset = self.order_by_name(queryset)
         return queryset
 
 

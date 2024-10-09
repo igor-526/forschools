@@ -75,21 +75,22 @@ def can_add_homework(request, lesson: Lesson):
 
 
 def can_set_passed(request, lesson: Lesson):
-    if not request.user.groups.filter(name="Listener").exists():
-        if request.user.groups.filter(name__in=["Metodist", "Admin"]).exists() or lesson.get_teacher() == request.user:
-            lesson_end = lesson.date
-            if lesson.end_time:
-                lesson_end = datetime.datetime(
-                    year=lesson.date.year,
-                    month=lesson.date.month,
-                    day=lesson.date.day,
-                    hour=lesson.end_time.hour,
-                    minute=lesson.end_time.minute,
-                    second=0,
-                    microsecond=0)
-                return lesson_end < datetime.datetime.now()
-            else:
-                return lesson_end < datetime.date.today()
+    if lesson.status == 0:
+        if not request.user.groups.filter(name="Listener").exists():
+            if request.user.groups.filter(name__in=["Metodist", "Admin"]).exists() or lesson.get_teacher() == request.user:
+                lesson_end = lesson.date
+                if lesson.end_time:
+                    lesson_end = datetime.datetime(
+                        year=lesson.date.year,
+                        month=lesson.date.month,
+                        day=lesson.date.day,
+                        hour=lesson.end_time.hour,
+                        minute=lesson.end_time.minute,
+                        second=0,
+                        microsecond=0)
+                    return lesson_end < datetime.datetime.now()
+                else:
+                    return lesson_end < datetime.date.today()
     return False
 
 

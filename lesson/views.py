@@ -198,7 +198,8 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                     homeworks = lesson.homeworks.filter(listener=listener)
                     for hw in homeworks:
                         hw.set_assigned()
-                    send_homework_tg(request.user, listener, homeworks)
+                    if homeworks:
+                        send_homework_tg(request.user, listener, homeworks)
                 return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
                 return JsonResponse({'error': "Недостаточно прав для изменения статуса занятия"},

@@ -136,7 +136,6 @@ function usersEditSetOffcanvas(userID=null, userElement=null){
                 selectedUserID = userID
                 selectedUserIDElement = userElement
                 usersEditReset()
-                console.log(request.response.username)
                 if (userUtilsValidateUsername(request.response.username).status === "error"){
                     offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
                         request.response.first_name,

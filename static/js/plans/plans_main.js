@@ -1,4 +1,4 @@
-async function learningPlansMain(){
+function learningPlansMain(){
     learningPlansSelectedListeners = getHashValue("listener")?[Number(getHashValue("listener"))]:[]
     learningPlansSelectedTeachers = getHashValue("teacher")?[Number(getHashValue("teacher"))]:[]
     if (getHashValue("new")){
@@ -9,7 +9,8 @@ async function learningPlansMain(){
 }
 
 function learningPlansGet(){
-    plansAPIGet(null, learningPlansSelectedTeachers, learningPlansSelectedListeners).then(request => {
+    plansAPIGet(learningPlansSelectedName, learningPlansSelectedTeachers,
+        learningPlansSelectedListeners, learningPlansSelectedNameSort).then(request => {
         switch (request.status){
             case 200:
                 learningPlansShow(request.response)
@@ -81,6 +82,8 @@ function learningPlansShow(plans){
 const plansTableBody = document.querySelector("#PlansTableBody")
 
 //Filtering
+let learningPlansSelectedName = null
+let learningPlansSelectedNameSort = null
 let learningPlansSelectedTeachers = []
 let learningPlansSelectedListeners = []
 
