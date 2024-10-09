@@ -29,7 +29,7 @@ class ErrorLogsMiddleware:
                 elif request.method == "POST":
                     params = dict(request.POST)
                 else:
-                    params = None
+                    params = {}
             except Exception as e:
                 params = None
             WSGIErrorsLog.objects.create(

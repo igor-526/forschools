@@ -3,9 +3,30 @@ async function telegramAPIGetUser(userID){
     return await APIGetToObject(request)
 }
 
-async function telegramAPIDisconnect(userID){
-    const request = await fetch(`/api/v1/users/${userID}/telegram/`, {
-        method: 'delete',
+// async function telegramAPIDisconnect(userID){
+//     const request = await fetch(`/api/v1/users/${userID}/telegram/`, {
+//         method: 'delete',
+//         credentials: 'same-origin',
+//         headers: {
+//             "X-CSRFToken": csrftoken,
+//         }
+//     })
+//     return APIDeleteToObject(request)
+// }
+
+async function telegramAPIGetUsers(){
+    const request = await fetch('/api/v1/telegram/all/')
+    return APIGetToObject(request)
+}
+
+async function telegramAPIGetTelegramNotes(userID){
+    const request = await fetch(`/api/v1/telegram/${userID}/`)
+    return APIGetToObject(request)
+}
+
+async function telegramAPIDisconnect(noteID){
+    const request = await fetch(`/api/v1/telegram/${noteID}/`, {
+        method: 'DELETE',
         credentials: 'same-origin',
         headers: {
             "X-CSRFToken": csrftoken,
@@ -14,9 +35,16 @@ async function telegramAPIDisconnect(userID){
     return APIDeleteToObject(request)
 }
 
-async function telegramAPIGetUsers(){
-    const request = await fetch('/api/v1/telegram/all/')
-    return APIGetToObject(request)
+async function telegramAPIEditRole(noteID, fd){
+    const request = await fetch(`/api/v1/telegram/${noteID}/`, {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: {
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
 }
 
 async function telegramAPISendMaterials(users, materials){
@@ -28,7 +56,7 @@ async function telegramAPISendMaterials(users, materials){
         fd.append("materials", mat)
     })
     const request = await fetch("/api/v1/telegram/sendmaterial/", {
-        method: 'post',
+        method: 'POST',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
@@ -45,7 +73,7 @@ async function telegramAPISendLessonMaterials(lesson, materials=[]){
         fd.append("materials", mat)
     })
     const request = await fetch("/api/v1/telegram/sendmaterial/", {
-        method: 'post',
+        method: 'POST',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

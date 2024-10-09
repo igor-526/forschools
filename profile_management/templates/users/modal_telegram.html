@@ -1,4 +1,4 @@
-<div class="modal" tabindex="-1" id="UserShowTelegramModal">
+<div class="modal modal-xl fade" tabindex="-1" id="userTelegramModal">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -6,42 +6,63 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-
-                <div id="UserShowTelegramModalNotConnected">
-                    Telegram не привязан<br>
-                    Для автоматической привязки необходимо с утройства, на котором установлен Telegram перейти по ссылке:
-                    <a href="#" id="UserShowTelegramModalURL"></a><br><br>
-                    Для ручной привязки необходимо найти в Telegram бота @kitai_school_study_bot, после чего написать команду
-                    "<b>/start <span id="UserShowTelegramModalCode"></span></b>" (без кавычек)
-                </div>
-                <div id="UserShowTelegramModalConnected">
-                    Telegram привязан
-                </div>
-
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Роль аккаунта</th>
+                            <th scope="col" id="userTelegramModalTableID">ID аккаунта</th>
+                            <th scope="col" id="userTelegramModalTableNickname">Никнейм</th>
+                            <th scope="col">ФИ</th>
+                            <th scope="col">Время привязки</th>
+                            <th scope="col" style="min-width: 120px;">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTelegramModalTableBody"></tbody>
+                </table>
             </div>
             <div class="modal-footer">
-                <button id="UserShowTelegramModalButtonDisconnect" type="button" class="btn btn-danger">Отвязать</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal" tabindex="-1" id="UserShowTelegramModalDisconnectConfirm">
+<div class="modal" tabindex="-1" id="userTelegramDisconnectModal">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Отвязка Telegram</h5>
+                <h5 class="modal-title">Удаление привязки Telegram</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                Вы собираетесь отвязать Telegram. Это действие необратимо.<br><br>
-                Вы уверены?
-            </div>
+            <div class="modal-body" id="userTelegramDisconnectModalBody"></div>
             <div class="modal-footer">
-                <button id="UserShowTelegramModalDisconnectConfirmDelete" type="button" class="btn btn-danger">Отвязать</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="userTelegramDisconnectModalButton" type="button" class="btn btn-danger">Отвязать</button>
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" tabindex="-1" id="userTelegramEditRoleModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Переименовать роль</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                        <label for="userTelegramEditRoleModalField" class="form-label">Новая роль</label>
+                        <input name="password" type="text" class="form-control" id="userTelegramEditRoleModalField">
+                        <div class="form-text">Примечание, показываемое в диалогах</div>
+                        <div class="invalid-feedback" id="userTelegramEditRoleModalError"></div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="userTelegramEditRoleModalButton" type="button" class="btn btn-warning">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+

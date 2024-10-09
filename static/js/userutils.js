@@ -40,15 +40,15 @@ function getUsernameFromFirstLastName(first_name="", last_name=""){
 
 
 function userUtilsValidateUsername(username){
-    if (username.value.trim() !== ""){
-        if (username.value.trim().length > 50){
+    if (username.trim() !== ""){
+        if (username.trim().length > 50){
             return {
                 status: "error",
                 error: "Длина не может превышать 50 символов"
             }
         } else {
             const russianLettersRegex = /^[A-Za-z0-9.]+$/
-            if (!russianLettersRegex.test(username.value.trim())){
+            if (!russianLettersRegex.test(username.trim())){
                 return {
                     status: "error",
                     error: "Поле может содержать только маленькие английские буквы, цифры и точки"

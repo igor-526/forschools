@@ -321,6 +321,12 @@ class Telegram(models.Model):
     nickname = models.CharField(verbose_name='ник',
                                 null=True,
                                 blank=True)
+    first_name = models.CharField(verbose_name="Имя",
+                                  null=True,
+                                  blank=True)
+    last_name = models.CharField(verbose_name="Фамилия",
+                                  null=True,
+                                  blank=True)
     notifications_changed_lesson = models.BooleanField(verbose_name="Уведомление об изменении занятия",
                                                        null=False,
                                                        blank=False,
@@ -339,13 +345,22 @@ class Telegram(models.Model):
     last_message_from_user_id = models.IntegerField(verbose_name="ID последнего сообщения от пользователя",
                                                     null=True,
                                                     blank=True)
+    usertype = models.CharField(verbose_name="Тип пользователя",
+                                null=False,
+                                blank=False,
+                                default='main',
+                                max_length=20)
+    join_dt = models.DateTimeField(verbose_name="Дата и время привязки",
+                                   null=False,
+                                   blank=False,
+                                   default=timezone.now)
 
 
 
     class Meta:
         verbose_name = 'Привязанный Telegram'
         verbose_name_plural = 'Привязанные Telegram'
-        ordering = ['user']
+        ordering = ['join_dt']
 
     def __str__(self):
         return f'{str(self.user)} {self.nickname}'

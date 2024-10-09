@@ -37,15 +37,11 @@ function tgJournalShow(list=[], clear=true){
         tdEvent.innerHTML = tgJournalGetEventStr(note.event)
         tdDateTime.innerHTML = timeUtilsDateTimeToStr(note.dt)
         if (note.initiator){
-            tdInitiator.innerHTML = `
-            <a href="/profile/${note.initiator.id}" target="_blank">${note.initiator.first_name} ${note.initiator.last_name}</a>
-            `
+            tdInitiator.innerHTML = getUsersString([note.initiator])
         } else {
             tdInitiator.innerHTML = "Система"
         }
-        tdRecipient.innerHTML = `
-            <a href="/profile/${note.recipient.id} target="_blank"">${note.recipient.first_name} ${note.recipient.last_name}</a>
-            `
+        tdRecipient.innerHTML = getUsersString([note.recipient])
         const tdStatusButton = document.createElement("button")
         tdStatus.insertAdjacentElement("beforeend", tdStatusButton)
         tdStatusButton.type = "button"

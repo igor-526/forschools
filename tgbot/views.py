@@ -10,11 +10,11 @@ from rest_framework.views import APIView
 from dls.utils import get_menu
 from lesson.models import Lesson
 from material.models import Material
-from .serializers import UserTelegramSerializer, TgJournalSerializer
-from profile_management.models import NewUser
+from .serializers import (UserTelegramSerializer, TgJournalSerializer,
+                          TelegramNotesAllFieldsSerializer, TelegramNotesSerializer)
+from profile_management.models import NewUser, Telegram
 from tgbot.utils import send_materials
 from .models import TgBotJournal
-from django.utils import timezone
 
 
 class TgJournalPage(LoginRequiredMixin, TemplateView):  # страница журнала действий Telegram
@@ -160,3 +160,59 @@ class SendMaterialsTGView(LoginRequiredMixin, APIView):
             for user in NewUser.objects.filter(id__in=users):
                 send_materials(request.user, user, materials, "manual")
         return JsonResponse({'status': 'success'}, status=status.HTTP_200_OK)
+
+
+class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
+    def get_admin_mode(self, *args, **kwargs):
+        user_id = kwargs.get("user_id")
+        if user_id == self.request.user.id or self.request.user.groups.filter(name="Admin").exists():
+            return True
+        return False
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = Telegram.objects.filter(user__id=kwargs.get("user_id"))
+        return queryset
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.get_admin_mode(*args, **kwargs):
+            return TelegramNotesAllFieldsSerializer
+        return TelegramNotesSerializer
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset(*args, **kwargs)
+        serializer = self.get_serializer_class()
+        serialized = serializer(queryset, many=True)
+        return JsonResponse({
+            'admin_mode': self.get_admin_mode(*args, **kwargs),
+            'telegrams': serialized.data,
+            'code': NewUser.objects.get(pk=kwargs.get("user_id")).tg_code
+        },
+            status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        tg_note = Telegram.objects.get(pk=kwargs.get("user_id"))
+        if tg_note.usertype != "main":
+            tg_note.delete()
+        else:
+            tg_notes = Telegram.objects.filter(user=tg_note.user)
+            for tg in tg_notes:
+                tg.delete()
+        return JsonResponse({'status': 'success'}, status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        tg_note = Telegram.objects.get(pk=kwargs.get("user_id"))
+        if tg_note.usertype != "main":
+            ut = request.data.get("usertype")
+            if ut:
+                if len(ut) <= 20:
+                    tg_note.usertype = ut
+                    tg_note.save()
+                    return JsonResponse({'status': 'success'}, status=status.HTTP_200_OK)
+                else:
+                    return JsonResponse({'error': 'Ограничение 20 символов'},
+                                        status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return JsonResponse({'error': 'Обязательное поле'},
+                                    status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return JsonResponse({'error': 'Невозможно поменять роль основного Telegram'}, status=status.HTTP_400_BAD_REQUEST)

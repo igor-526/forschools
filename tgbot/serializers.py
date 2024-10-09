@@ -40,3 +40,15 @@ class TgJournalSerializer(serializers.ModelSerializer):
         model = TgBotJournal
         fields = '__all__'
 
+
+class TelegramNotesAllFieldsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Telegram
+        fields = ['id', 'tg_id', 'nickname', 'usertype', 'join_dt', 'first_name', 'last_name']
+
+
+class TelegramNotesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Telegram
+        fields = ['id', 'usertype', 'join_dt', 'first_name', 'last_name']
+

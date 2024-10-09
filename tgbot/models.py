@@ -16,8 +16,8 @@ EVENT_CHOICES = (
 
 class TgBotJournal(models.Model):
     class Meta:
-        verbose_name = 'Домашнее задание'
-        verbose_name_plural = 'Домишние задания'
+        verbose_name = 'Запись Telegram'
+        verbose_name_plural = 'Записи Telegram'
         ordering = ['-dt']
 
     initiator = models.ForeignKey(NewUser,

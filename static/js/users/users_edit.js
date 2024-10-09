@@ -80,20 +80,6 @@ function usersEditListeners(){
             offcanvasUsersEditRoleCheckboxTeacher.checked = false
         }
     })
-    if (userUtilsValidateUsername(offcanvasUsersEditUsernameField.value).status === "error"){
-        offcanvasUsersEditLastNameField.addEventListener("input", function (){
-            offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
-                offcanvasUsersEditFirstNameField.value,
-                offcanvasUsersEditLastNameField.value
-            )
-        })
-        offcanvasUsersEditFirstNameField.addEventListener("input", function (){
-            offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
-                offcanvasUsersEditFirstNameField.value,
-                offcanvasUsersEditLastNameField.value
-            )
-        })
-    }
 }
 
 function usersEditReset(validationOnly=false){
@@ -150,7 +136,15 @@ function usersEditSetOffcanvas(userID=null, userElement=null){
                 selectedUserID = userID
                 selectedUserIDElement = userElement
                 usersEditReset()
-                offcanvasUsersEditUsernameField.value = request.response.username
+                console.log(request.response.username)
+                if (userUtilsValidateUsername(request.response.username).status === "error"){
+                    offcanvasUsersEditUsernameField.value = getUsernameFromFirstLastName(
+                        request.response.first_name,
+                        request.response.last_name
+                    )
+                } else {
+                    offcanvasUsersEditUsernameField.value = request.response.username
+                }
                 offcanvasUsersEditLastNameField.value = request.response.last_name
                 offcanvasUsersEditFirstNameField.value = request.response.first_name
                 if (request.response.patronymic)

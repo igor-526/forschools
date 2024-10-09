@@ -12,16 +12,25 @@ async def command_start_handler(message: types.Message, state: FSMContext):
     try:
         code = message.text.split(" ")[1]
         if len(code) != 5:
-            await message.answer(text="Ошибка кода. "
+            await message.answer(text="Ошибка кода\n"
                                       "Для привязки бота к Вашему аккаунту воспользуйтесь ссылкой в Вашем профиле")
             return
         else:
             user = await NewUser.objects.filter(tg_code=code).afirst()
+            tg_note = await Telegram.objects.filter(tg_id=message.from_user.id).aexists()
+            if tg_note:
+                await message.answer(text="Ошибка.\nВаш Telegram уже привязан")
+                return
             if user:
                 try:
+                    tg_count = await user.telegram.acount()
+                    usertype = "main" if tg_count == 0 else "Дополнительный"
                     await Telegram.objects.aget_or_create(user=user,
                                                           tg_id=message.from_user.id,
-                                                          nickname=message.from_user.username)
+                                                          nickname=message.from_user.username,
+                                                          first_name=message.from_user.first_name,
+                                                          last_name=message.from_user.last_name,
+                                                          usertype=usertype)
                     await message.answer(text=f'Аккаунт успешно привязан!\n'
                                               f'Добро пожаловать, {user.first_name}!')
                     await send_menu(message.from_user.id, state)
