@@ -299,9 +299,9 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для выв�
             queryset = NewUser.objects.filter(is_active=True)
         elif self.request.user.groups.filter(name="Teacher"):
             queryset = NewUser.objects.filter(
-                Q(plan_listeners__teacher=self,
+                Q(plan_listeners__teacher=self.request.user,
                   is_active=True) |
-                Q(plan_listeners__phases__lessons__replace_teacher=self,
+                Q(plan_listeners__phases__lessons__replace_teacher=self.request.user,
                   is_active=True) |
                 Q(groups__name__in=['Admin', 'Metodist'],
                   is_active=True))

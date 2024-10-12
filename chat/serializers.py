@@ -16,10 +16,17 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
+        chat_type = self.context.get("chat_type")
         request = self.context.get("request")
-        message = Message.objects.create(**validated_data,
-                                         receiver_id=self.context.get("receiver"),
-                                         sender=request.user)
+        message = Message()
+        if chat_type == "NewUser":
+            message = Message.objects.create(**validated_data,
+                                             receiver_id=self.context.get("receiver"),
+                                             sender=request.user)
+        elif chat_type == "Telegram":
+            message = Message.objects.create(**validated_data,
+                                             receiver_tg_id=self.context.get("receiver"),
+                                             sender=request.user)
         attachments = request.FILES.getlist("attachments")
         if attachments:
             att_list = []

@@ -7,5 +7,5 @@ urlpatterns = [
 
 apiv1patterns = [
     path('', ChatUsersListView.as_view()),
-    path('<int:user>', ChatMessagesListCreateAPIView.as_view()),
+    path('<int:user>/', ChatMessagesListCreateAPIView.as_view()),
 ]

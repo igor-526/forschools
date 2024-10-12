@@ -1,10 +1,8 @@
 import datetime
-
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
-
 from lesson.models import Lesson
 from tgbot.funcs.fileutils import filechecker, filedownloader
 from tgbot.funcs.materials import show_material_item
@@ -621,7 +619,7 @@ async def homework_tg_notificate(initiator: NewUser, listener: int, homeworks: l
                     "attachments": []
                 }
             )
-    else:
+    if not listener_tgs:
         await TgBotJournal.objects.acreate(
             recipient_id=listener,
             initiator=initiator,

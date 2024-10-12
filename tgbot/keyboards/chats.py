@@ -7,8 +7,9 @@ def chats_get_users_buttons(chats: list) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for chat in chats:
         builder.button(
-            text=f"{chat.get('name')}",
-            callback_data=ChatListCallback(user_id=chat.get('id'))
+            text=f"{chat.get('name')}{(' [' + chat.get('note') + ']') if chat.get('note') else ''}",
+            callback_data=ChatListCallback(user_id=chat.get('id'),
+                                           usertype=chat.get('usertype'),)
         )
     builder.adjust(1)
     return builder.as_markup()

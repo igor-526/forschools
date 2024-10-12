@@ -43,33 +43,60 @@ class ChatUsersListView(LoginRequiredMixin, ListAPIView):
 
 class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = ChatMessageSerializer
+    chat_type = None
+
+    def set_chat_type(self):
+        if self.request.method == 'GET':
+            self.chat_type = self.request.query_params.get('chat_type') \
+                if self.request.query_params.get('chat_type') else "NewUser"
+        elif self.request.method == 'POST':
+            self.chat_type = self.request.POST.get('chat_type') \
+                if self.request.POST.get('chat_type') else "NewUser"
 
     def get_queryset(self, *args, **kwargs):
-        from_user = self.request.query_params.get('fromUser')
-        if from_user:
-            if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
-                try:
-                    from_user = NewUser.objects.get(pk=from_user)
-                    queryset = Message.objects.filter(
-                        Q(sender=from_user,
-                          receiver_id=self.kwargs.get("user")) |
-                        Q(receiver=from_user,
-                          sender_id=self.kwargs.get("user"))
-                    ).order_by('-date')
-                except NewUser.DoesNotExist:
-                    raise PermissionDenied
-            else:
-                raise PermissionDenied()
-        else:
+        from_user = self.request.query_params.get('from_user')
+        queryset = None
+        if self.chat_type == "NewUser":
             queryset = Message.objects.filter(
                 Q(sender=self.request.user,
                   receiver_id=self.kwargs.get("user")) |
                 Q(receiver=self.request.user,
                   sender_id=self.kwargs.get("user"))
             ).order_by('-date')
+        elif self.chat_type == "Telegram":
+            queryset = Message.objects.filter(
+                Q(sender=self.request.user,
+                  receiver_tg_id=self.kwargs.get("user")) |
+                Q(receiver=self.request.user,
+                  sender_tg_id=self.kwargs.get("user"))
+            ).order_by('-date')
+
+
+        # if from_user:
+        #     if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
+        #         try:
+        #             from_user = NewUser.objects.get(pk=from_user)
+        #             queryset = Message.objects.filter(
+        #                 Q(sender=from_user,
+        #                   receiver_id=self.kwargs.get("user")) |
+        #                 Q(receiver=from_user,
+        #                   sender_id=self.kwargs.get("user"))
+        #             ).order_by('-date')
+        #         except NewUser.DoesNotExist:
+        #             raise PermissionDenied
+        #     else:
+        #         raise PermissionDenied()
+        # else:
+        #     queryset = Message.objects.filter(
+        #         Q(sender=self.request.user,
+        #           receiver_id=self.kwargs.get("user")) |
+        #         Q(receiver=self.request.user,
+        #           sender_id=self.kwargs.get("user"))
+        #     ).order_by('-date')
         return queryset
 
     def list(self, request, *args, **kwargs):
+        self.set_chat_type()
         queryset = self.get_queryset()
         queryset.filter(sender_id=self.kwargs.get("user"),
                         read__isnull=True).update(read=timezone.now())
@@ -79,9 +106,11 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                              'username': f'{usr.first_name} {usr.last_name}'}, status=200, safe=False)
 
     def create(self, request, *args, **kwargs):
+        self.set_chat_type()
         serializer = self.get_serializer(data=request.data,
                                          context={'request': request,
-                                                  'receiver': self.kwargs.get("user")})
+                                                  'receiver': self.kwargs.get("user"),
+                                                  'chat_type': self.chat_type})
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)

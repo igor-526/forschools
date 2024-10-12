@@ -57,7 +57,7 @@ async def get_group_and_perms(user_id) -> dict:
     }
 
 
-def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype) -> dict:
+def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype):
     user_tgs = get_tg_id_sync(recipient.id)
     event = 5 if sendtype == "manual" else 6
     for user_tg in user_tgs:
@@ -214,15 +214,8 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
 
 
 def send_chat_message(message: Message):
-    if message.receiver:
-        user_tg_id = get_tg_id_sync(message.receiver.id, "main")
-    if user_tg_id:
-        msg_text = (f"<b>Новое сообщение от {message.sender.first_name} "
-                    f"{message.sender.last_name}</b>\n{message.message}")
-        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
-                                                     message=msg_text,
-                                                     reply_markup=chats_get_show_message_button(message.id))
-        if msg_result.get("status") == "success":
+    def add_tgjournal_note(result):
+        if result.get("status") == "success":
             TgBotJournal.objects.create(
                 recipient=message.receiver,
                 initiator=message.sender,
@@ -230,7 +223,7 @@ def send_chat_message(message: Message):
                 data={
                     "status": "success",
                     "text": msg_text,
-                    "msg_id": msg_result.get("msg_id"),
+                    "msg_id": result.get("msg_id"),
                     "errors": [],
                     "attachments": []
                 }
@@ -244,12 +237,54 @@ def send_chat_message(message: Message):
                     "status": "error",
                     "text": None,
                     "msg_id": None,
-                    "errors": msg_result.get("errors"),
+                    "errors": result.get("errors"),
                     "attachments": []
                 }
             )
+
+    def notificate_parents():
+        if message.sender:
+            if message.receiver:
+                receiver_fullname = f'{message.receiver.first_name} {message.receiver.last_name}'
+            else:
+                receiver_fullname = (f'{message.receiver_tg.user.first_name} {message.receiver_tg.user.last_name}'
+                                     f'({message.receiver_tg.usertype})')
+            parents = Telegram.objects.filter(user=message.sender).exclude(usertype="main")
+            parent_msg_text = (f"<b>Новое сообщение <b>ОТ УЧЕНИКА ДЛЯ</b> {receiver_fullname}"
+                               f" [{message.date.strftime('%d.%m %H:%M')}]</b>:\n"
+                               f"{message.message}")
+            parent_msg_text = parent_msg_text.replace("<br>", "\n")
+            for p_tg_note in parents:
+                sync_funcs.send_tg_message_sync(tg_id=p_tg_note.tg_id,
+                                                message=parent_msg_text)
+                for attachment in message.files.all():
+                    sync_funcs.send_tg_file_sync(tg_id, attachment)
+
+    user_tg_id = None
+    parents_tg_ids = []
+    if message.receiver:
+        user_tg_id = get_tg_id_sync(message.receiver.id, "main")
+        parents_tg_ids = [
+            tgnote.tg_id for tgnote in Telegram.objects.filter(user_id=message.receiver.id).exclude(usertype="main")
+        ]
+    elif message.receiver_tg:
+        user_tg_id = message.receiver_tg.tg_id
+    if user_tg_id:
+        msg_text = (f"<b>Новое сообщение от {message.sender.first_name} "
+                    f"{message.sender.last_name}</b>\n{message.message}")
+        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
+                                                     message=msg_text)
+        add_tgjournal_note(msg_result)
+        notificate_parents()
+        for parent_tg_id in parents_tg_ids:
+            msg_text = (f"<b>Новое сообщение <b>ДЛЯ УЧЕНИКА</b> от {message.sender.first_name} "
+                        f"{message.sender.last_name}</b>\n{message.message}")
+            msg_result = sync_funcs.send_tg_message_sync(tg_id=parent_tg_id,
+                                                         message=msg_text)
+            add_tgjournal_note(msg_result)
         for att in message.files.all():
-            sync_funcs.send_tg_file_sync(user_tg_id, att)
+            for tg_id in [user_tg_id, *parents_tg_ids]:
+                sync_funcs.send_tg_file_sync(tg_id, att)
     else:
         TgBotJournal.objects.create(
             recipient=message.receiver,

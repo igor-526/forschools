@@ -1,29 +1,34 @@
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
+from profile_management.models import Telegram, aget_unread_messages_count
 from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
 from tgbot.keyboards.callbacks.chats import ChatListCallback
-from tgbot.keyboards.chats import chats_get_show_message_button
 from tgbot.keyboards.default import message_typing_keyboard
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id
 from tgbot.create_bot import bot
-from tgbot.utils import get_user
 from tgbot.finite_states.chats import ChatsFSM
 from chat.models import Message
 
 
 async def chats_show(message: types.Message, state: FSMContext):
     async def show_unread():
-        unread_messages = [msg.id async for msg in Message.objects.filter(
-            receiver=user,
-            read__isnull=True
-        ).order_by('sender', 'date')]
+        tgnote = await Telegram.objects.select_related("user").aget(tg_id=message.from_user.id)
+        query = {
+            "read__isnull": True
+        }
+        if tgnote.usertype == "main":
+            query["receiver"] = tgnote.user
+        else:
+            query["receiver_tg"] = tgnote
+        unread_messages = [msg.id async for msg in Message.objects.filter(**query).order_by('sender', 'date')]
         for msg in unread_messages:
             await chats_notificate(msg, True)
-    user = await get_user(message.from_user.id)
-    unread = await user.aget_unread_messages_count()
+
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=message.from_user.id)
+    unread = await aget_unread_messages_count(tg_note)
     if unread > 0:
         await show_unread()
     await send_menu(message.from_user.id,
@@ -38,7 +43,7 @@ async def chats_type_message(message: types.Message, state: FSMContext):
 
 
 async def chats_send(user_tg_id: int, state: FSMContext):
-    user = await get_user(user_tg_id)
+    tgnote = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
     data = await state.get_data()
     if not filechecker(data):
         await bot.send_message(chat_id=user_tg_id,
@@ -46,13 +51,38 @@ async def chats_send(user_tg_id: int, state: FSMContext):
         return
     message_status = await bot.send_message(chat_id=user_tg_id,
                                             text="Отправка...")
+    chat_type = data.get("chat_type")
     try:
-        hwdata = await filedownloader(data, owner=user, t="Сообщение")
-        chat_message = await Message.objects.acreate(
-            receiver_id=data.get('message_for'),
-            sender_id=user.id,
-            message=hwdata.get("comment"),
-        )
+        hwdata = await filedownloader(data, owner=tgnote.user, t="Сообщение")
+        chat_message = Message()
+        if tgnote.usertype == "main":
+            if chat_type == "NewUser":
+                chat_message = await Message.objects.acreate(
+                    receiver_id=data.get('message_for'),
+                    sender_id=tgnote.user.id,
+                    message=hwdata.get("comment"),
+                )
+            elif chat_type == "Telegram":
+                chat_message = await Message.objects.acreate(
+                    receiver_tg_id=data.get('message_for'),
+                    sender_id=tgnote.user.id,
+                    message=hwdata.get("comment"),
+                )
+        else:
+            if chat_type == "NewUser":
+                chat_message = await Message.objects.acreate(
+                    receiver_id=data.get('message_for'),
+                    sender_tg_id=tgnote.id,
+                    message=hwdata.get("comment"),
+                )
+                await chat_message.files.aset(hwdata.get("files_db"))
+                await chat_message.asave()
+            elif chat_type == "Telegram":
+                chat_message = await Message.objects.acreate(
+                    receiver_tg_id=data.get('message_for'),
+                    sender_tg_id=tgnote.id,
+                    message=hwdata.get("comment"),
+                )
         await chat_message.files.aset(hwdata.get("files_db"))
         await chat_message.asave()
         await chats_notificate(chat_message.id)
@@ -64,18 +94,19 @@ async def chats_send(user_tg_id: int, state: FSMContext):
 
 
 async def chats_send_ask(callback: CallbackQuery,
-                         to_user_id: int,
+                         callback_data: ChatListCallback,
                          state: FSMContext):
     data = await state.get_data()
     if data.get("files"):
-        await state.update_data({"message_for": to_user_id})
+        await state.update_data({"message_for": callback_data.user_id,
+                                 "chat_type": callback_data.usertype})
         await chats_send(callback.from_user.id, state)
         return
     await bot.send_message(callback.message.chat.id,
                            "Напишите сообщение, после чего нажмите кнопку 'Отправить'",
                            reply_markup=message_typing_keyboard)
     await state.set_state(ChatsFSM.send_message)
-    await state.set_data({"message_for": to_user_id,
+    await state.set_data({"message_for": callback_data.user_id,
                           'files': {
                               'text': [],
                               'photo': [],
@@ -89,44 +120,95 @@ async def chats_send_ask(callback: CallbackQuery,
 
 
 async def chats_notificate(chat_message_id: int, show=False):
-    chat_message = await Message.objects.select_related("receiver").select_related("sender").aget(pk=chat_message_id)
+    async def journal_note(result, message: Message):
+        message_sender_type = "NewUser" if message.sender else "Telegram"
+        if message.receiver or message.receiver_tg:
+            message_receiver_type = "NewUser" if message.receiver else "Telegram"
+        else:
+            message_receiver_type = None
+        if message_receiver_type:
+            usersdata = {}
+            if message_sender_type == "NewUser":
+                usersdata["initiator"] = chat_message.sender
+            elif message_sender_type == "Telegram":
+                usersdata["initiator"] = message.sender_tg.user
+            if message_receiver_type == "NewUser":
+                usersdata["recipient"] = chat_message.receiver
+            elif message_receiver_type == "Telegram":
+                usersdata["recipient"] = message.receiver_tg.user
+            await TgBotJournal.objects.acreate(
+                event=7,
+                data={
+                    "status": "success",
+                    "text": msg_text,
+                    "msg_id": result.message_id,
+                    "errors": [],
+                    "attachments": [att.id async for att in message.files.all()]
+                },
+                **usersdata
+            )
+
+    async def notificate_parents(message: Message):
+        if message.sender:
+            if message.receiver:
+                receiver_fullname = f'{chat_message.receiver.first_name} {chat_message.receiver.last_name}'
+            else:
+                receiver_fullname = (f'{chat_message.receiver_tg.user.first_name} {chat_message.receiver_tg.user.last_name}'
+                                     f'({chat_message.receiver_tg.usertype})')
+
+            parents = [tgnote.tg_id async for tgnote in
+                       Telegram.objects.filter(user=message.sender).exclude(usertype="main")]
+            parent_msg_text = (f"<b>Новое сообщение <b>ОТ УЧЕНИКА ДЛЯ</b> {receiver_fullname}"
+                               f" [{chat_message.date.strftime('%d.%m %H:%M')}]</b>:\n"
+                               f"{chat_message.message}")
+            parent_msg_text = parent_msg_text.replace("<br>", "\n")
+            for p_tg_id in parents:
+                await bot.send_message(chat_id=p_tg_id,
+                                       text=parent_msg_text,
+                                       reply_markup=None)
+                for attachment in attachments:
+                    await send_file(p_tg_id, attachment)
+
+    chat_message = await (Message.objects.select_related("receiver")
+                          .select_related("receiver_tg").select_related("receiver_tg__user").select_related("sender")
+                          .select_related("sender_tg").select_related("sender_tg__user").aget(pk=chat_message_id))
+    parents_tg_ids = []
     if chat_message.receiver:
         tg_id = await get_tg_id(chat_message.receiver.id, "main")
     else:
-        tg_id = None
+        tg_id = chat_message.receiver_tg.tg_id
+    if chat_message.sender:
+        fullname = f'{chat_message.sender.first_name} {chat_message.sender.last_name}'
+    else:
+        fullname = (f'{chat_message.sender_tg.user.first_name} {chat_message.sender_tg.user.last_name}'
+                    f'({chat_message.sender_tg.usertype})')
     if tg_id:
-        if show:
-            msg_text = (f"<b>Cообщение от {chat_message.sender.first_name} "
-                        f"{chat_message.sender.last_name} [{chat_message.date.strftime('%d.%m %H:%M')}]</b>:\n"
-                        f"{chat_message.message}")
-            reply_markup = None
-            await chat_message.aset_read()
-        else:
-            msg_text = (f"<b>Вам пришло сообщение от {chat_message.sender.first_name} "
-                        f"{chat_message.sender.last_name}</b>")
-            reply_markup = chats_get_show_message_button(chat_message.id)
         try:
+            msg_text = (f"<b>Cообщение от {fullname}"
+                        f" [{chat_message.date.strftime('%d.%m %H:%M')}]</b>:\n"
+                        f"{chat_message.message}")
             msg_text = msg_text.replace("<br>", "\n")
             msg_result = await bot.send_message(chat_id=tg_id,
                                                 text=msg_text,
-                                                reply_markup=reply_markup)
-            attachments = [f async for f in chat_message.files.all()]
-            if show:
-                for attachment in attachments:
-                    await send_file(tg_id, attachment)
+                                                reply_markup=None)
+            await journal_note(msg_result, chat_message)
             if not show:
-                await TgBotJournal.objects.acreate(
-                    recipient=chat_message.receiver,
-                    initiator=chat_message.sender,
-                    event=7,
-                    data={
-                        "status": "success",
-                        "text": msg_text,
-                        "msg_id": msg_result.message_id,
-                        "errors": [],
-                        "attachments": [att.id for att in attachments]
-                    }
-                )
+                parents_tg_ids = [tgnote.tg_id async for tgnote in
+                                  Telegram.objects.filter(user_id=chat_message.receiver.id).exclude(usertype="main")]
+                if parents_tg_ids:
+                    msg_text = (f"<b>Cообщение <b>ДЛЯ УЧЕНИКА</b> от {chat_message.sender.first_name} "
+                                f"{chat_message.sender.last_name} [{chat_message.date.strftime('%d.%m %H:%M')}]</b>:\n"
+                                f"{chat_message.message}")
+                    msg_text = msg_text.replace("<br>", "\n")
+                    for parent_tg_id in parents_tg_ids:
+                        await bot.send_message(chat_id=parent_tg_id,
+                                               text=msg_text,
+                                               reply_markup=None)
+            attachments = [f async for f in chat_message.files.all()]
+            await notificate_parents(chat_message)
+            for attachment in attachments:
+                for all_tg_id in [tg_id, *parents_tg_ids]:
+                    await send_file(all_tg_id, attachment)
         except Exception as e:
             if not show:
                 await TgBotJournal.objects.acreate(
@@ -155,14 +237,3 @@ async def chats_notificate(chat_message_id: int, show=False):
                     "attachments": []
                 }
             )
-
-
-async def chats_show_unread_messages(callback: CallbackQuery,
-                                     callback_data: ChatListCallback):
-    user = await get_user(callback.message.chat.id)
-    messages = [msg async for msg in Message.objects.filter(receiver=user,
-                                                            sender__id=callback_data.user_id,
-                                                            read__isnull=True)]
-    for msg in messages:
-        await chats_notificate(msg.id)
-        await msg.aset_read()

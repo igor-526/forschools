@@ -1,4 +1,6 @@
 from _operator import itemgetter
+from pprint import pprint
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 from random import randint
@@ -202,43 +204,7 @@ class NewUser(AbstractUser):
         self.photo = 'profile_pictures/base_avatar.png'
         self.save()
 
-    def _get_user_chat_info(self, u):
-        info = {
-            "id": u.id,
-            "name": f"{u.first_name} {u.last_name}",
-            "unread": self.get_unread_messages_count(u),
-            "photo": u.photo.url,
-            "last_message_text": None,
-            "last_message_date": None
-        }
-        last_message = Message.objects.filter(
-            Q(sender=u, receiver=self) | Q(receiver=u, sender=self)
-        ).order_by('-date').first()
-        if last_message:
-            info["last_message_text"] = last_message.message[:50] if last_message.message else ""
-            info["last_message_date"] = last_message.date
-        return info
-
-    def get_users_for_chat(self):
-        users = []
-        if self.groups.filter(name__in=['Admin', 'Metodist']).exists():
-            users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(is_active=True).exclude(id=self.id)]
-        elif self.groups.filter(name="Teacher").exists():
-            users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(
-                Q(plan_listeners__teacher=self,
-                  is_active=True) |
-                Q(plan_listeners__phases__lessons__replace_teacher=self,
-                  is_active=True) |
-                Q(groups__name__in=['Admin', 'Metodist'],
-                  is_active=True)).exclude(id=self.id).distinct()]
-        elif self.groups.filter(name='Listener').exists():
-            users = [self._get_user_chat_info(u) for u in NewUser.objects.filter(
-                Q(plan_teacher__listeners=self,
-                  is_active=True) |
-                Q(replace_teacher__learningphases__learningplan__listeners=self,
-                  is_active=True) |
-                Q(groups__name__in=['Admin'],
-                  is_active=True)).exclude(id=self.id).distinct()]
+    def _sort_users_for_chat(self, users):
         unread_list = list(filter(lambda u: u.get("unread"), users))
         has_messages_list = list(filter(lambda u: u.get("last_message_text") and u not in unread_list, users))
         no_messages_list = list(filter(lambda u: u.get("last_message_text") is None, users))
@@ -247,39 +213,154 @@ class NewUser(AbstractUser):
         no_messages_list = sorted(no_messages_list, key=itemgetter("name"))
         return [*unread_list, *has_messages_list, *no_messages_list]
 
-    async def aget_users_for_chat(self):
-        admin_or_metodist = await self.groups.filter(name__in=['Admin', 'Metodist']).aexists()
-        if admin_or_metodist:
-            return [{
+    def get_users_for_chat(self):
+        def get_user_info(u):
+            info = {
+                "id": u.id,
+                "tg_id": None,
+                "name": f"{u.first_name} {u.last_name}",
+                "note": None,
+                "unread": self.get_unread_messages_count(u),
+                "photo": u.photo.url,
+                "last_message_text": None,
+                "last_message_date": None
+            }
+            last_message = Message.objects.filter(
+                Q(sender=u, receiver=self) | Q(receiver=u, sender=self)
+            ).order_by('-date').first()
+            if last_message:
+                info["last_message_text"] = last_message.message[:50] if last_message.message else ""
+                info["last_message_date"] = last_message.date
+            return info
+
+        def get_user_tg_info(u):
+            info = {
+                "id": None,
+                "tg_id": u.id,
+                "name": f"{u.user.first_name} {u.user.last_name}",
+                "note": u.usertype,
+                "unread": 0,
+                "photo": u.user.photo.url,
+                "last_message_text": None,
+                "last_message_date": None
+            }
+            last_message = Message.objects.filter(
+                Q(sender_tg=u, receiver=self) | Q(receiver_tg=u, sender=self)
+            ).order_by('-date').first()
+            if last_message:
+                info["last_message_text"] = last_message.message[:50] if last_message.message else ""
+                info["last_message_date"] = last_message.date
+            return info
+
+        users = []
+        if self.groups.filter(name__in=['Admin', 'Metodist']).exists():
+            users = NewUser.objects.filter(is_active=True).exclude(id=self.id)
+            users_profiles = [get_user_info(u) for u in users]
+            users_telegrams = [get_user_tg_info(u) for u in
+                               Telegram.objects.filter(user__in=users).exclude(usertype="main")]
+            users = [*users_profiles, *users_telegrams]
+        elif self.groups.filter(name="Teacher").exists():
+            users = NewUser.objects.filter(
+                Q(plan_listeners__teacher=self,
+                  is_active=True) |
+                Q(plan_listeners__phases__lessons__replace_teacher=self,
+                  is_active=True) |
+                Q(groups__name__in=['Admin', 'Metodist'],
+                  is_active=True)).exclude(id=self.id).distinct()
+            users_profiles = [get_user_info(u) for u in users]
+            users_telegrams = [get_user_tg_info(u) for u in
+                               Telegram.objects.filter(user__in=users).exclude(usertype="main")]
+            users = [*users_profiles, *users_telegrams]
+        elif self.groups.filter(name='Listener').exists():
+            users = [get_user_info(u) for u in NewUser.objects.filter(
+                Q(plan_teacher__listeners=self,
+                  is_active=True) |
+                Q(replace_teacher__learningphases__learningplan__listeners=self,
+                  is_active=True) |
+                Q(groups__name__in=['Admin'],
+                  is_active=True)).exclude(id=self.id).distinct()]
+        return self._sort_users_for_chat(users)
+
+    async def aget_users_for_chat(self, tg_id):
+        async def get_user_chat_info(u):
+            info = {
                 "id": u.id,
                 "name": f"{u.first_name} {u.last_name}",
-                "unreaded": await self.aget_unread_messages_count(u)
-            } async for u in NewUser.objects.filter(is_active=True)]
-        teacher = await self.groups.filter(name="Teacher").aexists()
-        if teacher:
-            return [{
+                "unreaded": await aget_unread_messages_count(tgnote, {
+                    "id": u.id,
+                    "usertype": "NewUser"
+                }),
+                "usertype": "NewUser",
+                "note": None,
+                "last_message_date": None
+            }
+            last_message = await Message.objects.filter(
+                Q(sender=u, receiver=self) | Q(receiver=u, sender=self)
+            ).order_by('-date').afirst()
+            if last_message:
+                info["last_message_date"] = last_message.date
+            return info
+
+        async def get_user_tg_chat_info(u):
+            info = {
                 "id": u.id,
-                "name": f"{u.first_name} {u.last_name}",
-                "unreaded": await self.aget_unread_messages_count(u)
-            } async for u in NewUser.objects.filter(
+                "name": f"{u.user.first_name} {u.user.last_name}",
+                "unreaded": await aget_unread_messages_count(tgnote, {
+                    "id": u.user.id,
+                    "usertype": "NewUser"
+                }),
+                "usertype": "Telegram",
+                "note": u.usertype,
+                "last_message_date": None
+            }
+            last_message = await Message.objects.filter(
+                Q(sender_tg=u, receiver=self) | Q(receiver_tg=u, sender=self)
+            ).order_by('-date').afirst()
+            if last_message:
+                info["last_message_date"] = last_message.date
+            return info
+
+        users = []
+        role = ""
+        tgnote = await Telegram.objects.select_related("user").aget(tg_id=tg_id)
+        if await self.groups.filter(name__in=['Admin', 'Metodist']).aexists():
+            role = "AdminOrMetodist"
+        elif await self.groups.filter(name="Teacher").aexists():
+            role = "Teacher"
+        elif await self.groups.filter(name='Listener').aexists():
+            role = "Listener"
+
+        if role == "AdminOrMetodist":
+            users_profiles = [await get_user_chat_info(u) async for u in NewUser.objects.filter(is_active=True)]
+            users_telegrams = [await get_user_tg_chat_info(u) async for u in
+                               Telegram.objects.select_related("user").filter(
+                                   user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
+            users = [*users_profiles, *users_telegrams]
+
+        elif role == "Teacher":
+            users_profiles = [await get_user_chat_info(u) async for u in NewUser.objects.filter(
                 Q(plan_listeners__teacher=self,
                   is_active=True) |
                 Q(groups__name__in=["Admin", "Metodist"]) |
                 Q(plan_listeners__phases__lessons__replace_teacher=self,
                   is_active=True)).distinct()]
-        listener = await self.groups.filter(name='Listener').aexists()
-        if listener:
-            return [{
-                "id": u.id,
-                "name": f"{u.first_name} {u.last_name}",
-                "unreaded": await self.aget_unread_messages_count(u)
-            } async for u in NewUser.objects.filter(
+            users_telegrams = [await get_user_tg_chat_info(u) async for u in
+                               Telegram.objects.select_related("user").filter(
+                                   user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
+            users = [*users_profiles, *users_telegrams]
+        elif role == "Listener":
+            users_profiles = [await get_user_chat_info(u) async for u in NewUser.objects.filter(
                 Q(plan_teacher__listeners=self,
                   is_active=True) |
                 Q(groups__name="Admin",
                   is_active=True) |
                 Q(replace_teacher__learningphases__learningplan__listeners=self,
                   is_active=True)).distinct()]
+            users_telegrams = [await get_user_tg_chat_info(u) async for u in
+                               Telegram.objects.select_related("user").filter(
+                                   user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
+            users = [*users_profiles, *users_telegrams]
+        return self._sort_users_for_chat(users)
 
     def get_unread_messages_count(self, sender=None):
         if sender is None:
@@ -287,13 +368,6 @@ class NewUser(AbstractUser):
         else:
             return self.message_receiver.filter(read__isnull=True,
                                                 sender=sender).count()
-
-    async def aget_unread_messages_count(self, sender=None):
-        if sender is None:
-            return await self.message_receiver.filter(read__isnull=True).acount()
-        else:
-            return await self.message_receiver.filter(read__isnull=True,
-                                                      sender=sender).acount()
 
     def get_last_message_date(self):
         s_message = self.message_sender.order_by("-date").first()
@@ -325,8 +399,8 @@ class Telegram(models.Model):
                                   null=True,
                                   blank=True)
     last_name = models.CharField(verbose_name="Фамилия",
-                                  null=True,
-                                  blank=True)
+                                 null=True,
+                                 blank=True)
     notifications_changed_lesson = models.BooleanField(verbose_name="Уведомление об изменении занятия",
                                                        null=False,
                                                        blank=False,
@@ -400,3 +474,18 @@ class UserLog(models.Model):
 
     def __str__(self):
         return f'{self.user} - {self.comment} - {self.dt}'
+
+
+async def aget_unread_messages_count(tgnote, sender=None):
+    query = {
+        "read__isnull": True
+    }
+    if sender:
+        if sender.get("usertype") == "NewUser":
+            query['sender_id'] = sender.get("id")
+        elif sender.get("usertype") == "Telegram":
+            query['sender_tg_id'] = sender.get("id")
+    if tgnote.usertype == "main":
+        return await tgnote.user.message_receiver.filter(**query).acount()
+    else:
+        return await tgnote.message_tg_receiver.filter(**query).acount()

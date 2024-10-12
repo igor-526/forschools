@@ -60,16 +60,12 @@ function chatGetDateTimeString(dt){
     return datestring
 }
 
-function chatSelectUser(userID){
+function chatSelectUser(userID, chatType="NewUser"){
+    chatMessagesSelectedChatType = chatType
     chatUsersList.querySelectorAll("a").forEach(item => {
-        const itemUserID = Number(item.attributes.getNamedItem("data-chat-id").value)
-        if (itemUserID === userID){
-            item.classList.add("active")
-        } else {
-            item.classList.remove("active")
-        }
+        item.classList.remove("active")
     })
-    chatGetMessages(userID)
+    chatGetMessages(userID, chatType)
 }
 
 function chatShowUsers(userlist = []){
@@ -83,10 +79,13 @@ function chatShowUsers(userlist = []){
     function getElement(user){
         const a = document.createElement("a")
         a.classList.add("list-group-item", "d-flex")
-        a.setAttribute("data-chat-id", user.id)
         a.href = "#"
         a.addEventListener("click", function (){
-            chatSelectUser(user.id)
+            chatSelectUser(
+                user.id?user.id:user.tg_id,
+                user.id?"NewUser":"Telegram"
+            )
+            a.classList.add("active")
         })
         const avatar = document.createElement("img")
         avatar.classList.add("chats-profile_photo", "me-2")
@@ -100,7 +99,7 @@ function chatShowUsers(userlist = []){
         elemInfo.classList.add("d-flex")
         const elemInfoName = document.createElement("h6")
         elemInfoName.classList.add("mb-1")
-        elemInfoName.innerHTML = user.name
+        elemInfoName.innerHTML = user.note?`${user.name} [${user.note}]`:user.name
         if (user.unread !== 0){
             elemInfo.insertAdjacentElement("beforeend", getBadge(user.unread))
         }
@@ -125,11 +124,10 @@ function chatShowUsers(userlist = []){
     })
 }
 
-function chatGetMessages(userID){
-    chatAPIGetMessages(userID, chatMessagesFromUserID).then(request => {
+function chatGetMessages(userID, chatType="NewUser"){
+    chatAPIGetMessages(userID, chatType, chatMessagesFromUserID).then(request => {
         switch (request.status){
             case 200:
-
                 chatShowMessages(request.response.messages, userID)
                 chatMessagesUserName.innerHTML = request.response.username
                 chatMessagesSelectedUserID = userID
@@ -305,12 +303,21 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
 
 function chatShowMessages(messages=[], userID, clear=true){
     function getElement(message){
+        console.log(message)
         const messageDiv = document.createElement("div")
         messageDiv.classList.add("d-flex")
-        messageDiv.classList.add(message.receiver.id === userID?"justify-content-end":"justify-content-start")
         const messageBody = document.createElement("div")
+        switch (chatMessagesSelectedChatType){
+            case "NewUser":
+                messageDiv.classList.add(message.receiver.id === userID?"justify-content-end":"justify-content-start")
+                messageBody.classList.add(message.receiver.id === userID?"chats-message-sender":"chats-message-receiver")
+                break
+            case "Telegram":
+                messageDiv.classList.add(message.receiver_tg === userID?"justify-content-end":"justify-content-start")
+                messageBody.classList.add(message.receiver_tg === userID?"chats-message-sender":"chats-message-receiver")
+                break
+        }
         messageDiv.insertAdjacentElement("beforeend", messageBody)
-        messageBody.classList.add(message.receiver.id === userID?"chats-message-sender":"chats-message-receiver")
         const messageBodyText = document.createElement("p")
         messageBodyText.innerHTML = message.message
         const messageBodyData = document.createElement("span")
@@ -387,14 +394,19 @@ function chatMessageValidation(errors){
 }
 
 function chatMessageSend(){
-    if (chatMessageValidation()){
+    function getFD(){
         const fd = new FormData()
         fd.set("message", chatMessagesNewText.value.trim())
+        fd.set("chat_type", chatMessagesSelectedChatType)
         const files = chatMessagesNewAttachmentInput.files
         for (const file of files){
             fd.append("attachments", file)
         }
-        chatAPISendMessage(chatMessagesSelectedUserID, fd).then(request => {
+        return fd
+    }
+
+    if (chatMessageValidation()){
+        chatAPISendMessage(chatMessagesSelectedUserID, getFD()).then(request => {
             switch (request.status){
                 case 201:
                     chatShowMessages([request.response], chatMessagesSelectedUserID, false)
@@ -423,6 +435,7 @@ const chatMessagesUserName = document.querySelector("#chatMessagesUserName")
 const chatMessagesNewAttachmentButton = document.querySelector("#chatMessagesNewAttachmentButton")
 const chatMessagesNewAttachmentInput = document.querySelector("#chatMessagesNewAttachmentInput")
 let chatMessagesSelectedUserID = null
+let chatMessagesSelectedChatType = null
 let chatMessagesFromUserID = null
 let chatMessagesAttachmentTypesArray = []
 
