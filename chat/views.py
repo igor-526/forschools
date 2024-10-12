@@ -6,10 +6,10 @@ from rest_framework.exceptions import PermissionDenied
 from dls.settings import MATERIAL_FORMATS
 from profile_management.models import NewUser
 from .models import Message
-from .serializers import ChatMessageSerializer
+from .serializers import ChatMessageSerializer, ChatGroupInfoSerailizer
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from rest_framework.generics import ListCreateAPIView, ListAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
 from rest_framework import status
 from dls.utils import get_menu
 
@@ -20,13 +20,14 @@ class ChatPageTemplateView(LoginRequiredMixin, TemplateView):  # страниц�
     def get(self, request, *args, **kwargs):
         context = {'title': 'Сообщения',
                    'menu': get_menu(request.user),
-                   'material_formats': MATERIAL_FORMATS}
+                   'material_formats': MATERIAL_FORMATS,
+                   'can_add_group_chat': True}
         return render(request, self.template_name, context)
 
 
 class ChatUsersListView(LoginRequiredMixin, ListAPIView):
     def list(self, request, *args, **kwargs):
-        from_user = self.request.query_params.get('fromUser')
+        from_user = self.request.query_params.get('from_user')
         if from_user:
             if request.user.user_permissions.filter(codename="can_read_all_messages").exists():
                 try:
@@ -55,44 +56,30 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
 
     def get_queryset(self, *args, **kwargs):
         from_user = self.request.query_params.get('from_user')
+        if from_user:
+            if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
+                from_user = NewUser.objects.get(pk=from_user)
+            else:
+                raise PermissionDenied()
+        else:
+            from_user = self.request.user
         queryset = None
         if self.chat_type == "NewUser":
             queryset = Message.objects.filter(
-                Q(sender=self.request.user,
+                Q(sender=from_user,
                   receiver_id=self.kwargs.get("user")) |
-                Q(receiver=self.request.user,
+                Q(receiver=from_user,
                   sender_id=self.kwargs.get("user"))
             ).order_by('-date')
         elif self.chat_type == "Telegram":
             queryset = Message.objects.filter(
-                Q(sender=self.request.user,
+                Q(sender=from_user,
                   receiver_tg_id=self.kwargs.get("user")) |
-                Q(receiver=self.request.user,
+                Q(receiver=from_user,
                   sender_tg_id=self.kwargs.get("user"))
             ).order_by('-date')
-
-
-        # if from_user:
-        #     if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
-        #         try:
-        #             from_user = NewUser.objects.get(pk=from_user)
-        #             queryset = Message.objects.filter(
-        #                 Q(sender=from_user,
-        #                   receiver_id=self.kwargs.get("user")) |
-        #                 Q(receiver=from_user,
-        #                   sender_id=self.kwargs.get("user"))
-        #             ).order_by('-date')
-        #         except NewUser.DoesNotExist:
-        #             raise PermissionDenied
-        #     else:
-        #         raise PermissionDenied()
-        # else:
-        #     queryset = Message.objects.filter(
-        #         Q(sender=self.request.user,
-        #           receiver_id=self.kwargs.get("user")) |
-        #         Q(receiver=self.request.user,
-        #           sender_id=self.kwargs.get("user"))
-        #     ).order_by('-date')
+        elif self.chat_type == "Group":
+            queryset = Message.objects.filter(group_chats_messages=self.kwargs.get("user")).order_by('-date')
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -114,4 +101,9 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ChatGroupsCreateAPIView(LoginRequiredMixin, CreateAPIView):
+    serializer_class = ChatGroupInfoSerailizer
+
 

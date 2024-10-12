@@ -1,3 +1,5 @@
+from django.db.models import Count, Q
+
 from chat.models import Message
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
@@ -213,7 +215,40 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
         )
 
 
-def send_chat_message(message: Message):
+def notificate_group_chat_message(message: Message):
+    def notificate(tg_ids, text_type="user"):
+        msg_text = ""
+        if text_type == "user":
+            msg_text = f'<b>Новое сообщение из "{group.name}"</b>\n{message.message}'
+        elif text_type == "receiver_parent":
+            msg_text = f'<b>Новое сообщение ДЛЯ УЧЕНИКА из "{group.name}"</b>\n{message.message}'
+        elif text_type == "sender_parent":
+            msg_text = f'<b>Новое сообщение ОТ УЧЕНИКА в "{group.name}"</b>\n{message.message}'
+        for tg_id in tg_ids:
+            msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id,
+                                                         message=msg_text)
+            for att in attachments:
+                sync_funcs.send_tg_file_sync(tg_id, att)
+
+    group = message.group_chats_messages.first()
+    users_tg_id = [tgnote.tg_id for tgnote in group.users_tg.all()]
+    receiver_parents_tg_id = [tgnote.tg_id for tgnote in
+                              Telegram.objects.filter(user__in=group.users.exclude(id=message.sender.id))
+                              .exclude(Q(usertype="main") | Q(tg_id__in=users_tg_id))]
+    sender_parents_tg_id = [tgnote.tg_id for tgnote in message.sender.telegram.exclude(usertype="main")]
+    receivers_tg_id = [tgnote.tg_id for tgnote in
+                       Telegram.objects.filter(user__in=group.users.exclude(id=message.sender.id), usertype="main")]
+    attachments = message.files.all()
+    notificate(users_tg_id, 'user')
+    notificate(receivers_tg_id, 'user')
+    notificate(receiver_parents_tg_id, 'receiver_parent')
+    notificate(sender_parents_tg_id, 'sender_parent')
+
+
+
+
+
+def notificate_chat_message(message: Message):
     def add_tgjournal_note(result):
         if result.get("status") == "success":
             TgBotJournal.objects.create(
@@ -277,7 +312,7 @@ def send_chat_message(message: Message):
         add_tgjournal_note(msg_result)
         notificate_parents()
         for parent_tg_id in parents_tg_ids:
-            msg_text = (f"<b>Новое сообщение <b>ДЛЯ УЧЕНИКА</b> от {message.sender.first_name} "
+            msg_text = (f"<b>Новое сообщение ДЛЯ УЧЕНИКА от {message.sender.first_name} "
                         f"{message.sender.last_name}</b>\n{message.message}")
             msg_result = sync_funcs.send_tg_message_sync(tg_id=parent_tg_id,
                                                          message=msg_text)

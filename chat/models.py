@@ -57,3 +57,35 @@ class Message(models.Model):
     async def aset_read(self):
         self.read = timezone.now()
         await self.asave()
+
+
+class GroupChats(models.Model):
+    name = models.CharField(max_length=52,
+                            verbose_name="Наименование",
+                            null=False,
+                            blank=False,
+                            unique=True)
+    photo = models.ImageField(verbose_name='Фотография чата',
+                              upload_to='profile_pictures/',
+                              null=False,
+                              blank=True,
+                              default='profile_pictures/base_chat_avatar.png')
+    users = models.ManyToManyField("profile_management.NewUser",
+                                   related_name="group_chats",
+                                   verbose_name="Пользователи")
+    users_tg = models.ManyToManyField("profile_management.Telegram",
+                                      related_name="group_chats",
+                                      verbose_name="Пользователи TG")
+    administrators = models.ManyToManyField("profile_management.NewUser",
+                                            related_name="group_chats_admin",
+                                            verbose_name="Пользователи")
+    owner = models.ForeignKey("profile_management.NewUser",
+                              on_delete=models.DO_NOTHING,
+                              verbose_name="Владелец",
+                              related_name='group_chats_owner',
+                              null=True,
+                              blank=True
+                              )
+    messages = models.ManyToManyField(Message,
+                                      related_name="group_chats_messages",
+                                      verbose_name="Сообщения")

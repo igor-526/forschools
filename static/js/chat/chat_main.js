@@ -11,20 +11,11 @@ function chatMain(){
             mediaFormats.textFormats,
             mediaFormats.presentationFormats
         )
+    chatGetUsers()
     chatMessagesSelectedUserID = getHashValue("user")
     if (chatMessagesSelectedUserID){
         chatSelectUser(chatMessagesSelectedUserID)
     }
-    chatAPIGetChats().then(request => {
-        switch (request.status){
-            case 200:
-                chatShowUsers(request.response)
-                break
-            default:
-                showErrorToast()
-                break
-        }
-    })
     chatMessagesNewSend.addEventListener("click", chatMessageSend)
     chatMessagesNewAttachmentButton.addEventListener("click", function (){
         if (chatMessagesNewAttachmentInput.files.length === 0){
@@ -36,6 +27,22 @@ function chatMain(){
     })
     chatMessagesNewAttachmentInput.addEventListener("change", function (){
         chatMessagesNewAttachmentButton.innerHTML = `Вложение (${chatMessagesNewAttachmentInput.files.length})`
+    })
+}
+
+function chatGetUsers(){
+    chatAPIGetChats().then(request => {
+        switch (request.status){
+            case 200:
+                chatShowUsers(request.response)
+                if (chatsGroupCanAddNew){
+                    chatsGroupSetUsers(request.response)
+                }
+                break
+            default:
+                showErrorToast()
+                break
+        }
     })
 }
 
@@ -83,7 +90,7 @@ function chatShowUsers(userlist = []){
         a.addEventListener("click", function (){
             chatSelectUser(
                 user.id?user.id:user.tg_id,
-                user.id?"NewUser":"Telegram"
+                user.chat_type
             )
             a.classList.add("active")
         })
@@ -303,7 +310,6 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
 
 function chatShowMessages(messages=[], userID, clear=true){
     function getElement(message){
-        console.log(message)
         const messageDiv = document.createElement("div")
         messageDiv.classList.add("d-flex")
         const messageBody = document.createElement("div")

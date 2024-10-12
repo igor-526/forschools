@@ -116,3 +116,11 @@ class NewUserLastMessageDateListSerializer(serializers.ModelSerializer):
 
     def get_last_message_date(self, obj):
         return obj.get_last_message_date()
+
+
+class TelegramListSerializer(serializers.ModelSerializer):
+    user = NewUserListSerializer(read_only=True, many=False, required=False)
+
+    class Meta:
+        model = Telegram
+        fields = ['id', 'user', 'usertype']
