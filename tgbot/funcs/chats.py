@@ -1,6 +1,8 @@
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
+from django.db.models import Q
+
 from profile_management.models import Telegram, aget_unread_messages_count
 from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
 from tgbot.keyboards.callbacks.chats import ChatListCallback
@@ -10,7 +12,7 @@ from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id
 from tgbot.create_bot import bot
 from tgbot.finite_states.chats import ChatsFSM
-from chat.models import Message
+from chat.models import Message, GroupChats
 
 
 async def chats_show(message: types.Message, state: FSMContext):
@@ -93,6 +95,85 @@ async def chats_send(user_tg_id: int, state: FSMContext):
     await send_menu(user_tg_id, state)
 
 
+async def chats_group_send(user_tg_id: int, state: FSMContext):
+    async def notificate(tg_ids, message: Message, text_type="user"):
+        msg_text = ""
+        if text_type == "user":
+            msg_text = f'<b>Новое сообщение из "{group.name}"</b>\n{message.message}'
+        elif text_type == "receiver_parent":
+            msg_text = f'<b>Новое сообщение ДЛЯ УЧЕНИКА из "{group.name}"</b>\n{message.message}'
+        elif text_type == "sender_parent":
+            msg_text = f'<b>Новое сообщение ОТ УЧЕНИКА в "{group.name}"</b>\n{message.message}'
+        for tg_id in tg_ids:
+            msg_result = await bot.send_message(chat_id=tg_id,
+                                                text=msg_text)
+            for attachment in [att async for att in chat_message.files.all()]:
+                await send_file(tg_id, attachment)
+
+    async def get_notificate_ids(tgnote: Telegram, message: Message):
+        tg_ids = {}
+        if tgnote.usertype == "main":
+            tg_ids["users_tg_id"] = [tgnote.tg_id async for tgnote in group.users_tg.all()]
+            tg_ids["receiver_parents_tg_id"] = [tgnote.tg_id async for tgnote in
+                                                Telegram.objects.filter(user__in=group.users.exclude(id=message.sender.id))
+                                                .exclude(Q(usertype="main") | Q(tg_id__in=tg_ids["users_tg_id"]))]
+            tg_ids["sender_parents_tg_id"] = [tgnote.tg_id async for tgnote in message.sender.telegram.exclude(usertype="main")]
+            tg_ids["receivers_tg_id"] = [tgnote.tg_id async for tgnote in
+                                         Telegram.objects.filter(user__in=group.users.exclude(id=message.sender.id),
+                                                                 usertype="main")]
+        else:
+            tg_ids["users_tg_id"] = [tgnote.tg_id async for tgnote in group.users_tg.exclude(id=tgnote.id)]
+            tg_ids["receiver_parents_tg_id"] = [tgnote.tg_id async for tgnote in
+                                                Telegram.objects.filter(user__in=group.users)
+                                                .exclude(Q(usertype="main") | Q(tg_id__in=tg_ids["users_tg_id"]))]
+            tg_ids["sender_parents_tg_id"] = [tgnote.tg_id async for tgnote in
+                                              Telegram.objects.filter(user_id=tgnote.id).exclude(usertype="main")]
+            tg_ids["receivers_tg_id"] = [tgnote.tg_id async for tgnote in
+                                         Telegram.objects.filter(user__in=group.users, usertype="main")]
+        return tg_ids
+
+    tgnote = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
+    data = await state.get_data()
+    if not filechecker(data):
+        await bot.send_message(chat_id=user_tg_id,
+                               text="Необходимо написать сообщение или отправить вложения, либо нажать кнопку 'Отмена'")
+        return
+    message_status = await bot.send_message(chat_id=user_tg_id,
+                                            text="Отправка...")
+    try:
+        hwdata = await filedownloader(data, owner=tgnote.user, t="Сообщение")
+        if tgnote.usertype == "main":
+            chat_message = await Message.objects.acreate(
+                receiver_id=data.get('message_for'),
+                sender_id=tgnote.user.id,
+                message=hwdata.get("comment"),
+            )
+        else:
+            chat_message = await Message.objects.acreate(
+                receiver_id=data.get('message_for'),
+                sender_tg_id=tgnote.id,
+                message=hwdata.get("comment"),
+            )
+        await chat_message.files.aset(hwdata.get("files_db"))
+        await chat_message.asave()
+        await chat_message.files.aset(hwdata.get("files_db"))
+        await chat_message.asave()
+        group = await GroupChats.objects.aget(id=data.get('message_for'))
+        await group.messages.aadd(chat_message)
+        await group.asave()
+        chat_message = await Message.objects.select_related("sender").aget(id=chat_message.id)
+        notificate_tg_ids = await get_notificate_ids(tgnote, chat_message)
+        await notificate(notificate_tg_ids.get('users_tg_id'), chat_message, 'user')
+        await notificate(notificate_tg_ids.get('receivers_tg_id'), chat_message, 'user')
+        await notificate(notificate_tg_ids.get('receiver_parents_tg_id'), chat_message, 'receiver_parent')
+        await notificate(notificate_tg_ids.get('sender_parents_tg_id'), chat_message, 'sender_parent')
+        await message_status.edit_text("Сообщение отправлено")
+    except Exception as e:
+        await message_status.edit_text(f"Не удалось отправить сообщение\n"
+                                       f"Ошибка: {e}")
+    await send_menu(user_tg_id, state)
+
+
 async def chats_send_ask(callback: CallbackQuery,
                          callback_data: ChatListCallback,
                          state: FSMContext):
@@ -100,7 +181,10 @@ async def chats_send_ask(callback: CallbackQuery,
     if data.get("files"):
         await state.update_data({"message_for": callback_data.user_id,
                                  "chat_type": callback_data.usertype})
-        await chats_send(callback.from_user.id, state)
+        if callback_data.usertype == "Group":
+            await chats_group_send(callback.from_user.id, state)
+        else:
+            await chats_send(callback.from_user.id, state)
         return
     await bot.send_message(callback.message.chat.id,
                            "Напишите сообщение, после чего нажмите кнопку 'Отправить'",

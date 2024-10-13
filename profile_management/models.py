@@ -1,6 +1,4 @@
 from _operator import itemgetter
-from pprint import pprint
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 from random import randint
@@ -370,7 +368,6 @@ class NewUser(AbstractUser):
             groups = [await get_group_info(g) async for g in tgnote.user.group_chats.all()]
         else:
             groups = [await get_group_info(g) async for g in tgnote.group_chats.all()]
-        print(groups)
         if await self.groups.filter(name__in=['Admin', 'Metodist']).aexists():
             role = "AdminOrMetodist"
         elif await self.groups.filter(name="Teacher").aexists():

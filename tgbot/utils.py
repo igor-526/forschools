@@ -40,7 +40,7 @@ async def get_user(tg_id) -> NewUser or None:
 async def get_tg_id(user_id: int, usertype=None):
     if usertype:
         tg_note = await Telegram.objects.filter(usertype=usertype, user__id=user_id).afirst()
-        return tg_note.tg_id
+        return tg_note.tg_id if tg_note else None
     tg_ids = [{
         "tg_id": tgnote.tg_id,
         "usertype": tgnote.usertype
@@ -224,6 +224,7 @@ def notificate_group_chat_message(message: Message):
             msg_text = f'<b>Новое сообщение ДЛЯ УЧЕНИКА из "{group.name}"</b>\n{message.message}'
         elif text_type == "sender_parent":
             msg_text = f'<b>Новое сообщение ОТ УЧЕНИКА в "{group.name}"</b>\n{message.message}'
+        msg_text = msg_text.replace("<br>", "\n")
         for tg_id in tg_ids:
             msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id,
                                                          message=msg_text)
