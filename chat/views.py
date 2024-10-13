@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 from dls.settings import MATERIAL_FORMATS
-from profile_management.models import NewUser
+from profile_management.models import NewUser, Telegram
 from .models import Message
 from .serializers import ChatMessageSerializer, ChatGroupInfoSerailizer
 from django.shortcuts import render
@@ -12,6 +12,7 @@ from django.views.generic import TemplateView
 from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
 from rest_framework import status
 from dls.utils import get_menu
+from chat.models import GroupChats
 
 
 class ChatPageTemplateView(LoginRequiredMixin, TemplateView):  # страница домашних заданий
@@ -88,9 +89,21 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         queryset.filter(sender_id=self.kwargs.get("user"),
                         read__isnull=True).update(read=timezone.now())
         serializer = self.get_serializer(queryset, many=True)
-        usr = NewUser.objects.get(pk=self.kwargs.get("user"))
+        username = "Диалог"
+        current_user_id = self.request.query_params.get('from_user') if self.request.query_params.get('from_user') \
+            else self.request.user.id
+        if self.chat_type == "NewUser":
+            usr = NewUser.objects.get(pk=self.kwargs.get("user"))
+            username = f'{usr.first_name} {usr.last_name}'
+        elif self.chat_type == "Telegram":
+            tgnote = Telegram.objects.get(pk=self.kwargs.get("user"))
+            username = f'{tgnote.user.first_name} {tgnote.user.last_name} [{tgnote.usertype}]'
+        elif self.chat_type == "Group":
+            group_chat = GroupChats.objects.get(pk=self.kwargs.get("user"))
+            username = group_chat.name
         return JsonResponse({'messages': serializer.data,
-                             'username': f'{usr.first_name} {usr.last_name}'}, status=200, safe=False)
+                             'username': username,
+                             'current_user_id': current_user_id}, status=200, safe=False)
 
     def create(self, request, *args, **kwargs):
         self.set_chat_type()

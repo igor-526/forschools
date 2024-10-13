@@ -24,7 +24,7 @@ async def command_start_handler(message: types.Message, state: FSMContext):
             if user:
                 try:
                     tg_count = await user.telegram.acount()
-                    usertype = "main" if tg_count == 0 else "Дополнительный"
+                    usertype = "main" if tg_count == 0 else "Родительский"
                     await Telegram.objects.aget_or_create(user=user,
                                                           tg_id=message.from_user.id,
                                                           nickname=message.from_user.username,

@@ -11,6 +11,8 @@ from material.models import File
 class ChatMessageSerializer(serializers.ModelSerializer):
     sender = NewUserNameOnlyListSerializer(many=False, read_only=True)
     receiver = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    sender_tg = TelegramListSerializer(many=False, read_only=True)
+    receiver_tg = TelegramListSerializer(many=False, read_only=True)
     files = FileSerializer(many=True, read_only=True)
 
     class Meta:

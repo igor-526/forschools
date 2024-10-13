@@ -8,6 +8,12 @@
     margin: 5px 0;
 }
 
+.chats-message-receiver-name{
+    border-bottom: 2px solid #afafaf;
+    font-size: 12px;
+    font-weight: bold;
+}
+
 .chats-message-sender{
     background-color: rgba(48, 132, 255, 0.37);
     width: fit-content;

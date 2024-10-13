@@ -2,7 +2,6 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
-
 from profile_management.models import Telegram, aget_unread_messages_count
 from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
 from tgbot.keyboards.callbacks.chats import ChatListCallback
@@ -115,21 +114,26 @@ async def chats_group_send(user_tg_id: int, state: FSMContext):
         if tgnote.usertype == "main":
             tg_ids["users_tg_id"] = [tgnote.tg_id async for tgnote in group.users_tg.all()]
             tg_ids["receiver_parents_tg_id"] = [tgnote.tg_id async for tgnote in
-                                                Telegram.objects.filter(user__in=group.users.exclude(id=message.sender.id))
+                                                Telegram.objects.filter(user__in=group.users.exclude(
+                                                    id=message.sender.id))
                                                 .exclude(Q(usertype="main") | Q(tg_id__in=tg_ids["users_tg_id"]))]
-            tg_ids["sender_parents_tg_id"] = [tgnote.tg_id async for tgnote in message.sender.telegram.exclude(usertype="main")]
+            tg_ids["sender_parents_tg_id"] = [tgnote.tg_id async for tgnote in message.sender.telegram.exclude(
+                usertype="main")]
             tg_ids["receivers_tg_id"] = [tgnote.tg_id async for tgnote in
                                          Telegram.objects.filter(user__in=group.users.exclude(id=message.sender.id),
                                                                  usertype="main")]
         else:
             tg_ids["users_tg_id"] = [tgnote.tg_id async for tgnote in group.users_tg.exclude(id=tgnote.id)]
             tg_ids["receiver_parents_tg_id"] = [tgnote.tg_id async for tgnote in
-                                                Telegram.objects.filter(user__in=group.users)
-                                                .exclude(Q(usertype="main") | Q(tg_id__in=tg_ids["users_tg_id"]))]
+                                                Telegram.objects.filter(
+                                                    user_id__in=[u.id async for u in group.users.all()])
+                                                .exclude(Q(usertype="main") | Q(tg_id__in=tg_ids["users_tg_id"]) |
+                                                         Q(id=tgnote.id))]
             tg_ids["sender_parents_tg_id"] = [tgnote.tg_id async for tgnote in
                                               Telegram.objects.filter(user_id=tgnote.id).exclude(usertype="main")]
             tg_ids["receivers_tg_id"] = [tgnote.tg_id async for tgnote in
-                                         Telegram.objects.filter(user__in=group.users, usertype="main")]
+                                         Telegram.objects.filter(user_id__in=[u.id async for u in group.users.all()],
+                                                                 usertype="main")]
         return tg_ids
 
     tgnote = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)

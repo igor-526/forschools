@@ -135,7 +135,7 @@ function chatGetMessages(userID, chatType="NewUser"){
     chatAPIGetMessages(userID, chatType, chatMessagesFromUserID).then(request => {
         switch (request.status){
             case 200:
-                chatShowMessages(request.response.messages, userID)
+                chatShowMessages(request.response.messages, request.response.current_user_id)
                 chatMessagesUserName.innerHTML = request.response.username
                 chatMessagesSelectedUserID = userID
                 if (!chatMessagesFromUserID){
@@ -308,20 +308,25 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
     return attAll
 }
 
-function chatShowMessages(messages=[], userID, clear=true){
+function chatShowMessages(messages=[], currentUserID, clear=true){
     function getElement(message){
         const messageDiv = document.createElement("div")
         messageDiv.classList.add("d-flex")
         const messageBody = document.createElement("div")
-        switch (chatMessagesSelectedChatType){
-            case "NewUser":
-                messageDiv.classList.add(message.receiver.id === userID?"justify-content-end":"justify-content-start")
-                messageBody.classList.add(message.receiver.id === userID?"chats-message-sender":"chats-message-receiver")
-                break
-            case "Telegram":
-                messageDiv.classList.add(message.receiver_tg === userID?"justify-content-end":"justify-content-start")
-                messageBody.classList.add(message.receiver_tg === userID?"chats-message-sender":"chats-message-receiver")
-                break
+        if (message.sender && (currentUserID === message.sender.id) || currentUserID === "sender"){
+            messageDiv.classList.add("justify-content-end")
+            messageBody.classList.add("chats-message-sender")
+        } else {
+            messageDiv.classList.add("justify-content-start")
+            messageBody.classList.add("chats-message-receiver")
+            if (chatMessagesSelectedChatType === "Group"){
+                const messageBodySenderName = document.createElement("div")
+                messageBodySenderName.innerHTML = message.sender ? `${message.sender.first_name} ${message.sender.last_name}` :
+                    `${message.sender_tg.user.first_name} ${message.sender_tg.user.last_name} [${message.sender_tg.usertype}]`
+                messageBodySenderName.classList.add("chats-message-receiver-name", "mb-1")
+                console.log(message)
+                messageBody.insertAdjacentElement("beforeend", messageBodySenderName)
+            }
         }
         messageDiv.insertAdjacentElement("beforeend", messageBody)
         const messageBodyText = document.createElement("p")
@@ -415,7 +420,7 @@ function chatMessageSend(){
         chatAPISendMessage(chatMessagesSelectedUserID, getFD()).then(request => {
             switch (request.status){
                 case 201:
-                    chatShowMessages([request.response], chatMessagesSelectedUserID, false)
+                    chatShowMessages([request.response], "sender", false)
                     chatMessagesNewText.value = ""
                     chatMessagesNewAttachmentInput.value = ""
                     chatMessagesNewAttachmentButton.innerHTML = "Вложение (0)"
