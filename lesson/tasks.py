@@ -4,6 +4,7 @@ from .models import Lesson
 from tgbot.utils import sync_funcs as tg
 import datetime
 from tgbot.models import TgBotJournal
+import logging
 
 
 @app.task
@@ -14,6 +15,7 @@ def notification_listeners_lessons():
         start_time__gt=datetime.datetime.now() + datetime.timedelta(hours=1),
         start_time__lte=datetime.datetime.now() + datetime.timedelta(hours=1, minutes=15)
     )
+    logging.log(level=logging.INFO, msg=f'[SOON_LESSONS]Lessons_count: {len(lessons)}')
     for lesson in lessons:
         listeners = lesson.get_listeners()
         for listener in listeners:
@@ -29,6 +31,11 @@ def notification_listeners_lessons():
                     tg_id=telegram.get("tg_id"),
                     message=msg
                 )
+                logging.log(level=logging.INFO, msg=f'[SOON_LESSONS]\nlesson_id: {lesson.id}\n'
+                                                    f'listener_id: {listener.id}\n'
+                                                    f'tg_id: {telegram.get("tg_id")}\n'
+                                                    f'usertype: {telegram.get("usertype")}\n'
+                                                    f'status: {result.get("status")}\n')
                 if result.get('status') == 'success':
                     TgBotJournal.objects.create(
                         recipient=listener,
@@ -37,6 +44,7 @@ def notification_listeners_lessons():
                             "status": "success",
                             "text": msg,
                             "msg_id": result.get('msg_id'),
+                            "usertype": telegram.get("usertype"),
                             "errors": [],
                             "attachments": []
                         }
@@ -49,6 +57,7 @@ def notification_listeners_lessons():
                             "status": "error",
                             "text": msg,
                             "msg_id": None,
+                            "usertype": telegram.get("usertype"),
                             "errors": result.get('errors'),
                             "attachments": []
                         }
@@ -61,6 +70,7 @@ def notification_listeners_lessons():
                         "status": "error",
                         "text": None,
                         "msg_id": None,
+                        "usertype": None,
                         "errors": ["У пользователя не привязан Telegram"],
                         "attachments": []
                     }
@@ -75,6 +85,7 @@ def notification_listeners_tomorrow_lessons():
         start_time__gte=datetime.datetime.now(),
         start_time__lte=datetime.datetime.now() + datetime.timedelta(hours=1)
     )
+    logging.log(level=logging.INFO, msg=f'[TOMORROW_LESSONS_LISTENERS]Lessons_count: {len(lessons)}')
     for lesson in lessons:
         listeners = lesson.get_listeners()
         for listener in listeners:
@@ -90,6 +101,11 @@ def notification_listeners_tomorrow_lessons():
                     tg_id=telegram.get("tg_id"),
                     message=msg
                 )
+                logging.log(level=logging.INFO, msg=f'[TOMORROW_LESSONS_LISTENERS]\nlesson_id: {lesson.id}\n'
+                                                    f'listener_id: {listener.id}\n'
+                                                    f'tg_id: {telegram.get("tg_id")}\n'
+                                                    f'usertype: {telegram.get("usertype")}\n'
+                                                    f'status: {result.get("status")}\n')
                 if result.get('status') == 'success':
                     TgBotJournal.objects.create(
                         recipient=listener,
@@ -98,6 +114,7 @@ def notification_listeners_tomorrow_lessons():
                             "status": "success",
                             "text": msg,
                             "msg_id": result.get('msg_id'),
+                            "usertype": telegram.get("usertype"),
                             "errors": [],
                             "attachments": []
                         }
@@ -110,6 +127,7 @@ def notification_listeners_tomorrow_lessons():
                             "status": "error",
                             "text": msg,
                             "msg_id": None,
+                            "usertype": telegram.get("usertype"),
                             "errors": result.get('errors'),
                             "attachments": []
                         }
@@ -120,6 +138,7 @@ def notification_listeners_tomorrow_lessons():
                     event=1,
                     data={
                         "status": "error",
+                        "usertype": None,
                         "text": None,
                         "msg_id": None,
                         "errors": ["У пользователя не привязан Telegram"],
@@ -134,6 +153,7 @@ def notification_tomorrow_schedule():
         status=0,
         date=datetime.date.today() + datetime.timedelta(days=1),
     )
+    logging.log(level=logging.INFO, msg=f'[TOMORROW_LESSONS_TEACHERS]Lessons_count: {len(lessons)}')
     notifications_t = {}
     for lesson in lessons:
         listeners = lesson.get_listeners()
@@ -166,6 +186,9 @@ def notification_tomorrow_schedule():
             tg_id=tg_id,
             message=notifications_t[tg_id]["msg"]
         )
+        logging.log(level=logging.INFO, msg=f'[TOMORROW_LESSONS_TEACHERS]\n'
+                                            f'tg_id: {tg_id}\n'
+                                            f'status: {msg_result.get("status")}\n')
         if msg_result.get("status") == "success":
             TgBotJournal.objects.create(
                 recipient_id=notifications_t[tg_id]["usr_id"],
@@ -174,6 +197,7 @@ def notification_tomorrow_schedule():
                     "status": "success",
                     "text": notifications_t[tg_id]["msg"],
                     "msg_id": msg_result.get("msg_id"),
+                    "usertype": None,
                     "errors": [],
                     "attachments": []
                 }
@@ -186,6 +210,7 @@ def notification_tomorrow_schedule():
                     "status": "error",
                     "text": None,
                     "msg_id": None,
+                    "usertype": None,
                     "errors": msg_result.get("errors"),
                     "attachments": []
                 }

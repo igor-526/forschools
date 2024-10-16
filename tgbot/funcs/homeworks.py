@@ -341,15 +341,18 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
     await bot.send_message(chat_id=callback.from_user.id,
                            text=f"Домашнее задание: <b>{hw.name}</b>\n"
                                 f"Срок выполнения: {hw.deadline}\n"
-                                f"Описание: {hw.description}\n",
-                           reply_markup=get_homework_item_buttons(hw.id,
-                                                                  can_send,
-                                                                  can_check))
+                                f"Описание: {hw.description}\n")
     for mat in [m.id async for m in hw.materials.all()]:
         await show_material_item(callback, mat)
     if hw_status.status == 7 and 'Listener' in gp.get('groups'):
         await hw.aopen()
     await show_log_item(callback, hw_status.id)
+    await bot.send_message(chat_id=callback.from_user.id,
+                           text=f"Действия для ДЗ <b>{hw.name}</b>\n",
+                           reply_markup=get_homework_item_buttons(hw.id,
+                                                                  can_send,
+                                                                  can_check)
+                           )
 
 
 async def show_logs(callback: CallbackQuery, callback_data: HomeworkCallback):
@@ -423,7 +426,7 @@ async def send_hw_answer(callback: CallbackQuery,
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    if 'Listener' in gp['groups'] and hw_status.status in [7, 2, 5]:
+    if 'Listener' in gp['groups'] and hw_status.status in [7, 2, 3, 5]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие решение домашнего задания, "
                                     "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, "

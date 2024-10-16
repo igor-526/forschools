@@ -103,7 +103,7 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             username = group_chat.name
         return JsonResponse({'messages': serializer.data,
                              'username': username,
-                             'current_user_id': current_user_id}, status=200, safe=False)
+                             'current_user_id': int(current_user_id)}, status=200, safe=False)
 
     def create(self, request, *args, **kwargs):
         self.set_chat_type()
