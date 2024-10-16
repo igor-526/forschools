@@ -10,7 +10,7 @@ from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons, get_homework_menu_buttons, get_homework_lessons_buttons,
                                       get_homework_newhwsetting_buttons)
-from tgbot.keyboards.default import cancel_keyboard, yes_cancel_keyboard, message_typing_keyboard
+from tgbot.keyboards.default import cancel_keyboard, yes_cancel_keyboard, message_typing_keyboard, save_hw_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
@@ -36,8 +36,9 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
         await message.answer("Функция для Вашей роли недоступна")
 
 
-async def add_homework_select_lesson(callback: CallbackQuery, date_=None):
-    user = await get_user(callback.from_user.id)
+async def add_homework_select_lesson(user_tg_id: int, message: types.Message = None,
+                                     callback: types.CallbackQuery = None, date_=None):
+    user = await get_user(user_tg_id)
     date = datetime.date.today() if not date_ else datetime.datetime.strptime(date_, "%d.%m.%Y").date()
     prev_date = date - datetime.timedelta(days=1)
     next_date = (date + datetime.timedelta(days=1)) if date != datetime.date.today() else None
@@ -64,15 +65,25 @@ async def add_homework_select_lesson(callback: CallbackQuery, date_=None):
           date=date,
           status__in=[0, 1])
     )]
-    await callback.message.edit_text(f"Вот ваши занятия за {date.strftime('%d.%m.%Y')}\n"
-                                     f"В скобках количество ДЗ, крестом отмечены непроведённые\n"
-                                     f"К какому занятию прикрепить ДЗ?",
-                                     reply_markup=get_homework_lessons_buttons(
-                                         lessons, prev_date, next_date)
-                                     )
+    if message:
+        await message.reply(text=f"Вот ваши занятия за {date.strftime('%d.%m.%Y')}\n"
+                                 f"В скобках количество ДЗ, крестом отмечены непроведённые\n"
+                                 f"К какому занятию прикрепить ДЗ?",
+                            reply_markup=get_homework_lessons_buttons(
+                                lessons, prev_date, next_date)
+                            )
+    elif callback:
+        await callback.message.edit_text(text=f"Вот ваши занятия за {date.strftime('%d.%m.%Y')}\n"
+                                              f"В скобках количество ДЗ, крестом отмечены непроведённые\n"
+                                              f"К какому занятию прикрепить ДЗ?",
+                                         reply_markup=get_homework_lessons_buttons(
+                                             lessons, prev_date, next_date)
+                                         )
 
 
-async def add_homework_set_homework_ready(message: types.Message, state: FSMContext):
+async def add_homework_set_homework_ready(state: FSMContext,
+                                          message: types.Message = None,
+                                          callback: types.CallbackQuery = None):
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")
     current_deadline = statedata.get("new_hw").get("deadline")
@@ -91,7 +102,7 @@ async def add_homework_set_homework_ready(message: types.Message, state: FSMCont
         await hw.asave()
         await message.answer("ДЗ успешно изменено")
     else:
-        teacher = await get_user(message.from_user.id)
+        teacher = await get_user(callback.from_user.id)
         lesson = await Lesson.objects.aget(pk=statedata.get("new_hw").get("lesson_id"))
         listeners = await lesson.aget_listeners()
         for listener in listeners:
@@ -115,12 +126,16 @@ async def add_homework_set_homework_ready(message: types.Message, state: FSMCont
             else:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно создано и будет задано после "
                             f"проведения занятия")
-            await message.answer(msg_text)
+            if message:
+                await message.reply(msg_text)
+                await send_menu(message.from_user.id, state)
+            if callback:
+                await callback.message.edit_text(msg_text)
+                await send_menu(callback.from_user.id, state)
 
 
 async def add_homework_set_homework_message(tg_id: int,
-                                            state: FSMContext,
-                                            lesson_id):
+                                            state: FSMContext):
     data = await state.get_data()
     if not data.get("new_hw"):
         last_count = await Homework.objects.acount()
@@ -128,7 +143,6 @@ async def add_homework_set_homework_message(tg_id: int,
         await state.update_data({
             "new_hw": {
                 "hw_id": None,
-                "lesson_id": lesson_id,
                 "name": f'Домашнее задание {last_count + 1}',
                 "description": None,
                 "materials": [],
@@ -152,8 +166,8 @@ async def add_homework_set_homework_message(tg_id: int,
                                 "При необходимости, отредактируйте параметры ДЗ, с помощью кнопок:",
                            reply_markup=keys)
     await bot.send_message(chat_id=tg_id,
-                           text="После завершения настройки ДЗ <b>нажмите кнопку 'Отправить'</b>",
-                           reply_markup=message_typing_keyboard)
+                           text="После завершения настройки ДЗ <b>нажмите кнопку 'Сохранить ДЗ'</b>",
+                           reply_markup=save_hw_keyboard)
     for msg in data.get("messages_to_delete"):
         await bot.delete_message(chat_id=tg_id,
                                  message_id=msg)
@@ -323,7 +337,7 @@ async def search_homeworks_query(message: types.Message):
         await message.answer("По данному запросу не найдено ни одного домашнего задания")
     msg = "Вот домашние задания, которые требуют Вашей проверки от следующих учеников:"
     for n, hw in enumerate(homeworks):
-        msg += f"\n{n+1}. {hw.get('hw').listener.first_name} {hw.get('hw').listener.last_name}"
+        msg += f"\n{n + 1}. {hw.get('hw').listener.first_name} {hw.get('hw').listener.last_name}"
     await message.answer(text=msg,
                          reply_markup=get_homeworks_buttons([hw.get('hw') for hw in homeworks], sb=False))
 

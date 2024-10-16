@@ -1,10 +1,10 @@
+from pprint import pprint
+
 from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-
 from homework.models import Homework
-from tgbot.create_bot import bot
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.homeworks import add_homework_select_lesson, add_homework_set_homework_message, \
     add_homework_set_homework_change, add_homework_set_homework_change_ready, add_homework_set_homework_ready
@@ -36,18 +36,19 @@ async def h_homework_edit(callback: CallbackQuery,
         },
         "messages_to_delete": []
     })
-    await add_homework_set_homework_message(callback.from_user.id, state, hw.listener.id)
+    await add_homework_set_homework_message(callback.from_user.id, state)
 
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
-                F.text == "Отправить")
+                F.text == "Сохранить ДЗ")
 async def h_homework_sethw_ready(message: types.Message, state: FSMContext) -> None:
-    statedata = await state.get_data()
-    messages_to_delete = statedata.get("messages_to_delete")
-    messages_to_delete.append(message.message_id)
-    await state.update_data({"messages_to_delete": messages_to_delete})
-    await add_homework_set_homework_ready(message, state)
-    await send_menu(message.from_user.id, state)
+    sd = await state.get_data()
+    if sd.get("new_hw") and sd.get("new_hw").get("hw_id"):
+        await add_homework_set_homework_ready(state=state,
+                                              message=message)
+    else:
+        await add_homework_select_lesson(user_tg_id=message.from_user.id,
+                                         message=message)
 
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
@@ -69,22 +70,29 @@ async def h_homework_add_setting(callback: CallbackQuery,
     await add_homework_set_homework_change(callback, state, callback_data.action)
 
 
-@router.callback_query(HomeworkMenuCallback.filter(F.action == 'new'))
-async def h_homework_add(callback: CallbackQuery) -> None:
-    await add_homework_select_lesson(callback)
+@router.callback_query(HomeworkNewCallback.filter())
+async def h_homework_add(callback: CallbackQuery,
+                         callback_data: HomeworkNewCallback,
+                         state: FSMContext) -> None:
+    state_data = await state.get_data()
+    state_data['new_hw']['lesson_id'] = callback_data.lesson_id
+    await state.update_data(state_data)
+    await add_homework_set_homework_ready(state=state,
+                                          callback=callback)
 
 
 @router.callback_query(HomeworkNewSelectDateCallback.filter())
 async def h_homework_add_navigate(callback: CallbackQuery,
                                   callback_data: HomeworkNewSelectDateCallback) -> None:
-    await add_homework_select_lesson(callback, callback_data.date)
+    await add_homework_select_lesson(user_tg_id=callback.from_user.id,
+                                     callback=callback,
+                                     date_=callback_data.date)
 
 
-@router.callback_query(HomeworkNewCallback.filter())
+@router.callback_query(HomeworkMenuCallback.filter(F.action == 'new'))
 async def h_homework_sethw(callback: CallbackQuery,
-                           callback_data: HomeworkNewCallback,
                            state: FSMContext) -> None:
-    await add_homework_set_homework_message(callback.from_user.id, state, callback_data.lesson_id)
+    await add_homework_set_homework_message(callback.from_user.id, state)
     await callback.message.delete()
 
 

@@ -159,7 +159,7 @@ class HomeworkItemPage(LoginRequiredMixin, TemplateView):
         context = {'title': hw.name,
                    'menu': get_menu(request.user),
                    "hw": hw,
-                   "can_send": (status == 1 or status == 2 or status == 5) and hw.listener == request.user,
+                   "can_send": (status in [1, 2, 3, 5, 7]) and hw.listener == request.user,
                    "can_check": status == 3 and hw.teacher == request.user,
                    "can_set_replace": replace_teacher_button(request)}
         return render(request, self.template_name, context)
