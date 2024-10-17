@@ -83,15 +83,24 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = Message.objects.filter(group_chats_messages=self.kwargs.get("user")).order_by('-date')
         return queryset
 
+    def read_messages(self, queryset):
+        messages_to_read = queryset.exclude(
+            Q(sender=self.request.user) |
+            Q(read_data__has_key=f'nu{self.request.user.id}')
+        )
+        for message in messages_to_read:
+            message.set_read(self.request.user.id, "NewUser")
+
     def list(self, request, *args, **kwargs):
         self.set_chat_type()
         queryset = self.get_queryset()
-        queryset.filter(sender_id=self.kwargs.get("user"),
-                        read__isnull=True).update(read=timezone.now())
-        serializer = self.get_serializer(queryset, many=True)
         username = "Диалог"
-        current_user_id = self.request.query_params.get('from_user') if self.request.query_params.get('from_user') \
-            else self.request.user.id
+        if self.request.query_params.get('from_user'):
+            current_user_id = self.request.query_params.get('from_user')
+        else:
+            current_user_id = self.request.user.id
+            self.read_messages(queryset)
+        serializer = self.get_serializer(queryset, many=True)
         if self.chat_type == "NewUser":
             usr = NewUser.objects.get(pk=self.kwargs.get("user"))
             username = f'{usr.first_name} {usr.last_name}'

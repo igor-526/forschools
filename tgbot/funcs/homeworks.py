@@ -101,6 +101,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
         await hw.materials.aset(statedata.get("new_hw").get("materials"))
         await hw.asave()
         await message.answer("ДЗ успешно изменено")
+        await send_menu(message.from_user.id, state)
     else:
         teacher = await get_user(callback.from_user.id)
         lesson = await Lesson.objects.aget(pk=statedata.get("new_hw").get("lesson_id"))

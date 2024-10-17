@@ -409,10 +409,9 @@ class NewUser(AbstractUser):
 
     def get_unread_messages_count(self, sender=None):
         if sender is None:
-            return self.message_receiver.filter(read__isnull=True).count()
+            return self.message_receiver.exclude(read_data__key=f'nu{self.id}').count()
         else:
-            return self.message_receiver.filter(read__isnull=True,
-                                                sender=sender).count()
+            return self.message_receiver.filter(sender=sender).exclude(read_data__key=f'nu{self.id}').count()
 
     def get_last_message_date(self):
         s_message = self.message_sender.order_by("-date").first()
@@ -522,15 +521,16 @@ class UserLog(models.Model):
 
 
 async def aget_unread_messages_count(tgnote, sender=None):
-    query = {
-        "read__isnull": True
-    }
+    query = {"filter": {},
+             "exclude": {}}
     if sender:
         if sender.get("usertype") == "NewUser":
-            query['sender_id'] = sender.get("id")
+            query['filter']['sender_id'] = sender.get("id")
+            query['exclude']['read_data__has_key'] = f'nu{sender.get("id")}'
         elif sender.get("usertype") == "Telegram":
-            query['sender_tg_id'] = sender.get("id")
+            query['filter']['sender_tg_id'] = sender.get("id")
+            query['exclude']['read_data__has_key'] = f'tg{sender.get("id")}'
     if tgnote.usertype == "main":
-        return await tgnote.user.message_receiver.filter(**query).acount()
+        return await tgnote.user.message_receiver.filter(**query['filter']).exclude(**query['exclude']).acount()
     else:
-        return await tgnote.message_tg_receiver.filter(**query).acount()
+        return await tgnote.message_tg_receiver.filter(**query['filter']).exclude(**query['exclude']).acount()

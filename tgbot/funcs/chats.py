@@ -18,13 +18,20 @@ async def chats_show(message: types.Message, state: FSMContext):
     async def show_unread():
         tgnote = await Telegram.objects.select_related("user").aget(tg_id=message.from_user.id)
         query = {
-            "read__isnull": True
+            "filter": {},
+            "exclude": {}
         }
         if tgnote.usertype == "main":
-            query["receiver"] = tgnote.user
+            query['filter']["receiver"] = tgnote.user
+            query['exclude']['read_data__has_key'] = f'nu{tgnote.user.id}'
         else:
-            query["receiver_tg"] = tgnote
-        unread_messages = [msg.id async for msg in Message.objects.filter(**query).order_by('sender', 'date')]
+            query['filter']["receiver_tg"] = tgnote
+            query['exclude']['read_data__has_key'] = f'tg{tgnote.id}'
+        unread_messages = [
+            msg.id async for msg in
+            Message.objects.filter(**query['filter']).exclude(**query['exclude']).
+            order_by('sender', 'sender_tg', 'date')
+        ]
         for msg in unread_messages:
             await chats_notificate(msg, True)
 
@@ -260,7 +267,6 @@ async def chats_notificate(chat_message_id: int, show=False):
     chat_message = await (Message.objects.select_related("receiver")
                           .select_related("receiver_tg").select_related("receiver_tg__user").select_related("sender")
                           .select_related("sender_tg").select_related("sender_tg__user").aget(pk=chat_message_id))
-    parents_tg_ids = []
     if chat_message.receiver:
         tg_id = await get_tg_id(chat_message.receiver.id, "main")
     else:
@@ -292,11 +298,10 @@ async def chats_notificate(chat_message_id: int, show=False):
                         await bot.send_message(chat_id=parent_tg_id,
                                                text=msg_text,
                                                reply_markup=None)
+                    await notificate_parents(chat_message)
             attachments = [f async for f in chat_message.files.all()]
-            await notificate_parents(chat_message)
             for attachment in attachments:
-                for all_tg_id in [tg_id, *parents_tg_ids]:
-                    await send_file(all_tg_id, attachment)
+                await send_file(tg_id, attachment)
         except Exception as e:
             if not show:
                 await TgBotJournal.objects.acreate(

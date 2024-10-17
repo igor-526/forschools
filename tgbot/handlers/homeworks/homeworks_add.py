@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -106,7 +104,7 @@ async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> 
     messages_to_delete = statedata.get("messages_to_delete")
     messages_to_delete.append(message.message_id)
     await state.update_data({"messages_to_delete": messages_to_delete})
-    await add_homework_set_homework_message(message.from_user.id, state, statedata.get("new_hw").get("listener_id"))
+    await add_homework_set_homework_message(message.from_user.id, state)
 
 
 @router.message(StateFilter(HomeworkNewFSM.change_name))

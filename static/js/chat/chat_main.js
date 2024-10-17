@@ -47,11 +47,10 @@ function chatGetUsers(){
 }
 
 function chatGetDateTimeString(dt){
-    const date = new Date(dt)
     let datestring
     const difference = (new Date()
         .setHours(0,0,0,0) - new Date(dt)
-        .setHours(0,0,0,0)) / (1000 * 60 * 60 * 24)
+        .setHours(0,0,0,0) / (1000 * 60 * 60 * 24))
     switch (difference){
         case 0:
             datestring = "сегодня в "
@@ -60,10 +59,10 @@ function chatGetDateTimeString(dt){
             datestring = "вчера в "
             break
         default:
-            datestring = `${date.getDate().toString().padStart(2, "0")}.${date.getMonth().toString().padStart(2, "0")}`
+            datestring = `${dt.getDate().toString().padStart(2, "0")}.${dt.getMonth().toString().padStart(2, "0")}`
             break
     }
-    datestring += ` ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`
+    datestring += ` ${dt.getHours().toString().padStart(2, "0")}:${dt.getMinutes().toString().padStart(2, "0")}`
     return datestring
 }
 
@@ -111,7 +110,7 @@ function chatShowUsers(userlist = []){
             elemInfo.insertAdjacentElement("beforeend", getBadge(user.unread))
         }
         const elemDivDate = document.createElement("small")
-        elemDivDate.innerHTML = user.last_message_date?chatGetDateTimeString(user.last_message_date):"Нет сообщений"
+        elemDivDate.innerHTML = user.last_message_date?chatGetDateTimeString(new Date(user.last_message_date)):"Нет сообщений"
         const elemMessage = document.createElement("p")
         elemMessage.classList.add("mb-1")
         elemMessage.innerHTML = user.last_message_text
@@ -311,8 +310,10 @@ function chatShowMessagesGetAttachmentsElement(attachments = []){
 function chatShowMessages(messages=[], currentUserID, clear=true){
     function getElement(message){
         const messageDiv = document.createElement("div")
-        messageDiv.classList.add("d-flex")
         const messageBody = document.createElement("div")
+        const messageBodyText = document.createElement("p")
+        const messageBodyData = document.createElement("span")
+        messageDiv.classList.add("d-flex")
         if (message.sender && (currentUserID === message.sender.id) || currentUserID === "sender"){
             messageDiv.classList.add("justify-content-end")
             messageBody.classList.add("chats-message-sender")
@@ -329,13 +330,22 @@ function chatShowMessages(messages=[], currentUserID, clear=true){
             }
         }
         messageDiv.insertAdjacentElement("beforeend", messageBody)
-        const messageBodyText = document.createElement("p")
         messageBodyText.innerHTML = message.message
-        const messageBodyData = document.createElement("span")
         messageBodyData.classList.add("chats-message-data")
-        messageBodyData.innerHTML = chatGetDateTimeString(message.date)
-        if (message.read){
-            messageBodyData.innerHTML += ` | прочитано ${chatGetDateTimeString(message.read)}`
+        messageBodyData.innerHTML = chatGetDateTimeString(new Date(message.date))
+        const read_data = Object.keys(message.read_data)
+        switch (read_data.length){
+            case 0:
+                break
+            case 1:
+                const rdtObj = (message.read_data[read_data[0]])
+                const rdt = new Date()
+                rdt.setUTCFullYear(rdtObj.year, rdtObj.month, rdtObj.day)
+                rdt.setUTCHours(rdtObj.hour, rdtObj.minute, 0, 0)
+                messageBodyData.innerHTML += ` | прочитано ${chatGetDateTimeString(rdt)}`
+                break
+            default:
+                break
         }
         messageBody.insertAdjacentElement("beforeend", messageBodyText)
         if (message.files.length !== 0){
