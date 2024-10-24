@@ -9,6 +9,13 @@
                 <form id="lessonItemStatusPassedModalForm">
                     {% csrf_token %}
                     <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalLessonNameField" class="form-label">Наименование занятия</label>
+                        <input name="lesson_name" type="text" class="form-control" id="lessonItemStatusPassedModalLessonNameField">
+                        <div class="form-text">Введите наименование занятия согласно программе (например, HSK1 урок 1)</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalLessonNameError"></div>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="lessonItemStatusPassedModalNoteField" class="form-label">Заметка (ученик не сможет увидеть)</label>
                         <textarea name="note_teacher" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalNoteField"></textarea>
                         <div class="form-text">Расскажите, всё ли прошло хорошо? Какие проблемы возникли у ученика, что не успели пройти и т.д.<br>Необязательно к заполнению</div>

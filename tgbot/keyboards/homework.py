@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, KeyboardButton,ReplyKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkLogCallback, HomeworkMenuCallback,
                                                 HomeworkNewCallback, HomeworkNewSettingCallback,
@@ -19,32 +19,19 @@ def get_homework_menu_buttons() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_homework_newhwsetting_buttons(name, description, deadline, matcount) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(
-        text=f"Наименование: {name}",
-        callback_data=HomeworkNewSettingCallback(action="name")
-    )
-    builder.button(
-        text=f"Описание: {description}",
-        callback_data=HomeworkNewSettingCallback(action="description")
-    )
-    builder.button(
-        text=f"Срок: {deadline.get('day')}.{deadline.get('month')}.{deadline.get('year')}",
-        callback_data=HomeworkNewSettingCallback(action="deadline")
-    )
-    builder.button(
-        text=f"Удалить материалы ({matcount})",
-        callback_data=HomeworkNewSettingCallback(action="materials")
-    )
-    builder.adjust(1)
-    return builder.as_markup()
+def get_homework_editing_buttons() -> ReplyKeyboardMarkup:
+    cancel_button = KeyboardButton(text="Отмена")
+    del_materials_button = KeyboardButton(text=f"Стереть материалы")
+    save_hw_button = KeyboardButton(text="Подтвердить ДЗ")
+    return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[save_hw_button],
+                                                               [del_materials_button],
+                                                               [cancel_button]])
 
 
 def get_homework_lessons_buttons(lessons: list, prev_date=None, next_date=None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for lsn in lessons:
-        btn_text = f'({lsn.get("homeworks")}){("("+"X"+")") if lsn.get("status") == 0 else ""} {lsn.get("start_time")}-{lsn.get("end_time")}: {", ".join([l.first_name+" "+l.last_name for l in lsn.get("listeners")])}'
+        btn_text = f'{("("+"X"+")") if lsn.get("status") == 0 else ""} {lsn.get("start_time")}-{lsn.get("end_time")}: {", ".join([l.first_name+" "+l.last_name for l in lsn.get("listeners")])}'
         builder.button(
             text=btn_text,
             callback_data=HomeworkNewCallback(lesson_id=lsn.get('lesson_id'))

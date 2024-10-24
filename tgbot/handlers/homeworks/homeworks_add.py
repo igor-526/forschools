@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from homework.models import Homework
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.homeworks import add_homework_select_lesson, add_homework_set_homework_message, \
-    add_homework_set_homework_change, add_homework_set_homework_change_ready, add_homework_set_homework_ready
+    add_homework_delete_materials, add_homework_set_homework_change_ready, add_homework_set_homework_ready
 from tgbot.funcs.materials_add import add_material_add
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNewCallback, HomeworkNewSettingCallback, \
@@ -14,7 +14,7 @@ from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNew
 router = Router(name=__name__)
 
 
-@router.callback_query(HomeworkCallback.filter(F.action == "edit"))
+@router.callback_query(HomeworkCallback.filter(F.action == "edit"))     # Редактирование готового ДЗ кнопка
 async def h_homework_edit(callback: CallbackQuery,
                           callback_data: HomeworkCallback,
                           state: FSMContext) -> None:
@@ -37,8 +37,8 @@ async def h_homework_edit(callback: CallbackQuery,
     await add_homework_set_homework_message(callback.from_user.id, state)
 
 
-@router.message(StateFilter(HomeworkNewFSM.change_menu),
-                F.text == "Сохранить ДЗ")
+@router.message(StateFilter(HomeworkNewFSM.change_menu),    # Подтверждение ДЗ
+                F.text == "Подтвердить ДЗ")
 async def h_homework_sethw_ready(message: types.Message, state: FSMContext) -> None:
     sd = await state.get_data()
     if sd.get("new_hw") and sd.get("new_hw").get("hw_id"):
@@ -49,23 +49,22 @@ async def h_homework_sethw_ready(message: types.Message, state: FSMContext) -> N
                                          message=message)
 
 
-@router.message(StateFilter(HomeworkNewFSM.change_menu),
+@router.message(StateFilter(HomeworkNewFSM.change_menu),    # Отмена нового ДЗ
                 F.text == "Отмена")
 async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> None:
     await message.delete()
     await send_menu(message.from_user.id, state)
 
 
-@router.message(StateFilter(HomeworkNewFSM.change_menu))
+@router.message(StateFilter(HomeworkNewFSM.change_menu),
+                F.text == "Стереть материалы")    # Удаление материалов из ДЗ
+async def h_homework_add_materials_deleting(message: types.Message, state: FSMContext) -> None:
+    await add_homework_delete_materials(message, state)
+
+
+@router.message(StateFilter(HomeworkNewFSM.change_menu))    # Добавление материала в ДЗ
 async def h_homework_sethw_addmat(message: types.Message, state: FSMContext) -> None:
     await add_material_add(message, state, "statehw")
-
-
-@router.callback_query(HomeworkNewSettingCallback.filter())
-async def h_homework_add_setting(callback: CallbackQuery,
-                                 callback_data: HomeworkNewSettingCallback,
-                                 state: FSMContext) -> None:
-    await add_homework_set_homework_change(callback, state, callback_data.action)
 
 
 @router.callback_query(HomeworkNewCallback.filter())
@@ -94,44 +93,10 @@ async def h_homework_sethw(callback: CallbackQuery,
     await callback.message.delete()
 
 
-@router.message(StateFilter(HomeworkNewFSM.change_name,
-                            HomeworkNewFSM.change_description,
-                            HomeworkNewFSM.change_deadline,
-                            HomeworkNewFSM.delete_materials),
+@router.message(StateFilter(HomeworkNewFSM.delete_materials),    #Удаление материалов
                 F.text == "Отмена")
 async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> None:
-    statedata = await state.get_data()
-    messages_to_delete = statedata.get("messages_to_delete")
-    messages_to_delete.append(message.message_id)
-    await state.update_data({"messages_to_delete": messages_to_delete})
     await add_homework_set_homework_message(message.from_user.id, state)
-
-
-@router.message(StateFilter(HomeworkNewFSM.change_name))
-async def h_homework_sethw_name(message: types.Message, state: FSMContext) -> None:
-    statedata = await state.get_data()
-    messages_to_delete = statedata.get("messages_to_delete")
-    messages_to_delete.append(message.message_id)
-    await state.update_data({"messages_to_delete": messages_to_delete})
-    await add_homework_set_homework_change_ready(message, state, "name")
-
-
-@router.message(StateFilter(HomeworkNewFSM.change_description))
-async def h_homework_sethw_description(message: types.Message, state: FSMContext) -> None:
-    statedata = await state.get_data()
-    messages_to_delete = statedata.get("messages_to_delete")
-    messages_to_delete.append(message.message_id)
-    await state.update_data({"messages_to_delete": messages_to_delete})
-    await add_homework_set_homework_change_ready(message, state, "description")
-
-
-@router.message(StateFilter(HomeworkNewFSM.change_deadline))
-async def h_homework_sethw_deadline(message: types.Message, state: FSMContext) -> None:
-    statedata = await state.get_data()
-    messages_to_delete = statedata.get("messages_to_delete")
-    messages_to_delete.append(message.message_id)
-    await state.update_data({"messages_to_delete": messages_to_delete})
-    await add_homework_set_homework_change_ready(message, state, "deadline")
 
 
 @router.message(StateFilter(HomeworkNewFSM.delete_materials),
@@ -141,7 +106,7 @@ async def h_homework_sethw_materials(message: types.Message, state: FSMContext) 
     messages_to_delete = statedata.get("messages_to_delete")
     messages_to_delete.append(message.message_id)
     await state.update_data({"messages_to_delete": messages_to_delete})
-    await add_homework_set_homework_change_ready(message, state, "materials")
+    await add_homework_set_homework_change_ready(message, state)
 
 
 @router.message(StateFilter(HomeworkNewFSM.delete_materials))

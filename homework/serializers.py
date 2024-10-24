@@ -43,6 +43,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
             return {
                 "id": lesson.id,
                 "date": lesson.date,
+                "name": lesson.name
             }
         else:
             return None

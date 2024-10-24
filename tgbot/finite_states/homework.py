@@ -8,7 +8,4 @@ class HomeworkFSM(StatesGroup):
 
 class HomeworkNewFSM(StatesGroup):
     change_menu = State()
-    change_name = State()
-    change_description = State()
-    change_deadline = State()
     delete_materials = State()

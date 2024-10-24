@@ -30,13 +30,20 @@ function lessonItemSetStatusCancelledMain(){
 }
 
 function lessonItemSetStatusPassedReset(validationOnly = false){
-    if (validationOnly === false){
-        lessonItemStatusPassedModalNoteField.value = ""
+    function resetValidation(){
+        lessonItemStatusPassedModalNoteField.classList.remove("is-invalid")
+        lessonItemStatusPassedModalNoteError.innerHTML = ""
+        lessonItemStatusPassedModalLessonNameField.classList.remove("is-invalid")
+        lessonItemStatusPassedModalLessonNameError.innerHTML = ""
+        lessonItemStatusPassedModalErrors.innerHTML = ""
+        lessonItemStatusPassedModalErrorsAlert.classList.add("d-none")
     }
-    lessonItemStatusPassedModalNoteField.classList.remove("is-invalid")
-    lessonItemStatusPassedModalNoteError.innerHTML = ""
-    lessonItemStatusPassedModalErrors.innerHTML = ""
-    lessonItemStatusPassedModalErrorsAlert.classList.add("d-none")
+
+    if (validationOnly){
+        resetValidation()
+    }
+    lessonItemStatusPassedModalNoteField.value = ""
+
 }
 
 function lessonItemSetStatusCancelledReset(validationOnly = false){
@@ -53,13 +60,68 @@ function lessonItemSetStatusCancelledReset(validationOnly = false){
     lessonItemStatusCancelledModalFormEnd.classList.remove("is-invalid")
 }
 
-function lessonItemSetStatusPassedValidation(){
+function lessonItemSetStatusPassedValidation(errors=null){
+    function setInvalid(error="", element=null, errorElement=null){
+        if (element){
+            element.classList.add("is-invalid")
+        }
+        if (errorElement){
+            errorElement.innerHTML = error
+        }
+        validationStatus = false
+    }
+
+    function validateName(error){
+        if (error){
+            setInvalid(
+                error,
+                lessonItemStatusPassedModalLessonNameField,
+                lessonItemStatusPassedModalLessonNameError
+            )
+        } else {
+            if (lessonItemStatusPassedModalLessonNameField.value.trim().length === 0){
+                setInvalid(
+                        "Наименование занятия не может быть пустым",
+                        lessonItemStatusPassedModalLessonNameField,
+                        lessonItemStatusPassedModalLessonNameError
+                    )
+            } else {
+                if (lessonItemStatusPassedModalLessonNameField.value.trim().length > 200){
+                    setInvalid(
+                        "Длина сообщения не может превышать 200 символов",
+                        lessonItemStatusPassedModalLessonNameField,
+                        lessonItemStatusPassedModalLessonNameError
+                    )
+                }
+            }
+        }
+    }
+
+    function validateNote(error){
+        if (error){
+            setInvalid(
+                error,
+                lessonItemStatusPassedModalNoteField,
+                lessonItemStatusPassedModalNoteError
+            )
+        } else {
+            if (lessonItemStatusPassedModalNoteField.value.trim().length > 2000){
+                setInvalid(
+                    "Длина сообщения не может превышать 2000 символов",
+                    lessonItemStatusPassedModalNoteField,
+                    lessonItemStatusPassedModalNoteError
+                )
+            }
+        }
+    }
+
     lessonItemSetStatusPassedReset(true)
     let validationStatus = true
-    if (lessonItemStatusPassedModalNoteField.value.length > 2000){
-        lessonItemStatusPassedModalNoteField.classList.remove("is-invalid")
-        lessonItemStatusPassedModalNoteError.innerHTML = "Длина сообщения не может превышать 2000 символов"
-        validationStatus = false
+    if (errors){
+        console.log("eojnfdoigeor")
+    } else {
+        validateName()
+        validateNote()
     }
     return validationStatus
 }
@@ -133,22 +195,37 @@ function lessonItemSetStatusCancelledValidation(errors){
 }
 
 function lessonItemSetStatusPassedSet(){
-    if (lessonItemSetStatusPassedValidation()){
-        lessonsAPISetStatus(lessonID, new FormData(lessonItemStatusPassedModalForm)).then(request => {
+    function getFD(){
+        const fd = new FormData(lessonItemStatusPassedModalForm)
+        const name = fd.get("lesson_name")
+        const note = fd.get("note_teacher")
+        if (name){
+            fd.set("lesson_name", name.trim())
+        }
+        if (note){
+            fd.set("note_teacher", note.trim())
+        }
+        return fd
+    }
+
+    if (lessonItemSetStatusPassedValidation(null)){
+        lessonsAPISetStatus(lessonID, getFD()).then(request => {
             switch (request.status){
                 case 201:
-                    showSuccessToast("Урок успешно проведён!")
                     bsLessonItemStatusPassedModal.hide()
+                    showSuccessToast("Занятие успешно проведено!")
                     lessonItemStatus.innerHTML = "Занятие проведено"
                     lessonItemStatus.classList.remove("list-group-item-warning")
                     lessonItemStatus.classList.add("list-group-item-success")
                     lessonItemNotPassedElements.forEach(e => {
                         e.remove()
                     })
+                    setTimeout(function (){
+                        location.reload()
+                    }, 500)
                     break
                 case 400:
-                    lessonItemStatusPassedModalErrors.innerHTML = request.response.error
-                    lessonItemStatusPassedModalErrorsAlert.classList.remove("d-none")
+                    lessonItemSetStatusPassedValidation(request.response)
                     break
                 default:
                     bsLessonItemStatusPassedModal.hide()
@@ -195,6 +272,8 @@ const bsLessonItemStatusCancelledModal = new bootstrap.Modal(lessonItemStatusCan
 const lessonItemStatusPassedModalForm = lessonItemStatusPassedModal.querySelector("#lessonItemStatusPassedModalForm")
 const lessonItemStatusPassedModalNoteField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalNoteField")
 const lessonItemStatusPassedModalNoteError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalNoteError")
+const lessonItemStatusPassedModalLessonNameField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalLessonNameField")
+const lessonItemStatusPassedModalLessonNameError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalLessonNameError")
 
 //ButtonsPassed
 const lessonItemStatusPassedModalButton = lessonItemStatusPassedModal.querySelector("#lessonItemStatusPassedModalButton")

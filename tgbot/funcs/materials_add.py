@@ -30,14 +30,21 @@ async def add_material_message(message: types.Message, state: FSMContext) -> Non
         await message.answer(text="У вас нет прав на добавление материалов")
 
 
-def add_material_generate_success_message(material: Material) -> dict:
-    return {
-        "text": f'Материал успешно загружен!\n'
-                f'Наименование: {material.name}\n'
-                f'Описание: {material.description}\n'
-                f'ID: {material.id}\n',
-        "reply_markup": None
-    }
+def add_material_generate_success_message(material: Material, set_to) -> dict:
+    if set_to == "statehw":
+        msg = {
+            "text": f'Материал успешно прикреплён к ДЗ!\n',
+            "reply_markup": None
+        }
+    else:
+        msg = {
+            "text": f'Материал успешно загружен!\n'
+                    f'Наименование: {material.name}\n'
+                    f'Описание: {material.description}\n'
+                    f'ID: {material.id}\n',
+            "reply_markup": None
+        }
+    return msg
 
 
 async def add_material_add(message: types.Message, state: FSMContext,  set_to: str = None, obj_id: int = None) -> None:
@@ -73,11 +80,16 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
                         return {"status": True}
 
         else:
-            await statusmessage.edit_text(
-                text=f"Материал не добавлен, так как уже существует\n"
-                     f"Наименование: {mat.name}\n"
-                     f"ID: {mat.id}"
-            )
+            if set_to == "statehw":
+                await statusmessage.edit_text(
+                    text=f"Материал успешно прикреплён к ДЗ!"
+                )
+            else:
+                await statusmessage.edit_text(
+                    text=f"Материал не добавлен, так как уже существует\n"
+                         f"Наименование: {mat.name}\n"
+                         f"ID: {mat.id}"
+                )
             return {"status": False,
                     "material": mat}
 
@@ -125,11 +137,10 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
         await new_mat.category.aset([cat[0]])
         await new_mat.asave()
         await statusmessage.edit_text(
-            **add_material_generate_success_message(new_mat)
+            **add_material_generate_success_message(new_mat, set_to)
         )
         if set_to:
             await set_to_obj(new_mat.id)
-
 
     statusmessage = await message.reply("Начинаю загрузку материала..")
     msgdata = add_material_validate(message)
@@ -150,7 +161,7 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
                     type=2
                 )
                 await statusmessage.edit_text(
-                    **add_material_generate_success_message(new_mat)
+                    **add_material_generate_success_message(new_mat, set_to)
                 )
                 if set_to:
                     await set_to_obj(new_mat.id)

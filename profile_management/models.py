@@ -520,17 +520,26 @@ class UserLog(models.Model):
         return f'{self.user} - {self.comment} - {self.dt}'
 
 
-async def aget_unread_messages_count(tgnote, sender=None):
+async def aget_unread_messages_count(tgnote, sender=None, read=False):
     query = {"filter": {},
-             "exclude": {}}
+             "exclude": {},
+             "read": {}}
     if sender:
         if sender.get("usertype") == "NewUser":
             query['filter']['sender_id'] = sender.get("id")
-            query['exclude']['read_data__has_key'] = f'nu{sender.get("id")}'
         elif sender.get("usertype") == "Telegram":
             query['filter']['sender_tg_id'] = sender.get("id")
-            query['exclude']['read_data__has_key'] = f'tg{sender.get("id")}'
     if tgnote.usertype == "main":
-        return await tgnote.user.message_receiver.filter(**query['filter']).exclude(**query['exclude']).acount()
+        query['exclude']['read_data__has_key'] = f'nu{tgnote.user.id}'
+        query['read']['user_id'] = tgnote.user.id
+        query['read']['usertype'] = 'NewUser'
+        msgquery = [msg async for msg in tgnote.user.message_receiver.filter(**query['filter']).exclude(**query['exclude'])]
     else:
-        return await tgnote.message_tg_receiver.filter(**query['filter']).exclude(**query['exclude']).acount()
+        query['exclude']['read_data__has_key'] = f'tg{tgnote.id}'
+        query['read']['user_id'] = tgnote.id
+        query['read']['usertype'] = 'Telegram'
+        msgquery = [msg async for msg in tgnote.message_tg_receiver.filter(**query['filter']).exclude(**query['exclude'])]
+    if read:
+        for msg in msgquery:
+            await msg.aset_read(**query['read'])
+    return len(msgquery)

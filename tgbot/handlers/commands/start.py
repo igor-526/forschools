@@ -1,5 +1,5 @@
 from aiogram import types, Router
-from aiogram.filters import CommandStart, StateFilter
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from profile_management.models import NewUser, Telegram
 from tgbot.funcs.menu import send_menu
@@ -38,8 +38,11 @@ async def command_start_handler(message: types.Message, state: FSMContext):
                     await message.answer(text="Произошла нерпедвиденная ошибка. Попробуйте позже")
     except IndexError:
         await message.answer(text="Для привязки бота к Вашему аккаунту воспользуйтесь ссылкой в Вашем профиле")
-        return
     except ValueError:
         await message.answer(text="Ошибка кода. "
                                   "Для привязки бота к Вашему аккаунту воспользуйтесь ссылкой в Вашем профиле")
-        return
+
+
+@router.message(Command('reset'))     # обработка команды /reset
+async def command_reset_handler(message: types.Message, state: FSMContext):
+    await send_menu(message.from_user.id, state)

@@ -26,7 +26,7 @@ function homeworksMain(){
     })
 }
 
-async function homeworksGet(status = homeworksFilterCurrentStatus,
+function homeworksGet(status = homeworksFilterCurrentStatus,
                             teachers = homeworksFilterSelectedTeachers,
                             listeners = homeworksFilterSelectedListeners,
                             dateFrom = homeworksFilterDateFrom,
@@ -80,6 +80,7 @@ function homeworksSetTab(tab = "all"){
 
 function homeworksShow(homeworks){
     function getElement(hw){
+        console.log(hw)
         const tr = document.createElement("tr")
         switch (hw.status){
             case 1:
@@ -124,7 +125,7 @@ function homeworksShow(homeworks){
             tdNameLessonButtonButton.innerHTML = '<i class="bi bi-file-earmark-text"></i>'
             tdName.setAttribute("data-bs-toggle", "tooltip")
             tdName.setAttribute("data-bs-placement", "top")
-            tdName.setAttribute("title", `Занятие от ${new Date(hw.lesson_info.date).toLocaleDateString()}`)
+            tdName.setAttribute("title", `Занятие "${hw.lesson_info.name}" от ${new Date(hw.lesson_info.date).toLocaleDateString()}`)
             tdName.insertAdjacentElement("beforeend", tdNameLessonButtonA)
             new bootstrap.Tooltip(tdName)
         }

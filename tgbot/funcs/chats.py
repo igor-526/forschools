@@ -19,21 +19,27 @@ async def chats_show(message: types.Message, state: FSMContext):
         tgnote = await Telegram.objects.select_related("user").aget(tg_id=message.from_user.id)
         query = {
             "filter": {},
-            "exclude": {}
+            "exclude": {},
+            "reading": {}
         }
         if tgnote.usertype == "main":
-            query['filter']["receiver"] = tgnote.user
+            query['filter']["receiver_id"] = tgnote.user.id
             query['exclude']['read_data__has_key'] = f'nu{tgnote.user.id}'
+            query['reading']["user_id"] = tgnote.user.id
+            query['reading']["usertype"] = 'NewUser'
         else:
-            query['filter']["receiver_tg"] = tgnote
+            query['filter']["receiver_tg_id"] = tgnote.id
             query['exclude']['read_data__has_key'] = f'tg{tgnote.id}'
+            query['reading']["user_id"] = tgnote.id
+            query['reading']["usertype"] = 'Telegram'
         unread_messages = [
-            msg.id async for msg in
+            msg async for msg in
             Message.objects.filter(**query['filter']).exclude(**query['exclude']).
             order_by('sender', 'sender_tg', 'date')
         ]
         for msg in unread_messages:
-            await chats_notificate(msg, True)
+            await msg.aset_read(**query['reading'])
+            await chats_notificate(msg.id, True)
 
     tg_note = await Telegram.objects.select_related("user").aget(tg_id=message.from_user.id)
     unread = await aget_unread_messages_count(tg_note)
@@ -51,6 +57,38 @@ async def chats_type_message(message: types.Message, state: FSMContext):
 
 
 async def chats_send(user_tg_id: int, state: FSMContext):
+    async def create_message(tg_note, statedata, ct, att_data):
+        obj = Message()
+        if tg_note.usertype == "main":
+            if ct == "NewUser":
+                obj = await Message.objects.acreate(
+                    receiver_id=statedata.get('message_for'),
+                    sender_id=tg_note.user.id,
+                    message=att_data.get("comment"),
+                )
+            elif ct == "Telegram":
+                obj = await Message.objects.acreate(
+                    receiver_tg_id=statedata.get('message_for'),
+                    sender_id=tg_note.user.id,
+                    message=att_data.get("comment"),
+                )
+        else:
+            if ct == "NewUser":
+                obj = await Message.objects.acreate(
+                    receiver_id=statedata.get('message_for'),
+                    sender_tg_id=tg_note.id,
+                    message=att_data.get("comment"),
+                )
+            elif ct == "Telegram":
+                obj = await Message.objects.acreate(
+                    receiver_tg_id=statedata.get('message_for'),
+                    sender_tg_id=tg_note.id,
+                    message=att_data.get("comment"),
+                )
+        await obj.files.aset(att_data.get("files_db"))
+        await obj.asave()
+        return obj
+
     tgnote = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
     data = await state.get_data()
     if not filechecker(data):
@@ -61,40 +99,14 @@ async def chats_send(user_tg_id: int, state: FSMContext):
                                             text="Отправка...")
     chat_type = data.get("chat_type")
     try:
-        hwdata = await filedownloader(data, owner=tgnote.user, t="Сообщение")
-        chat_message = Message()
-        if tgnote.usertype == "main":
-            if chat_type == "NewUser":
-                chat_message = await Message.objects.acreate(
-                    receiver_id=data.get('message_for'),
-                    sender_id=tgnote.user.id,
-                    message=hwdata.get("comment"),
-                )
-            elif chat_type == "Telegram":
-                chat_message = await Message.objects.acreate(
-                    receiver_tg_id=data.get('message_for'),
-                    sender_id=tgnote.user.id,
-                    message=hwdata.get("comment"),
-                )
-        else:
-            if chat_type == "NewUser":
-                chat_message = await Message.objects.acreate(
-                    receiver_id=data.get('message_for'),
-                    sender_tg_id=tgnote.id,
-                    message=hwdata.get("comment"),
-                )
-                await chat_message.files.aset(hwdata.get("files_db"))
-                await chat_message.asave()
-            elif chat_type == "Telegram":
-                chat_message = await Message.objects.acreate(
-                    receiver_tg_id=data.get('message_for'),
-                    sender_tg_id=tgnote.id,
-                    message=hwdata.get("comment"),
-                )
-        await chat_message.files.aset(hwdata.get("files_db"))
-        await chat_message.asave()
+        attdata = await filedownloader(data, owner=tgnote.user, t="Сообщение")
+        chat_message = await create_message(tgnote, data, chat_type, attdata)
         await chats_notificate(chat_message.id)
         await message_status.edit_text("Сообщение отправлено")
+        await aget_unread_messages_count(tgnote, {
+            "id": data.get('message_for'),
+            "usertype": chat_type
+        }, True)
     except Exception as e:
         await message_status.edit_text(f"Не удалось отправить сообщение\n"
                                        f"Ошибка: {e}")
