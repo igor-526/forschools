@@ -553,7 +553,10 @@ async def homework_tg_notificate(initiator: NewUser, listener: int, homeworks: l
         try:
             msg = await bot.send_message(chat_id=user_tg_note.get("tg_id"),
                                          text=f"У вас новые домашние задания!",
-                                         reply_markup=get_homeworks_buttons([hw for hw in homeworks]))
+                                         reply_markup=get_homeworks_buttons([{
+                                             "name": hw.name,
+                                             "id": hw.id
+                                         } for hw in homeworks]))
             await TgBotJournal.objects.acreate(
                 recipient_id=listener,
                 initiator=initiator,

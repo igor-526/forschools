@@ -6,6 +6,7 @@ from dls.settings import MEDIA_ROOT
 from material.models import Material, MaterialCategory
 from material.utils.get_type import get_type
 from tgbot.create_bot import bot
+from tgbot.keyboards.homework import get_homework_editing_buttons
 from tgbot.utils import get_group_and_perms, get_user
 from aiogram.fsm.context import FSMContext
 from aiogram import types
@@ -34,7 +35,7 @@ def add_material_generate_success_message(material: Material, set_to) -> dict:
     if set_to == "statehw":
         msg = {
             "text": f'Материал успешно прикреплён к ДЗ!\n',
-            "reply_markup": None
+            "reply_markup": get_homework_editing_buttons()
         }
     else:
         msg = {
@@ -42,7 +43,7 @@ def add_material_generate_success_message(material: Material, set_to) -> dict:
                     f'Наименование: {material.name}\n'
                     f'Описание: {material.description}\n'
                     f'ID: {material.id}\n',
-            "reply_markup": None
+            "reply_markup": get_homework_editing_buttons()
         }
     return msg
 
