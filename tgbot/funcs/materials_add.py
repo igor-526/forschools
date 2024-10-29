@@ -137,9 +137,10 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
         cat = await MaterialCategory.objects.aget_or_create(name="Импорт из TG")
         await new_mat.category.aset([cat[0]])
         await new_mat.asave()
-        await statusmessage.edit_text(
+        await message.reply(
             **add_material_generate_success_message(new_mat, set_to)
         )
+        await statusmessage.delete()
         if set_to:
             await set_to_obj(new_mat.id)
 
@@ -161,7 +162,8 @@ async def add_material_add(message: types.Message, state: FSMContext,  set_to: s
                     owner=owner,
                     type=2
                 )
-                await statusmessage.edit_text(
+                await statusmessage.delete()
+                await message.reply(
                     **add_material_generate_success_message(new_mat, set_to)
                 )
                 if set_to:
