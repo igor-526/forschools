@@ -7,6 +7,7 @@ from tgbot.funcs.fileutils import add_files_to_state
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.finite_states.homework import HomeworkFSM
+from tgbot.keyboards.default import message_typing_keyboard
 
 router = Router(name=__name__)
 
@@ -40,4 +41,6 @@ async def h_homework_send_ready(message: types.Message, state: FSMContext) -> No
 
 @router.message(StateFilter(HomeworkFSM.send_hw_files))
 async def h_homework_filekeeper(message: types.Message, state: FSMContext) -> None:
-    await add_files_to_state(message, state)
+    text = await add_files_to_state(message, state)
+    await message.reply(text=text,
+                        reply_markup=message_typing_keyboard)

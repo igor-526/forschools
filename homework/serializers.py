@@ -6,6 +6,7 @@ from profile_management.models import NewUser
 from material.serializers import MaterialListSerializer
 from material.serializers import FileSerializer
 from tgbot.utils import send_homework_answer_tg
+from .permissions import get_delete_log_permission
 
 
 class HomeworkSerializer(serializers.ModelSerializer):
@@ -96,19 +97,32 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         return homeworks[0]
 
 
-class HomeworkLogSerializer(serializers.ModelSerializer):
+class HomeworkLogListSerializer(serializers.ModelSerializer):
     user = NewUserNameOnlyListSerializer(many=False, read_only=True)
-    files = FileSerializer(many=True, read_only=True)
 
     class Meta:
         model = HomeworkLog
-        fields = ["id", "user", "files", "comment", "status", "homework", "dt"]
+        fields = ["id", "user", "comment", "status", "dt"]
 
     def create(self, validated_data):
         hwl = HomeworkLog.objects.create(**validated_data,
-                                         user=self.context.get("user"))
+                                         user=self.context.get("request").user,
+                                         homework_id=self.context.get("hw_id"))
         if len(self.context.get("files")) > 0:
             hwl.files.set(self.context.get("files"))
             hwl.save()
-        send_homework_answer_tg(self.context.get("user"), hwl.homework, hwl.status)
+        send_homework_answer_tg(self.context.get("request").user, hwl.homework, hwl.status)
         return hwl
+
+
+class HomeworkLogSerializer(serializers.ModelSerializer):
+    user = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    files = FileSerializer(many=True, read_only=True)
+    deletable = serializers.SerializerMethodField()
+
+    def get_deletable(self, obj):
+        return get_delete_log_permission(obj, self.context.get("request"))
+
+    class Meta:
+        model = HomeworkLog
+        fields = ["id", "user", "files", "comment", "status", "homework", "dt", "deletable"]

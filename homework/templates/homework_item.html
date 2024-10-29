@@ -46,22 +46,26 @@
                 <div class="card mb-3">
                     <div class="card-header">Действия</div>
                     <div class="card-body">
-                        {% if can_send %}
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><button id="HWItemSendButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#HWItemSendModal">Отправить решение</button></li>
-                                {% include "homework_item_modal_send.html" %}
-                            </ul>
-                        {% endif %}
-                        {% if can_check %}
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><button id="HWItemCheckButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#HWItemCheckModal">Проверить</button></li>
-                                {% include "homework_item_modal_check.html" %}
-                            </ul>
-                        {% endif %}
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                {% if can_send %}
+                                    <button id="hwItemSendButton" type="button" class="btn btn-primary">Отправить решение</button>
+                                    {% include "homework_item_modal_send.html" %}
+                                {% endif %}
+                                {% if can_check %}
+                                    <button id="hwItemCheckButton" type="button" class="btn btn-primary">Проверить</button>
+                                    {% include "homework_item_modal_check.html" %}
+                                {% endif %}
+                                {% if can_cancel %}
+                                    <button id="hwItemCancelButton" type="button" class="btn btn-danger">Отменить</button>
+                                    {% include "homework_item_modal_cancel.html" %}
+                                {% endif %}
+                            </li>
+                        </ul>
                     </div>
                 </div>
                 <h3 class="mt-2" style="color: #808080;">История</h3>
-                <div class="list-group" id="HomeworkItemLogList"></div>
+                <div class="list-group" id="hwItemLogList"></div>
                 {% include "homework_item_modal_log.html" %}
             </div>
         </div>
@@ -72,6 +76,17 @@
         const hwID = {{ hw.id }}
     </script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    <script src="{% static 'js/homework/homework_item.js' %}"></script>
+    <script src="{% static 'js/homework/homework_item_log.js' %}"></script>
+    {% if can_send %}
+        <script src="{% static 'js/homework/homework_item_send.js' %}"></script>
+    {% endif %}
+    {% if can_check %}
+        <script src="{% static 'js/homework/homework_item_check.js' %}"></script>
+    {% endif %}
+    {% if can_cancel %}
+        <script src="{% static 'js/homework/homework_item_cancel.js' %}"></script>
+    {% endif %}
     {% if can_set_replace %}
         <script>
             let replaceAction = "homework"
@@ -80,5 +95,5 @@
         <script src="{% static 'js/users/users_api.js' %}"></script>
         <script src="{% static 'js/lessons/lesson_hw_replace_teacher.js' %}"></script>
     {% endif %}
-    <script src="{% static 'js/homework/homework_item.js' %}"></script>
+
 {% endblock %}

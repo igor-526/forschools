@@ -1,16 +1,29 @@
-<div class="modal modal-lg" tabindex="-1" id="HWItemLogModal">
+<div class="modal modal-lg" tabindex="-1" id="hwItemLogModal">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="HWItemLogModalTitle"></h5>
+                <h5 class="modal-title" id="hwItemLogModalTitle"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="HWItemLogModalBody">
-                <p id="HWItemLogModalComment"></p>
-                <div class="row" id="HWItemLogModalFilesImages"></div>
-                <div class="row" id="HWItemLogModalFilesAudio"></div>
-            </div>
+            <div class="modal-body" id="hwItemLogModalBody"></div>
             <div class="modal-footer">
+                <button id="hwItemLogModalDeleteButton" type="button" class="btn btn-danger">Удалить</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-lg" tabindex="-1" id="hwItemLogDeleteConfirmModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Удаление записи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">Запись будет удалена без возможности восстановления<br>Вы уверены?</div>
+            <div class="modal-footer">
+                <button id="hwItemLogDeleteConfirmModalDeleteButton" type="button" class="btn btn-danger">Удалить</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
             </div>
         </div>

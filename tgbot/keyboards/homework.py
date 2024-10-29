@@ -56,7 +56,7 @@ def get_homework_lessons_buttons(lessons: list, prev_date=None, next_date=None) 
     return builder.as_markup()
 
 
-def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:
+def get_homeworks_buttons(homeworks: list, sb=False, ) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if sb:
         builder.button(
@@ -65,9 +65,12 @@ def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:
                                            hw_id=0)
         )
     for hw in homeworks:
+        hw_name = f"ДЗ: {hw.get('name')}"
+        if hw.get('status'):
+            hw_name += " (\u2714)"
         builder.button(
-            text=f"ДЗ: {hw.name}",
-            callback_data=HomeworkCallback(hw_id=hw.id,
+            text=hw_name,
+            callback_data=HomeworkCallback(hw_id=hw.get('id'),
                                            action="show")
         )
     builder.adjust(1)

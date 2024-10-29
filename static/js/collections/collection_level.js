@@ -107,7 +107,7 @@ async function editLevel(colID){
 
 async function deleteLevel(colID){
     const response = await fetch(`/api/v1/collections/levels/${colID}`, {
-        method: 'delete',
+        method: 'DELETE',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

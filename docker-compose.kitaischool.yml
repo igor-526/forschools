@@ -56,8 +56,6 @@ services:
       - kitaischool_network
     volumes:
       - kitaischool_redisdata:/data
-    ports:
-      - "6379:6379"
 
   kitaischool_celery:
     build: .

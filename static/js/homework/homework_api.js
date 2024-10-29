@@ -41,22 +41,32 @@ async function homeworkAPIGetLogs(hw){
         response: await response.json()}
 }
 
-async function homeworkAPISend(hw, fd, st){
-    fd.append("status", st)
-    const response = await fetch(`/api/v1/homeworks/${hw}/logs/`, {
-        method: "post",
+async function homeworkAPIGetLog(log_id){
+    const request = await fetch(`/api/v1/homeworks/logs/${log_id}/`)
+    return APIGetToObject(request)
+}
+
+async function homeworkAPIDeleteLog(log_id){
+    const request = await fetch(`/api/v1/homeworks/logs/${log_id}/`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: {
+            "X-CSRFToken": csrftoken,
+        }
+    })
+    return APIDeleteToObject(request)
+}
+
+async function homeworkAPISend(homeworkID, fd){
+    const request = await fetch(`/api/v1/homeworks/${homeworkID}/logs/`, {
+        method: "POST",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
         },
         body: fd
     })
-    if (response.status === 500){
-        return {status: 500}
-    } else {
-        return {status: response.status,
-            response: await response.json()}
-    }
+    return APIPostPatchToObject(request)
 }
 
 async function homeworkAPIGet(lesson=null, status=null, teachers=[],

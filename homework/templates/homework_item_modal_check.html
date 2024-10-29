@@ -1,4 +1,4 @@
-<div class="modal modal-lg" tabindex="-1" id="HWItemCheckModal">
+<div class="modal modal-lg" tabindex="-1" id="hwItemCheckModal">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -6,27 +6,29 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="HWItemCheckModalForm">
+                <form id="hwItemCheckModalForm">
                     <div class="mb-3">
-                        <label for="HWItemCheckModalFormCommentField" class="form-label">Комментарий</label>
-                        <textarea name="comment" type="text" rows="5" class="form-control" id="HWItemCheckModalFormCommentField"></textarea>
-                        <div class="form-text">Похвалите ученика или опишите замечания. При необходимости приложите изображения</div>
+                        <label for="hwItemCheckModalFormCommentField" class="form-label">Комментарий</label>
+                        <textarea name="comment" type="text" rows="5" class="form-control" id="hwItemCheckModalFormCommentField"></textarea>
+                        <div class="form-text">Похвалите ученика или опишите замечания. При необходимости приложите файлы</div>
+                        <div id="hwItemCheckModalFormCommentError" class="invalid-feedback"></div>
                     </div>
                     <div class="mb-3">
-                        <label for="HWItemCheckModalFormFileField" class="form-label">Файлы</label>
-                        <input multiple name="files" type="file" class="form-control" id="HWItemCheckModalFormFileField">
+                        <label for="hwItemCheckModalFormFileField" class="form-label">Файлы</label>
+                        <input multiple name="files" type="file" class="form-control" id="hwItemCheckModalFormFileField">
                         <div class="form-text">Вы можете прикрепить несколько изображений<br>Для этого на компьютере при выборе файла зажмите клавишу CTRL</div>
+                        <div id="hwItemCheckModalFormFileError" class="invalid-feedback"></div>
                     </div>
                 </form>
-                <div class="card d-none" id="HWItemCheckModalAnswer">
+                <div class="card d-none" id="hwItemCheckModalAnswer">
                     <h5 class="card-header">Решение ученика</h5>
-                    <div class="card-body" id="HWItemCheckModalAnswerBody"></div>
+                    <div class="card-body" id="hwItemCheckModalAnswerBody"></div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                <button id="HWItemCheckModalAcceptButton" type="button" class="btn btn-success">Принять</button>
-                <button id="HWItemCheckModalDeclineButton" type="button" class="btn btn-warning">На доработку</button>
+                <button id="hwItemCheckModalAcceptButton" type="button" class="btn btn-success">Принять</button>
+                <button id="hwItemCheckModalDeclineButton" type="button" class="btn btn-warning">На доработку</button>
             </div>
         </div>
     </div>

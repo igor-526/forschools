@@ -195,12 +195,16 @@ async def show_homework_queryset(tg_id: int, state: FSMContext):
     gp = await get_group_and_perms(user.id)
     groups = gp.get('groups')
     if 'Listener' in groups:
-        homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 5],
+        homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 3, 5],
                                 [{
-                                    'hw': hw,
+                                    'obj': hw,
                                     'hw_status': (await hw.aget_status()).status
                                 } async for hw in Homework.objects.filter(listener=user)]))
-        homeworks = [hw.get('hw') for hw in homeworks]
+        homeworks = [{
+            'name': hw.get("obj").name,
+            'status': hw.get("hw_status") == 3,
+            'id': hw.get("obj").id
+        } for hw in homeworks]
         if len(homeworks) == 0:
             await bot.send_message(chat_id=tg_id,
                                    text="Нет домашних заданий для выполнения")
@@ -209,12 +213,16 @@ async def show_homework_queryset(tg_id: int, state: FSMContext):
                                    text="Вот домашние задания, которые ждут Вашего выполнения:",
                                    reply_markup=get_homeworks_buttons(homeworks))
     elif 'Teacher' in groups:
-        homeworks = list(filter(lambda hw: hw['hw_status'] == 3,
+        homeworks = list(filter(lambda hw: hw['hw_status'] in [3, 5],
                                 [{
-                                    'hw': hw,
+                                    'obj': hw,
                                     'hw_status': (await hw.aget_status()).status
                                 } async for hw in Homework.objects.filter(teacher=user)]))
-        homeworks = [hw.get('hw') for hw in homeworks]
+        homeworks = [{
+            'name': hw.get("obj").name,
+            'status': hw.get("hw_status") == 5,
+            'id': hw.get("obj").id
+        } for hw in homeworks]
         if len(homeworks) == 0:
             await bot.send_message(chat_id=tg_id,
                                    text="Нет домашних заданий для проверки")
@@ -270,8 +278,8 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    can_send = 'Listener' in gp['groups'] and hw_status.status in [7, 2, 5]
-    can_check = 'Teacher' in gp['groups'] and hw_status.status in [3]
+    can_send = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7]
+    can_check = 'Teacher' in gp['groups'] and hw_status.status in [3, 5]
 
     await bot.send_message(chat_id=callback.from_user.id,
                            text=f"Домашнее задание: <b>{hw.name}</b>\n"
@@ -281,7 +289,21 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
         await show_material_item(callback, mat)
     if hw_status.status == 7 and 'Listener' in gp.get('groups'):
         await hw.aopen()
-    await show_log_item(callback, hw_status.id)
+    logs = [{
+        "id": log.id,
+        "status": log.status
+    } async for log in hw.log.all()]
+    logs_to_show = []
+    for log in logs:
+        if not logs_to_show:
+            logs_to_show.append(log)
+        else:
+            if log['status'] == logs_to_show[-1]['status']:
+                logs_to_show.append(log)
+            else:
+                break
+    for log in list(reversed(logs_to_show)):
+        await show_log_item(callback, log['id'])
     await bot.send_message(chat_id=callback.from_user.id,
                            text=f"Действия для ДЗ <b>{hw.name}</b>\n",
                            reply_markup=get_homework_item_buttons(hw.id,
