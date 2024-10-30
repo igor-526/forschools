@@ -415,7 +415,7 @@ async def send_hw_check(callback: CallbackQuery,
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    if 'Teacher' in gp['groups'] and hw_status.status in [3]:
+    if 'Teacher' in gp['groups'] and hw_status.status in [3, 5]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие проверку домашнего задания, "
                                     "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, аудио, "
@@ -470,7 +470,10 @@ async def hw_send(message: types.Message, state: FSMContext):
                 msg = f"Пришёл новый ответ от ученика по ДЗ <b>'{hw.name}'</b>"
                 msg_object = await bot.send_message(chat_id=teacher_tg,
                                                     text=msg,
-                                                    reply_markup=get_homeworks_buttons([hw]))
+                                                    reply_markup=get_homeworks_buttons([{
+                                                        'name': hw.name,
+                                                        'id': hw.id
+                                                    }]))
                 await TgBotJournal.objects.acreate(
                     recipient=hw.teacher,
                     initiator=hw.listener,
@@ -518,7 +521,10 @@ async def hw_send(message: types.Message, state: FSMContext):
                 msg = f"Пришёл новый ответ от преподавателя по ДЗ <b>'{hw.name}'</b>"
                 msg_object = await bot.send_message(chat_id=listener_tg.get("tg_id"),
                                                     text=msg,
-                                                    reply_markup=get_homeworks_buttons([hw]))
+                                                    reply_markup=get_homeworks_buttons([{
+                                                        'name': hw.name,
+                                                        'id': hw.id
+                                                    }]))
                 await TgBotJournal.objects.acreate(
                     recipient=hw.listener,
                     initiator=hw.teacher,
