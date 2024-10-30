@@ -61,18 +61,18 @@ function homeworkItemLogGetBody(log){
         }
     })
     if (logHTMLImageVideo.length > 0){
-        const logHTMLImageVideo = document.createElement("p")
+        const logHTMLImageVideoP = document.createElement("p")
         logHTMLImageVideo.forEach(elem => {
-            logHTMLImageVideo.insertAdjacentElement("beforeend", elem)
+            logHTMLImageVideoP.insertAdjacentElement("beforeend", elem)
         })
-        body.insertAdjacentElement("beforeend", logHTMLImageVideo)
+        body.insertAdjacentElement("beforeend", logHTMLImageVideoP)
     }
     if (logHTMLAudioVoice.length > 0){
-        const logHTMLAudioVoice = document.createElement("p")
+        const logHTMLAudioVoiceP = document.createElement("p")
         logHTMLAudioVoice.forEach(elem => {
-            logHTMLAudioVoice.insertAdjacentElement("beforeend", elem)
+            logHTMLAudioVoiceP.insertAdjacentElement("beforeend", elem)
         })
-        body.insertAdjacentElement("beforeend", logHTMLAudioVoice)
+        body.insertAdjacentElement("beforeend", logHTMLAudioVoiceP)
     }
     return body
 }
