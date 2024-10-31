@@ -112,7 +112,10 @@ def send_homework_tg(initiator: NewUser, listener: NewUser, homeworks: list[Home
     for tg_id in tg_ids:
         msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id.get("tg_id"),
                                                      message=f"У вас новые домашние задания!",
-                                                     reply_markup=get_homeworks_buttons([hw for hw in homeworks]))
+                                                     reply_markup=get_homeworks_buttons(
+                                                         [{'name': hw.name,
+                                                           'id': hw.id} for hw in homeworks]
+                                                     ))
         if msg_result.get("status") == "success":
             TgBotJournal.objects.create(
                 recipient=listener,
@@ -172,7 +175,10 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
     for user_tg_id in user_tg_ids:
         msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id.get("tg_id"),
                                                      message=msg,
-                                                     reply_markup=get_homeworks_buttons([homework]))
+                                                     reply_markup=get_homeworks_buttons([{
+                                                         'name': homework.name,
+                                                         'id': homework.id
+                                                     }]))
         if msg_result.get("status") == "success":
             TgBotJournal.objects.create(
                 recipient=recipient,
