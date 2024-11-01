@@ -77,7 +77,7 @@ def get_homeworks_buttons(homeworks: list, sb=False, ) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_homework_item_buttons(hw_id, can_send=False, can_check=False) -> InlineKeyboardMarkup:
+def get_homework_item_buttons(hw_id, can_send=False, can_check=False, materials=0) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
         text="История",
@@ -85,6 +85,13 @@ def get_homework_item_buttons(hw_id, can_send=False, can_check=False) -> InlineK
             hw_id=hw_id,
             action="logs")
     )
+    if materials:
+        builder.button(
+            text=f"Показать материалы ({materials})",
+            callback_data=HomeworkCallback(
+                hw_id=hw_id,
+                action="materials")
+        )
     if can_send:
         builder.button(
             text="Отправить решение",

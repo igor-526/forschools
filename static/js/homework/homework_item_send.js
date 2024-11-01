@@ -22,6 +22,21 @@ function hwItemSendReset(validationOnly = false){
 
 function hwItemSendSetModal(){
     hwItemSendReset()
+    homeworkAPIGetLogs(hwID, true).then(request => {
+        switch (request.status){
+            case 200:
+                if (request.response.length > 0){
+                    hwItemSendModalAnswer.classList.remove("d-none")
+                    request.response.forEach(log => {
+                        hwItemSendModalAnswerBody.insertAdjacentElement("beforeend", homeworkItemLogGetBody(log))
+                    })
+                }
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
     bsHwItemSendModal.show()
 }
 

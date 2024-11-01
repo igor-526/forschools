@@ -35,8 +35,16 @@ async function homeworkAPIAdd(formData){
     }
 }
 
-async function homeworkAPIGetLogs(hw){
-    const response = await fetch(`/api/v1/homeworks/${hw}/logs/`)
+async function homeworkAPIGetLogs(hw, last=false){
+    let url = `/api/v1/homeworks/${hw}/logs/`
+    const queryParams = []
+    if (last){
+        queryParams.push("last=true")
+    }
+    if (queryParams.length > 0){
+        url += "?" + queryParams.join("&")
+    }
+    const response = await fetch(url)
     return {status: response.status,
         response: await response.json()}
 }

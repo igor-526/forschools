@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from django.db.models import Q
 from lesson.models import Lesson
 from tgbot.funcs.fileutils import filechecker, filedownloader
-from tgbot.funcs.materials import show_material_item
+from tgbot.funcs.materials import send_material_item
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons, get_homework_menu_buttons, get_homework_lessons_buttons,
@@ -14,7 +14,7 @@ from tgbot.keyboards.default import cancel_keyboard, yes_cancel_keyboard, messag
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
-from tgbot.utils import get_tg_id
+from tgbot.utils import get_tg_id, get_tg_note
 from profile_management.models import NewUser
 from homework.models import Homework, HomeworkLog
 from tgbot.create_bot import bot
@@ -272,6 +272,45 @@ async def search_homeworks_query(message: types.Message):
 
 
 async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback):
+    def get_message_text():
+        msg_text = f'Выполнить до: {hw.deadline}\n'
+        if hw.description:
+            msg_text += f'Описание: {hw.description}\n'
+        return msg_text
+
+    async def send_materials_and_get_reply_markup():
+        if tg_note.setting_show_hw_materials:
+            await send_hw_materials(hw, callback.from_user.id,
+                                    False if 'Listener' in gp.get('groups') else True)
+            rm = get_homework_item_buttons(hw.id,
+                                           can_send,
+                                           can_check,
+                                           0)
+        else:
+            rm = get_homework_item_buttons(hw.id,
+                                           can_send,
+                                           can_check,
+                                           await hw.materials.acount())
+        return rm
+
+    async def send_last_log():
+        logs = [{
+            "id": log.id,
+            "status": log.status
+        } async for log in hw.log.all()]
+        logs_to_show = []
+        for log in logs:
+            if not logs_to_show:
+                logs_to_show.append(log)
+            else:
+                if log['status'] == logs_to_show[-1]['status']:
+                    logs_to_show.append(log)
+                else:
+                    break
+        for log in list(reversed(logs_to_show)):
+            await show_log_item(callback, log['id'])
+
+    tg_note = await get_tg_note(callback.from_user.id)
     hw = await (Homework.objects.select_related("listener")
                 .select_related("teacher")
                 .aget(pk=callback_data.hw_id))
@@ -282,34 +321,19 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
     can_check = 'Teacher' in gp['groups'] and hw_status.status in [3, 5]
 
     await bot.send_message(chat_id=callback.from_user.id,
-                           text=f"Домашнее задание: <b>{hw.name}</b>\n"
-                                f"Срок выполнения: {hw.deadline}\n"
-                                f"Описание: {hw.description}\n")
-    for mat in [m.id async for m in hw.materials.all()]:
-        await show_material_item(callback, mat)
+                           text=get_message_text())
+    reply_markup = await send_materials_and_get_reply_markup()
     if hw_status.status == 7 and 'Listener' in gp.get('groups'):
         await hw.aopen()
-    logs = [{
-        "id": log.id,
-        "status": log.status
-    } async for log in hw.log.all()]
-    logs_to_show = []
-    for log in logs:
-        if not logs_to_show:
-            logs_to_show.append(log)
-        else:
-            if log['status'] == logs_to_show[-1]['status']:
-                logs_to_show.append(log)
-            else:
-                break
-    for log in list(reversed(logs_to_show)):
-        await show_log_item(callback, log['id'])
+    await send_last_log()
     await bot.send_message(chat_id=callback.from_user.id,
                            text=f"Действия для ДЗ <b>{hw.name}</b>\n",
-                           reply_markup=get_homework_item_buttons(hw.id,
-                                                                  can_send,
-                                                                  can_check)
-                           )
+                           reply_markup=reply_markup)
+
+
+async def send_hw_materials(hw: Homework, tg_id: int, meta: bool):
+    for mat in [m async for m in hw.materials.all()]:
+        await send_material_item(tg_id, mat, meta=meta)
 
 
 async def show_logs(callback: CallbackQuery, callback_data: HomeworkCallback):

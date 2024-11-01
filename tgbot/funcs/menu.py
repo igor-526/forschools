@@ -19,25 +19,25 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
         homeworks = True
         lessons = True
         messages = True
-        settings = False
+        settings = True
     elif 'Teacher' in perms.get('groups'):
         materials = True
         homeworks = True
         lessons = True
         messages = True
-        settings = False
+        settings = True
     elif 'Metodist' in perms.get('groups'):
         materials = True
         homeworks = False
         lessons = True
         messages = True
-        settings = False
+        settings = True
     elif 'Admin' in perms.get('groups'):
         materials = True
         homeworks = False
         lessons = True
         messages = True
-        settings = False
+        settings = True
     await state.clear()
     await bot.send_message(chat_id=user_tg_id,
                            text=custom_text,

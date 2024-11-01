@@ -48,6 +48,13 @@ async def get_tg_id(user_id: int, usertype=None):
     return tg_ids
 
 
+async def get_tg_note(tg_id: int) -> Telegram | None:
+    try:
+        return await Telegram.objects.select_related("user").aget(tg_id=tg_id)
+    except Exception as e:
+        return None
+
+
 async def get_group_and_perms(user_id) -> dict:
     user = await NewUser.objects.aget(id=user_id)
     groups = [group.name async for group in user.groups.all()]
@@ -250,9 +257,6 @@ def notificate_group_chat_message(message: Message):
     notificate(receivers_tg_id, 'user')
     notificate(receiver_parents_tg_id, 'receiver_parent')
     notificate(sender_parents_tg_id, 'sender_parent')
-
-
-
 
 
 def notificate_chat_message(message: Message):

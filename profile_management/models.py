@@ -463,6 +463,9 @@ class Telegram(models.Model):
     last_message_from_user_id = models.IntegerField(verbose_name="ID последнего сообщения от пользователя",
                                                     null=True,
                                                     blank=True)
+    setting_show_hw_materials = models.BooleanField(verbose_name="НАСТРОЙКА: Показывать материалы ДЗ",
+                                                    null=False,
+                                                    default=True)
     usertype = models.CharField(verbose_name="Тип пользователя",
                                 null=False,
                                 blank=False,

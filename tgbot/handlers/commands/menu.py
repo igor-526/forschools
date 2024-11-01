@@ -6,7 +6,7 @@ from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks import homeworks_send_menu
 from tgbot.funcs.chats import chats_show, chats_type_message
-
+from tgbot.funcs.settings import generate_settings_message
 
 router = Router(name=__name__)
 
@@ -39,10 +39,7 @@ async def h_mainmenu_chats(message: types.Message, state: FSMContext) -> None:
 @router.message(StateFilter(None),
                 F.text == "Настройки")
 async def h_mainmenu_settings(message: types.Message) -> None:
-    await message.answer(text="Функция пока не реализована. Тут будет возможность отвязать Telegram от профиля "
-                              "на портале, изменить свои данные. Может быть настроить уведомления (задел на будущее "
-                              "как идея - привязка нескольких телеграмов к одному аккаунту на портале. Например, для "
-                              "получения уведомлений родителями)")
+    await generate_settings_message(message)
 
 
 @router.message(StateFilter(None))

@@ -189,10 +189,35 @@ class HomeworkItemPageEditAPIView(LoginRequiredMixin, APIView):
 
 class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = HomeworkLog
-    serializer_class = HomeworkLogListSerializer
+
+    def get_last_logs(self, queryset, *args, **kwargs):
+        last_logs = []
+        for log in queryset.filter(status__in=[3, 4, 5]):
+            if last_logs:
+                if last_logs[-1]['status'] == log.status:
+                    last_logs.append({'id': log.id,
+                                      'status': log.status})
+                else:
+                    break
+            else:
+                last_logs.append({'id': log.id,
+                                  'status': log.status})
+        queryset = HomeworkLog.objects.filter(id__in=[log["id"] for log in last_logs]).order_by('-dt')
+        return queryset
 
     def get_queryset(self, *args, **kwargs):
-        return HomeworkLog.objects.filter(homework_id=kwargs.get('pk'))
+        queryset = HomeworkLog.objects.filter(homework_id=kwargs.get('pk'))
+        last = self.request.query_params.get('last')
+        if last is not None:
+            queryset = self.get_last_logs(queryset)
+        return queryset
+
+    def get_serializer_class(self):
+        last = self.request.query_params.get('last')
+        if last is not None:
+            return HomeworkLogSerializer
+        else:
+            return HomeworkLogListSerializer
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset(*args, **kwargs)

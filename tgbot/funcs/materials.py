@@ -20,14 +20,16 @@ from tgbot.finite_states.materials import MaterialFSM
 from material.utils.get_type import get_type
 
 
-def generate_material_message(material: Material) -> str:
-    message = f"<b>{material.name}</b>"
-    if material.description:
-        message += f"\n{material.description}"
-    return message
+async def send_material_item(tg_id: int, material: Material, protect=False, meta=True) -> None:
+    def generate_material_message() -> str:
+        if meta:
+            msg_text = f"<b>{material.name}</b>"
+        else:
+            msg_text = ""
+        if material.description:
+            msg_text += f"\n{material.description}"
+        return msg_text
 
-
-async def send_material_item(tg_id: int, material: Material, protect=False) -> None:
     file = material.tg_url if material.tg_url else FSInputFile(path=material.file.path)
     mat_type = get_type(material.file.name.split(".")[-1])
     user = await get_user(tg_id)
@@ -37,13 +39,13 @@ async def send_material_item(tg_id: int, material: Material, protect=False) -> N
     if mat_type == "image_formats":
         message = await bot.send_photo(chat_id=tg_id,
                                        photo=file,
-                                       caption=generate_material_message(material),
+                                       caption=generate_material_message(),
                                        reply_markup=get_keyboard_material_item(material, send_tg),
                                        protect_content=protect)
         file_id = message.photo[-1].file_id
     elif mat_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
-                                           caption=generate_material_message(material),
+                                           caption=generate_material_message(),
                                            animation=file,
                                            reply_markup=get_keyboard_material_item(material, send_tg),
                                            protect_content=protect)
@@ -56,28 +58,28 @@ async def send_material_item(tg_id: int, material: Material, protect=False) -> N
           mat_type == "presentation_formats"):
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
-                                          caption=generate_material_message(material),
+                                          caption=generate_material_message(),
                                           reply_markup=get_keyboard_material_item(material, send_tg),
                                           protect_content=protect)
         file_id = message.document.file_id
     elif mat_type == "video_formats":
         message = await bot.send_video(chat_id=tg_id,
                                        video=file,
-                                       caption=generate_material_message(material),
+                                       caption=generate_material_message(),
                                        reply_markup=get_keyboard_material_item(material, send_tg),
                                        protect_content=protect)
         file_id = message.video.file_id
     elif mat_type == "audio_formats":
         message = await bot.send_audio(chat_id=tg_id,
                                        audio=file,
-                                       caption=generate_material_message(material),
+                                       caption=generate_material_message(),
                                        reply_markup=get_keyboard_material_item(material, send_tg),
                                        protect_content=protect)
         file_id = message.audio.file_id
     elif mat_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,
                                        voice=file,
-                                       caption=generate_material_message(material),
+                                       caption=generate_material_message(),
                                        reply_markup=get_keyboard_material_item(material, send_tg),
                                        protect_content=protect)
         file_id = message.voice.file_id

@@ -27,6 +27,21 @@ function hwItemCheckReset(validationOnly = false){
 
 function hwItemCheckSetModal(){
     hwItemCheckReset()
+    homeworkAPIGetLogs(hwID, true).then(request => {
+        switch (request.status){
+            case 200:
+                if (request.response.length > 0){
+                    hwItemCheckModalAnswer.classList.remove("d-none")
+                    request.response.forEach(log => {
+                        hwItemCheckModalAnswerBody.insertAdjacentElement("beforeend", homeworkItemLogGetBody(log))
+                    })
+                }
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
     bsHwItemCheckModal.show()
 }
 

@@ -1,7 +1,9 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
+
+from homework.models import Homework
 from tgbot.funcs.homeworks import (show_homework, show_logs,
-                                   show_log_item)
+                                   show_log_item, send_hw_materials)
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkLogCallback
 
 router = Router(name=__name__)
@@ -17,6 +19,15 @@ async def h_homework_show_hw(callback: CallbackQuery,
 async def h_homework_show_hw_logs(callback: CallbackQuery,
                                   callback_data: HomeworkCallback) -> None:
     await show_logs(callback, callback_data)
+
+
+@router.callback_query(HomeworkCallback.filter(F.action == 'materials'))
+async def h_homework_show_materials(callback: CallbackQuery,
+                                    callback_data: HomeworkCallback) -> None:
+    hw = await (Homework.objects.select_related("listener")
+                .select_related("teacher")
+                .aget(pk=callback_data.hw_id))
+    await send_hw_materials(hw, callback.from_user.id, True)
 
 
 @router.callback_query(HomeworkLogCallback.filter())
