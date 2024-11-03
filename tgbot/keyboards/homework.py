@@ -77,14 +77,19 @@ def get_homeworks_buttons(homeworks: list, sb=False, ) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_homework_item_buttons(hw_id, can_send=False, can_check=False, materials=0) -> InlineKeyboardMarkup:
+def get_homework_item_buttons(hw_id,
+                              can_send=False,
+                              can_check=False,
+                              materials=0,
+                              history_button=True) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(
-        text="История",
-        callback_data=HomeworkCallback(
-            hw_id=hw_id,
-            action="logs")
-    )
+    if history_button:
+        builder.button(
+            text="История",
+            callback_data=HomeworkCallback(
+                hw_id=hw_id,
+                action="logs")
+        )
     if materials:
         builder.button(
             text=f"Показать материалы ({materials})",
@@ -119,16 +124,23 @@ def get_homework_item_buttons(hw_id, can_send=False, can_check=False, materials=
     return builder.as_markup()
 
 
-def get_hwlogs_buttons(hwlogs: list[dict]) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    for hwlog in hwlogs:
-        log_dt = hwlog.get("dt")
-        log_status = hwlog.get("status")
-        log_id = hwlog.get("id")
+def get_hwlogs_buttons(hwlogs: list[dict], dt_info: bool = True) -> InlineKeyboardMarkup:
+    def set_button(hw_log):
+        log_dt = hw_log.get("dt")
+        log_status = hw_log.get("status")
+        log_id = hw_log.get("id")
+        if dt_info:
+            btn_text = f"{log_dt} - {log_status}"
+        else:
+            btn_text = log_status
         builder.button(
-            text=f"{log_dt} - {log_status}",
+            text=btn_text,
             callback_data=HomeworkLogCallback(log_id=log_id)
         )
+
+    builder = InlineKeyboardBuilder()
+    for hwlog in hwlogs:
+        set_button(hwlog)
     builder.adjust(1)
     return builder.as_markup()
 

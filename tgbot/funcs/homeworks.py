@@ -1,4 +1,6 @@
 import datetime
+from typing import Type
+
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
@@ -271,26 +273,39 @@ async def search_homeworks_query(message: types.Message):
                          reply_markup=get_homeworks_buttons([hw.get('hw') for hw in homeworks], sb=False))
 
 
-async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback):
-    def get_message_text():
-        msg_text = f'Выполнить до: {hw.deadline}\n'
-        if hw.description:
-            msg_text += f'Описание: {hw.description}\n'
-        return msg_text
+async def show_homework(callback: CallbackQuery,
+                        callback_data: HomeworkCallback | Type[HomeworkCallback],
+                        materials_button: bool = True,
+                        show_last_logs: bool = True):
+
+    async def get_history_button() -> bool:
+        logs_status = [3, 4, 5] if 'Listener' in gp['groups'] else [1, 2, 3, 4, 5, 6, 7]
+        l = await HomeworkLog.objects.filter(homework=callback_data.hw_id,
+                                             status__in=logs_status).aexists()
+        return l
 
     async def send_materials_and_get_reply_markup():
+        if not materials_button:
+            rm = get_homework_item_buttons(hw.id,
+                                           can_send,
+                                           can_check,
+                                           0,
+                                           await get_history_button())
+            return rm
         if tg_note.setting_show_hw_materials:
-            await send_hw_materials(hw, callback.from_user.id,
+            await send_hw_materials(hw, callback,
                                     False if 'Listener' in gp.get('groups') else True)
             rm = get_homework_item_buttons(hw.id,
                                            can_send,
                                            can_check,
-                                           0)
+                                           0,
+                                           await get_history_button())
         else:
             rm = get_homework_item_buttons(hw.id,
                                            can_send,
                                            can_check,
-                                           await hw.materials.acount())
+                                           await hw.materials.acount(),
+                                           await get_history_button())
         return rm
 
     async def send_last_log():
@@ -319,32 +334,43 @@ async def show_homework(callback: CallbackQuery, callback_data: HomeworkCallback
     gp = await get_group_and_perms(user.id)
     can_send = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7]
     can_check = 'Teacher' in gp['groups'] and hw_status.status in [3, 5]
-
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text=get_message_text())
     reply_markup = await send_materials_and_get_reply_markup()
     if hw_status.status == 7 and 'Listener' in gp.get('groups'):
         await hw.aopen()
-    await send_last_log()
+    if show_last_logs:
+        await send_last_log()
     await bot.send_message(chat_id=callback.from_user.id,
                            text=f"Действия для ДЗ <b>{hw.name}</b>\n",
                            reply_markup=reply_markup)
 
 
-async def send_hw_materials(hw: Homework, tg_id: int, meta: bool):
+async def send_hw_materials(hw: Homework, callback: CallbackQuery, meta: bool):
     for mat in [m async for m in hw.materials.all()]:
-        await send_material_item(tg_id, mat, meta=meta)
+        await send_material_item(callback.from_user.id, mat, meta=meta)
+    hw_callback = HomeworkCallback
+    hw_callback.hw_id = hw.id
+    await show_homework(callback, hw_callback, False)
+    await callback.message.delete()
 
 
 async def show_logs(callback: CallbackQuery, callback_data: HomeworkCallback):
+    user = await get_user(callback.from_user.id)
+    is_listener = await user.groups.filter(name="Listener").aexists()
+    logs_status = [3, 4, 5] if is_listener else [1, 2, 3, 4, 5, 6, 7]
+    dt_info = False if is_listener else True
     logs = [{
         'id': log.id,
         'status': status_code_to_string(log.status),
         'dt': log.dt.astimezone().strftime("%d.%m %H:%M"),
-    } async for log in HomeworkLog.objects.filter(homework=callback_data.hw_id)]
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text="История ДЗ:",
-                           reply_markup=get_hwlogs_buttons(logs))
+    } async for log in HomeworkLog.objects.filter(homework=callback_data.hw_id,
+                                                  status__in=logs_status)]
+    if logs:
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text="История ДЗ:",
+                               reply_markup=get_hwlogs_buttons(logs, dt_info))
+    else:
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text="События отсутствуют")
 
 
 async def show_log_item(callback: CallbackQuery, log_id: int):

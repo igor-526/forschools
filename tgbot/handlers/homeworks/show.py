@@ -27,7 +27,7 @@ async def h_homework_show_materials(callback: CallbackQuery,
     hw = await (Homework.objects.select_related("listener")
                 .select_related("teacher")
                 .aget(pk=callback_data.hw_id))
-    await send_hw_materials(hw, callback.from_user.id, True)
+    await send_hw_materials(hw, callback, True)
 
 
 @router.callback_query(HomeworkLogCallback.filter())
