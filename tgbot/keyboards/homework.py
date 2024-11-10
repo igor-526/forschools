@@ -56,7 +56,7 @@ def get_homework_lessons_buttons(lessons: list, prev_date=None, next_date=None) 
     return builder.as_markup()
 
 
-def get_homeworks_buttons(homeworks: list, sb=False, ) -> InlineKeyboardMarkup:
+def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if sb:
         builder.button(

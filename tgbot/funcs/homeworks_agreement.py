@@ -1,29 +1,18 @@
 import datetime
-from typing import Type
-
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from django.db.models import Q
-from lesson.models import Lesson
-from tgbot.funcs.fileutils import filechecker, filedownloader
-from tgbot.funcs.materials import send_material_item
+from chat.models import Message
+from tgbot.funcs.homeworks import homework_tg_notify
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
-from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
-                                      get_hwlogs_buttons, get_homework_menu_buttons, get_homework_lessons_buttons,
-                                      get_homework_editing_buttons, get_homework_agreement_buttons)
-from tgbot.keyboards.default import cancel_keyboard, yes_cancel_keyboard, message_typing_keyboard
-from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM, HomeworkAgreementFSM
+from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_agreement_buttons, get_homework_edit_button
+from tgbot.finite_states.homework import HomeworkAgreementFSM
 from tgbot.funcs.menu import send_menu
-from tgbot.models import TgBotJournal
-from tgbot.utils import get_tg_id, get_tg_note
-from profile_management.models import NewUser
+from tgbot.funcs.chats import chats_notificate
 from homework.models import Homework, HomeworkLog
 from tgbot.create_bot import bot
-from tgbot.utils import get_group_and_perms, get_user
-from homework.utils import status_code_to_string
-from material.utils.get_type import get_type
-from aiogram.utils.media_group import MediaGroupBuilder
+from tgbot.models import TgBotJournal
+from tgbot.utils import get_user, get_tg_id
 
 
 async def f_homework_agr_message(callback: CallbackQuery,
@@ -80,24 +69,100 @@ async def f_homework_agr_add_comment(message: types.Message,
 
 async def f_homework_agr_send(message: types.Message,
                               state: FSMContext):
+    async def notify_users(log_status, action):
+        teacher_tg_id = await get_tg_id(hw.teacher.id, "main")
+        if action == "agreement_accept":
+            if teacher_tg_id:
+                if log_status == 7:
+                    teacher_msg_text = "Домашнее задание согласовано и задано"
+                    await homework_tg_notify(hw.teacher,
+                                             hw.listener.id,
+                                             [hw])
+                elif log_status == 4:
+                    teacher_msg_text = "Ответ на решение согласован. ДЗ принято"
+                elif log_status == 5:
+                    teacher_msg_text = "Ответ на решение согласован. ДЗ отправлено на доработку"
+                else:
+                    teacher_msg_text = "Домашнее задание согласовано"
+                if stdata.get("comment"):
+                    teacher_msg_text += f'\n{stdata.get("comment")}'
+                rm = get_homeworks_buttons([hw], sb=False)
+                await bot.send_message(chat_id=teacher_tg_id,
+                                       text=teacher_msg_text,
+                                       reply_markup=rm)
+                if log_status in [4, 5]:
+                    listener_tgs = await get_tg_id(hw.listener.id)
+                    for listener_tg in listener_tgs:
+                        try:
+                            msg = f"Пришёл новый ответ от преподавателя по ДЗ <b>'{hw.name}'</b>"
+                            msg_object = await bot.send_message(chat_id=listener_tg.get("tg_id"),
+                                                                text=msg,
+                                                                reply_markup=get_homeworks_buttons([{
+                                                                    'name': hw.name,
+                                                                    'id': hw.id
+                                                                }]))
+                            await TgBotJournal.objects.acreate(
+                                recipient=hw.listener,
+                                initiator=hw.teacher,
+                                event=4,
+                                data={
+                                    "status": "success",
+                                    "text": msg,
+                                    "msg_id": msg_object.message_id,
+                                    "errors": [],
+                                    "attachments": []
+                                }
+                            )
+                        except Exception as e:
+                            await TgBotJournal.objects.acreate(
+                                recipient=hw.listener,
+                                initiator=hw.teacher,
+                                event=4,
+                                data={
+                                    "status": "error",
+                                    "text": None,
+                                    "msg_id": None,
+                                    "errors": [str(e)],
+                                    "attachments": []
+                                }
+                            )
+        elif action == "agreement_decline":
+            msg = await Message.objects.acreate(
+                receiver=hw.teacher,
+                sender=await get_user(message.from_user.id),
+                message=stdata.get("comment"),
+            )
+            await chats_notificate(chat_message_id=msg, show=False)
+            await bot.send_message(chat_id=teacher_tg_id,
+                                   text="Редактировать ДЗ:",
+                                   reply_markup=get_homework_edit_button(hw.id))
+
     stdata = await state.get_data()
-    hw = await Homework.objects.get(pk=stdata.get("hw_id"))
-
+    hw = await Homework.objects.aget(pk=stdata.get("hw_id"))
+    logs = [log async for log in HomeworkLog.objects.filter(status__in=[5, 4, 7],
+                                                            agreement__accepted=False,
+                                                            homework=hw).order_by("-dt")]
     last_logs = []
-    all_logs = [log async for log in HomeworkLog.objects.filter(status__in=[3, 4, 7])]
-    # if last_logs:
-    #     if last_logs[-1]['status'] == log.status:
-    #         last_logs.append({'id': log.id,
-    #                           'status': log.status})
-    #     else:
-    #         break
-    # else:
-    #     last_logs.append({'id': log.id,
-    #                       'status': log.status})
-    queryset = HomeworkLog.objects.filter(id__in=[log["id"] for log in last_logs]).order_by('-dt')
-
-    last_statuses = await hw.aget_status()
+    for log in logs:
+        if last_logs:
+            if last_logs[-1].status == log.status:
+                last_logs.append(log)
+            else:
+                break
+        else:
+            last_logs.append(log)
+    agreement = {
+        "accepted_dt": datetime.datetime.now()
+    }
     if stdata.get("action") == "agreement_accept":
-        pass
+        agreement["accepted"] = False
+        if stdata.get("comment"):
+            agreement["comment"] = stdata.get("comment")
     elif stdata.get("action") == "agreement_decline":
-        pass
+        agreement["accepted"] = False
+        agreement["comment"] = stdata.get("comment")
+    for log in last_logs:
+        log.agreement = agreement
+        await log.asave()
+    await notify_users(last_logs[-1].status, stdata.get("action"))
+

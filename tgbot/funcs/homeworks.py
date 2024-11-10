@@ -118,7 +118,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
             await lesson.homeworks.aadd(new_hw)
             if lesson.status == 1:
                 result = await new_hw.aset_assigned()
-                if result.get("agreement") is not None and result.get("agreement") == False:
+                if result.get("agreement"):
                     msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} будет задано после проверки "
                                 f"методистом")
                     lesson = await new_hw.aget_lesson()
