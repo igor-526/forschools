@@ -124,7 +124,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                     lesson = await new_hw.aget_lesson()
                     plan = await lesson.aget_learning_plan()
                     await homework_tg_notify(teacher,
-                                             plan.metodist,
+                                             plan.metodist.id,
                                              [new_hw],
                                              "Требуется согласование действия преподавателя")
                 else:
