@@ -9,3 +9,7 @@ class HomeworkFSM(StatesGroup):
 class HomeworkNewFSM(StatesGroup):
     change_menu = State()
     delete_materials = State()
+
+
+class HomeworkAgreementFSM(StatesGroup):
+    message = State()

@@ -81,7 +81,8 @@ def get_homework_item_buttons(hw_id,
                               can_send=False,
                               can_check=False,
                               materials=0,
-                              history_button=True) -> InlineKeyboardMarkup:
+                              history_button=True,
+                              agreement_buttons=False) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if history_button:
         builder.button(
@@ -120,6 +121,21 @@ def get_homework_item_buttons(hw_id,
                 action="check_revision"
             )
         )
+    if agreement_buttons:
+        builder.button(
+            text="Согласовать",
+            callback_data=HomeworkCallback(
+                hw_id=hw_id,
+                action="agreement_accept"
+            )
+        )
+        builder.button(
+            text="Сообщение преподавателю",
+            callback_data=HomeworkCallback(
+                hw_id=hw_id,
+                action="agreement_decline"
+            )
+        )
     builder.adjust(1)
     return builder.as_markup()
 
@@ -154,3 +170,17 @@ def get_homework_edit_button(hw_id) -> InlineKeyboardMarkup:
     )
     builder.adjust(1)
     return builder.as_markup()
+
+
+def get_homework_agreement_buttons(action="accept") -> ReplyKeyboardMarkup | None:
+    cancel_button = KeyboardButton(text="Отмена")
+    accept_button = KeyboardButton(text=f"Согласовать")
+    decline_button = KeyboardButton(text="Отправить на корректировку")
+    if action == "accept":
+        return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[accept_button],
+                                                                   [cancel_button]])
+    elif action == "decline":
+        return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[decline_button],
+                                                                   [cancel_button]])
+    else:
+        return None

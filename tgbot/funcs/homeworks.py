@@ -121,12 +121,12 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 if result.get("agreement") is not None and result.get("agreement") == False:
                     msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} будет задано после проверки "
                                 f"методистом")
-                    lesson = new_hw.aget_lesson()
-                    plan = lesson.aget_learning_plan()
+                    lesson = await new_hw.aget_lesson()
+                    plan = await lesson.aget_learning_plan()
                     await homework_tg_notify(teacher,
                                              plan.metodist,
                                              [new_hw],
-                                                 "Требуется согласование действия преподавателя")
+                                             "Требуется согласование действия преподавателя")
                 else:
                     msg_text = f"ДЗ для {listener.first_name} {listener.last_name} успешно задано"
                     await homework_tg_notify(teacher,
@@ -323,18 +323,20 @@ async def show_homework(callback: CallbackQuery,
             return rm
         if tg_note.setting_show_hw_materials:
             await send_hw_materials(hw, callback,
-                                    False if 'Listener' in gp.get('groups') else True)
+                                    False if 'Listener' in gp.get('groups') else True, False)
             rm = get_homework_item_buttons(hw.id,
                                            can_send,
                                            can_check,
                                            0,
-                                           await get_history_button())
+                                           await get_history_button(),
+                                           can_agreement_logs)
         else:
             rm = get_homework_item_buttons(hw.id,
                                            can_send,
                                            can_check,
                                            await hw.materials.acount(),
-                                           await get_history_button())
+                                           await get_history_button(),
+                                           can_agreement_logs)
         return rm
 
     async def send_last_log():
@@ -362,7 +364,13 @@ async def show_homework(callback: CallbackQuery,
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
     can_send = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7]
-    can_check = 'Teacher' in gp['groups'] and hw_status.status in [3, 5]
+    can_check = (('Teacher' in gp['groups'] and hw_status.status in [3, 5]) or
+                 ('Metodist' in gp['groups'] and hw_status.status in [3, 5]))
+    lesson = await hw.aget_lesson()
+    lp = None
+    if lesson:
+        lp = await lesson.aget_learning_plan()
+    can_agreement_logs = lp and lp.metodist and lp.metodist == user
     reply_markup = await send_materials_and_get_reply_markup()
     if hw_status.status == 7 and 'Listener' in gp.get('groups'):
         await hw.aopen()
@@ -373,13 +381,14 @@ async def show_homework(callback: CallbackQuery,
                            reply_markup=reply_markup)
 
 
-async def send_hw_materials(hw: Homework, callback: CallbackQuery, meta: bool):
+async def send_hw_materials(hw: Homework, callback: CallbackQuery, meta: bool, del_hw_msg=True):
     for mat in [m async for m in hw.materials.all()]:
         await send_material_item(callback.from_user.id, mat, meta=meta)
-    hw_callback = HomeworkCallback
-    hw_callback.hw_id = hw.id
-    await show_homework(callback, hw_callback, False)
-    await callback.message.delete()
+    if del_hw_msg:
+        hw_callback = HomeworkCallback
+        hw_callback.hw_id = hw.id
+        await show_homework(callback, hw_callback, False)
+        await callback.message.delete()
 
 
 async def show_logs(callback: CallbackQuery, callback_data: HomeworkCallback):
@@ -406,9 +415,13 @@ async def show_log_item(callback: CallbackQuery, log_id: int):
     log = await HomeworkLog.objects.select_related("user").select_related("homework").aget(pk=log_id)
     files = [_ async for _ in log.files.all()]
     comment = log.comment.replace('<br>', '\n') if log.comment else '-'
-    msg = (f"<b>{log.homework.name}</b>\n"
-           f"<b>{log.user}: {status_code_to_string(log.status)}</b> - {log.dt.astimezone().strftime('%d.%m %H:%M')}\n\n"
-           f"{comment}\n")
+    lesson = await log.homework.aget_lesson()
+    if lesson:
+        msg = f"<b>{log.homework.name}</b> к занятию '<b>{lesson.name}</b>'\n"
+    else:
+        msg = f"<b>{log.homework.name}</b>\n"
+    msg += (f"<b>{log.user}: {status_code_to_string(log.status)}</b> - {log.dt.astimezone().strftime('%d.%m %H:%M')}\n\n"
+            f"{comment}\n")
     await bot.send_message(chat_id=callback.from_user.id,
                            text=msg)
     if len(files) > 0:
