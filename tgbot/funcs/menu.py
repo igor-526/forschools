@@ -20,15 +20,9 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
         lessons = True
         messages = True
         settings = True
-    elif 'Teacher' in perms.get('groups'):
+    elif 'Teacher' in perms.get('groups') or 'Metodist' in perms.get('groups'):
         materials = True
         homeworks = True
-        lessons = True
-        messages = True
-        settings = True
-    elif 'Metodist' in perms.get('groups'):
-        materials = True
-        homeworks = False
         lessons = True
         messages = True
         settings = True

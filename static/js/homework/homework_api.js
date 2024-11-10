@@ -54,13 +54,25 @@ async function homeworkAPIGetLog(log_id){
     return APIGetToObject(request)
 }
 
+async function homeworkAPIAnswerLog(log_id, fd){
+    const request = await fetch(`/api/v1/homeworks/logs/${log_id}/`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIDeleteToObject(request)
+}
+
 async function homeworkAPIDeleteLog(log_id){
     const request = await fetch(`/api/v1/homeworks/logs/${log_id}/`, {
         method: 'DELETE',
         credentials: 'same-origin',
         headers: {
             "X-CSRFToken": csrftoken,
-        }
+        },
     })
     return APIDeleteToObject(request)
 }

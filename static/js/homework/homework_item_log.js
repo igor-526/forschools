@@ -2,6 +2,12 @@ function homeworkItemLogMain(){
     hwItemLogModalDeleteButton.addEventListener("click", function () {
         bsHwItemLogDeleteConfirmModal.show()
     })
+    hwItemLogModalLogAnswerAcceptButton.addEventListener("click", function () {
+        homeworkItemLogAnswer("accept")
+    })
+    hwItemLogModalLogAnswerDeclineButton.addEventListener("click", function () {
+        homeworkItemLogAnswer("decline")
+    })
     hwItemLogDeleteConfirmModalDeleteButton.addEventListener("click", homeworkItemLogDelete)
 }
 
@@ -78,16 +84,33 @@ function homeworkItemLogGetBody(log){
 }
 
 function homeworkItemLogShowModal(logID) {
-    hwItemLogModalTitle.innerHTML = ""
-    hwItemLogModalBody.innerHTML = ""
+    function reset(){
+        hwItemLogModalTitle.innerHTML = ""
+        hwItemLogModalBody.innerHTML = ""
+        hwItemLogModalLogAnswerBodyMessageField.value = ""
+        hwItemLogModalLogAnswerBodyMessageFieldError.innerHTML = ""
+        hwItemLogModalLogAnswerBodyMessageField.classList.remove("is-invalid")
+        hwItemLogModalLogAnswerBody.classList.add("d-none")
+        hwItemLogModalLogAnswerAcceptButton.classList.add("d-none")
+        hwItemLogModalLogAnswerDeclineButton.classList.add("d-none")
+    }
+
+    reset()
     homeworkAPIGetLog(logID).then(request => {
         switch (request.status){
             case 200:
-                selectedHW = logID
+                selectedHWLog = logID
                 hwItemLogModalTitle.innerHTML = `${request.response.user.first_name} ${request.response.user.last_name}`
                 hwItemLogModalBody.insertAdjacentElement("beforeend", homeworkItemLogGetBody(request.response))
                 request.response.deletable ? hwItemLogModalDeleteButton.classList.remove("d-none") :
                     hwItemLogModalDeleteButton.classList.add("d-none")
+                if (request.response.agreement.hasOwnProperty("accepted") && hwCanAcceptLogs){
+                    if (!request.response.agreement.accepted){
+                        hwItemLogModalLogAnswerBody.classList.remove("d-none")
+                        hwItemLogModalLogAnswerAcceptButton.classList.remove("d-none")
+                        hwItemLogModalLogAnswerDeclineButton.classList.remove("d-none")
+                    }
+                }
                 bsHwItemLogModal.show()
                 break
             default:
@@ -97,7 +120,7 @@ function homeworkItemLogShowModal(logID) {
 }
 
 function homeworkItemLogDelete(){
-    homeworkAPIDeleteLog(selectedHW).then(request => {
+    homeworkAPIDeleteLog(selectedHWLog).then(request => {
         bsHwItemLogModal.hide()
         bsHwItemLogDeleteConfirmModal.hide()
         switch (request.status) {
@@ -117,7 +140,54 @@ function homeworkItemLogDelete(){
     })
 }
 
-let selectedHW
+function homeworkItemLogAnswer(action){
+    function validate(){
+        let validationStatus = true
+        hwItemLogModalLogAnswerBodyMessageField.classList.remove("is-invalid")
+        hwItemLogModalLogAnswerBodyMessageFieldError.innerHTML = ""
+        if (action === "decline"){
+            if (hwItemLogModalLogAnswerBodyMessageField.value.trim() === ""){
+                hwItemLogModalLogAnswerBodyMessageField.classList.add("is-invalid")
+                hwItemLogModalLogAnswerBodyMessageFieldError.innerHTML = "Напишите сообщение преподавателю"
+                validationStatus = false
+            }
+        }
+        if (hwItemLogModalLogAnswerBodyMessageField.value.trim().length > 2000){
+            hwItemLogModalLogAnswerBodyMessageField.classList.add("is-invalid")
+            hwItemLogModalLogAnswerBodyMessageFieldError.innerHTML = "Длина сообщения не может превышать 2000 символов"
+            validationStatus = false
+        }
+        return validationStatus
+    }
+
+    function getFD(){
+        const fd = new FormData()
+        if (hwItemLogModalLogAnswerBodyMessageField.value.trim().length > 0){
+            fd.set("message", hwItemLogModalLogAnswerBodyMessageField.value.trim())
+        }
+        fd.set("action", action)
+        return fd
+    }
+
+    if (validate()){
+        homeworkAPIAnswerLog(selectedHWLog, getFD()).then(request => {
+            bsHwItemLogModal.hide()
+            switch (request.status){
+                case 200:
+                    showSuccessToast("Ответ успешно отправлен")
+                    setTimeout(function () {
+                        location.reload()
+                    }, 1000)
+                    break
+                default:
+                    showErrorToast()
+                    break
+            }
+        })
+    }
+}
+
+let selectedHWLog
 
 //Log Modal
 const hwItemLogModal = document.querySelector("#hwItemLogModal")
@@ -125,6 +195,13 @@ const bsHwItemLogModal = new bootstrap.Modal(hwItemLogModal)
 const hwItemLogModalTitle = hwItemLogModal.querySelector("#hwItemLogModalTitle")
 const hwItemLogModalBody = hwItemLogModal.querySelector("#hwItemLogModalBody")
 const hwItemLogModalDeleteButton = hwItemLogModal.querySelector("#hwItemLogModalDeleteButton")
+
+//Log Modal Metodist
+const hwItemLogModalLogAnswerBody = hwItemLogModal.querySelector("#hwItemLogModalLogAnswerBody")
+const hwItemLogModalLogAnswerBodyMessageField = hwItemLogModalLogAnswerBody.querySelector("#hwItemLogModalLogAnswerBodyMessageField")
+const hwItemLogModalLogAnswerBodyMessageFieldError = hwItemLogModalLogAnswerBody.querySelector("#hwItemLogModalLogAnswerBodyMessageFieldError")
+const hwItemLogModalLogAnswerAcceptButton = hwItemLogModal.querySelector("#hwItemLogModalLogAnswerAcceptButton")
+const hwItemLogModalLogAnswerDeclineButton = hwItemLogModal.querySelector("#hwItemLogModalLogAnswerDeclineButton")
 
 //Delete Confirm Modal
 const hwItemLogDeleteConfirmModal = document.querySelector("#hwItemLogDeleteConfirmModal")

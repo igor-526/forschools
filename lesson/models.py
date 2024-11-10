@@ -145,7 +145,8 @@ class Lesson(models.Model):
 
     async def aget_learning_plan(self):
         learning_phase = await self.learningphases_set.afirst()
-        learning_plan = await learning_phase.learningplan_set.select_related("teacher").afirst()
+        learning_plan = await (learning_phase.learningplan_set.select_related("teacher")
+                               .select_related("metodist").afirst())
         return learning_plan
 
     def get_hw_deadline(self):

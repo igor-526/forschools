@@ -1,10 +1,12 @@
 import datetime
+
+from chat.models import Message
 from lesson.permissions import CanReplaceTeacherMixin, replace_teacher_button
 from .permissions import get_delete_log_permission, get_send_hw_permission, get_can_check_hw_permission, \
-    get_can_cancel_hw_permission
+    get_can_cancel_hw_permission, get_can_accept_log_permission
 from .serializers import HomeworkListSerializer, HomeworkLogListSerializer, HomeworkLogSerializer
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
-from tgbot.utils import send_homework_tg, send_homework_edit
+from tgbot.utils import send_homework_tg, send_homework_edit, notificate_chat_message, send_homework_answer_tg
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from rest_framework.response import Response
@@ -88,38 +90,15 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         return queryset
 
     def get_queryset(self, *args, **kwargs):
-        group = kwargs.get("user").groups.first().name
-        if group == "Teacher":
-            queryset = Homework.objects.filter(teacher=kwargs.get("user"))
-        elif group == "Listener":
-            queryset = Homework.objects.filter(listener=kwargs.get("user"))
-        else:
+        queryset = None
+        if kwargs.get("user").groups.filter(name="Admin").exists():
             queryset = Homework.objects.all()
-        # st_filtered = []
-        # print(hw_status)
-        # if hw_status == "7":
-        #     print("selected 7")
-        #     for hw in queryset:
-        #         status = hw.get_status()
-        #         print(status.status)
-        #         if status.status in [7, 2, 5]:
-        #             st_filtered.append(status.homework.id)
-        # elif hw_status == "3":
-        #     print("selected 3")
-        #     for hw in queryset:
-        #         status = hw.get_status()
-        #         print(status.status)
-        #         if status.status == 3:
-        #             st_filtered.append(status.homework.id)
-        # elif hw_status == "4":
-        #     print("selected 4")
-        #     for hw in queryset:
-        #         status = hw.get_status()
-        #         print(status.status)
-        #         if status.status in [4, 6]:
-        #             st_filtered.append(status.homework.id)
-        # if st_filtered:
-        #     queryset = queryset.filter(id__in=st_filtered)
+        elif kwargs.get("user").groups.filter(name="Metodist").exists():
+            queryset = Homework.objects.filter(lesson__learningphases__learningplan__metodist=kwargs.get("user"))
+        elif kwargs.get("user").groups.filter(name="Teacher").exists():
+            queryset = Homework.objects.filter(teacher=kwargs.get("user"))
+        elif kwargs.get("user").groups.filter(name="Listener").exists():
+            queryset = Homework.objects.filter(listener=kwargs.get("user"))
         queryset = self.filter_queryset_lesson(queryset)
         queryset = self.filter_queryset_teacher(queryset)
         queryset = self.filter_queryset_listener(queryset)
@@ -137,14 +116,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         serializer = self.get_serializer(data=request.data,
                                          context={'request': request})
         serializer.is_valid(raise_exception=True)
-        hw = serializer.save()
-        lesson = hw.lesson_set.first()
-        if lesson:
-            if lesson.status == 1:
-                send_homework_tg(request.user, hw.listener, [hw])
-                hw.set_assigned()
-        else:
-            send_homework_tg(request.user, hw.listener, [hw])
+        serializer.save()
         return Response(serializer.data, status.HTTP_201_CREATED)
 
 
@@ -176,7 +148,8 @@ class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
         return JsonResponse({
             "status": hw_status,
             "can_edit": can_edit,
-            "can_add_materials_tg": can_add_materials_tg
+            "can_add_materials_tg": can_add_materials_tg,
+            "can_answer_logs": get_can_accept_log_permission(hw, request)
         })
 
 
@@ -259,6 +232,50 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not get_can_accept_log_permission(instance.homework, request):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        if instance:
+            agreement = {
+                "accepted_dt": None,
+                "accepted": False
+            }
+            if request.POST.get('action') == 'accept':
+                agreement['accepted'] = True
+                if instance.status == 7:
+                    teacher_msg_text = "Домашнее задание согласовано и задано"
+                    send_homework_tg(initiator=instance.homework.teacher,
+                                     listener=instance.homework.listener,
+                                     homeworks=[instance.homework])
+                elif instance.status == 4:
+                    teacher_msg_text = "Ответ на решение согласован. ДЗ принято"
+                    send_homework_answer_tg(instance.homework.listener, instance.homework, 4)
+                elif instance.status == 5:
+                    teacher_msg_text = "Ответ на решение согласован. ДЗ отправлено на доработку"
+                    send_homework_answer_tg(instance.homework.listener, instance.homework, 5)
+                else:
+                    teacher_msg_text = "Домашнее задание согласовано"
+                send_homework_tg(initiator=instance.homework.get_lesson().get_learning_plan().metodist,
+                                 listener=instance.homework.teacher,
+                                 homeworks=[instance.homework],
+                                 text=teacher_msg_text)
+            elif request.POST.get('action') == 'decline':
+                agreement['accepted'] = False
+                send_homework_edit(instance.homework, instance.homework.teacher)
+            if request.POST.get('message'):
+                agreement['message'] = request.POST.get('message')
+                message = Message.objects.create(sender=request.user,
+                                                 receiver=instance.homework.teacher,
+                                                 message=request.POST.get('message'))
+                notificate_chat_message(message)
+
+            instance.agreement = agreement
+            instance.save()
+            return Response(data={'status': True}, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 

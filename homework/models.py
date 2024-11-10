@@ -12,7 +12,7 @@ HOMEWORK_STATUS_CHOISES = (
     (4, 'Принято'),
     (5, 'На доработке'),
     (6, 'Отменено'),
-    (7, 'Задано')
+    (7, 'Задано'),
 )
 
 
@@ -84,17 +84,56 @@ class Homework(models.Model):
     def get_lesson(self):
         return self.lesson_set.first()
 
+    async def aget_lesson(self):
+        return await self.lesson_set.afirst()
+
     def set_assigned(self):
-        HomeworkLog.objects.create(homework=self,
-                                   user=self.teacher,
-                                   comment="Домашнее задание задано",
-                                   status=7)
+        if self.get_status().status != 6:
+            lesson = self.get_lesson()
+            lp = None
+            if lesson:
+                lp = lesson.get_learning_plan()
+            if lp and lp.metodist:
+                HomeworkLog.objects.create(homework=self,
+                                           user=self.teacher,
+                                           comment="Домашнее задание задано",
+                                           status=7,
+                                           agreement={
+                                               "accepted_dt": None,
+                                               "accepted": False
+                                           })
+                return {"agreement": True}
+            else:
+                HomeworkLog.objects.create(homework=self,
+                                           user=self.teacher,
+                                           comment="Домашнее задание задано",
+                                           status=7)
+                return {"agreement": False}
 
     async def aset_assigned(self):
-        await HomeworkLog.objects.acreate(homework=self,
-                                          user=self.teacher,
-                                          comment="Домашнее задание задано",
-                                          status=7)
+        status = (await self.aget_status()).status
+        if status != 6:
+            lesson = await self.aget_lesson()
+            lp = None
+            if lesson:
+                lp = await lesson.aget_learning_plan()
+            if lp and lp.metodist:
+                await HomeworkLog.objects.acreate(homework=self,
+                                                  user=self.teacher,
+                                                  comment="Домашнее задание задано",
+                                                  status=7,
+                                                  agreement={
+                                                      "accepted_dt": None,
+                                                      "accepted": False
+                                                  })
+
+                return {"agreement": True}
+            else:
+                await HomeworkLog.objects.acreate(homework=self,
+                                                  user=self.teacher,
+                                                  comment="Домашнее задание задано",
+                                                  status=7)
+                return {"agreement": False}
 
 
 class HomeworkLog(models.Model):
@@ -129,6 +168,10 @@ class HomeworkLog(models.Model):
                                  default=1,
                                  null=False,
                                  blank=False)
+    agreement = models.JSONField(verbose_name="Согласование",
+                                 null=True,
+                                 blank=True,
+                                 default=dict)
 
     class Meta:
         verbose_name = 'Лог ДЗ'

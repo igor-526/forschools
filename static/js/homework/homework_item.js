@@ -12,6 +12,8 @@ function homeworkItemMain(){
     homeworkAPIGetInfo(hwID).then(request => {
         switch (request.status){
             case 200:
+                console.log(request.response)
+                hwCanAcceptLogs = request.response.can_answer_logs
                 if (request.response.can_add_materials_tg){
                     hwItemAddMaterialsTG.classList.remove("d-none")
                     hwItemAddMaterialsTG.addEventListener("click", function () {
@@ -62,6 +64,9 @@ function homeworkItemShowLogs(logs=[], clear=true){
         const a = document.createElement("a")
         a.href = "#"
         a.classList.add("list-group-item", "list-group-item-action")
+        if (log.agreement.hasOwnProperty("accepted")){
+            a.classList.add(log.agreement.accepted?"list-group-item-success":"list-group-item-warning")
+        }
         const statusAndDTBlock = document.createElement("div")
         statusAndDTBlock.classList.add("d-flex", "w-100", "justify-content-between")
         const statusAndDTStatus = document.createElement("h5")
@@ -95,7 +100,7 @@ function homeworkItemShowLogs(logs=[], clear=true){
     })
 }
 
-
+let hwCanAcceptLogs
 const hwItemLogList = document.querySelector("#hwItemLogList")
 const hwItemAddMaterialsTG = document.querySelector("#hwItemAddMaterialsTG")
 const hwItemStatus = document.querySelector("#hwItemStatus")

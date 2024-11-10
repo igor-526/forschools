@@ -80,30 +80,9 @@ function homeworksSetTab(tab = "all"){
 
 function homeworksShow(homeworks){
     function getElement(hw){
-        console.log(hw)
         const tr = document.createElement("tr")
-        switch (hw.status){
-            case 1:
-                tr.classList.add("table-secondary")
-                break
-            case 2:
-                tr.classList.add("table-warning")
-                break
-            case 3:
-                tr.classList.add("table-warning")
-                break
-            case 5:
-                tr.classList.add("table-warning")
-                break
-            case 4:
-                tr.classList.add("table-success")
-                break
-            case 6:
-                tr.classList.add("table-danger")
-                break
-            case 7:
-                tr.classList.add("table-primary")
-                break
+        if (hw.color){
+            tr.classList.add(`table-${hw.color}`)
         }
         const tdName = document.createElement("td")
         const tdTeacher = document.createElement("td")

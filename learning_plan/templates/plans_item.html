@@ -61,9 +61,18 @@
                             <li class="list-group-item"><b>Занятия: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
                         </ul>
                         {% if plan.default_hw_teacher %}
-                            <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.default_hw_teacher.id }}">{{ plan.default_hw_teacher }}</a></li>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.default_hw_teacher.id }}">{{ plan.default_hw_teacher }}</a></li>
+                            </ul>
                         {% else %}
-                            <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
+                            </ul>
+                        {% endif %}
+                        {% if plan.metodist %}
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><b>Методист: </b><a href="/profile/{{ plan.metodist.id }}">{{ plan.metodist }}</a></li>
+                            </ul>
                         {% endif %}
                     </div>
                 </div>

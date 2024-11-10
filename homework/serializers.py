@@ -5,7 +5,7 @@ from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
 from material.serializers import MaterialListSerializer
 from material.serializers import FileSerializer
-from tgbot.utils import send_homework_answer_tg
+from tgbot.utils import send_homework_answer_tg, send_homework_tg
 from .permissions import get_delete_log_permission
 
 
@@ -25,11 +25,12 @@ class HomeworkListSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField(read_only=True)
     lesson_info = serializers.SerializerMethodField(read_only=True)
     assigned = serializers.SerializerMethodField(read_only=True)
+    color = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Homework
         fields = ["id", "name", "deadline", "description", "teacher",
-                  "listener", "status", "lesson_info", "assigned"]
+                  "listener", "status", "lesson_info", "assigned", "color"]
 
     def get_status(self, obj):
         status = obj.get_status()
@@ -53,6 +54,27 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         status = obj.get_status(True)
         if status:
             return status.dt
+        else:
+            return None
+
+    def get_color(self, obj):
+        if obj.get_status().status == 6:
+            return "danger"
+        elif obj.get_status().status == 4:
+            return "success"
+
+        if self.context.get("request").user.groups.filter(name__in=["Admin", "Metodist"]).exists():
+            status_agreement = obj.get_status().agreement
+            if status_agreement.get("accepted") is not None and not status_agreement.get("accepted"):
+                return "primary"
+        elif self.context.get("request").user.groups.filter(name="Teacher").exists():
+            if obj.get_status().status == 3:
+                return "info"
+        elif self.context.get("request").user.groups.filter(name="Listener").exists():
+            if obj.get_status().status == 7:
+                return "secondary"
+            elif obj.get_status().status in [2, 5]:
+                return "warning"
         else:
             return None
 
@@ -93,7 +115,14 @@ class HomeworkListSerializer(serializers.ModelSerializer):
             homework.materials.set(self.context.get('request').POST.getlist('materials'))
             homework.save()
             if set_assigned:
-                homework.set_assigned()
+                res = homework.set_assigned()
+                if res.get("agreement") is not None and res.get("agreement") == False:
+                    send_homework_tg(request.user, homework.listener, [homework])
+                else:
+                    send_homework_tg(initiator=homework.teacher,
+                                     listener=homework.get_lesson().get_learning_plan().metodist,
+                                     homeworks=[homework],
+                                     text="Требуется согласование действия преподавталя")
         return homeworks[0]
 
 
@@ -102,16 +131,44 @@ class HomeworkLogListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HomeworkLog
-        fields = ["id", "user", "comment", "status", "dt"]
+        fields = ["id", "user", "comment", "status", "dt", "agreement"]
 
     def create(self, validated_data):
-        hwl = HomeworkLog.objects.create(**validated_data,
-                                         user=self.context.get("request").user,
-                                         homework_id=self.context.get("hw_id"))
+        def cr_obj(accepting=False):
+            if accepting:
+                hwlog = HomeworkLog.objects.create(**validated_data,
+                                                   user=self.context.get("request").user,
+                                                   homework_id=self.context.get("hw_id"),
+                                                   agreement={
+                                                       "accepted_dt": None,
+                                                       "accepted": False
+                                                   })
+            else:
+                hwlog = HomeworkLog.objects.create(**validated_data,
+                                                   user=self.context.get("request").user,
+                                                   homework_id=self.context.get("hw_id"))
+            return hwlog
+
+        hw = Homework.objects.get(pk=self.context.get("hw_id"))
+        metodist = hw.get_lesson().get_learning_plan().metodist
+        if metodist:
+            if (self.context.get("request").user.groups.filter(name="Admin").exists() or
+                    hw.get_lesson().get_learning_plan().metodist == self.context.get("request").user):
+                hwl = cr_obj(accepting=False)
+                send_homework_answer_tg(hwl.homework.listener, hwl.homework, hwl.status)
+            else:
+                hwl = cr_obj(accepting=True)
+                send_homework_tg(initiator=hwl.homework.teacher,
+                                 listener=hwl.homework.get_lesson().get_learning_plan().metodist,
+                                 homeworks=[hwl.homework],
+                                 text="Требуется согласование действия преподавателя")
+
+        else:
+            hwl = cr_obj(accepting=False)
+            send_homework_answer_tg(hwl.homework.listener, hwl.homework, hwl.status)
         if len(self.context.get("files")) > 0:
             hwl.files.set(self.context.get("files"))
             hwl.save()
-        send_homework_answer_tg(self.context.get("request").user, hwl.homework, hwl.status)
         return hwl
 
 
@@ -120,9 +177,9 @@ class HomeworkLogSerializer(serializers.ModelSerializer):
     files = FileSerializer(many=True, read_only=True)
     deletable = serializers.SerializerMethodField()
 
-    def get_deletable(self, obj):
-        return get_delete_log_permission(obj, self.context.get("request"))
-
     class Meta:
         model = HomeworkLog
-        fields = ["id", "user", "files", "comment", "status", "homework", "dt", "deletable"]
+        fields = ["id", "user", "files", "comment", "status", "homework", "dt", "deletable", "agreement"]
+
+    def get_deletable(self, obj):
+        return get_delete_log_permission(obj, self.context.get("request"))

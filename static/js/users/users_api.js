@@ -8,6 +8,11 @@ async function usersAPIGetListeners(){
     return await APIGetToObject(request)
 }
 
+async function usersAPIGetMetodists(){
+    const request = await fetch("/api/v1/users/?role=Metodist")
+    return await APIGetToObject(request)
+}
+
 async function usersAPIGetAll(setting=null, id=null, tg=null, username=null,
                               fullName=null, roles=[], sortUsername=null,
                               sortFullName=null, excludeMe=false){

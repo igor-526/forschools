@@ -6,7 +6,16 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="hwItemLogModalBody"></div>
+            <div class="modal-body" id="hwItemLogModalLogAnswerBody">
+                <div class="mb-3">
+                    <label for="hwItemLogModalLogAnswerBodyMessageField" class="form-label">Сообщение преподавателю</label>
+                    <textarea class="form-control" id="hwItemLogModalLogAnswerBodyMessageField" rows="5"></textarea>
+                    <div class="invalid-feedback" id="hwItemLogModalLogAnswerBodyMessageFieldError"></div>
+                </div>
+            </div>
             <div class="modal-footer">
+                <button id="hwItemLogModalLogAnswerAcceptButton" type="button" class="btn btn-success">Подтвердить</button>
+                <button id="hwItemLogModalLogAnswerDeclineButton" type="button" class="btn btn-warning">Написать</button>
                 <button id="hwItemLogModalDeleteButton" type="button" class="btn btn-danger">Удалить</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
             </div>

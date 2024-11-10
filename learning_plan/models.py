@@ -65,6 +65,12 @@ class LearningPlan(models.Model):
                                 null=True,
                                 related_name="plan_teacher",
                                 on_delete=models.SET_NULL)
+    metodist = models.ForeignKey("profile_management.NewUser",
+                                verbose_name="Методист",
+                                blank=False,
+                                null=True,
+                                related_name="plan_metodist",
+                                on_delete=models.SET_NULL)
     purpose = models.CharField(verbose_name="Цель",
                                blank=True,
                                null=True)

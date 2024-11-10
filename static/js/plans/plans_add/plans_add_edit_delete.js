@@ -15,8 +15,6 @@ function plansAddMain(){
     })
 }
 
-
-
 function plansAddSetTeacherListeners(){
     function getElement(user, selectedID=null) {
         const option = document.createElement("option")
@@ -30,6 +28,7 @@ function plansAddSetTeacherListeners(){
 
     const selectedListener = getHashValue("listener")?Number(getHashValue("listener")):null
     const selectedTeacher = getHashValue("teacher")?Number(getHashValue("teacher")):null
+    const selectedMetodist = getHashValue("teacher")?Number(getHashValue("metodist")):null
     if (plansAddCanSetTeacher){
         usersAPIGetTeachers().then(request => {
             switch (request.status) {
@@ -63,6 +62,20 @@ function plansAddSetTeacherListeners(){
                 break
         }
     })
+
+    usersAPIGetMetodists().then(request => {
+            switch (request.status) {
+                case 200:
+                    PlanNewHWMetodistField.innerHTML = '<option value="">Выберите методиста</option>'
+                    request.response.forEach(metodist => {
+                        PlanNewHWMetodistField.insertAdjacentElement("beforeend", getElement(metodist, selectedMetodist))
+                    })
+                    break
+                default:
+                    showErrorToast("Не удалось загрузить список методистов")
+                    break
+            }
+        })
 }
 
 function plansAddSetOffcanvas(planID=null){
@@ -78,10 +91,11 @@ function plansAddSetOffcanvas(planID=null){
         plansAPIGetItem(planID).then(request => {
             switch (request.status){
                 case 200:
-                    console.log(request.response)
                     planNewNameField.value = request.response.name
                     planNewTeacherField.value = request.response.teacher.id
                     planNewHWTeacherField.value = request.response.default_hw_teacher.id
+                    if (request.response.metodist)
+                        PlanNewHWMetodistField.value = request.response.metodist.id
                     planNewPurposeField.value = request.response.purpose
                     planNewDeadlineField.value = request.response.deadline
                     planNewShLessonsField.value = request.response.show_lessons
@@ -105,7 +119,7 @@ function plansAddEditCreate(go = false){
         const formData = new FormData(formNewPlan)
 
         if (planEditSelectedID){
-            plansAPIUpdate(formData, planID).then(request => {
+            plansAPIUpdate(formData, planEditSelectedID).then(request => {
                 switch (request.status){
                     case 200:
                         bsOffcanvasNewPlan.hide()
@@ -200,6 +214,9 @@ const planNewHWTeacherField = formNewPlan.querySelector("#PlanNewHWTeacherField"
 const planNewHWTeacherError = formNewPlan.querySelector("#PlanNewHWTeacherError")
 const planNewShLessonsField = formNewPlan.querySelector("#PlanNewShLessonsField")
 const planNewShMaterialsField = formNewPlan.querySelector("#PlanNewShMaterialsField")
+
+const PlanNewHWMetodistField = formNewPlan.querySelector("#PlanNewHWMetodistField")
+const PlanNewHWMetodistError = formNewPlan.querySelector("#PlanNewHWMetodistError")
 
 const planNewDeadlineField = formNewPlan.querySelector("#PlanNewDeadlineField")
 const planNewDeadlineError = formNewPlan.querySelector("#PlanNewDeadlineError")

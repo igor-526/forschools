@@ -1,4 +1,4 @@
-from .models import HomeworkLog
+from .models import HomeworkLog, Homework
 
 
 def get_delete_log_permission(log: HomeworkLog, request):
@@ -26,17 +26,21 @@ def get_delete_log_permission(log: HomeworkLog, request):
         return False
 
 
-def get_send_hw_permission(hw, request):
+def get_send_hw_permission(hw: Homework, request):
     return (hw.get_status().status in [1, 2, 3, 5, 7]) and hw.listener == request.user
 
 
-def get_can_check_hw_permission(hw, request):
+def get_can_check_hw_permission(hw: Homework, request):
     return hw.get_status().status in [3, 5, 7] and (hw.teacher == request.user or
                                                     request.user.groups.filter(name__in=["Admin", "Metodist"]).exists())
 
 
-def get_can_cancel_hw_permission(hw, request):
+def get_can_cancel_hw_permission(hw: Homework, request):
     return hw.get_status().status in [1, 2, 3, 5, 7] and (hw.teacher == request.user or
                                                           request.user.groups.filter(
                                                               name__in=["Admin", "Metodist"]).exists())
 
+
+def get_can_accept_log_permission(hw: Homework, request):
+    return (request.user.groups.filter(name="Admin").exists() or
+            request.user == hw.get_lesson().get_learning_plan().metodist)

@@ -114,16 +114,17 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         return queryset
 
     def get_queryset(self, *args, **kwargs):
-        if self.request.user.groups.filter(name__in=["Admin", "Metodist"]).exists():
+        if self.request.user.groups.filter(name="Admin").exists():
             queryset = Lesson.objects.all()
+        elif self.request.user.groups.filter(name="Metodist").exists():
+            queryset = Lesson.objects.filter(learningphases__learningplan__teacher=self.request.user)
+        elif self.request.user.groups.filter(name="Teacher").exists():
+            queryset = Lesson.objects.filter(Q(learningphases__learningplan__teacher=self.request.user) |
+                                             Q(replace_teacher=self.request.user))
+        elif self.request.user.groups.filter(name="Listener").exists():
+            queryset = Lesson.objects.filter(learningphases__learningplan__listeners=self.request.user)
         else:
-            if self.request.user.groups.filter(name="Teacher").exists():
-                queryset = Lesson.objects.filter(Q(learningphases__learningplan__teacher_id=self.request.user) |
-                                                 Q(replace_teacher=self.request.user))
-            elif self.request.user.groups.filter(name="Listener").exists():
-                queryset = Lesson.objects.filter(learningphases__learningplan__listeners=self.request.user)
-            else:
-                queryset = None
+            queryset = None
         queryset = self.filter_status(queryset)
         queryset = self.filter_date_start(queryset)
         queryset = self.filter_date_end(queryset)
@@ -204,9 +205,14 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                 for listener in lesson.get_learning_plan().listeners.all():
                     homeworks = lesson.homeworks.filter(listener=listener)
                     for hw in homeworks:
-                        hw.set_assigned()
-                    if homeworks:
-                        send_homework_tg(request.user, listener, homeworks)
+                        res = hw.set_assigned()
+                        if res.get("agreement") is not None and res.get("agreement") == False:
+                            send_homework_tg(request.user, listener, [hw])
+                        else:
+                            send_homework_tg(initiator=hw.teacher,
+                                             listener=hw.get_lesson().get_learning_plan().metodist,
+                                             homeworks=[hw],
+                                             text="Требуется согласование действия преподавталя")
                 return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
                 return JsonResponse({'error': "Недостаточно прав для изменения статуса занятия"},
@@ -333,7 +339,8 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         except Lesson.DoesNotExist:
-            return JsonResponse({'errors': "Занятие не найдено<br>Обновите страницу и повторите попытку"}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'errors': "Занятие не найдено<br>Обновите страницу и повторите попытку"},
+                                status=status.HTTP_400_BAD_REQUEST)
         validation = self.validate_item_rescheduling(request, lesson, *args, **kwargs)
         if validation['status'] == "error":
             return JsonResponse(validation, status=status.HTTP_400_BAD_REQUEST)
@@ -405,7 +412,6 @@ class LessonRestoreAPIView(LoginRequiredMixin, APIView):
                 )
                 new_hw.materials.set(hw.materials.all())
                 new_hw.save()
-
 
     def patch(self, request, *args, **kwargs):
         try:

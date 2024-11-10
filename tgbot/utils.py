@@ -114,11 +114,12 @@ def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype):
         )
 
 
-def send_homework_tg(initiator: NewUser, listener: NewUser, homeworks: list[Homework]) -> dict:
+def send_homework_tg(initiator: NewUser, listener: NewUser,
+                     homeworks: list[Homework], text="У вас новые домашние задания!") -> dict:
     tg_ids = get_tg_id_sync(listener.id)
     for tg_id in tg_ids:
         msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id.get("tg_id"),
-                                                     message=f"У вас новые домашние задания!",
+                                                     message=text,
                                                      reply_markup=get_homeworks_buttons(
                                                          [{'name': hw.name,
                                                            'id': hw.id} for hw in homeworks]
@@ -130,7 +131,7 @@ def send_homework_tg(initiator: NewUser, listener: NewUser, homeworks: list[Home
                 event=3,
                 data={
                     "status": "success",
-                    "text": "У вас новые домашние задания!",
+                    "text": text,
                     "msg_id": msg_result.get("msg_id"),
                     "errors": [],
                     "attachments": []

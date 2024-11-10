@@ -29,7 +29,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 async def homeworks_send_menu(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
     perms = await get_group_and_perms(user.id)
-    if "Listener" in perms.get("groups"):
+    if "Listener" in perms.get("groups") or "Metodist" in perms.get("groups"):
         await show_homework_queryset(message.from_user.id, state)
     elif "Teacher" in perms.get("groups"):
         await message.answer(text="Выберите функцию:",
@@ -117,11 +117,21 @@ async def add_homework_set_homework_ready(state: FSMContext,
             await new_hw.asave()
             await lesson.homeworks.aadd(new_hw)
             if lesson.status == 1:
-                await new_hw.aset_assigned()
-                await homework_tg_notificate(teacher,
+                result = await new_hw.aset_assigned()
+                if result.get("agreement") is not None and result.get("agreement") == False:
+                    msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} будет задано после проверки "
+                                f"методистом")
+                    lesson = new_hw.aget_lesson()
+                    plan = lesson.aget_learning_plan()
+                    await homework_tg_notify(teacher,
+                                             plan.metodist,
+                                             [new_hw],
+                                                 "Требуется согласование действия преподавателя")
+                else:
+                    msg_text = f"ДЗ для {listener.first_name} {listener.last_name} успешно задано"
+                    await homework_tg_notify(teacher,
                                              listener.id,
                                              [new_hw])
-                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} успешно задано"
             else:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно создано и будет задано после "
                             f"проведения занятия")
@@ -153,7 +163,6 @@ async def add_homework_set_homework_message(tg_id: int,
             },
             "messages_to_delete": []
         })
-        data = await state.get_data()
     await bot.send_message(chat_id=tg_id,
                            text="Перешлите сюда или прикрепите материал, или напишите сообщение\n"
                                 "Когда будет готово, нажмите кнопку <b>'Подтвердить ДЗ'</b>",
@@ -196,24 +205,26 @@ async def show_homework_queryset(tg_id: int, state: FSMContext):
     user = await get_user(tg_id)
     gp = await get_group_and_perms(user.id)
     groups = gp.get('groups')
-    if 'Listener' in groups:
-        homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 3, 5],
+    if 'Metodist' in groups:
+        homeworks = list(filter(lambda hw: hw['hw_status'] is not None and not hw['hw_status'],
                                 [{
                                     'obj': hw,
-                                    'hw_status': (await hw.aget_status()).status
-                                } async for hw in Homework.objects.filter(listener=user)]))
+                                    'hw_status': (await hw.aget_status()).agreement.get("accepted")
+                                } async for hw in Homework.objects.filter(
+                                    lesson__learningphases__learningplan__metodist=user)]))
         homeworks = [{
             'name': hw.get("obj").name,
-            'status': hw.get("hw_status") == 3,
+            'status': False,
             'id': hw.get("obj").id
         } for hw in homeworks]
         if len(homeworks) == 0:
             await bot.send_message(chat_id=tg_id,
-                                   text="Нет домашних заданий для выполнения")
+                                   text="Нет домашних заданий для проверки")
+            await send_menu(tg_id, state)
         else:
             await bot.send_message(chat_id=tg_id,
-                                   text="Вот домашние задания, которые ждут Вашего выполнения:",
-                                   reply_markup=get_homeworks_buttons(homeworks))
+                                   text="Вот домашние задания, действия преподавателей которых ждут Вашей проверки:",
+                                   reply_markup=get_homeworks_buttons(homeworks, sb=True))
     elif 'Teacher' in groups:
         homeworks = list(filter(lambda hw: hw['hw_status'] in [3, 5],
                                 [{
@@ -233,6 +244,24 @@ async def show_homework_queryset(tg_id: int, state: FSMContext):
             await bot.send_message(chat_id=tg_id,
                                    text="Вот домашние задания, которые ждут Вашей проверки:",
                                    reply_markup=get_homeworks_buttons(homeworks, sb=True))
+    elif 'Listener' in groups:
+        homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 3, 5],
+                                [{
+                                    'obj': hw,
+                                    'hw_status': (await hw.aget_status()).status
+                                } async for hw in Homework.objects.filter(listener=user)]))
+        homeworks = [{
+            'name': hw.get("obj").name,
+            'status': hw.get("hw_status") == 3,
+            'id': hw.get("obj").id
+        } for hw in homeworks]
+        if len(homeworks) == 0:
+            await bot.send_message(chat_id=tg_id,
+                                   text="Нет домашних заданий для выполнения")
+        else:
+            await bot.send_message(chat_id=tg_id,
+                                   text="Вот домашние задания, которые ждут Вашего выполнения:",
+                                   reply_markup=get_homeworks_buttons(homeworks))
     else:
         await bot.send_message(chat_id=tg_id,
                                text="Для Вашей роли данная функция в Telegram недоступна")
@@ -488,32 +517,27 @@ async def send_hw_check(callback: CallbackQuery,
 
 
 async def hw_send(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    if not filechecker(data):
-        await message.answer("Вы не можете отправить путой ответ. Пожалуйста, пришлите мне текст, фотографии, "
-                             "аудио или голосовые сообщения")
-        return
-    hw = await (Homework.objects.select_related("teacher")
-                .select_related("listener").aget(pk=data.get("hw_id")))
-    user = await get_user(message.from_user.id)
-    hwdata = await filedownloader(data, owner=user)
-    status = None
-    if data.get('action') == 'send':
-        status = 3
-    elif data.get('action') == 'check_accept':
-        status = 4
-    elif data.get('action') == 'check_revision':
-        status = 5
-    if status:
-        hwlog = await HomeworkLog.objects.acreate(homework=hw,
-                                                  user=user,
-                                                  comment=hwdata.get("comment"),
-                                                  status=status)
-        await hwlog.files.aset(hwdata.get("files_db"))
-        await hwlog.asave()
-    if data.get('action') == 'send':
-        await message.answer("Решение успешно отправлено\n"
-                             "Ожидайте ответа преподавателя")
+    async def get_hwlog_object(agreement=False):
+        if agreement:
+            hw_log = await HomeworkLog.objects.acreate(homework=hw,
+                                                       user=user,
+                                                       comment=hwdata.get("comment"),
+                                                       status=status,
+                                                       agreement={
+                                                           "accepted_dt": None,
+                                                           "accepted": False
+                                                       })
+        else:
+            hw_log = await HomeworkLog.objects.acreate(homework=hw,
+                                                       user=user,
+                                                       comment=hwdata.get("comment"),
+                                                       status=status
+                                                       )
+        await hw_log.files.aset(hwdata.get("files_db"))
+        await hw_log.asave()
+        return hw_log
+
+    async def notify_teacher():
         teacher_tg = await get_tg_id(hw.teacher.id, "main")
         if teacher_tg:
             try:
@@ -563,8 +587,8 @@ async def hw_send(message: types.Message, state: FSMContext):
                     "attachments": []
                 }
             )
-    elif data.get('action') in ['check_accept', 'check_revision']:
-        await message.answer("Ответ был отправлен")
+
+    async def notify_listener():
         listener_tgs = await get_tg_id(hw.listener.id)
         for listener_tg in listener_tgs:
             try:
@@ -600,15 +624,101 @@ async def hw_send(message: types.Message, state: FSMContext):
                         "attachments": []
                     }
                 )
+
+    async def notify_metodist():
+        metodist_tg = await get_tg_id(lp.metodist.id, "main")
+        if metodist_tg:
+            try:
+                msg = f"Требуется проверка действия преподавателя"
+                msg_object = await bot.send_message(chat_id=metodist_tg,
+                                                    text=msg,
+                                                    reply_markup=get_homeworks_buttons([{
+                                                        'name': hw.name,
+                                                        'id': hw.id
+                                                    }]))
+                await TgBotJournal.objects.acreate(
+                    recipient=lp.metodist,
+                    initiator=hw.teacher,
+                    event=4,
+                    data={
+                        "status": "success",
+                        "text": msg,
+                        "msg_id": msg_object.message_id,
+                        "errors": [],
+                        "attachments": []
+                    }
+                )
+            except Exception as e:
+                await TgBotJournal.objects.acreate(
+                    recipient=lp.metodist,
+                    initiator=hw.teacher,
+                    event=4,
+                    data={
+                        "status": "error",
+                        "text": None,
+                        "msg_id": None,
+                        "errors": [str(e)],
+                        "attachments": []
+                    }
+                )
+
+        else:
+            await TgBotJournal.objects.acreate(
+                recipient=lp.metodist,
+                initiator=hw.teacher,
+                event=4,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": ["У пользователя не привязан Telegram"],
+                    "attachments": []
+                }
+            )
+
+    data = await state.get_data()
+    if not filechecker(data):
+        await message.answer("Вы не можете отправить путой ответ. Пожалуйста, пришлите мне текст, фотографии, "
+                             "аудио или голосовые сообщения")
+        return
+    hw = await (Homework.objects.select_related("teacher")
+                .select_related("listener").aget(pk=data.get("hw_id")))
+    user = await get_user(message.from_user.id)
+    hwdata = await filedownloader(data, owner=user)
+    status = None
+    if data.get('action') == 'send':
+        status = 3
+        await message.answer("Решение успешно отправлено\n"
+                             "Ожидайте ответа преподавателя")
+        await get_hwlog_object(False)
+        await notify_teacher()
+    if data.get('action') in ['check_accept', 'check_revision']:
+        lesson = await hw.aget_lesson()
+        lp = None
+        if lesson:
+            lp = await lesson.aget_learning_plan()
+        if data.get('action') == 'check_accept':
+            status = 4
+        elif data.get('action') == 'check_revision':
+            status = 5
+        if lp and lp.metodist:
+            await get_hwlog_object(True)
+            await message.answer("Ответ отправлен на согласование методисту")
+            await notify_metodist()
+        else:
+            await get_hwlog_object(False)
+            await message.answer("Ответ был отправлен ученику")
+            await notify_listener()
     await send_menu(message.from_user.id, state)
 
 
-async def homework_tg_notificate(initiator: NewUser, listener: int, homeworks: list[Homework]):
+async def homework_tg_notify(initiator: NewUser, listener: int,
+                             homeworks: list[Homework], text="У вас новые домашние задания!"):
     listener_tgs = await get_tg_id(listener)
     for user_tg_note in listener_tgs:
         try:
             msg = await bot.send_message(chat_id=user_tg_note.get("tg_id"),
-                                         text=f"У вас новые домашние задания!",
+                                         text=text,
                                          reply_markup=get_homeworks_buttons([{
                                              "name": hw.name,
                                              "id": hw.id
@@ -619,7 +729,7 @@ async def homework_tg_notificate(initiator: NewUser, listener: int, homeworks: l
                 event=3,
                 data={
                     "status": "success",
-                    "text": "У вас новые домашние задания!",
+                    "text": text,
                     "msg_id": msg.message_id,
                     "errors": [],
                     "attachments": []
