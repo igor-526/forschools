@@ -38,14 +38,14 @@ async def h_homework_agr_cancel(message: types.Message, state: FSMContext) -> No
 
 @router.message(StateFilter(HomeworkAgreementFSM.message),
                 F.text == "Согласовать")
-async def h_homework_agr_send(message: types.Message, state: FSMContext) -> None:
+async def h_homework_agr_accept_send(message: types.Message, state: FSMContext) -> None:
     await message.delete()
     await f_homework_agr_send(message, state)
 
 
 @router.message(StateFilter(HomeworkAgreementFSM.message),
                 F.text == "Отправить на корректировку")
-async def h_homework_agr_send(message: types.Message, state: FSMContext) -> None:
+async def h_homework_agr_decline_send(message: types.Message, state: FSMContext) -> None:
     await message.delete()
     await f_homework_agr_send(message, state)
 

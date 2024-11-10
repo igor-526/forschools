@@ -86,7 +86,10 @@ async def f_homework_agr_send(message: types.Message,
                     teacher_msg_text = "Домашнее задание согласовано"
                 if stdata.get("comment"):
                     teacher_msg_text += f'\n{stdata.get("comment")}'
-                rm = get_homeworks_buttons([hw], sb=False)
+                rm = get_homeworks_buttons([{
+                    'name': hw.name,
+                    'id': hw.id
+                }], sb=False)
                 await bot.send_message(chat_id=teacher_tg_id,
                                        text=teacher_msg_text,
                                        reply_markup=rm)
@@ -132,13 +135,13 @@ async def f_homework_agr_send(message: types.Message,
                 sender=await get_user(message.from_user.id),
                 message=stdata.get("comment"),
             )
-            await chats_notificate(chat_message_id=msg, show=False)
+            await chats_notificate(chat_message_id=msg.id, show=False)
             await bot.send_message(chat_id=teacher_tg_id,
                                    text="Редактировать ДЗ:",
                                    reply_markup=get_homework_edit_button(hw.id))
 
     stdata = await state.get_data()
-    hw = await Homework.objects.aget(pk=stdata.get("hw_id"))
+    hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=stdata.get("hw_id"))
     logs = [log async for log in HomeworkLog.objects.filter(status__in=[5, 4, 7],
                                                             agreement__accepted=False,
                                                             homework=hw).order_by("-dt")]
@@ -151,8 +154,15 @@ async def f_homework_agr_send(message: types.Message,
                 break
         else:
             last_logs.append(log)
+    now = datetime.datetime.now()
     agreement = {
-        "accepted_dt": datetime.datetime.now()
+        "accepted_dt": {
+            "year": now.year,
+            "month": now.month,
+            "day": now.day,
+            "hour": now.hour,
+            "minute": now.minute
+        }
     }
     if stdata.get("action") == "agreement_accept":
         agreement["accepted"] = False
@@ -165,4 +175,6 @@ async def f_homework_agr_send(message: types.Message,
         log.agreement = agreement
         await log.asave()
     await notify_users(last_logs[-1].status, stdata.get("action"))
+    await message.answer("Успешно отправлено")
+    await send_menu(message.from_user.id, state)
 
