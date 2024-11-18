@@ -82,6 +82,22 @@ async def add_homework_select_lesson(user_tg_id: int, message: types.Message = N
 async def add_homework_set_homework_ready(state: FSMContext,
                                           message: types.Message = None,
                                           callback: types.CallbackQuery = None):
+    async def notify_hw_changed():
+        st = await hw.aget_status()
+        if st.status in [2, 3, 5]:
+            await homework_tg_notify(hw.teacher,
+                                     hw.listener.id,
+                                     [hw],
+                                     "Домашнее задание было изменено")
+        if st.agreement.get("accepted") is not None and not st.agreement.get("accepted"):
+            ch_hw_lesson = await hw.aget_lesson()
+            ch_hw_plan = await ch_hw_lesson.aget_learning_plan()
+            await homework_tg_notify(hw.teacher,
+                                     ch_hw_plan.metodist.id,
+                                     [hw],
+                                     f"Домашнее задание было изменено\n"
+                                     f"Преподаватель: {hw.teacher.first_name} {hw.teacher.last_name}\n"
+                                     f"Ученик: {hw.listener.first_name} {hw.listener.last_name}")
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")
     current_deadline = statedata.get("new_hw").get("deadline")
@@ -90,7 +106,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
         current_deadline.get("month"),
         current_deadline.get("day"))
     if hw_id:
-        hw = await Homework.objects.aget(id=hw_id)
+        hw = await Homework.objects.select_related("teacher").select_related("listener").aget(id=hw_id)
         hw.name = statedata.get("new_hw").get("name")
         hw.description = statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description") \
             else "-"
@@ -99,6 +115,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
         await hw.materials.aset(statedata.get("new_hw").get("materials"))
         await hw.asave()
         await message.answer("ДЗ успешно изменено")
+        await notify_hw_changed()
         await send_menu(message.from_user.id, state)
     else:
         teacher = await get_user(callback.from_user.id)
@@ -226,10 +243,12 @@ async def show_homework_queryset(tg_id: int, state: FSMContext):
                                    text="Вот домашние задания, действия преподавателей которых ждут Вашей проверки:",
                                    reply_markup=get_homeworks_buttons(homeworks, sb=True))
     elif 'Teacher' in groups:
-        homeworks = list(filter(lambda hw: hw['hw_status'] in [3, 5],
+        homeworks = list(filter(lambda hw: hw['hw_status'].status in [3, 5] and
+                                           (hw['hw_status'].agreement.get("accepted") is None or
+                                            hw['hw_status'].agreement.get("accepted") == True),
                                 [{
                                     'obj': hw,
-                                    'hw_status': (await hw.aget_status()).status
+                                    'hw_status': await hw.aget_status()
                                 } async for hw in Homework.objects.filter(teacher=user)]))
         homeworks = [{
             'name': hw.get("obj").name,
@@ -376,8 +395,12 @@ async def show_homework(callback: CallbackQuery,
         await hw.aopen()
     if show_last_logs:
         await send_last_log()
+    msgtext = f"ДЗ <b>{hw.name}</b>\n"
+    if hw.description:
+        msgtext += f"{hw.description}\n"
+    msgtext += "Выберите действие:"
     await bot.send_message(chat_id=callback.from_user.id,
-                           text=f"Действия для ДЗ <b>{hw.name}</b>\n",
+                           text=msgtext,
                            reply_markup=reply_markup)
 
 
