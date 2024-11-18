@@ -1,3 +1,4 @@
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery, FSInputFile
 from django.db.models import Q
 from material.utils.get_for_listener import aget_materials_for_listener, aget_materials_for_listener_next
@@ -37,12 +38,20 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
     send_tg = 'material.send_telegram' in perms.get('permissions')
     file_id = None
     if mat_type == "image_formats":
-        message = await bot.send_photo(chat_id=tg_id,
-                                       photo=file,
-                                       caption=generate_material_message(),
-                                       reply_markup=get_keyboard_material_item(material, send_tg),
-                                       protect_content=protect)
-        file_id = message.photo[-1].file_id
+        try:
+            message = await bot.send_photo(chat_id=tg_id,
+                                           photo=file,
+                                           caption=generate_material_message(),
+                                           reply_markup=get_keyboard_material_item(material, send_tg),
+                                           protect_content=protect)
+            file_id = message.photo[-1].file_id
+        except TelegramBadRequest:
+            message = await bot.send_document(chat_id=tg_id,
+                                              document=file,
+                                              caption=generate_material_message(),
+                                              reply_markup=get_keyboard_material_item(material, send_tg),
+                                              protect_content=protect)
+            file_id = message.document.file_id
     elif mat_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
                                            caption=generate_material_message(),

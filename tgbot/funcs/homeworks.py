@@ -697,7 +697,7 @@ async def hw_send(message: types.Message, state: FSMContext):
     hw = await (Homework.objects.select_related("teacher")
                 .select_related("listener").aget(pk=data.get("hw_id")))
     user = await get_user(message.from_user.id)
-    hwdata = await filedownloader(data, owner=user)
+    hwdata = await filedownloader(data, owner=user, t="ДЗ", error_reply=message)
     status = None
     if data.get('action') == 'send':
         status = 3
