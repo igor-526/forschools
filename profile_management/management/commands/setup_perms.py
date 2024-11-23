@@ -11,6 +11,7 @@ class Command(BaseCommand):
     metodist_perms = []
     teacher_perms = []
     listener_perms = []
+    curator_perms = []
 
     def add_auth_perms(self):
         content_type = ContentType.objects.get_for_model(User)
@@ -26,6 +27,9 @@ class Command(BaseCommand):
         register_listener = Permission.objects.get_or_create(codename="register_listener",
                                                              name="Регистрация учеников",
                                                              content_type=content_type)[0]
+        register_curator = Permission.objects.get_or_create(codename="register_curator",
+                                                             name="Регистрация кураторов",
+                                                             content_type=content_type)[0]
         register_users = Permission.objects.get_or_create(codename="register_users",
                                                           name="Регистрация пользователей",
                                                           content_type=content_type)[0]
@@ -37,6 +41,9 @@ class Command(BaseCommand):
                                                          content_type=content_type)[0]
         edit_teacher = Permission.objects.get_or_create(codename="edit_teacher",
                                                         name="Изменение информации преподавателя",
+                                                        content_type=content_type)[0]
+        edit_curator = Permission.objects.get_or_create(codename="edit_curator",
+                                                        name="Изменение информации куратора",
                                                         content_type=content_type)[0]
         edit_listener = Permission.objects.get_or_create(codename="edit_listener",
                                                          name="Изменение информации ученика",
@@ -72,11 +79,11 @@ class Command(BaseCommand):
                              register_metodist, register_teacher,
                              register_listener, edit_admin,
                              edit_metodist, edit_teacher,
-                             edit_listener,
+                             edit_listener, edit_curator,
                              deactivate_metodist, deactivate_teacher,
                              deactivate_listener, see_moreinfo_admin,
                              see_moreinfo_metodist, see_moreinfo_teacher,
-                             see_moreinfo_listener,
+                             see_moreinfo_listener, register_curator
                              )
 
         self.metodist_perms += (register_users, register_teacher,
@@ -186,6 +193,7 @@ class Command(BaseCommand):
             gr_metodist = Group.objects.get_or_create(name="Metodist")[0]
             gr_teacher = Group.objects.get_or_create(name="Teacher")[0]
             gr_listener = Group.objects.get_or_create(name="Listener")[0]
+            gr_curator = Group.objects.get_or_create(name="Curator")[0]
 
             self.add_auth_perms()
             self.add_material_perms()
@@ -195,6 +203,7 @@ class Command(BaseCommand):
             gr_metodist.permissions.set(self.metodist_perms)
             gr_teacher.permissions.set(self.teacher_perms)
             gr_listener.permissions.set(self.listener_perms)
+            gr_curator.permissions.set(self.curator_perms)
 
             print("Setup complete")
         except Exception as ex:

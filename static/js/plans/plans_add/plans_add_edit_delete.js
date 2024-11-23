@@ -13,6 +13,7 @@ function plansAddMain(){
     plansModalDeleteButton.addEventListener('click', async function () {
         await plansAddDestroy(this.attributes.getNamedItem('data-plan-id').value)
     })
+    planNewCuratorsSearchField.addEventListener('input', plansAddCuratorSearch)
 }
 
 function plansAddSetTeacherListeners(){
@@ -29,6 +30,7 @@ function plansAddSetTeacherListeners(){
     const selectedListener = getHashValue("listener")?Number(getHashValue("listener")):null
     const selectedTeacher = getHashValue("teacher")?Number(getHashValue("teacher")):null
     const selectedMetodist = getHashValue("teacher")?Number(getHashValue("metodist")):null
+    const selectedCurator = getHashValue("curator")?Number(getHashValue("curator")):null
     if (plansAddCanSetTeacher){
         usersAPIGetTeachers().then(request => {
             switch (request.status) {
@@ -63,19 +65,32 @@ function plansAddSetTeacherListeners(){
         }
     })
 
+    usersAPIGetCurators().then(request => {
+        switch (request.status){
+            case 200:
+                request.response.forEach(curator => {
+                    planNewCuratorsSelect.insertAdjacentElement("beforeend", getElement(curator, selectedCurator))
+                })
+                break
+            default:
+                showErrorToast("Не удалось загрузить список кураторов")
+                break
+        }
+    })
+
     usersAPIGetMetodists().then(request => {
-            switch (request.status) {
-                case 200:
-                    PlanNewHWMetodistField.innerHTML = '<option value="">Выберите методиста</option>'
-                    request.response.forEach(metodist => {
-                        PlanNewHWMetodistField.insertAdjacentElement("beforeend", getElement(metodist, selectedMetodist))
-                    })
-                    break
-                default:
-                    showErrorToast("Не удалось загрузить список методистов")
-                    break
-            }
-        })
+        switch (request.status) {
+            case 200:
+                PlanNewHWMetodistField.innerHTML = '<option value="">Выберите методиста</option>'
+                request.response.forEach(metodist => {
+                    PlanNewHWMetodistField.insertAdjacentElement("beforeend", getElement(metodist, selectedMetodist))
+                })
+                break
+            default:
+                showErrorToast("Не удалось загрузить список методистов")
+                break
+        }
+    })
 }
 
 function plansAddSetOffcanvas(planID=null){
@@ -102,6 +117,10 @@ function plansAddSetOffcanvas(planID=null){
                     planNewShMaterialsField.value = request.response.show_materials
                     request.response.listeners.forEach(listener => {
                         planNewListenersSelect.querySelector(`[value="${listener.id}"]`)
+                            .selected = true
+                    })
+                    request.response.curators.forEach(curator => {
+                        planNewCuratorsSelect.querySelector(`[value="${curator.id}"]`)
                             .selected = true
                     })
                     break
@@ -187,6 +206,18 @@ function plansAddListenerSearch(){
     })
 }
 
+function plansAddCuratorSearch(){
+    const query = new RegExp(planNewCuratorsSearchField.value.toLowerCase())
+    const options = planNewCuratorsSelect.querySelectorAll("option")
+    options.forEach(function (opt) {
+        if(query.test(opt.innerHTML.toLowerCase())){
+            opt.classList.remove("d-none")
+        } else {
+            opt.classList.add("d-none")
+        }
+    })
+}
+
 function plansAddDestroySetModal(planID){
     planEditSelectedID = planID
     bsPlansModalDelete.show()
@@ -223,6 +254,9 @@ const planNewDeadlineError = formNewPlan.querySelector("#PlanNewDeadlineError")
 const planNewListenersSearchField = formNewPlan.querySelector("#PlanNewListenersSearchField")
 const planNewListenersSelect = formNewPlan.querySelector("#PlanNewListenersSelect")
 const planNewListenersError = formNewPlan.querySelector("#PlanNewListenersError")
+const planNewCuratorsSearchField = formNewPlan.querySelector("#PlanNewCuratorsSearchField")
+const planNewCuratorsSelect = formNewPlan.querySelector("#PlanNewCuratorsSelect")
+const planNewCuratorsError = formNewPlan.querySelector("#PlanNewCuratorsError")
 
 //Buttons
 const plansAddButton = document.querySelector("#PlansAddButton")

@@ -35,6 +35,16 @@
                 <div class="invalid-feedback" id="PlanNewHWMetodistError"></div>
             </div>
 
+            <div>
+                <label for="PlanNewCuratorsSearchField" class="form-label">Кураторы</label>
+                <input type="text" class="form-control" id="PlanNewCuratorsSearchField" placeholder="Поиск по кураторам:">
+            </div>
+            <div class="mb-3">
+                <select id="PlanNewCuratorsSelect" name="curators" class="form-select" aria-label="" multiple></select>
+                <div class="form-text">Куратор сможет задавать и принимать ДЗ. Согласование методиста не потребуется<br>Зажмите CTRL для выбора нескольких</div>
+                <div class="invalid-feedback" id="PlanNewCuratorsError"></div>
+            </div>
+
             <div class="mb-3">
                 <label for="PlanNewPurposeField" class="form-label">Цель плана</label>
                 <input name="purpose" type="text" class="form-control" id="PlanNewPurposeField">
@@ -54,7 +64,7 @@
                 <input type="text" class="form-control" id="PlanNewListenersSearchField" placeholder="Поиск по ученикам:">
             </div>
             <div class="mb-3">
-                <select id="PlanNewListenersSelect" name="listeners" class="form-select" multiple></select>
+                <select id="PlanNewListenersSelect" name="listeners" class="form-select" aria-label="" multiple></select>
                 <div class="form-text">Зажмите CTRL для выбора нескольких</div>
                 <div class="invalid-feedback" id="PlanNewListenersError"></div>
             </div>

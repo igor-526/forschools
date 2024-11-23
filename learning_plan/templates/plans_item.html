@@ -74,6 +74,13 @@
                                 <li class="list-group-item"><b>Методист: </b><a href="/profile/{{ plan.metodist.id }}">{{ plan.metodist }}</a></li>
                             </ul>
                         {% endif %}
+                        {% if plan.curators %}
+                            <ul class="list-group list-group-flush">
+                                {% for curator in plan.curators.all %}
+                                    <li class="list-group-item">Куратор: <a href="/profile/{{ curator.id }}">{{ curator }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
                     </div>
                 </div>
 

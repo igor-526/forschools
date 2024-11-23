@@ -13,6 +13,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
     teacher = NewUserNameOnlyListSerializer(read_only=True)
     default_hw_teacher = NewUserNameOnlyListSerializer(read_only=True)
     listeners = NewUserNameOnlyListSerializer(many=True, read_only=True)
+    curators = NewUserNameOnlyListSerializer(many=True, read_only=True)
     metodist = NewUserNameOnlyListSerializer(many=False, read_only=True)
     deletable = serializers.SerializerMethodField(read_only=False)
 
@@ -22,7 +23,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
                   'teacher', 'purpose', 'deadline',
                   'show_lessons', 'show_materials',
                   'default_hw_teacher', 'deletable',
-                  'metodist']
+                  'metodist', 'curators']
 
     def get_deletable(self, obj):
         return obj.phases.count() == 0
@@ -89,8 +90,10 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         if metodist:
             validated_data['metodist'] = metodist
         listeners = request.POST.getlist('listeners')
+        curators = request.POST.getlist('curators')
         plan_obj = LearningPlan.objects.create(**validated_data)
         plan_obj.listeners.set(listeners)
+        plan_obj.curators.set(curators)
         return plan_obj
 
     def update(self, instance, validated_data):
@@ -100,7 +103,9 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         validated_data['metodist'] = self.validate_metodist(request, usergroups)
         validated_data['default_hw_teacher'] = self.validate_default_hw_teacher(request, usergroups)
         listeners = request.POST.getlist('listeners')
+        curators = request.POST.getlist('curators')
         instance.listeners.set(listeners)
+        instance.curators.set(curators)
         instance.save()
         return super(LearningPlanListSerializer, self).update(instance, validated_data)
 

@@ -29,6 +29,10 @@ from aiogram.utils.media_group import MediaGroupBuilder
 async def homeworks_send_menu(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
     perms = await get_group_and_perms(user.id)
+    if "Curator" in perms.get("groups"):
+        await message.answer(text="Выберите функцию:",
+                             reply_markup=get_homework_menu_buttons())
+        return
     if "Listener" in perms.get("groups") or "Metodist" in perms.get("groups"):
         await show_homework_queryset(message.from_user.id, state)
     elif "Teacher" in perms.get("groups"):

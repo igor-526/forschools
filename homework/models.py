@@ -32,6 +32,9 @@ class Homework(models.Model):
                                  on_delete=models.CASCADE,
                                  null=False,
                                  blank=False)
+    for_curator = models.BooleanField(verbose_name="Куратор работает с ДЗ",
+                                      null=True,
+                                      blank=True)
     materials = models.ManyToManyField(Material,
                                        verbose_name='Материалы',
                                        related_name='homework',

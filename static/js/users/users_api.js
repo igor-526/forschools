@@ -8,6 +8,11 @@ async function usersAPIGetListeners(){
     return await APIGetToObject(request)
 }
 
+async function usersAPIGetCurators(){
+    const request = await fetch("/api/v1/users/?role=Curator")
+    return await APIGetToObject(request)
+}
+
 async function usersAPIGetMetodists(){
     const request = await fetch("/api/v1/users/?role=Metodist")
     return await APIGetToObject(request)

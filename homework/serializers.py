@@ -29,7 +29,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Homework
-        fields = ["id", "name", "deadline", "description", "teacher",
+        fields = ["id", "name", "deadline", "description", "teacher", "for_curator",
                   "listener", "status", "lesson_info", "assigned", "color"]
 
     def get_status(self, obj):

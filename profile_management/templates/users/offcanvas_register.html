@@ -59,6 +59,10 @@
                     <input name="role" value="Teacher" type="checkbox" class="btn-check" id="usersOffcanvasRegisterFormRoleCheckboxTeacher" autocomplete="off">
                     <label class="btn btn-outline-primary mb-1" for="usersOffcanvasRegisterFormRoleCheckboxTeacher">Преподаватель</label>
                 {% endif %}
+                {% if "auth.register_curator" in perms %}
+                    <input name="role" value="Curator" type="checkbox" class="btn-check" id="usersOffcanvasRegisterFormRoleCheckboxCurator" autocomplete="off">
+                    <label class="btn btn-outline-primary mb-1" for="usersOffcanvasRegisterFormRoleCheckboxCurator">Куратор</label>
+                {% endif %}
                 {% if "auth.register_listener" in perms %}
                     <input checked name="role" value="Listener" type="checkbox" class="btn-check" id="usersOffcanvasRegisterFormRoleCheckboxListener" autocomplete="off">
                     <label class="btn btn-outline-primary mb-1" for="usersOffcanvasRegisterFormRoleCheckboxListener">Ученик</label>

@@ -196,6 +196,8 @@ function usersEditSetOffcanvas(userID=null, userElement=null){
                             offcanvasUsersEditProgressField.value = request.response.progress
                             offcanvasUsersEditLevelField.value = request.response.level?request.response.level.id:"None"
                             break
+                        case "Curator":
+                            offcanvasUsersEditRoleCheckboxCurator.checked = true
                         case "Teacher":
                             offcanvasUsersEditRoleCheckboxTeacher.checked = true
                             offcanvasUsersEditPrivateLessonsField.checked = request.response.private_lessons
@@ -564,6 +566,7 @@ const offcanvasUsersEditEmailField = offcanvasUsersEditForm.querySelector("#offc
 const offcanvasUsersEditRoleCheckboxAdmin = offcanvasUsersEditForm.querySelector("#offcanvasUsersEditRoleCheckboxAdmin")
 const offcanvasUsersEditRoleCheckboxMetodist = offcanvasUsersEditForm.querySelector("#offcanvasUsersEditRoleCheckboxMetodist")
 const offcanvasUsersEditRoleCheckboxTeacher = offcanvasUsersEditForm.querySelector("#offcanvasUsersEditRoleCheckboxTeacher")
+const offcanvasUsersEditRoleCheckboxCurator = offcanvasUsersEditForm.querySelector("#offcanvasUsersEditRoleCheckboxCurator")
 const offcanvasUsersEditRoleCheckboxListener = offcanvasUsersEditForm.querySelector("#offcanvasUsersEditRoleCheckboxListener")
 const offcanvasUsersEditBDateField = offcanvasUsersEditForm.querySelector("#offcanvasUsersEditBDateField")
 const offcanvasUsersEditCityField = offcanvasUsersEditForm.querySelector("#offcanvasUsersEditCityField")

@@ -53,8 +53,8 @@ def register_view(request):     # API для регистрации пользо
                     raise ValidationError({'role': 'Вы не можете дать роль администратора'})
                 if ("Metodist" in groups) and (not request.user.has_perm('auth.register_metodist')):
                     raise ValidationError({'role': 'Вы не можете дать роль методиста'})
-                if "Curator" in groups:
-                    raise ValidationError({'role': 'Данная роль пока не поддерживается'})
+                if ("Curator" in groups) and (not request.user.has_perm('auth.register_curator')):
+                    raise ValidationError({'role': 'Вы не можете дать роль куратора'})
                 if ("Teacher" in groups) and (not request.user.has_perm('auth.register_teacher')):
                     raise ValidationError({'role': 'Вы не можете дать роль преподавателя'})
                 if ("Listener" in groups) and (not request.user.has_perm('auth.edit_listener')):
