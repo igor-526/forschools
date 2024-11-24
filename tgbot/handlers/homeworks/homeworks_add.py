@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from homework.models import Homework
 from tgbot.finite_states.homework import HomeworkNewFSM
-from tgbot.funcs.homeworks import add_homework_select_lesson, add_homework_set_homework_message, \
-    add_homework_delete_materials, add_homework_set_homework_change_ready, add_homework_set_homework_ready
+from tgbot.funcs.homeworks import (add_homework_select_lesson, add_homework_set_homework_message,
+                                   add_homework_set_homework_ready, send_hw_materials)
 from tgbot.funcs.materials_add import add_material_add
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNewCallback, HomeworkNewSettingCallback, \
@@ -49,7 +49,7 @@ async def h_homework_sethw_ready(message: types.Message, state: FSMContext) -> N
                                          message=message)
 
 
-@router.message(StateFilter(HomeworkNewFSM.change_menu),    # Отмена нового ДЗ
+@router.message(StateFilter(HomeworkNewFSM.change_menu),
                 F.text == "Отмена")
 async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> None:
     await message.delete()
@@ -57,12 +57,26 @@ async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> 
 
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
-                F.text == "Стереть материалы")    # Удаление материалов из ДЗ
-async def h_homework_add_materials_deleting(message: types.Message, state: FSMContext) -> None:
-    await add_homework_delete_materials(message, state)
+                F.text == "Показать прик. материалы")
+async def h_homework_sethw_materials(message: types.Message, state: FSMContext) -> None:
+    sd = await state.get_data()
+    if sd.get("new_hw") and sd.get("new_hw").get("materials"):
+        await send_hw_materials(mat_ids=sd.get("new_hw").get("materials"),
+                                hw_id=sd.get("new_hw").get("hw_id"),
+                                user_id=message.from_user.id,
+                                callback=None,
+                                state=state,
+                                meta=True,
+                                del_hw_msg=False)
+    else:
+        await message.answer("Не прикреплено ни одного материала.\n"
+                             "Для прикрепления просто отправьте или перешлите их мне")
+        # async def send_hw_materials(mat_ids: list, hw_id: int | None, callback: CallbackQuery,
+        #                             state: FSMContext, meta: bool, del_hw_msg=True):
+    await message.delete()
 
 
-@router.message(StateFilter(HomeworkNewFSM.change_menu))    # Добавление материала в ДЗ
+@router.message(StateFilter(HomeworkNewFSM.change_menu))
 async def h_homework_sethw_addmat(message: types.Message, state: FSMContext) -> None:
     await add_material_add(message, state, "statehw")
 
@@ -91,29 +105,4 @@ async def h_homework_sethw(callback: CallbackQuery,
                            state: FSMContext) -> None:
     await add_homework_set_homework_message(callback.from_user.id, state)
     await callback.message.delete()
-
-
-@router.message(StateFilter(HomeworkNewFSM.delete_materials),    #Удаление материалов
-                F.text == "Отмена")
-async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> None:
-    await add_homework_set_homework_message(message.from_user.id, state)
-
-
-@router.message(StateFilter(HomeworkNewFSM.delete_materials),
-                F.text == "Да")
-async def h_homework_sethw_materials(message: types.Message, state: FSMContext) -> None:
-    statedata = await state.get_data()
-    messages_to_delete = statedata.get("messages_to_delete")
-    messages_to_delete.append(message.message_id)
-    await state.update_data({"messages_to_delete": messages_to_delete})
-    await add_homework_set_homework_change_ready(message, state)
-
-
-@router.message(StateFilter(HomeworkNewFSM.delete_materials))
-async def h_homework_sethw_materials_invalid(message: types.Message, state: FSMContext) -> None:
-    await message.answer("Пожалуйста, выберите вариант ответа на клавиатуре")
-    statedata = await state.get_data()
-    messages_to_delete = statedata.get("messages_to_delete")
-    messages_to_delete.append(message.message_id)
-    await state.update_data({"messages_to_delete": messages_to_delete})
 

@@ -2,15 +2,10 @@ from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from homework.models import Homework
-from tgbot.finite_states.homework import HomeworkNewFSM, HomeworkAgreementFSM
-from tgbot.funcs.homeworks import add_homework_select_lesson, add_homework_set_homework_message, \
-    add_homework_delete_materials, add_homework_set_homework_change_ready, add_homework_set_homework_ready
+from tgbot.finite_states.homework import HomeworkAgreementFSM
 from tgbot.funcs.homeworks_agreement import f_homework_agr_message, f_homework_agr_send, f_homework_agr_add_comment
-from tgbot.funcs.materials_add import add_material_add
 from tgbot.funcs.menu import send_menu
-from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNewCallback, HomeworkNewSettingCallback, \
-    HomeworkCallback, HomeworkNewSelectDateCallback
+from tgbot.keyboards.callbacks.homework import HomeworkCallback
 
 router = Router(name=__name__)
 

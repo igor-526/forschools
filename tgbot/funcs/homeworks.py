@@ -6,7 +6,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
 from lesson.models import Lesson
+from material.models import Material
 from tgbot.funcs.fileutils import filechecker, filedownloader
+from tgbot.funcs.lessons import get_lesson_can_be_passed
 from tgbot.funcs.materials import send_material_item
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
@@ -15,6 +17,7 @@ from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_b
 from tgbot.keyboards.default import cancel_keyboard, yes_cancel_keyboard, message_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
+from tgbot.keyboards.materials import get_materials_keyboard_query
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id, get_tg_note
 from profile_management.models import NewUser
@@ -102,6 +105,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                      f"Домашнее задание было изменено\n"
                                      f"Преподаватель: {hw.teacher.first_name} {hw.teacher.last_name}\n"
                                      f"Ученик: {hw.listener.first_name} {hw.listener.last_name}")
+
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")
     current_deadline = statedata.get("new_hw").get("deadline")
@@ -153,6 +157,24 @@ async def add_homework_set_homework_ready(state: FSMContext,
                     await homework_tg_notify(teacher,
                                              listener.id,
                                              [new_hw])
+            elif lesson.status == 0 and get_lesson_can_be_passed(lesson):
+                result = await new_hw.aset_assigned()
+                if result.get("agreement"):
+                    msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} будет задано после проверки "
+                                f"методистом")
+                    lesson = await new_hw.aget_lesson()
+                    plan = await lesson.aget_learning_plan()
+                    await homework_tg_notify(teacher,
+                                             plan.metodist.id,
+                                             [new_hw],
+                                             "Требуется согласование действия преподавателя")
+                else:
+                    msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно задано\n"
+                                f"Занятие будет считаться проведённым")
+                    await homework_tg_notify(teacher,
+                                             listener.id,
+                                             [new_hw])
+                    await lesson.aset_passed()
             else:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно создано и будет задано после "
                             f"проведения занятия")
@@ -190,36 +212,6 @@ async def add_homework_set_homework_message(tg_id: int,
                            reply_markup=get_homework_editing_buttons())
     await state.update_data({"messages_to_delete": []})
     await state.set_state(HomeworkNewFSM.change_menu)
-
-
-async def add_homework_delete_materials(message: types.Message,
-                                        state: FSMContext):
-    data = await state.get_data()
-    if not data.get("new_hw"):
-        await bot.send_message(chat_id=message.from_user.id,
-                               text="У вас нет незаданных ДЗ. Пожалуйста, повторите попытку через главное меню")
-        await send_menu(message.from_user.id, state)
-        return
-
-    await message.delete()
-    ask_msg = await bot.send_message(chat_id=message.from_user.id,
-                                     text="Вы действительно хотите удалить <b>из ДЗ</b> все добавленные материалы?",
-                                     reply_markup=yes_cancel_keyboard)
-    statedata = await state.get_data()
-    messages_to_delete = statedata.get("messages_to_delete")
-    messages_to_delete.append(ask_msg.message_id)
-    await state.update_data({"messages_to_delete": messages_to_delete})
-    await state.set_state(HomeworkNewFSM.delete_materials)
-
-
-async def add_homework_set_homework_change_ready(message: types.Message,
-                                                 state: FSMContext):
-
-    statedata = await state.get_data()
-    statedata["new_hw"]["materials"] = []
-    await state.update_data(statedata)
-    await message.answer("В ДЗ больше нет ни одного материала")
-    await add_homework_set_homework_message(message.from_user.id, state)
 
 
 async def show_homework_queryset(tg_id: int, state: FSMContext):
@@ -327,6 +319,7 @@ async def search_homeworks_query(message: types.Message):
 
 async def show_homework(callback: CallbackQuery,
                         callback_data: HomeworkCallback | Type[HomeworkCallback],
+                        state: FSMContext,
                         materials_button: bool = True,
                         show_last_logs: bool = True):
 
@@ -345,7 +338,8 @@ async def show_homework(callback: CallbackQuery,
                                            await get_history_button())
             return rm
         if tg_note.setting_show_hw_materials:
-            await send_hw_materials(hw, callback,
+            await send_hw_materials([mat.id async for mat in hw.materials.all()], hw.id, callback.from_user.id,
+                                    callback, state,
                                     False if 'Listener' in gp.get('groups') else True, False)
             rm = get_homework_item_buttons(hw.id,
                                            can_send,
@@ -408,13 +402,25 @@ async def show_homework(callback: CallbackQuery,
                            reply_markup=reply_markup)
 
 
-async def send_hw_materials(hw: Homework, callback: CallbackQuery, meta: bool, del_hw_msg=True):
-    for mat in [m async for m in hw.materials.all()]:
-        await send_material_item(callback.from_user.id, mat, meta=meta)
-    if del_hw_msg:
+async def send_hw_materials(mat_ids: list, hw_id: int | None, user_id: int, callback: CallbackQuery | None,
+                            state: FSMContext, meta: bool, del_hw_msg=True):
+    if hw_id is None:
+        await state.update_data({"mat_show_action": "hw",
+                                 "mat_show_hw_id": hw_id})
+    else:
+        usr = await get_user(user_id)
+        hw = await Homework.objects.select_related("teacher").aget(id=hw_id)
+        hw_lesson = await hw.aget_lesson()
+        lp = await hw_lesson.aget_learning_plan() if hw_lesson else None
+        if hw.teacher == usr or (lp and lp.metodist == usr) or await lp.curators.filter(pk=usr.id).aexists():
+            await state.update_data({"mat_show_action": "hw",
+                                     "mat_show_hw_id": hw_id})
+    for mat in mat_ids:
+        await send_material_item(user_id, state, await Material.objects.aget(pk=mat), meta=meta)
+    if del_hw_msg and callback:
         hw_callback = HomeworkCallback
-        hw_callback.hw_id = hw.id
-        await show_homework(callback, hw_callback, False)
+        hw_callback.hw_id = hw_id
+        await show_homework(callback, hw_callback, state, False)
         await callback.message.delete()
 
 

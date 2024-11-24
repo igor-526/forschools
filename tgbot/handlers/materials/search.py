@@ -12,7 +12,7 @@ from tgbot.funcs.materials import (send_types,
                                    send_material_query,
                                    show_material_item,
                                    send_levels,
-                                   search_materials)
+                                   search_materials, delete_material_from_hw)
 from tgbot.funcs.menu import send_menu
 
 router = Router(name=__name__)
@@ -59,5 +59,13 @@ async def h_material_type_callback(callback: CallbackQuery,
 
 @router.callback_query(MaterialItemCallback.filter(F.action == 'show'))
 async def h_material_show_callback(callback: CallbackQuery,
-                                   callback_data: MaterialItemCallback) -> None:
-    await show_material_item(callback, callback_data.mat_id)
+                                   callback_data: MaterialItemCallback,
+                                   state: FSMContext) -> None:
+    await show_material_item(callback, state, callback_data.mat_id)
+
+
+@router.callback_query(MaterialItemCallback.filter(F.action == 'hw_delete'))
+async def h_material_hw_delete_callback(callback: CallbackQuery,
+                                        callback_data: MaterialItemCallback,
+                                        state: FSMContext) -> None:
+    await delete_material_from_hw(callback, callback_data, state)

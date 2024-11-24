@@ -21,10 +21,10 @@ def get_homework_menu_buttons() -> InlineKeyboardMarkup:
 
 def get_homework_editing_buttons() -> ReplyKeyboardMarkup:
     cancel_button = KeyboardButton(text="Отмена")
-    del_materials_button = KeyboardButton(text=f"Стереть материалы")
+    edit_materials_button = KeyboardButton(text=f"Показать прик. материалы")
     save_hw_button = KeyboardButton(text="Подтвердить ДЗ")
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[save_hw_button],
-                                                               [del_materials_button],
+                                                               [edit_materials_button],
                                                                [cancel_button]])
 
 

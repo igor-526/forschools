@@ -147,3 +147,13 @@ async def lessons_search_users(message: types.Message, state: FSMContext):
     else:
         await message.answer("Вот что удалось найти:",
                              reply_markup=lessons_get_users_buttons(userlist))
+
+
+def get_lesson_can_be_passed(lesson: Lesson):
+    today = datetime.datetime.now()
+    if lesson.date > today.date():
+        return False
+    elif lesson.date == today.date():
+        if lesson.end_time > today.time():
+            return False
+    return True

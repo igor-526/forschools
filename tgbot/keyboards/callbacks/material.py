@@ -16,6 +16,7 @@ class MaterialTypeCallback(CallbackData, prefix="mat_type"):
 class MaterialItemCallback(CallbackData, prefix="mat_item"):
     mat_id: int
     action: str
+    obj_id: int | None
 
 
 class MaterialListUserNavigationCallback(CallbackData, prefix="mat_list_user"):

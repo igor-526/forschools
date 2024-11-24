@@ -1,6 +1,11 @@
+from datetime import timedelta, datetime, timezone
+from pprint import pprint
+
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery, FSInputFile
 from django.db.models import Q
+
+from homework.models import Homework
 from material.utils.get_for_listener import aget_materials_for_listener, aget_materials_for_listener_next
 from material.models import Material, MaterialCategory, MaterialLevel
 from profile_management.models import Telegram
@@ -21,7 +26,7 @@ from tgbot.finite_states.materials import MaterialFSM
 from material.utils.get_type import get_type
 
 
-async def send_material_item(tg_id: int, material: Material, protect=False, meta=True) -> None:
+async def send_material_item(tg_id: int, state: FSMContext, material: Material, protect=False, meta=True) -> None:
     def generate_material_message() -> str:
         if meta:
             msg_text = f"<b>{material.name}</b>"
@@ -37,26 +42,27 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
     perms = await get_group_and_perms(user.id)
     send_tg = 'material.send_telegram' in perms.get('permissions')
     file_id = None
+    sd = await state.get_data()
     if mat_type == "image_formats":
         try:
             message = await bot.send_photo(chat_id=tg_id,
                                            photo=file,
                                            caption=generate_material_message(),
-                                           reply_markup=get_keyboard_material_item(material, send_tg),
+                                           reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                            protect_content=protect)
             file_id = message.photo[-1].file_id
         except TelegramBadRequest:
             message = await bot.send_document(chat_id=tg_id,
                                               document=file,
                                               caption=generate_material_message(),
-                                              reply_markup=get_keyboard_material_item(material, send_tg),
+                                              reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                               protect_content=protect)
             file_id = message.document.file_id
     elif mat_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
                                            caption=generate_material_message(),
                                            animation=file,
-                                           reply_markup=get_keyboard_material_item(material, send_tg),
+                                           reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                            protect_content=protect)
         if message.animation:
             file_id = message.animation.file_id
@@ -68,45 +74,45 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
                                           caption=generate_material_message(),
-                                          reply_markup=get_keyboard_material_item(material, send_tg),
+                                          reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                           protect_content=protect)
         file_id = message.document.file_id
     elif mat_type == "video_formats":
         message = await bot.send_video(chat_id=tg_id,
                                        video=file,
                                        caption=generate_material_message(),
-                                       reply_markup=get_keyboard_material_item(material, send_tg),
+                                       reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                        protect_content=protect)
         file_id = message.video.file_id
     elif mat_type == "audio_formats":
         message = await bot.send_audio(chat_id=tg_id,
                                        audio=file,
                                        caption=generate_material_message(),
-                                       reply_markup=get_keyboard_material_item(material, send_tg),
+                                       reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                        protect_content=protect)
         file_id = message.audio.file_id
     elif mat_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,
                                        voice=file,
                                        caption=generate_material_message(),
-                                       reply_markup=get_keyboard_material_item(material, send_tg),
+                                       reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                        protect_content=protect)
         file_id = message.voice.file_id
     elif mat_type == "text_formats":
         with open(material.file.path, "r") as textfile:
             await bot.send_message(chat_id=tg_id,
                                    text=textfile.read(),
-                                   reply_markup=get_keyboard_material_item(material, send_tg),
+                                   reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                    protect_content=protect)
     if not material.tg_url and file_id:
         material.tg_url = file_id
         await material.asave()
 
 
-async def show_material_item(callback: CallbackQuery, mat_id):
+async def show_material_item(callback: CallbackQuery, state: FSMContext, mat_id):
     material = await Material.objects.filter(id=mat_id).afirst()
     if material:
-        await send_material_item(callback.from_user.id, material)
+        await send_material_item(callback.from_user.id, state, material)
     else:
         await callback.answer(text="Произошла ошибка. Материал не существует")
 
@@ -225,3 +231,25 @@ async def search_materials(message: types.Message, state: FSMContext) -> None:
     dicted_materials = await filter_materials(query, state)
     await message.answer(text=f"Вот что удалось найти по запросу '{message.text}'",
                          reply_markup=get_keyboard_query_user(dicted_materials))
+
+
+async def delete_material_from_hw(callback: CallbackQuery, callback_data: MaterialItemCallback, state: FSMContext):
+    if callback.message.date + timedelta(hours=1) > datetime.now(tz=timezone.utc):
+        if callback_data.obj_id:
+            hw = await Homework.objects.filter(id=callback_data.obj_id).afirst()
+            if hw:
+                await hw.materials.aset([hw.id async for hw in hw.materials.all().exclude(id=callback_data.mat_id)])
+                await callback.answer("Материала больше нет в ДЗ")
+            else:
+                await callback.answer("Ошибка. Домашнее задание не найдено")
+        else:
+            sd = await state.get_data()
+            if sd.get("new_hw") and sd.get("new_hw").get("materials"):
+                sd['new_hw']['materials'].remove(callback_data.mat_id)
+                await state.set_data(sd)
+                await callback.answer("Материала больше нет в ДЗ")
+            else:
+                await callback.answer("Ошибка. Домашнее задание не найдено")
+    else:
+        await callback.answer("Превышен таймаут. Вызовите материал ещё раз и повторите попытку")
+    await callback.message.delete()

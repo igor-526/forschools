@@ -8,7 +8,7 @@ from tgbot.create_bot import bot
 import async_to_sync as sync
 from tgbot.funcs.fileutils import send_file
 from tgbot.keyboards.chats import chats_get_show_message_button
-from tgbot.keyboards.materials import get_keyboard_query
+from tgbot.keyboards.materials import get_materials_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_edit_button
 from dls.utils import get_tg_id_sync
 from tgbot.models import TgBotJournal
@@ -72,7 +72,7 @@ def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype):
     for user_tg in user_tgs:
         msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg.get("tg_id"),
                                                      message="Вам направлены материалы:",
-                                                     reply_markup=get_keyboard_query(materials))
+                                                     reply_markup=get_materials_keyboard_query(materials))
         if msg_result.get("status") == "success":
             TgBotJournal.objects.create(
                 recipient=recipient,

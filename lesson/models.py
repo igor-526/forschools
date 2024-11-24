@@ -155,4 +155,8 @@ class Lesson(models.Model):
             return None
         return nl.date
 
+    async def aset_passed(self):
+        self.status = 1
+        await self.asave()
+
 
