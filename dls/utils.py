@@ -84,7 +84,7 @@ def get_menu(user):
         return superuser_menu
     if user.groups.filter(name__in=["Metodist", "Admin"]).exists():
         return admin_menu
-    if user.groups.filter(name="Teacher").exists():
+    if user.groups.filter(name__in=["Teacher", "Curator"]).exists():
         return teacher_menu
     if user.groups.filter(name="Listener").exists():
         return listener_menu

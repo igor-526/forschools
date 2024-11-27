@@ -27,6 +27,11 @@ class CanSeeLessonMixin(LoginRequiredMixin):
                     (timezone.now().timestamp() >= (
                             lessondt - timezone.timedelta(days=learning_plan.show_lessons)).timestamp())):
                 return super().dispatch(request, *args, **kwargs)
+        if "Curator" in usergroups:
+            lesson = Lesson.objects.get(pk=kwargs.get('pk'))
+            learning_plan = lesson.learningphases_set.first().learningplan_set.first()
+            if request.user in learning_plan.curators.all():
+                return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
 
 
@@ -69,8 +74,9 @@ def can_add_homework(request, lesson: Lesson):
     if ("Admin" in usergroups) or ("Metodist" in usergroups):
         return True
     if "Teacher" in usergroups:
-        teacher = lesson.get_teacher() == request.user
-        return teacher
+        return lesson.get_teacher() == request.user
+    if "Curator" in usergroups:
+        return lesson.get_learning_plan().curators.filter(id=request.user.id).exists()
     return False
 
 

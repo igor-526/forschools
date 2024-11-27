@@ -10,7 +10,6 @@ from rest_framework.views import APIView
 from learning_plan.permissions import plans_button
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from material.models import Material
-from profile_management.models import NewUser
 from tgbot.utils import send_homework_tg, send_materials
 from .models import Lesson, Place
 from dls.utils import get_menu
@@ -22,7 +21,7 @@ from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
 from datetime import datetime, timedelta, date
 
 
-class LessonPage(LoginRequiredMixin, TemplateView):  # страница занятий
+class LessonPage(LoginRequiredMixin, TemplateView):
     template_name = "lessons.html"
 
     def get(self, request, *args, **kwargs):
@@ -32,12 +31,16 @@ class LessonPage(LoginRequiredMixin, TemplateView):  # страница заня
         return render(request, self.template_name, context)
 
 
-class LessonItemPage(CanSeeLessonMixin, TemplateView):  # страница занятия
+class LessonItemPage(CanSeeLessonMixin, TemplateView):
     template_name = "lesson_item.html"
 
     def get(self, request, *args, **kwargs):
         lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         can_add_hw = can_add_homework(request, lesson)
+        hw_curator_button = (lesson.get_learning_plan().teacher == request.user or
+                             lesson.replace_teacher == request.user or
+                             lesson.get_learning_plan().metodist == request.user or
+                             request.user.groups.filter(name="Admin").exists())
         context = {
             'title': lesson.name,
             'menu': get_menu(request.user),
@@ -47,6 +50,7 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):  # страница за�
             'can_edit_materials': can_edit_lesson_materials(request, lesson),
             'can_add_hw': can_add_hw,
             'can_set_passed': can_set_passed(request, lesson),
+            'hw_curator_button': hw_curator_button,
             'material_formats': MATERIAL_FORMATS
         }
         if can_add_hw:
@@ -125,6 +129,12 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
             queryset = Lesson.objects.filter(learningphases__learningplan__listeners=self.request.user)
         else:
             queryset = None
+        if self.request.user.groups.filter(name="Curator").exists():
+            if queryset is not None:
+                queryset = Lesson.objects.filter(Q(learningphases__learningplan__curators=self.request.user) |
+                                                 Q(id__in=[l.id for l in queryset]))
+            else:
+                queryset = Lesson.objects.filter(learningphases__learningplan__curators=self.request.user)
         queryset = self.filter_status(queryset)
         queryset = self.filter_date_start(queryset)
         queryset = self.filter_date_end(queryset)

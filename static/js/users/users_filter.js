@@ -35,6 +35,7 @@ function adminUsersFilterSetRoles(){
     usersAdminFilterRoleList.insertAdjacentElement("beforeend", getElement("Admin", "Администратор"))
     usersAdminFilterRoleList.insertAdjacentElement("beforeend", getElement("Metodist", "Методист"))
     usersAdminFilterRoleList.insertAdjacentElement("beforeend", getElement("Teacher", "Преподаватель"))
+    usersAdminFilterRoleList.insertAdjacentElement("beforeend", getElement("Curator", "Куратор"))
     usersAdminFilterRoleList.insertAdjacentElement("beforeend", getElement("Listener", "Ученик"))
 }
 

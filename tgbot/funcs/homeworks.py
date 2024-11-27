@@ -14,10 +14,9 @@ from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons, get_homework_menu_buttons, get_homework_lessons_buttons,
                                       get_homework_editing_buttons)
-from tgbot.keyboards.default import cancel_keyboard, yes_cancel_keyboard, message_typing_keyboard
+from tgbot.keyboards.default import cancel_keyboard, message_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
-from tgbot.keyboards.materials import get_materials_keyboard_query
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id, get_tg_note
 from profile_management.models import NewUser

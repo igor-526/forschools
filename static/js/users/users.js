@@ -37,6 +37,9 @@ function usersAdminShow(users = [], updateTD=null){
                 case "Metodist":
                     ruRoles.push("Методист")
                     break
+                case "Curator":
+                    ruRoles.push("Куратор")
+                    break
                 case "Admin":
                     ruRoles.push("Администратор")
                     break

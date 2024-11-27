@@ -85,6 +85,8 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         if lesson_id:
             try:
                 lesson = Lesson.objects.get(pk=int(lesson_id))
+                if lesson.get_learning_plan().curators.filter(id=request.user.id).exists():
+                    validated_data['for_curator'] = True
                 if lesson.status != 1:
                     set_assigned = False
                 listeners = lesson.get_listeners()

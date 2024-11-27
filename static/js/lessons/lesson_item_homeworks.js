@@ -21,6 +21,7 @@ async function lessonItemHomeworksClean(){
     HWNewDescriptionField.value = "Выполните следующее задание:"
     HWNewMaterialsList.innerHTML = '<li class="list-group-item">Материалы не прикреплены</li>'
     HWNewMaterialsSet = []
+    HWNewCuratorSwitchField.disabled  =!HWNewCuratorSwitch
 }
 
 function lessonItemHomeworksClientValidation() {
@@ -101,6 +102,7 @@ const lessonItemNewHWButton = document.querySelector("#LessonItemNewHWButton")
 const HWNewForm = offcanvasNewHW.querySelector("#HWNewForm")
 const HWNewNameField = HWNewForm.querySelector("#HWNewNameField")
 const HWNewNameError = HWNewForm.querySelector("#HWNewNameError")
+const HWNewCuratorSwitchField = HWNewForm.querySelector("#HWNewCuratorSwitchField")
 const HWNewDescriptionField = HWNewForm.querySelector("#HWNewDescriptionField")
 const HWNewDescriptionError = HWNewForm.querySelector("#HWNewDescriptionError")
 const HWNewDeadlineField = HWNewForm.querySelector("#HWNewDeadlineField")

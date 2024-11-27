@@ -35,7 +35,7 @@
                                 <li class="list-group-item">Время: не установлено</li>
                             {% endif %}
 
-                        {% if lesson.place %}
+                            {% if lesson.place %}
                                 <li class="list-group-item"><a href="{{ lesson.place.url }}">Ссылка на занятие</a><br><b>ПРОСЬБА НЕ ПОДКЛЮЧАТЬСЯ ЗАРАНЕЕ</b></li>
                             {% else %}
                                 <li class="list-group-item">Место проведения: отсутствует</li>
@@ -177,6 +177,11 @@
     {% if can_add_hw %}
         <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script>
+            {% if hw_curator_button %}
+                const HWNewCuratorSwitch = true
+            {% else %}
+                const HWNewCuratorSwitch = false
+            {% endif %}
             {% if hwdeadline %}
                 const lessonItemNewHwDeadline = '{{ hwdeadline }}'
             {% else %}

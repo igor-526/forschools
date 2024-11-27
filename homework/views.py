@@ -1,5 +1,7 @@
 import datetime
 
+from django.db.models import Q
+
 from chat.models import Message
 from lesson.permissions import CanReplaceTeacherMixin, replace_teacher_button
 from .permissions import get_delete_log_permission, get_send_hw_permission, get_can_check_hw_permission, \
@@ -20,7 +22,7 @@ from material.models import File
 from dls.utils import get_menu
 
 
-class HomeworksPage(LoginRequiredMixin, TemplateView):  # страница домашних заданий
+class HomeworksPage(LoginRequiredMixin, TemplateView):
     template_name = "homeworks.html"
 
     def get(self, request, *args, **kwargs):
@@ -74,6 +76,8 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         return queryset
 
     def filter_queryset_status(self, queryset):
+        if queryset is None:
+            return None
         hw_status = self.request.query_params.get("status")
         if hw_status:
             filtering_statuses = []
@@ -99,12 +103,18 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = Homework.objects.filter(teacher=kwargs.get("user"))
         elif kwargs.get("user").groups.filter(name="Listener").exists():
             queryset = Homework.objects.filter(listener=kwargs.get("user"))
+        if kwargs.get("user").groups.filter(name="Curator").exists():
+            if queryset is not None:
+                queryset = Homework.objects.filter(Q(lesson__learningphases__learningplan__curators=self.request.user) |
+                                                   Q(id__in=[h.id for h in queryset]))
+            else:
+                queryset = Homework.objects.filter(lesson__learningphases__learningplan__curators=self.request.user)
         queryset = self.filter_queryset_lesson(queryset)
         queryset = self.filter_queryset_teacher(queryset)
         queryset = self.filter_queryset_listener(queryset)
         queryset = self.filter_queryset_assigned(queryset)
         queryset = self.filter_queryset_status(queryset)
-        return queryset[:50]
+        return queryset[:50] if queryset is not None else None
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset(status=request.query_params.get('status'),
