@@ -33,8 +33,9 @@ class Homework(models.Model):
                                  null=False,
                                  blank=False)
     for_curator = models.BooleanField(verbose_name="Куратор работает с ДЗ",
-                                      null=True,
-                                      blank=True)
+                                      null=False,
+                                      blank=True,
+                                      default=True)
     materials = models.ManyToManyField(Material,
                                        verbose_name='Материалы',
                                        related_name='homework',
@@ -113,24 +114,31 @@ class Homework(models.Model):
                                            status=7)
                 return {"agreement": False}
 
-    async def aset_assigned(self):
+    async def aset_assigned(self, check_methodist=True):
         status = (await self.aget_status()).status
         if status != 6:
-            lesson = await self.aget_lesson()
-            lp = None
-            if lesson:
-                lp = await lesson.aget_learning_plan()
-            if lp and lp.metodist:
-                await HomeworkLog.objects.acreate(homework=self,
-                                                  user=self.teacher,
-                                                  comment="Домашнее задание задано",
-                                                  status=7,
-                                                  agreement={
-                                                      "accepted_dt": None,
-                                                      "accepted": False
-                                                  })
+            if check_methodist:
+                lesson = await self.aget_lesson()
+                lp = None
+                if lesson:
+                    lp = await lesson.aget_learning_plan()
+                if lp and lp.metodist:
+                    await HomeworkLog.objects.acreate(homework=self,
+                                                      user=self.teacher,
+                                                      comment="Домашнее задание задано",
+                                                      status=7,
+                                                      agreement={
+                                                          "accepted_dt": None,
+                                                          "accepted": False
+                                                      })
 
-                return {"agreement": True}
+                    return {"agreement": True}
+                else:
+                    await HomeworkLog.objects.acreate(homework=self,
+                                                      user=self.teacher,
+                                                      comment="Домашнее задание задано",
+                                                      status=7)
+                    return {"agreement": False}
             else:
                 await HomeworkLog.objects.acreate(homework=self,
                                                   user=self.teacher,

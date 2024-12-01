@@ -1,6 +1,5 @@
 import datetime
 from typing import Type
-
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
@@ -10,10 +9,10 @@ from material.models import Material
 from tgbot.funcs.fileutils import filechecker, filedownloader
 from tgbot.funcs.lessons import get_lesson_can_be_passed
 from tgbot.funcs.materials import send_material_item
-from tgbot.keyboards.callbacks.homework import HomeworkCallback
+from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCuratorCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons, get_homework_menu_buttons, get_homework_lessons_buttons,
-                                      get_homework_editing_buttons)
+                                      get_homework_editing_buttons, get_homework_curator_button)
 from tgbot.keyboards.default import cancel_keyboard, message_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
@@ -31,21 +30,83 @@ from aiogram.utils.media_group import MediaGroupBuilder
 async def homeworks_send_menu(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
     perms = await get_group_and_perms(user.id)
+    func_params = {
+        "new_hw_btn": False,
+        "check_hw_btn": False,
+        "compl_hw_btn": False,
+        "main_func": "",
+        "func_counter": 0
+    }
     if "Curator" in perms.get("groups"):
-        await message.answer(text="Выберите функцию:",
-                             reply_markup=get_homework_menu_buttons())
-        return
-    if "Listener" in perms.get("groups") or "Metodist" in perms.get("groups"):
-        await show_homework_queryset(message.from_user.id, state)
-    elif "Teacher" in perms.get("groups"):
-        await message.answer(text="Выберите функцию:",
-                             reply_markup=get_homework_menu_buttons())
-    else:
+        func_params["new_hw_btn"] = True
+        func_params["check_hw_btn"] = True
+        func_params["func_counter"] += 2
+    if "Listener" in perms.get("groups"):
+        func_params["compl_hw_btn"] = True
+        func_params["func_counter"] += 1
+        func_params["main_func"] = "complete"
+    if "Teacher" in perms.get("groups") or "Metodist" in perms.get("groups"):
+        func_params["new_hw_btn"] = True
+        func_params["check_hw_btn"] = True
+        func_params["func_counter"] += 2
+    if func_params["func_counter"] == 0:
         await message.answer("Функция для Вашей роли недоступна")
+    elif func_params["func_counter"] == 1:
+        await show_homework_queryset(message.from_user.id, state, func_params['main_func'])
+    elif func_params["func_counter"] > 1:
+        await message.answer(text="Выберите функцию:",
+                             reply_markup=get_homework_menu_buttons(func_params))
 
 
 async def add_homework_select_lesson(user_tg_id: int, message: types.Message = None,
                                      callback: types.CallbackQuery = None, date_=None):
+    async def get_lessons():
+        groups = [g.name async for g in user.groups.all()]
+        l = []
+        if "Teacher" in groups:
+            l = [{
+                "lesson_id": lesson.id,
+                "start_time": lesson.start_time.strftime("%H:%M"),
+                "end_time": lesson.end_time.strftime("%H:%M"),
+                "listeners": await lesson.aget_listeners(),
+                "homeworks": await lesson.homeworks.acount(),
+                "status": lesson.status
+            } async for lesson in Lesson.objects.filter(
+                Q(learningphases__learningplan__teacher=user,
+                  date=date,
+                  status__in=[0, 1]) |
+                Q(replace_teacher=user,
+                  date=date,
+                  status__in=[0, 1])
+            )]
+        elif "Metodist" in groups:
+            l = [{
+                "lesson_id": lesson.id,
+                "start_time": lesson.start_time.strftime("%H:%M"),
+                "end_time": lesson.end_time.strftime("%H:%M"),
+                "listeners": await lesson.aget_listeners(),
+                "homeworks": await lesson.homeworks.acount(),
+                "status": lesson.status
+            } async for lesson in Lesson.objects.filter(
+                learningphases__learningplan__metodist=user,
+                date=date,
+                status__in=[0, 1]
+            )]
+        if "Curator" in groups:
+            l += [{
+                "lesson_id": lesson.id,
+                "start_time": lesson.start_time.strftime("%H:%M"),
+                "end_time": lesson.end_time.strftime("%H:%M"),
+                "listeners": await lesson.aget_listeners(),
+                "homeworks": await lesson.homeworks.acount(),
+                "status": lesson.status
+            } async for lesson in Lesson.objects.filter(
+                learningphases__learningplan__curators=user,
+                date=date,
+                status__in=[0, 1]
+            )]
+        return l
+
     user = await get_user(user_tg_id)
     date = datetime.date.today() if not date_ else datetime.datetime.strptime(date_, "%d.%m.%Y").date()
     prev_date = date - datetime.timedelta(days=1)
@@ -58,21 +119,7 @@ async def add_homework_select_lesson(user_tg_id: int, message: types.Message = N
         "string": next_date.strftime("%d.%m"),
         "callback": next_date.strftime("%d.%m.%Y")
     } if next_date else None
-    lessons = [{
-        "lesson_id": lesson.id,
-        "start_time": lesson.start_time.strftime("%H:%M"),
-        "end_time": lesson.end_time.strftime("%H:%M"),
-        "listeners": await lesson.aget_listeners(),
-        "homeworks": await lesson.homeworks.acount(),
-        "status": lesson.status
-    } async for lesson in Lesson.objects.filter(
-        Q(learningphases__learningplan__teacher=user,
-          date=date,
-          status__in=[0, 1]) |
-        Q(replace_teacher=user,
-          date=date,
-          status__in=[0, 1])
-    )]
+    lessons = await get_lessons()
     if message:
         await message.reply(text=f"К какому занятию прикрепить ДЗ?",
                             reply_markup=get_homework_lessons_buttons(
@@ -88,10 +135,66 @@ async def add_homework_select_lesson(user_tg_id: int, message: types.Message = N
 async def add_homework_set_homework_ready(state: FSMContext,
                                           message: types.Message = None,
                                           callback: types.CallbackQuery = None):
+    async def new_hw_result():
+        is_curator = user.id in curators_ids
+        is_methodist = methodist == user
+        is_teacher = teacher == user
+        lesson_can_be_passed = get_lesson_can_be_passed(lesson)
+        if is_curator or is_methodist:
+            if lesson_can_be_passed:
+                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} успешно задано\nЗанятие будет считаться проведённым"
+                await hw.aset_assigned(check_methodist=False)
+                await lesson.aset_passed()
+                await homework_tg_notify(user,
+                                         listener.id,
+                                         [hw])
+
+            else:
+                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно создано и будет задано после "
+                            f"проведения занятия")
+            if is_curator:
+                await homework_tg_notify(user,
+                                         teacher.id,
+                                         [hw],
+                                         "Куратор задал новое домашнее заданее")
+
+        elif is_teacher:
+            if lesson.status == 1 or (lesson.status == 0 and lesson_can_be_passed):
+                result = await hw.aset_assigned()
+                if result.get("agreement"):
+                    msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} будет задано после проверки "
+                                f"методистом")
+                    await homework_tg_notify(user,
+                                             plan.metodist.id,
+                                             [hw],
+                                             "Требуется согласование действия преподавателя")
+                else:
+                    msg_text = f"ДЗ для {listener.first_name} {listener.last_name} успешно задано"
+                    if lesson_can_be_passed:
+                        await lesson.aset_passed()
+                        msg_text += "\nЗанятие будет считаться проведённым"
+                        await homework_tg_notify(user,
+                                                 listener.id,
+                                                 [hw])
+            else:
+                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно создано и будет задано после "
+                            f"проведения занятия")
+        else:
+            msg_text = "Вы не можете задать ДЗ к этому занятию"
+        if message:
+            await message.answer(text=msg_text,
+                                 reply_markup=rm)
+            await send_menu(message.from_user.id, state)
+        if callback:
+            await bot.send_message(chat_id=callback.from_user.id,
+                                   text=msg_text,
+                                   reply_markup=rm)
+            await send_menu(callback.from_user.id, state)
+
     async def notify_hw_changed():
         st = await hw.aget_status()
         if st.status in [2, 3, 5]:
-            await homework_tg_notify(hw.teacher,
+            await homework_tg_notify(user,
                                      hw.listener.id,
                                      [hw],
                                      "Домашнее задание было изменено")
@@ -108,6 +211,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")
     current_deadline = statedata.get("new_hw").get("deadline")
+    user = await get_user(callback.from_user.id)
     current_deadline_dt = datetime.datetime(
         current_deadline.get("year"),
         current_deadline.get("month"),
@@ -121,68 +225,36 @@ async def add_homework_set_homework_ready(state: FSMContext,
         await hw.asave()
         await hw.materials.aset(statedata.get("new_hw").get("materials"))
         await hw.asave()
-        await message.answer("ДЗ успешно изменено")
+        lesson = await hw.aget_lesson()
+        plan = await lesson.aget_learning_plan() if lesson else None
+        await message.answer(text="ДЗ успешно изменено",
+                             reply_markup=None)
         await notify_hw_changed()
         await send_menu(message.from_user.id, state)
     else:
-        teacher = await get_user(callback.from_user.id)
         lesson = await Lesson.objects.aget(pk=statedata.get("new_hw").get("lesson_id"))
         listeners = await lesson.aget_listeners()
+        plan = await lesson.aget_learning_plan() if lesson else None
+        teacher = plan.default_hw_teacher if plan else user
+        methodist = plan.metodist if plan else None
+        curators_ids = [u.id async for u in plan.curators.all()]
+
         for listener in listeners:
-            new_hw = await Homework.objects.acreate(
+            hw = await Homework.objects.acreate(
                 name=f'{statedata.get("new_hw").get("name")} ({listener.first_name} {listener.last_name})',
                 description=statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description")
                 else "-",
                 deadline=current_deadline_dt,
                 listener_id=listener.id,
-                teacher=teacher
+                teacher=teacher,
+                for_curator=True
             )
-            await new_hw.materials.aset(statedata.get("new_hw").get("materials"))
-            await new_hw.asave()
-            await lesson.homeworks.aadd(new_hw)
-            if lesson.status == 1:
-                result = await new_hw.aset_assigned()
-                if result.get("agreement"):
-                    msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} будет задано после проверки "
-                                f"методистом")
-                    lesson = await new_hw.aget_lesson()
-                    plan = await lesson.aget_learning_plan()
-                    await homework_tg_notify(teacher,
-                                             plan.metodist.id,
-                                             [new_hw],
-                                             "Требуется согласование действия преподавателя")
-                else:
-                    msg_text = f"ДЗ для {listener.first_name} {listener.last_name} успешно задано"
-                    await homework_tg_notify(teacher,
-                                             listener.id,
-                                             [new_hw])
-            elif lesson.status == 0 and get_lesson_can_be_passed(lesson):
-                result = await new_hw.aset_assigned()
-                if result.get("agreement"):
-                    msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} будет задано после проверки "
-                                f"методистом")
-                    lesson = await new_hw.aget_lesson()
-                    plan = await lesson.aget_learning_plan()
-                    await homework_tg_notify(teacher,
-                                             plan.metodist.id,
-                                             [new_hw],
-                                             "Требуется согласование действия преподавателя")
-                else:
-                    msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно задано\n"
-                                f"Занятие будет считаться проведённым")
-                    await homework_tg_notify(teacher,
-                                             listener.id,
-                                             [new_hw])
-                    await lesson.aset_passed()
-            else:
-                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно создано и будет задано после "
-                            f"проведения занятия")
-            if message:
-                await message.reply(msg_text)
-                await send_menu(message.from_user.id, state)
-            if callback:
-                await callback.message.edit_text(msg_text)
-                await send_menu(callback.from_user.id, state)
+            rm = get_homework_curator_button(hw.id) if ((teacher == user and curators_ids) or
+                                                        (methodist == user and curators_ids)) else None
+            await hw.materials.aset(statedata.get("new_hw").get("materials"))
+            if lesson:
+                await lesson.homeworks.aadd(hw)
+            await new_hw_result()
 
 
 async def add_homework_set_homework_message(tg_id: int,
@@ -213,72 +285,92 @@ async def add_homework_set_homework_message(tg_id: int,
     await state.set_state(HomeworkNewFSM.change_menu)
 
 
-async def show_homework_queryset(tg_id: int, state: FSMContext):
+async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
     user = await get_user(tg_id)
     gp = await get_group_and_perms(user.id)
     groups = gp.get('groups')
-    if 'Metodist' in groups:
-        homeworks = list(filter(lambda hw: hw['hw_status'] is not None and not hw['hw_status'],
-                                [{
-                                    'obj': hw,
-                                    'hw_status': (await hw.aget_status()).agreement.get("accepted")
-                                } async for hw in Homework.objects.filter(
-                                    lesson__learningphases__learningplan__metodist=user)]))
-        homeworks = [{
-            'name': hw.get("obj").name,
-            'status': False,
-            'id': hw.get("obj").id
-        } for hw in homeworks]
-        if len(homeworks) == 0:
-            await bot.send_message(chat_id=tg_id,
-                                   text="Нет домашних заданий для проверки")
-            await send_menu(tg_id, state)
+    if func == "complete":
+        if 'Listener' in groups:
+            homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 3, 5],
+                                    [{
+                                        'obj': hw,
+                                        'hw_status': (await hw.aget_status()).status
+                                    } async for hw in Homework.objects.filter(listener=user)]))
+            homeworks = [{
+                'name': hw.get("obj").name,
+                'status': hw.get("hw_status") == 3,
+                'id': hw.get("obj").id
+            } for hw in homeworks]
+            if len(homeworks) == 0:
+                await bot.send_message(chat_id=tg_id,
+                                       text="Нет домашних заданий для выполнения")
+            else:
+                await bot.send_message(chat_id=tg_id,
+                                       text="Вот домашние задания, которые ждут Вашего выполнения:",
+                                       reply_markup=get_homeworks_buttons(homeworks))
         else:
             await bot.send_message(chat_id=tg_id,
-                                   text="Вот домашние задания, действия преподавателей которых ждут Вашей проверки:",
-                                   reply_markup=get_homeworks_buttons(homeworks, sb=True))
-    elif 'Teacher' in groups:
-        homeworks = list(filter(lambda hw: hw['hw_status'].status in [3, 5] and
-                                           (hw['hw_status'].agreement.get("accepted") is None or
-                                            hw['hw_status'].agreement.get("accepted") == True),
-                                [{
-                                    'obj': hw,
-                                    'hw_status': await hw.aget_status()
-                                } async for hw in Homework.objects.filter(teacher=user)]))
-        homeworks = [{
-            'name': hw.get("obj").name,
-            'status': hw.get("hw_status") == 5,
-            'id': hw.get("obj").id
-        } for hw in homeworks]
-        if len(homeworks) == 0:
+                                   text="Для Вашей роли данная функция в Telegram недоступна")
+    elif func == "check":
+        methodist_homeworks = []
+        teacher_homeworks = []
+        curator_homeworks = []
+        if 'Metodist' in groups:
+            homeworks = list(filter(lambda hw: hw['hw_status'] is not None and not hw['hw_status'],
+                                    [{
+                                        'obj': hw,
+                                        'hw_status': (await hw.aget_status()).agreement.get("accepted")
+                                    } async for hw in Homework.objects.filter(
+                                        lesson__learningphases__learningplan__metodist=user)]))
+            methodist_homeworks = [{
+                'name': hw.get("obj").name,
+                'status': False,
+                'id': hw.get("obj").id
+            } for hw in homeworks]
+            if len(homeworks) == 0:
+                await bot.send_message(chat_id=tg_id,
+                                       text="Нет домашних заданий для проверки")
+                await send_menu(tg_id, state)
+            else:
+                await bot.send_message(chat_id=tg_id,
+                                       text="Вот домашние задания, действия преподавателей которых ждут Вашей проверки:",
+                                       reply_markup=get_homeworks_buttons(homeworks, sb=True))
+        elif 'Teacher' in groups:
+            homeworks = list(filter(lambda hw: hw['hw_status'].status in [3, 5] and
+                                               (hw['hw_status'].agreement.get("accepted") is None or
+                                                hw['hw_status'].agreement.get("accepted") == True),
+                                    [{
+                                        'obj': hw,
+                                        'hw_status': await hw.aget_status()
+                                    } async for hw in Homework.objects.filter(teacher=user)]))
+            teacher_homeworks = [{
+                'name': hw.get("obj").name,
+                'status': hw.get("hw_status") == 5,
+                'id': hw.get("obj").id
+            } for hw in homeworks]
+        if 'Curator' in groups:
+            homeworks = list(filter(lambda hw: hw['hw_status'].status in [3, 5],
+                                    [{
+                                        'obj': hw,
+                                        'hw_status': await hw.aget_status()
+                                    } async for hw in Homework.objects.filter(
+                                        lesson__learningphases__learningplan__curators=user)]))
+            curator_homeworks = [{
+                'name': hw.get("obj").name,
+                'status': hw.get("hw_status") == 5,
+                'id': hw.get("obj").id
+            } for hw in homeworks]
+            Homework.objects.filter(lesson__learningphases__learningplan__curators=user)
+        if len([*methodist_homeworks, *teacher_homeworks, *curator_homeworks]) == 0:
             await bot.send_message(chat_id=tg_id,
                                    text="Нет домашних заданий для проверки")
             await send_menu(tg_id, state)
         else:
             await bot.send_message(chat_id=tg_id,
                                    text="Вот домашние задания, которые ждут Вашей проверки:",
-                                   reply_markup=get_homeworks_buttons(homeworks, sb=True))
-    elif 'Listener' in groups:
-        homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 3, 5],
-                                [{
-                                    'obj': hw,
-                                    'hw_status': (await hw.aget_status()).status
-                                } async for hw in Homework.objects.filter(listener=user)]))
-        homeworks = [{
-            'name': hw.get("obj").name,
-            'status': hw.get("hw_status") == 3,
-            'id': hw.get("obj").id
-        } for hw in homeworks]
-        if len(homeworks) == 0:
-            await bot.send_message(chat_id=tg_id,
-                                   text="Нет домашних заданий для выполнения")
-        else:
-            await bot.send_message(chat_id=tg_id,
-                                   text="Вот домашние задания, которые ждут Вашего выполнения:",
-                                   reply_markup=get_homeworks_buttons(homeworks))
-    else:
-        await bot.send_message(chat_id=tg_id,
-                               text="Для Вашей роли данная функция в Telegram недоступна")
+                                   reply_markup=get_homeworks_buttons(
+                                       [*methodist_homeworks, *teacher_homeworks, *curator_homeworks],
+                                       sb=True))
 
 
 async def search_homeworks_message(callback: CallbackQuery, state: FSMContext):
@@ -379,13 +471,18 @@ async def show_homework(callback: CallbackQuery,
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
-    can_send = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7]
-    can_check = (('Teacher' in gp['groups'] and hw_status.status in [3, 5]) or
-                 ('Metodist' in gp['groups'] and hw_status.status in [3, 5]))
     lesson = await hw.aget_lesson()
     lp = None
     if lesson:
         lp = await lesson.aget_learning_plan()
+    can_send = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7] and hw.listener == user
+    if lp:
+        can_check = (('Teacher' in gp['groups'] and hw_status.status in [3, 5] and hw.teacher == user) or
+                     ('Metodist' in gp['groups'] and hw_status.status in [3, 5]) and lp.metodist == user or
+                     ('Curator' in gp['groups'] and hw_status.status in [3, 5] and
+                      (await lp.curators.filter(pk=user.id).aexists())))
+    else:
+        can_check = 'Teacher' in gp['groups'] and hw_status.status in [3, 5] and hw.teacher == user
     can_agreement_logs = lp and lp.metodist and lp.metodist == user
     reply_markup = await send_materials_and_get_reply_markup()
     if hw_status.status == 7 and 'Listener' in gp.get('groups'):
@@ -806,3 +903,16 @@ async def homework_tg_notify(initiator: NewUser, listener: int,
                 "attachments": []
             }
         )
+
+
+async def hw_for_curator_set(callback: CallbackQuery,
+                             callback_data: HomeworkCuratorCallback):
+    hw = await Homework.objects.aget(pk=callback_data.hw_id)
+    hw.for_curator = not hw.for_curator
+    await hw.asave()
+    await callback.answer("Кураторы теперь могут работать с этим ДЗ" if hw.for_curator else
+                          "Кураторы больше не смогут работать с этим ДЗ")
+    await callback.message.edit_text(
+        text=callback.message.text,
+        reply_markup=get_homework_curator_button(callback_data.hw_id, hw.for_curator)
+    )

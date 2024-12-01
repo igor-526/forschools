@@ -5,11 +5,11 @@ from aiogram.types import CallbackQuery
 from homework.models import Homework
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.homeworks import (add_homework_select_lesson, add_homework_set_homework_message,
-                                   add_homework_set_homework_ready, send_hw_materials)
+                                   add_homework_set_homework_ready, send_hw_materials, hw_for_curator_set)
 from tgbot.funcs.materials_add import add_material_add
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNewCallback, HomeworkNewSettingCallback, \
-    HomeworkCallback, HomeworkNewSelectDateCallback
+    HomeworkCallback, HomeworkNewSelectDateCallback, HomeworkCuratorCallback
 
 router = Router(name=__name__)
 
@@ -106,3 +106,8 @@ async def h_homework_sethw(callback: CallbackQuery,
     await add_homework_set_homework_message(callback.from_user.id, state)
     await callback.message.delete()
 
+
+@router.callback_query(HomeworkCuratorCallback.filter())
+async def h_homework_for_curator_set(callback: CallbackQuery,
+                                     callback_data: HomeworkCuratorCallback) -> None:
+    await hw_for_curator_set(callback, callback_data)

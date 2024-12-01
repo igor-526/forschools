@@ -10,11 +10,20 @@ from tgbot.finite_states.homework import HomeworkFSM
 router = Router(name=__name__)
 
 
-@router.callback_query(HomeworkMenuCallback.filter(F.action == 'show'))
+@router.callback_query(HomeworkMenuCallback.filter(F.action == 'complete'))
 async def h_homework_show(callback: CallbackQuery,
+                          callback_data: HomeworkMenuCallback,
                           state: FSMContext) -> None:
     await callback.message.delete()
-    await show_homework_queryset(callback.from_user.id, state)
+    await show_homework_queryset(callback.from_user.id, state, callback_data.action)
+
+
+@router.callback_query(HomeworkMenuCallback.filter(F.action == 'check'))
+async def h_homework_show_check(callback: CallbackQuery,
+                                callback_data: HomeworkMenuCallback,
+                                state: FSMContext) -> None:
+    await callback.message.delete()
+    await show_homework_queryset(callback.from_user.id, state, callback_data.action)
 
 
 @router.callback_query(HomeworkCallback.filter(F.action == 'search'))

@@ -18,6 +18,10 @@ class HomeworkNewCallback(CallbackData, prefix="hwnew"):
     lesson_id: int
 
 
+class HomeworkCuratorCallback(CallbackData, prefix="hwcurator"):
+    hw_id: int
+
+
 class HomeworkNewSelectDateCallback(CallbackData, prefix="hwnew_date"):
     date: str
 

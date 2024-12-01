@@ -2,19 +2,26 @@ from aiogram.types import InlineKeyboardMarkup, KeyboardButton,ReplyKeyboardMark
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkLogCallback, HomeworkMenuCallback,
                                                 HomeworkNewCallback, HomeworkNewSettingCallback,
-                                                HomeworkNewSelectDateCallback)
+                                                HomeworkNewSelectDateCallback, HomeworkCuratorCallback)
 
 
-def get_homework_menu_buttons() -> InlineKeyboardMarkup:
+def get_homework_menu_buttons(params: dict) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(
-        text=f"Проверка домашних заданий",
-        callback_data=HomeworkMenuCallback(action="show")
-    )
-    builder.button(
-        text=f"Задать новое ДЗ",
-        callback_data=HomeworkMenuCallback(action="new")
-    )
+    if params.get("check_hw_btn"):
+        builder.button(
+            text=f"Проверка домашних заданий",
+            callback_data=HomeworkMenuCallback(action="check")
+        )
+    if params.get("new_hw_btn"):
+        builder.button(
+            text=f"Задать новое ДЗ",
+            callback_data=HomeworkMenuCallback(action="new")
+        )
+    if params.get("compl_hw_btn"):
+        builder.button(
+            text=f"Выполнить ДЗ",
+            callback_data=HomeworkMenuCallback(action="complete")
+        )
     builder.adjust(1)
     return builder.as_markup()
 
@@ -184,3 +191,15 @@ def get_homework_agreement_buttons(action="accept") -> ReplyKeyboardMarkup | Non
                                                                    [cancel_button]])
     else:
         return None
+
+
+def get_homework_curator_button(hw_id: int, for_curator_status=True) -> InlineKeyboardMarkup:
+    btn_text = "\u2705" if for_curator_status else "\u274C"
+    btn_text += " кураторы работают с ДЗ"
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=btn_text,
+        callback_data=HomeworkCuratorCallback(hw_id=hw_id)
+    )
+    builder.adjust(1)
+    return builder.as_markup()
