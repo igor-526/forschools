@@ -10,10 +10,17 @@ from learning_plan.permissions import can_edit_plan
 from .permissions import can_set_not_held, can_set_passed
 
 
+class LessonTeacherReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonTeacherReview
+        fields = "__all__"
+
+
 class LessonSerializer(serializers.ModelSerializer):
     replace_teacher = NewUserNameOnlyListSerializer(required=False)
     materials = MaterialListSerializer(many=True, required=False)
     homeworks = HomeworkListSerializer(many=True, required=False)
+    lesson_teacher_review = LessonTeacherReviewSerializer(many=False, required=False)
     place = PlaceSerializer()
     deletable = serializers.SerializerMethodField(read_only=True)
     can_set_not_held = serializers.SerializerMethodField(read_only=True)
@@ -55,7 +62,7 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        exclude = ['materials', 'homeworks', 'evaluation', 'note_teacher', 'note_listener']
+        exclude = ['materials', 'homeworks']
 
     def get_awaiting_action(self, obj):
         return can_set_passed(self.context.get('request'), obj)
@@ -88,7 +95,4 @@ class LessonListSerializer(serializers.ModelSerializer):
         return lesson
 
 
-class LessonTeacherReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lesson
-        fields = "__all__"
+

@@ -11,7 +11,7 @@ from learning_plan.permissions import plans_button
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from material.models import Material
 from tgbot.utils import send_homework_tg, send_materials
-from .models import Lesson, Place
+from .models import Lesson, Place, LessonTeacherReview
 from dls.utils import get_menu
 from dls.settings import MATERIAL_FORMATS
 from .serializers import LessonListSerializer, LessonSerializer
@@ -19,6 +19,8 @@ from .permissions import (CanReplaceTeacherMixin, CanSeeLessonMixin,
                           replace_teacher_button, can_edit_lesson_materials,
                           can_see_lesson_materials, can_add_homework, can_set_passed, can_set_not_held)
 from datetime import datetime, timedelta, date
+
+from .validators import validate_lesson_review_form
 
 
 class LessonPage(LoginRequiredMixin, TemplateView):
@@ -51,7 +53,8 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
             'can_add_hw': can_add_hw,
             'can_set_passed': can_set_passed(request, lesson),
             'hw_curator_button': hw_curator_button,
-            'material_formats': MATERIAL_FORMATS
+            'material_formats': MATERIAL_FORMATS,
+            'is_admin': request.user.groups.filter(name="Admin").exists(),
         }
         if can_add_hw:
             hwdeadline = (lesson.get_hw_deadline())
@@ -194,17 +197,24 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         except Lesson.DoesNotExist:
-            return JsonResponse({'error': "Занятие не найдено"}, status=status.HTTP_400_BAD_REQUEST)
-        if lesson.status == 0:
-            if can_set_passed(request, lesson):
-                lesson_name = request.POST.get('lesson_name').strip(" ")
-                if len(lesson_name) > 200:
-                    return JsonResponse({'lesson_name': "Длина наименования занятия не "
-                                                        "может превышать 200 символов"},
-                                        status=status.HTTP_400_BAD_REQUEST)
-                if lesson_name != '':
-                    lesson.name = lesson_name
+            return Response({'error': "Занятие не найдено"}, status=status.HTTP_400_BAD_REQUEST)
+        if lesson.status == 1:
+            return Response({'error': "Занятие уже проведено"}, status=status.HTTP_400_BAD_REQUEST)
+        is_admin = request.user.groups.filter(name='Admin').exists()
+        if not is_admin and lesson.homeworks.count() == 0:
+            return Response({'error': "Необходимо задать ДЗ"}, status=status.HTTP_400_BAD_REQUEST)
+        if can_set_passed(request, lesson):
+            if is_admin:
+                validation = {'status': True}
+                review = None
+            else:
+                validation = validate_lesson_review_form(request.POST)
+                review = LessonTeacherReview.objects.create(**validation.get("review"))
+            if validation['status']:
+                if request.POST.get("name"):
+                    lesson.name = request.POST.get("name").strip(" ")
                 lesson.status = 1
+                lesson.lesson_teacher_review = review
                 lesson.save()
                 for listener in lesson.get_learning_plan().listeners.all():
                     homeworks = lesson.homeworks.filter(listener=listener)
@@ -217,12 +227,12 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                                              listener=hw.get_lesson().get_learning_plan().metodist,
                                              homeworks=[hw],
                                              text="Требуется согласование действия преподавталя")
-                return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
+                return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
-                return JsonResponse({'error': "Недостаточно прав для изменения статуса занятия"},
-                                    status=status.HTTP_400_BAD_REQUEST)
+                return Response(validation['errors'], status=status.HTTP_400_BAD_REQUEST)
         else:
-            return JsonResponse({'error': "Занятие уже проведено"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': "Недостаточно прав для изменения статуса занятия"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):

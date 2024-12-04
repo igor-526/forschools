@@ -2,6 +2,7 @@ function lessonItemMain(){
     lessonsAPIGetItem(lessonID).then(request => {
         switch (request.status){
             case 200:
+                console.log(request.response)
                 if (lessonItemAddMaterialsButton !== null){
                     lessonItemAddMaterialsButton.addEventListener("click", function () {
                         materialEmbedAction = "addToLesson"
@@ -15,6 +16,9 @@ function lessonItemMain(){
                 if (can_see_materials){
                     lessonItemSetMaterials(request.response.materials)
                     lessonItemSetHomeworks(request.response.homeworks)
+                }
+                if (request.response.lesson_teacher_review){
+                    lessonItemSetReview(request.response.lesson_teacher_review)
                 }
                 break
             default:
@@ -40,6 +44,46 @@ function lessonItemMain(){
         lessonItemEditButton.addEventListener("click", function () {
             lessonEditSetModalLesson(lessonID)
         })
+    }
+}
+
+function lessonItemSetReview(review){
+    function getListElement(name, val){
+        const li = document.createElement("li")
+        li.classList.add("list-group-item")
+        li.innerHTML = `<b>${name}: </b>${val}`
+        return li
+    }
+    LessonItemReview.classList.remove("d-none")
+    if (review.hasOwnProperty("materials")){
+        LessonItemReviewList.insertAdjacentElement("beforeend", getListElement(
+            "Использованные материалы",
+            review.materials
+        ))
+    }
+    if (review.hasOwnProperty("lexis")){
+        LessonItemReviewList.insertAdjacentElement("beforeend", getListElement(
+            "Лексика",
+            review.lexis
+        ))
+    }
+    if (review.hasOwnProperty("grammar")){
+        LessonItemReviewList.insertAdjacentElement("beforeend", getListElement(
+            "Грамматика",
+            review.grammar
+        ))
+    }
+    if (review.hasOwnProperty("note")){
+        LessonItemReviewList.insertAdjacentElement("beforeend", getListElement(
+            "Примечание",
+            review.note
+        ))
+    }
+    if (review.hasOwnProperty("org")){
+        LessonItemReviewList.insertAdjacentElement("beforeend", getListElement(
+            "Орг. моменты и поведение ученика",
+            review.org
+        ))
     }
 }
 
@@ -179,6 +223,8 @@ const lessonItemEditButton = document.querySelector("#lessonItemEditButton")
 //Lists
 const lessonItemMaterialsList = document.querySelector("#lessonItemMaterialsList")
 const lessonItemHomeworkList = document.querySelector("#lessonItemHomeworkList")
+const LessonItemReview = document.querySelector("#LessonItemReview")
+const LessonItemReviewList = document.querySelector("#LessonItemReviewList")
 
 //Arrays
 let lessonItemCheckedMaterials = []

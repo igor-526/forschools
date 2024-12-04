@@ -10,58 +10,60 @@
             </h2>
             <div id="maLessonAccordionInfo" class="accordion-collapse collapse" aria-labelledby="maLessonAccordionHeading" data-bs-parent="#maLessonAccordion">
                 <div class="accordion-body">
-                        <ul class="list-group list-group-flush" id="maLessonAccordionInfoList">
-                                <li class="list-group-item">Описание: {{ lesson.description }}</li>
-                        </ul>
+                    <ul class="list-group list-group-flush" id="maLessonAccordionInfoList">
+                        <li class="list-group-item">Описание: {{ lesson.description }}</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="container">
-        <div class="mb-3">
-            <label for="maLessonFeedbackFormLessonNameField" class="form-label">Наименование занятия (УМК)</label>
-            <input type="text" class="form-control" id="maLessonFeedbackFormLessonNameField">
-            <div class="form-text">Обязательно к заполнению</div>
-            <div class="invalid-feedback" id="maLessonFeedbackFormLessonNameError"></div>
-        </div>
+        <form id="maLessonFeedbackForm">
+            <div class="mb-3">
+                <label for="maLessonFeedbackFormLessonNameField" class="form-label">Наименование занятия (УМК)</label>
+                <input name="name" type="text" class="form-control" id="maLessonFeedbackFormLessonNameField">
+                <div class="form-text">Обязательно к заполнению</div>
+                <div class="invalid-feedback" id="maLessonFeedbackFormLessonNameError"></div>
+            </div>
 
-        <div class="mb-3">
-            <label for="maLessonFeedbackFormLessonMaterialsField" class="form-label">Используемые материалы</label>
-            <textarea type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonMaterialsField"></textarea>
-            <div class="form-text">Заполнено автоматически из прикрепленных материалов занятия. Дополните, если были использованы другие материалы</div>
-            <div class="invalid-feedback" id="maLessonFeedbackFormLessonMaterialsError"></div>
-        </div>
+            <div class="mb-3">
+                <label for="maLessonFeedbackFormLessonMaterialsField" class="form-label">Используемые материалы</label>
+                <textarea name="materials" type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonMaterialsField"></textarea>
+                <div class="form-text">Обязательно к заполнению. Может быть заполнено автоматически из прикрепленных к занятию материалов. Дополните, если были использованы другие материалы</div>
+                <div class="invalid-feedback" id="maLessonFeedbackFormLessonMaterialsError"></div>
+            </div>
 
-        <div class="mb-3">
-            <label for="maLessonFeedbackFormLessonLexisField" class="form-label">Лексика</label>
-            <input type="text" class="form-control" id="maLessonFeedbackFormLessonLexisField">
-            <div class="form-text">Обязательно к заполнению</div>
-            <div class="invalid-feedback" id="maLessonFeedbackFormLessonLexisError"></div>
-        </div>
+            <div class="mb-3">
+                <label for="maLessonFeedbackFormLessonLexisField" class="form-label">Лексика</label>
+                <input name="lexis" type="text" class="form-control" id="maLessonFeedbackFormLessonLexisField">
+                <div class="form-text">Обязательно к заполнению</div>
+                <div class="invalid-feedback" id="maLessonFeedbackFormLessonLexisError"></div>
+            </div>
 
-        <div class="mb-3">
-            <label for="maLessonFeedbackFormLessonGrammarField" class="form-label">Грамматика</label>
-            <input type="text" class="form-control" id="maLessonFeedbackFormLessonGrammarField">
-            <div class="form-text">Обязательно к заполнению</div>
-            <div class="invalid-feedback" id="maLessonFeedbackFormLessonGrammarError"></div>
-        </div>
+            <div class="mb-3">
+                <label for="maLessonFeedbackFormLessonGrammarField" class="form-label">Грамматика</label>
+                <input name="grammar" type="text" class="form-control" id="maLessonFeedbackFormLessonGrammarField">
+                <div class="form-text">Обязательно к заполнению</div>
+                <div class="invalid-feedback" id="maLessonFeedbackFormLessonGrammarError"></div>
+            </div>
 
-        <div class="mb-3">
-            <label for="maLessonFeedbackFormLessonNoteField" class="form-label">Примечание</label>
-            <textarea type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonNoteField"></textarea>
-            <div class="form-text">Обязательно к заполнению</div>
-            <div class="invalid-feedback" id="maLessonFeedbackFormLessonNoteError"></div>
-        </div>
+            <div class="mb-3">
+                <label for="maLessonFeedbackFormLessonNoteField" class="form-label">Примечание</label>
+                <textarea name="note" type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonNoteField"></textarea>
+                <div class="form-text">Обязательно к заполнению</div>
+                <div class="invalid-feedback" id="maLessonFeedbackFormLessonNoteError"></div>
+            </div>
 
-        <div class="mb-3">
-            <label for="maLessonFeedbackFormLessonOrgField" class="form-label">Орг. моменты и поведение ученика</label>
-            <textarea type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonOrgField"></textarea>
-            <div class="form-text">Обязательно к заполнению</div>
-            <div class="invalid-feedback" id="maLessonFeedbackFormLessonOrgError"></div>
-        </div>
+            <div class="mb-3">
+                <label for="maLessonFeedbackFormLessonOrgField" class="form-label">Орг. моменты и поведение ученика</label>
+                <textarea name="org" type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonOrgField"></textarea>
+                <div class="form-text">Обязательно к заполнению</div>
+                <div class="invalid-feedback" id="maLessonFeedbackFormLessonOrgError"></div>
+            </div>
+        </form>
 
-        <button id="maLessonFeedbackFormReadyButton" type="button" class="btn btn-primary">Готово</button>
+        <button id="maLessonFeedbackFormReadyButton" type="button" class="btn btn-primary mb-3">Готово</button>
     </div>
 {% endblock %}
 {% block static_js %}

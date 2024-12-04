@@ -120,6 +120,13 @@
                         <ul class="list-group list-group-flush" id="lessonItemHomeworkList"></ul>
                     </div>
                 </div>
+
+                <div class="card mb-3 d-none" id="LessonItemReview">
+                    <div class="card-header">Ревью</div>
+                    <div class="card-body">
+                        <ul id="LessonItemReviewList" class="list-group list-group-flush"></ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -128,6 +135,7 @@
     <script>
         const lessonID = '{{ lesson.id }}'
         const can_see_materials = {% if can_see_materials %}true{% else %}false{% endif %}
+        const isAdmin = {% if is_admin %}true{% else %}false{% endif %}
     </script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>

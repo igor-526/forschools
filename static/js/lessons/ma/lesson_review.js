@@ -14,7 +14,6 @@ function maLessonReviewLessonInfo() {
     lessonsAPIGetItem(lessonID).then(request => {
         switch (request.status){
             case 200:
-                showSuccessToast("Тест уведомление")
                 lessonAccordion.classList.remove("d-none")
                 lessonFeedbackFormReadyButton.disabled = false
                 lessonAccordionInfoList.innerHTML = ""

@@ -9,17 +9,45 @@
                 <form id="lessonItemStatusPassedModalForm">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="lessonItemStatusPassedModalLessonNameField" class="form-label">Наименование занятия</label>
-                        <input name="lesson_name" type="text" class="form-control" id="lessonItemStatusPassedModalLessonNameField">
-                        <div class="form-text">Введите наименование занятия согласно программе (например, HSK1 урок 1)</div>
-                        <div class="invalid-feedback" id="lessonItemStatusPassedModalLessonNameError"></div>
+                        <label for="lessonItemStatusPassedModalFormNameField" class="form-label">Наименование занятия (УМК)</label>
+                        <input name="name" type="text" class="form-control" id="lessonItemStatusPassedModalFormNameField">
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormNameError"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="lessonItemStatusPassedModalNoteField" class="form-label">Заметка (ученик не сможет увидеть)</label>
-                        <textarea name="note_teacher" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalNoteField"></textarea>
-                        <div class="form-text">Расскажите, всё ли прошло хорошо? Какие проблемы возникли у ученика, что не успели пройти и т.д.<br>Необязательно к заполнению</div>
-                        <div class="invalid-feedback" id="lessonItemStatusPassedModalNoteError"></div>
+                        <label for="lessonItemStatusPassedModalFormMaterialsField" class="form-label">Используемые материалы</label>
+                        <textarea name="materials" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalFormMaterialsField"></textarea>
+                        <div class="form-text">Обязательно к заполнению. Может быть заполнено автоматически из прикрепленных к занятию материалов. Дополните, если были использованы другие материалы</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormMaterialsError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormLexisField" class="form-label">Лексика</label>
+                        <input name="lexis" type="text" class="form-control" id="lessonItemStatusPassedModalFormLexisField">
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormLexisError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormGrammarField" class="form-label">Грамматика</label>
+                        <input name="grammar" type="text" class="form-control" id="lessonItemStatusPassedModalFormGrammarField">
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormGrammarError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormNoteField" class="form-label">Примечание</label>
+                        <textarea name="note" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalFormNoteField"></textarea>
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormNoteError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormOrgField" class="form-label">Орг. моменты и поведение ученика</label>
+                        <textarea name="org" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalFormOrgField"></textarea>
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormOrgError"></div>
                     </div>
                 </form>
                 <div class="alert alert-danger d-flex align-items-center d-none mb-3" role="alert" id="lessonItemStatusPassedModalErrorsAlert">

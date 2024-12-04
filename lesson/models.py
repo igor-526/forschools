@@ -42,10 +42,10 @@ class Place(models.Model):
 
 
 class LessonTeacherReview(models.Model):
-    used_materials = models.CharField(verbose_name='Используемые материалы',
-                                      max_length=2000,
-                                      null=False,
-                                      blank=False)
+    materials = models.CharField(verbose_name='Используемые материалы',
+                                 max_length=2000,
+                                 null=False,
+                                 blank=False)
     lexis = models.CharField(verbose_name='Лексика',
                              max_length=300,
                              null=False,

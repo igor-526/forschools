@@ -1,6 +1,8 @@
 function lessonItemSetStatusPassedMain(){
     lessonItemStatusPassedButton.addEventListener('click', lessonItemSetStatusPassedReset)
     lessonItemStatusPassedModalButton.addEventListener('click', lessonItemSetStatusPassedSet)
+    isAdmin ? lessonItemStatusPassedModalForm.classList.add("d-none") :
+        lessonItemStatusPassedModalForm.classList.remove("d-none")
 }
 
 function lessonItemSetStatusCancelledMain(){
@@ -31,19 +33,26 @@ function lessonItemSetStatusCancelledMain(){
 
 function lessonItemSetStatusPassedReset(validationOnly = false){
     function resetValidation(){
-        lessonItemStatusPassedModalNoteField.classList.remove("is-invalid")
-        lessonItemStatusPassedModalNoteError.innerHTML = ""
-        lessonItemStatusPassedModalLessonNameField.classList.remove("is-invalid")
-        lessonItemStatusPassedModalLessonNameError.innerHTML = ""
+        lessonItemStatusPassedModalFormNameField.classList.remove("is-invalid")
+        lessonItemStatusPassedModalFormMaterialsField.classList.remove("is-invalid")
+        lessonItemStatusPassedModalFormLexisField.classList.remove("is-invalid")
+        lessonItemStatusPassedModalFormGrammarField.classList.remove("is-invalid")
+        lessonItemStatusPassedModalFormNoteField.classList.remove("is-invalid")
+        lessonItemStatusPassedModalFormOrgField.classList.remove("is-invalid")
+        lessonItemStatusPassedModalFormNameError.innerHTML = ""
+        lessonItemStatusPassedModalFormMaterialsError.innerHTML = ""
+        lessonItemStatusPassedModalFormLexisError.innerHTML = ""
+        lessonItemStatusPassedModalFormGrammarError.innerHTML = ""
+        lessonItemStatusPassedModalFormNoteError.innerHTML = ""
+        lessonItemStatusPassedModalFormOrgError.innerHTML = ""
         lessonItemStatusPassedModalErrors.innerHTML = ""
         lessonItemStatusPassedModalErrorsAlert.classList.add("d-none")
     }
 
-    if (validationOnly){
-        resetValidation()
+    resetValidation()
+    if (!validationOnly){
+        lessonItemStatusPassedModalForm.reset()
     }
-    lessonItemStatusPassedModalNoteField.value = ""
-
 }
 
 function lessonItemSetStatusCancelledReset(validationOnly = false){
@@ -71,46 +80,164 @@ function lessonItemSetStatusPassedValidation(errors=null){
         validationStatus = false
     }
 
-    function validateName(error){
+    function validateName(error=null){
         if (error){
             setInvalid(
                 error,
-                lessonItemStatusPassedModalLessonNameField,
-                lessonItemStatusPassedModalLessonNameError
+                lessonItemStatusPassedModalFormNameField,
+                lessonItemStatusPassedModalFormNameError
             )
         } else {
-            if (lessonItemStatusPassedModalLessonNameField.value.trim().length === 0){
+            if (lessonItemStatusPassedModalFormNameField.value.trim() === ""){
                 setInvalid(
-                        "Наименование занятия не может быть пустым",
-                        lessonItemStatusPassedModalLessonNameField,
-                        lessonItemStatusPassedModalLessonNameError
-                    )
+                    "Поле не может быть пустым",
+                    lessonItemStatusPassedModalFormNameField,
+                    lessonItemStatusPassedModalFormNameError
+                )
             } else {
-                if (lessonItemStatusPassedModalLessonNameField.value.trim().length > 200){
+                const valueLength = lessonItemStatusPassedModalFormNameField.value.trim().length
+                if (valueLength < 5 || valueLength > 200){
                     setInvalid(
-                        "Длина сообщения не может превышать 200 символов",
-                        lessonItemStatusPassedModalLessonNameField,
-                        lessonItemStatusPassedModalLessonNameError
+                        `Объём поля должен составлять от 5 до 200 символов. У вас ${valueLength}`,
+                        lessonItemStatusPassedModalFormNameField,
+                        lessonItemStatusPassedModalFormNameError
                     )
                 }
             }
         }
     }
 
-    function validateNote(error){
+    function validateMaterials(error=null){
         if (error){
             setInvalid(
                 error,
-                lessonItemStatusPassedModalNoteField,
-                lessonItemStatusPassedModalNoteError
+                lessonItemStatusPassedModalFormMaterialsField,
+                lessonItemStatusPassedModalFormMaterialsError
             )
         } else {
-            if (lessonItemStatusPassedModalNoteField.value.trim().length > 2000){
+            if (lessonItemStatusPassedModalFormMaterialsField.value.trim() === ""){
                 setInvalid(
-                    "Длина сообщения не может превышать 2000 символов",
-                    lessonItemStatusPassedModalNoteField,
-                    lessonItemStatusPassedModalNoteError
+                    "Поле не может быть пустым",
+                    lessonItemStatusPassedModalFormMaterialsField,
+                    lessonItemStatusPassedModalFormMaterialsError
                 )
+            } else {
+                const valueLength = lessonItemStatusPassedModalFormMaterialsField.value.trim().length
+                if (valueLength < 5 || valueLength > 2000){
+                    setInvalid(
+                        `Объём поля должен составлять от 5 до 2000 символов. У вас ${valueLength}`,
+                        lessonItemStatusPassedModalFormMaterialsField,
+                        lessonItemStatusPassedModalFormMaterialsError
+                    )
+                }
+            }
+        }
+    }
+
+    function validateLexis(error=null){
+        if (error){
+            setInvalid(
+                error,
+                lessonItemStatusPassedModalFormLexisField,
+                lessonItemStatusPassedModalFormLexisError
+            )
+        } else {
+            if (lessonItemStatusPassedModalFormLexisField.value.trim() === ""){
+                setInvalid(
+                    "Поле не может быть пустым",
+                    lessonItemStatusPassedModalFormLexisField,
+                    lessonItemStatusPassedModalFormLexisError
+                )
+            } else {
+                const valueLength = lessonItemStatusPassedModalFormLexisField.value.trim().length
+                if (valueLength < 5 || valueLength > 300){
+                    setInvalid(
+                        `Объём поля должен составлять от 5 до 300 символов. У вас ${valueLength}`,
+                        lessonItemStatusPassedModalFormLexisField,
+                        lessonItemStatusPassedModalFormLexisError
+                    )
+                }
+            }
+        }
+    }
+
+    function validateGrammar(error=null){
+        if (error){
+            setInvalid(
+                error,
+                lessonItemStatusPassedModalFormGrammarField,
+                lessonItemStatusPassedModalFormGrammarError
+            )
+        } else {
+            if (lessonItemStatusPassedModalFormGrammarField.value.trim() === ""){
+                setInvalid(
+                    "Поле не может быть пустым",
+                    lessonItemStatusPassedModalFormGrammarField,
+                    lessonItemStatusPassedModalFormGrammarError
+                )
+            } else {
+                const valueLength = lessonItemStatusPassedModalFormGrammarField.value.trim().length
+                if (valueLength < 5 || valueLength > 300){
+                    setInvalid(
+                        `Объём поля должен составлять от 5 до 300 символов. У вас ${valueLength}`,
+                        lessonItemStatusPassedModalFormGrammarField,
+                        lessonItemStatusPassedModalFormGrammarError
+                    )
+                }
+            }
+        }
+    }
+
+    function validateNote(error=null){
+        if (error){
+            setInvalid(
+                error,
+                lessonItemStatusPassedModalFormNoteField,
+                lessonItemStatusPassedModalFormNoteError
+            )
+        } else {
+            if (lessonItemStatusPassedModalFormNoteField.value.trim() === ""){
+                setInvalid(
+                    "Поле не может быть пустым",
+                    lessonItemStatusPassedModalFormNoteField,
+                    lessonItemStatusPassedModalFormNoteError
+                )
+            } else {
+                const valueLength = lessonItemStatusPassedModalFormNoteField.value.trim().length
+                if (valueLength < 5 || valueLength > 2000){
+                    setInvalid(
+                        `Объём поля должен составлять от 5 до 2000 символов. У вас ${valueLength}`,
+                        lessonItemStatusPassedModalFormNoteField,
+                        lessonItemStatusPassedModalFormNoteError
+                    )
+                }
+            }
+        }
+    }
+
+    function validateOrg(error=null){
+        if (error){
+            setInvalid(
+                error,
+                lessonItemStatusPassedModalFormOrgField,
+                lessonItemStatusPassedModalFormOrgError
+            )
+        } else {
+            if (lessonItemStatusPassedModalFormOrgField.value.trim() === ""){
+                setInvalid(
+                    "Поле не может быть пустым",
+                    lessonItemStatusPassedModalFormOrgField,
+                    lessonItemStatusPassedModalFormOrgError
+                )
+            } else {
+                const valueLength = lessonItemStatusPassedModalFormOrgField.value.trim().length
+                if (valueLength < 5 || valueLength > 2000){
+                    setInvalid(
+                        `Объём поля должен составлять от 5 до 2000 символов. У вас ${valueLength}`,
+                        lessonItemStatusPassedModalFormOrgField,
+                        lessonItemStatusPassedModalFormOrgError
+                    )
+                }
             }
         }
     }
@@ -118,10 +245,31 @@ function lessonItemSetStatusPassedValidation(errors=null){
     lessonItemSetStatusPassedReset(true)
     let validationStatus = true
     if (errors){
-        console.log("eojnfdoigeor")
+        if (errors.hasOwnProperty("name")){
+            validateName(errors.name)
+        }
+        if (errors.hasOwnProperty("materials")){
+            validateMaterials(errors.materials)
+        }
+        if (errors.hasOwnProperty("lexis")){
+            validateLexis(errors.lexis)
+        }
+        if (errors.hasOwnProperty("grammar")){
+            validateGrammar(errors.grammar)
+        }
+        if (errors.hasOwnProperty("note")){
+            validateNote(errors.note)
+        }
+        if (errors.hasOwnProperty("org")){
+            validateOrg(errors.org)
+        }
     } else {
         validateName()
+        validateMaterials()
+        validateLexis()
+        validateGrammar()
         validateNote()
+        validateOrg()
     }
     return validationStatus
 }
@@ -195,21 +343,9 @@ function lessonItemSetStatusCancelledValidation(errors){
 }
 
 function lessonItemSetStatusPassedSet(){
-    function getFD(){
-        const fd = new FormData(lessonItemStatusPassedModalForm)
-        const name = fd.get("lesson_name")
-        const note = fd.get("note_teacher")
-        if (name){
-            fd.set("lesson_name", name.trim())
-        }
-        if (note){
-            fd.set("note_teacher", note.trim())
-        }
-        return fd
-    }
-
-    if (lessonItemSetStatusPassedValidation(null)){
-        lessonsAPISetStatus(lessonID, getFD()).then(request => {
+    if (isAdmin || lessonItemSetStatusPassedValidation()){
+        lessonsAPISetStatus(lessonID,
+            new FormData(lessonItemStatusPassedModalForm)).then(request => {
             switch (request.status){
                 case 201:
                     bsLessonItemStatusPassedModal.hide()
@@ -225,6 +361,10 @@ function lessonItemSetStatusPassedSet(){
                     }, 500)
                     break
                 case 400:
+                    if (request.response.hasOwnProperty("error")){
+                        bsLessonItemStatusPassedModal.hide()
+                        showErrorToast(request.response.error)
+                    }
                     lessonItemSetStatusPassedValidation(request.response)
                     break
                 default:
@@ -270,10 +410,18 @@ const bsLessonItemStatusCancelledModal = new bootstrap.Modal(lessonItemStatusCan
 
 //FormPassed
 const lessonItemStatusPassedModalForm = lessonItemStatusPassedModal.querySelector("#lessonItemStatusPassedModalForm")
-const lessonItemStatusPassedModalNoteField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalNoteField")
-const lessonItemStatusPassedModalNoteError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalNoteError")
-const lessonItemStatusPassedModalLessonNameField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalLessonNameField")
-const lessonItemStatusPassedModalLessonNameError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalLessonNameError")
+const lessonItemStatusPassedModalFormNameField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormNameField")
+const lessonItemStatusPassedModalFormNameError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormNameError")
+const lessonItemStatusPassedModalFormMaterialsField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormMaterialsField")
+const lessonItemStatusPassedModalFormMaterialsError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormMaterialsError")
+const lessonItemStatusPassedModalFormLexisField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormLexisField")
+const lessonItemStatusPassedModalFormLexisError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormLexisError")
+const lessonItemStatusPassedModalFormGrammarField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormGrammarField")
+const lessonItemStatusPassedModalFormGrammarError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormGrammarError")
+const lessonItemStatusPassedModalFormNoteField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormNoteField")
+const lessonItemStatusPassedModalFormNoteError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormNoteError")
+const lessonItemStatusPassedModalFormOrgField = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormOrgField")
+const lessonItemStatusPassedModalFormOrgError = lessonItemStatusPassedModalForm.querySelector("#lessonItemStatusPassedModalFormOrgError")
 
 //ButtonsPassed
 const lessonItemStatusPassedModalButton = lessonItemStatusPassedModal.querySelector("#lessonItemStatusPassedModalButton")
