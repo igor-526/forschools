@@ -1,5 +1,6 @@
 const fd = new FormData()
 fd.set("redirect_url", window.location.href)
+console.log(tgUserdata)
 if (tgUserdata.user){
     fd.set("tg_url", tgUserdata.user.id)
 }
