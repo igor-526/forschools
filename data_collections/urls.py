@@ -13,7 +13,7 @@ from .views import (CollectionPageView,
 
 urlpatterns = [
     path('administration/collections', CollectionPageView.as_view(),
-         name='admin_collections'),     # коллекция данных (администрирование)
+         name='admin_collections'),
 ]
 
 apiv1patterns = [

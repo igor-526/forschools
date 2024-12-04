@@ -3,11 +3,12 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from profile_management.models import NewUser, Telegram
 from tgbot.funcs.menu import send_menu
+from tgbot.keyboards.ma import get_miniapp_button
 
 router = Router(name=__name__)
 
 
-@router.message(CommandStart())     # обработка команды /start и кода
+@router.message(CommandStart())
 async def command_start_handler(message: types.Message, state: FSMContext):
     try:
         code = message.text.split(" ")[1]
@@ -43,6 +44,12 @@ async def command_start_handler(message: types.Message, state: FSMContext):
                                   "Для привязки бота к Вашему аккаунту воспользуйтесь ссылкой в Вашем профиле")
 
 
-@router.message(Command('reset'))     # обработка команды /reset
+@router.message(Command('reset'))
 async def command_reset_handler(message: types.Message, state: FSMContext):
     await send_menu(message.from_user.id, state)
+
+
+@router.message(Command('ma'))
+async def command_ma_handler(message: types.Message, state: FSMContext):
+    await message.reply(text="Лови",
+                        reply_markup=get_miniapp_button())
