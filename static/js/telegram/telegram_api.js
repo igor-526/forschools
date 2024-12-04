@@ -3,17 +3,6 @@ async function telegramAPIGetUser(userID){
     return await APIGetToObject(request)
 }
 
-// async function telegramAPIDisconnect(userID){
-//     const request = await fetch(`/api/v1/users/${userID}/telegram/`, {
-//         method: 'delete',
-//         credentials: 'same-origin',
-//         headers: {
-//             "X-CSRFToken": csrftoken,
-//         }
-//     })
-//     return APIDeleteToObject(request)
-// }
-
 async function telegramAPIGetUsers(){
     const request = await fetch('/api/v1/telegram/all/')
     return APIGetToObject(request)

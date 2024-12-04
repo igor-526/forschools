@@ -38,3 +38,4 @@ apiv1patterns = [
     path('<int:pk>/hw/', UserHWListAPIView.as_view()),
     path('<int:pk>/lessons/', UserLessonListAPIView.as_view()),
 ]
+

@@ -1,38 +1,73 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <form class="test-form">
-        <input type="text" placeholder="Введите заголовок" class="title-inp">
-        <input type="text" placeholder="Введите описание" class="desc-inp">
-        <input type="text" placeholder="Введите текст" class="text-inp">
-        <button class="btn s-btn">Отправить</button>
-    </form>
-    <div id="maData"></div>
+{% extends 'ma_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="accordion mb-3 d-none" id="maLessonAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="maLessonAccordionHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#maLessonAccordionInfo" aria-expanded="false" aria-controls="maLessonAccordionInfo">
+                    Информация о занятии
+                </button>
+            </h2>
+            <div id="maLessonAccordionInfo" class="accordion-collapse collapse" aria-labelledby="maLessonAccordionHeading" data-bs-parent="#maLessonAccordion">
+                <div class="accordion-body">
+                        <ul class="list-group list-group-flush" id="maLessonAccordionInfoList">
+                                <li class="list-group-item">Описание: {{ lesson.description }}</li>
+                        </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <div class="container">
+        <div class="mb-3">
+            <label for="maLessonFeedbackFormLessonNameField" class="form-label">Наименование занятия (УМК)</label>
+            <input type="text" class="form-control" id="maLessonFeedbackFormLessonNameField">
+            <div class="form-text">Обязательно к заполнению</div>
+            <div class="invalid-feedback" id="maLessonFeedbackFormLessonNameError"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="maLessonFeedbackFormLessonMaterialsField" class="form-label">Используемые материалы</label>
+            <textarea type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonMaterialsField"></textarea>
+            <div class="form-text">Заполнено автоматически из прикрепленных материалов занятия. Дополните, если были использованы другие материалы</div>
+            <div class="invalid-feedback" id="maLessonFeedbackFormLessonMaterialsError"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="maLessonFeedbackFormLessonLexisField" class="form-label">Лексика</label>
+            <input type="text" class="form-control" id="maLessonFeedbackFormLessonLexisField">
+            <div class="form-text">Обязательно к заполнению</div>
+            <div class="invalid-feedback" id="maLessonFeedbackFormLessonLexisError"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="maLessonFeedbackFormLessonGrammarField" class="form-label">Грамматика</label>
+            <input type="text" class="form-control" id="maLessonFeedbackFormLessonGrammarField">
+            <div class="form-text">Обязательно к заполнению</div>
+            <div class="invalid-feedback" id="maLessonFeedbackFormLessonGrammarError"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="maLessonFeedbackFormLessonNoteField" class="form-label">Примечание</label>
+            <textarea type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonNoteField"></textarea>
+            <div class="form-text">Обязательно к заполнению</div>
+            <div class="invalid-feedback" id="maLessonFeedbackFormLessonNoteError"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="maLessonFeedbackFormLessonOrgField" class="form-label">Орг. моменты и поведение ученика</label>
+            <textarea type="text" class="form-control" rows="3" id="maLessonFeedbackFormLessonOrgField"></textarea>
+            <div class="form-text">Обязательно к заполнению</div>
+            <div class="invalid-feedback" id="maLessonFeedbackFormLessonOrgError"></div>
+        </div>
+
+        <button id="maLessonFeedbackFormReadyButton" type="button" class="btn btn-primary">Готово</button>
+    </div>
+{% endblock %}
+{% block static_js %}
     <script>
-        let tg = window.Telegram.WebApp;
-        let sBtn = document.getElementsByClassName("s-btn")[0]
-        const userdata = tg.initDataUnsafe
-        sBtn.addEventListener("click", () => {
-            let title = document.getElementsByClassName("title-inp")[0];
-            let description = document.getElementsByClassName("desc-inp")[0];
-            let text = document.getElementsByClassName("text-inp")[0];
-
-
-            let data = {
-                title: title.value,
-                desc: description.value,
-                text: text.value
-            }
-
-            tg.sendData(JSON.stringify(data));
-        });
+        const lessonID = {{ lesson_id }}
     </script>
-</body>
-</html>
+    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+    <script src="{% static 'js/lessons/ma/lesson_review.js' %}"></script>
+{% endblock %}

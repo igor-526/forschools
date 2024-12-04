@@ -22,7 +22,7 @@ from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
                           NewUserNameOnlyListSerializer, NewUserLastMessageDateListSerializer)
 
 
-def user_login(request):    # страница авторизации и логин
+def user_login(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse_lazy('dashboard'))
     if request.POST:
@@ -35,13 +35,13 @@ def user_login(request):    # страница авторизации и лог�
     return render(request, 'login.html')
 
 
-def user_logout(request):    # логаут
+def user_logout(request):
     logout(request)
     return HttpResponseRedirect(reverse_lazy('login'))
 
 
 @permission_required(perm='auth.register_users', raise_exception=True)
-def register_view(request):     # API для регистрации пользователей
+def register_view(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -221,7 +221,7 @@ class UsersPage(CanSeeUserPageMixin, TemplateView):  # страница поль
         return render(request, self.template_name, context)
 
 
-class UserListAPIView(LoginRequiredMixin, ListAPIView):     # API для вывода списка пользователей
+class UserListAPIView(LoginRequiredMixin, ListAPIView):
     def get_serializer_class(self):
         setting = self.request.query_params.get("setting")
         if setting == 'messagesadmin':
