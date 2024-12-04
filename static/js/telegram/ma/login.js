@@ -10,6 +10,6 @@ fetch('/ma/login/', {
     body: fd
 }).then(request => {
     if (request.status === 302) {
-        request.json().then(url => window.location.assign(url))
+        // request.json().then(url => window.location.assign(url))
     }
 })
