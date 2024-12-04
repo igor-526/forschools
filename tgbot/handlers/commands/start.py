@@ -6,6 +6,7 @@ import json
 from profile_management.models import NewUser, Telegram
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.ma import get_miniapp_button
+from tgbot.create_bot import dp
 
 router = Router(name=__name__)
 
@@ -55,9 +56,3 @@ async def command_reset_handler(message: types.Message, state: FSMContext):
 async def command_ma_handler(message: types.Message):
     await message.reply(text="Лови",
                         reply_markup=get_miniapp_button())
-
-
-@router.message(F.content_type == ContentType.WEB_APP_DATA)
-async def command_ma_data_handler(message: types.Message):
-    data = json.loads(message.web_app_data.data)
-    await message.answer(text=str(data))

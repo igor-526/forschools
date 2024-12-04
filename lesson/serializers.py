@@ -1,11 +1,10 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-from .models import Lesson
+from .models import Lesson, Place, LessonTeacherReview
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from material.serializers import MaterialListSerializer
 from homework.serializers import HomeworkListSerializer
 from data_collections.serializers import PlaceSerializer
-from lesson.models import Place
 from learning_plan.models import LearningPhases
 from learning_plan.permissions import can_edit_plan
 from .permissions import can_set_not_held, can_set_passed
@@ -87,3 +86,9 @@ class LessonListSerializer(serializers.ModelSerializer):
         phase = LearningPhases.objects.get(pk=self.context.get('phase_pk'))
         phase.lessons.add(lesson)
         return lesson
+
+
+class LessonTeacherReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = "__all__"

@@ -16,6 +16,7 @@ function maLessonReviewLessonInfo() {
             case 200:
                 showSuccessToast("Тест уведомление")
                 lessonAccordion.classList.remove("d-none")
+                lessonFeedbackFormReadyButton.disabled = false
                 lessonAccordionInfoList.innerHTML = ""
                 lessonAccordionInfoList.insertAdjacentElement("beforeend", getListItem(
                     "Наименование", request.response.name
@@ -194,15 +195,7 @@ function maLessonReviewValidate() {
 
 function maLessonReviewSend() {
     if (maLessonReviewValidate()) {
-        const data = {
-            name: lessonFeedbackFormLessonNameField.value.trim(),
-            materials: lessonFeedbackFormLessonMaterialsField.value.trim(),
-            lexis: lessonFeedbackFormLessonLexisField.value.trim(),
-            grammar: lessonFeedbackFormLessonGrammarField.value.trim(),
-            note: lessonFeedbackFormLessonNoteField.value.trim(),
-            org: lessonFeedbackFormLessonOrgField.value.trim(),
-        }
-        tgAPI.sendData(JSON.stringify(data));
+
     }
 }
 

@@ -197,13 +197,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
             return JsonResponse({'error': "Занятие не найдено"}, status=status.HTTP_400_BAD_REQUEST)
         if lesson.status == 0:
             if can_set_passed(request, lesson):
-                note_teacher = request.POST.get('note_teacher').strip(" ")
                 lesson_name = request.POST.get('lesson_name').strip(" ")
-                if len(note_teacher) > 2000:
-                    return JsonResponse({'note_teacher': "Длина заметки не может превышать 2000 символов"},
-                                        status=status.HTTP_400_BAD_REQUEST)
-                if note_teacher != '':
-                    lesson.note_teacher = note_teacher
                 if len(lesson_name) > 200:
                     return JsonResponse({'lesson_name': "Длина наименования занятия не "
                                                         "может превышать 200 символов"},

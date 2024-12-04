@@ -41,6 +41,33 @@ class Place(models.Model):
         return None
 
 
+class LessonTeacherReview(models.Model):
+    used_materials = models.CharField(verbose_name='Используемые материалы',
+                                      max_length=2000,
+                                      null=False,
+                                      blank=False)
+    lexis = models.CharField(verbose_name='Лексика',
+                             max_length=300,
+                             null=False,
+                             blank=False)
+    grammar = models.CharField(verbose_name='Грамматика',
+                               max_length=300,
+                               null=False,
+                               blank=False)
+    note = models.CharField(verbose_name='Примечание',
+                            max_length=2000,
+                            null=False,
+                            blank=False)
+    org = models.CharField(verbose_name='Орг. моменты и поведение ученика',
+                           max_length=2000,
+                           null=False,
+                           blank=False)
+
+    class Meta:
+        verbose_name = 'Отзыв преподавателя о занятии'
+        verbose_name_plural = 'Отзывы преподавателей о занятиях'
+
+
 class Lesson(models.Model):
     name = models.CharField(verbose_name='Наименование',
                             max_length=200,
@@ -82,17 +109,6 @@ class Lesson(models.Model):
                               null=True,
                               blank=True,
                               on_delete=models.DO_NOTHING)
-    evaluation = models.IntegerField(verbose_name='Оценка занятия',
-                                     null=True,
-                                     blank=True)
-    note_teacher = models.CharField(verbose_name='Заметка преподавателя',
-                                    max_length=2000,
-                                    null=True,
-                                    blank=True)
-    note_listener = models.CharField(verbose_name='Заметка ученика',
-                                     max_length=2000,
-                                     null=True,
-                                     blank=True)
     status = models.IntegerField(verbose_name='Статус',
                                  default=0,
                                  null=False,
@@ -103,6 +119,11 @@ class Lesson(models.Model):
                                             null=True,
                                             blank=True,
                                             on_delete=models.DO_NOTHING)
+    lesson_teacher_review = models.ForeignKey(LessonTeacherReview,
+                                              verbose_name="Отзыв преподавателя",
+                                              null=True,
+                                              blank=True,
+                                              on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'Занятие'

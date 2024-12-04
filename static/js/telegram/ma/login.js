@@ -11,8 +11,6 @@ fetch('/ma/login/', {
     body: fd
 }).then(request => {
     if (request.status === 302) {
-        setTimeout(function () {
-                    request.json().then(url => window.location.assign(url))
-        }, 5000)
+        request.json().then(url => window.location.assign(url))
     }
 })
