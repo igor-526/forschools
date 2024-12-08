@@ -8,11 +8,12 @@ from django.db.models import Q
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 
+import lesson
 from learning_plan.models import LearningPlan
 from learning_plan.permissions import plans_button
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from material.models import Material
-from tgbot.utils import send_homework_tg, send_materials
+from tgbot.utils import send_homework_tg, send_materials, notify_lesson_passed
 from .models import Lesson, Place, LessonTeacherReview
 from dls.utils import get_menu
 from dls.settings import MATERIAL_FORMATS
@@ -195,8 +196,8 @@ class LessonReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
 
 
 class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
-    def notify_tg(self):
-        self.request.user
+    def notify_tg(self, tg_id: int, l: Lesson, text: str = None, ):
+        notify_lesson_passed(tg_id, text, l.id)
         pass
 
     def post(self, request, *args, **kwargs):
@@ -223,7 +224,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                 lesson.status = 1
                 lesson.lesson_teacher_review = review
                 lesson.save()
-                for listener in lesson.get_learning_plan().listeners.all():
+                for listener in plan.listeners.all():
                     for hw in lesson.homeworks.filter(listener=listener):
                         res = hw.set_assigned()
                         if res.get("agreement") is not None and res.get("agreement") == False:
@@ -239,6 +240,9 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                                              listener=plan.metodist,
                                              homeworks=[hw],
                                              text="Преподаватель задал ДЗ. Требуется согалсование")
+                if request.POST.get("notify_tg_id"):
+                    self.notify_tg(tg_id=int(request.POST.get("notify_tg_id")),
+                                   l=lesson)
                 return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
                 return Response(validation['errors'], status=status.HTTP_400_BAD_REQUEST)

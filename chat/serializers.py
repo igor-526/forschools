@@ -3,7 +3,7 @@ from rest_framework import serializers
 from material.serializers import FileSerializer
 from profile_management.models import NewUser, Telegram
 from profile_management.serializers import NewUserNameOnlyListSerializer, TelegramListSerializer
-from tgbot.utils import notificate_chat_message, notificate_group_chat_message
+from tgbot.utils import notify_chat_message, notify_group_chat_message
 from .models import Message, GroupChats
 from material.models import File
 
@@ -48,9 +48,9 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             message.files.set(att_list)
             message.save()
         if chat_type == "Group":
-            notificate_group_chat_message(message)
+            notify_group_chat_message(message)
         else:
-            notificate_chat_message(message)
+            notify_chat_message(message)
         return message
 
 

@@ -8,7 +8,7 @@ from .permissions import get_delete_log_permission, get_send_hw_permission, get_
     get_can_cancel_hw_permission, get_can_accept_log_permission
 from .serializers import HomeworkListSerializer, HomeworkLogListSerializer, HomeworkLogSerializer
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
-from tgbot.utils import send_homework_tg, send_homework_edit, notificate_chat_message, send_homework_answer_tg
+from tgbot.utils import send_homework_tg, send_homework_edit, notify_chat_message, send_homework_answer_tg
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from rest_framework.response import Response
@@ -281,7 +281,7 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                 message = Message.objects.create(sender=request.user,
                                                  receiver=instance.homework.teacher,
                                                  message=request.POST.get('message'))
-                notificate_chat_message(message)
+                notify_chat_message(message)
 
             instance.agreement = agreement
             instance.save()

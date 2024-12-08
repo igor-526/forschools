@@ -8,6 +8,7 @@ from tgbot.create_bot import bot
 import async_to_sync as sync
 from tgbot.funcs.fileutils import send_file
 from tgbot.keyboards.chats import chats_get_show_message_button
+from tgbot.keyboards.lessons import get_lesson_ma_button
 from tgbot.keyboards.materials import get_materials_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_edit_button
 from dls.utils import get_tg_id_sync
@@ -229,8 +230,8 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
         )
 
 
-def notificate_group_chat_message(message: Message):
-    def notificate(tg_ids, text_type="user"):
+def notify_group_chat_message(message: Message):
+    def notify(tg_ids, text_type="user"):
         msg_text = ""
         if text_type == "user":
             msg_text = f'<b>Новое сообщение из "{group.name}"</b>\n{message.message}'
@@ -254,13 +255,13 @@ def notificate_group_chat_message(message: Message):
     receivers_tg_id = [tgnote.tg_id for tgnote in
                        Telegram.objects.filter(user__in=group.users.exclude(id=message.sender.id), usertype="main")]
     attachments = message.files.all()
-    notificate(users_tg_id, 'user')
-    notificate(receivers_tg_id, 'user')
-    notificate(receiver_parents_tg_id, 'receiver_parent')
-    notificate(sender_parents_tg_id, 'sender_parent')
+    notify(users_tg_id, 'user')
+    notify(receivers_tg_id, 'user')
+    notify(receiver_parents_tg_id, 'receiver_parent')
+    notify(sender_parents_tg_id, 'sender_parent')
 
 
-def notificate_chat_message(message: Message):
+def notify_chat_message(message: Message):
     def add_tgjournal_note(result):
         if result.get("status") == "success":
             TgBotJournal.objects.create(
@@ -351,3 +352,12 @@ def send_homework_edit(hw: Homework, user: NewUser):
     sync_funcs.send_tg_message_sync(tg_id=user.telegram.filter(usertype="main").first().tg_id,
                                     message=f"ДЗ '{hw.name}'",
                                     reply_markup=get_homework_edit_button(hw.id))
+
+
+def notify_lesson_passed(tg_id: int, text: str = "Занятие успешно проведено!", lesson_id: int = None):
+    rm = None
+    if lesson_id:
+        rm = get_lesson_ma_button(lesson_id)
+    sync_funcs.send_tg_message_sync(tg_id=tg_id,
+                                    message=text,
+                                    reply_markup=rm)

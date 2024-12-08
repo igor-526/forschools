@@ -1,6 +1,7 @@
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.lessons import LessonScheduleListCallback
+from tgbot.keyboards.utils import keyboard_anti_cache_url
 
 
 def lessons_get_users_buttons(users: list) -> InlineKeyboardMarkup:
@@ -10,5 +11,15 @@ def lessons_get_users_buttons(users: list) -> InlineKeyboardMarkup:
             text=f"{user.get('first_name')} {user.get('last_name')}",
             callback_data=LessonScheduleListCallback(user_id=user.get('user_id'))
         )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_lesson_ma_button(lesson_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Посмотреть",
+        web_app=WebAppInfo(url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/lessons/{lesson_id}/"))
+    )
     builder.adjust(1)
     return builder.as_markup()
