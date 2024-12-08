@@ -195,7 +195,7 @@ function maLessonReviewValidate() {
 function maLessonReviewSend() {
     function getFD() {
         const fd = new FormData(lessonFeedbackForm)
-        fd.set("ma", "true")
+        fd.set("ma", tgUserdata.user.id)
         return fd
     }
 
