@@ -200,7 +200,7 @@ function maLessonReviewSend() {
     }
 
     if (maLessonReviewValidate()) {
-        lessonsAPISetPassed(lessonID, getFD).then(request => {
+        lessonsAPISetPassed(lessonID, getFD()).then(request => {
             switch (request.status) {
                 case 201:
                     tgAPI.close()
