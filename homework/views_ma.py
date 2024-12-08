@@ -9,7 +9,7 @@ decorators = [never_cache]
 
 
 @method_decorator(decorators, name='dispatch')
-class HomeworkItemMAPage(LoginRequiredMixin, TemplateView):
+class HomeworkItemMAPage(TemplateView):
     template_name = "ma/homework_item.html"
 
     def get(self, request, *args, **kwargs):
