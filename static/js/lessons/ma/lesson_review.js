@@ -193,13 +193,38 @@ function maLessonReviewValidate() {
 }
 
 function maLessonReviewSend() {
-    if (maLessonReviewValidate()) {
+    function getFD() {
+        const fd = new FormData(lessonFeedbackForm)
+        fd.set("ma", "true")
+        return fd
+    }
 
+    if (maLessonReviewValidate()) {
+        lessonsAPISetPassed(lessonID, getFD).then(request => {
+            switch (request.status) {
+                case 201:
+                    tgAPI.close()
+                    break
+                case 400:
+                    if (request.response.hasOwnProperty("error")) {
+                        showErrorToast(request.response.error)
+                    }
+                    maLessonReviewValidate(request.response)
+                    break
+                default:
+                    showErrorToast()
+                    setTimeout(function () {
+                        tgAPI.close()
+                    }, 1000)
+                    break
+            }
+        })
     }
 }
 
 const lessonAccordion = document.querySelector("#maLessonAccordion")
 const lessonAccordionInfoList = document.querySelector("#maLessonAccordionInfoList")
+const lessonFeedbackForm = document.querySelector("#maLessonFeedbackForm")
 const lessonFeedbackFormLessonNameField = document.querySelector("#maLessonFeedbackFormLessonNameField")
 const lessonFeedbackFormLessonNameError = document.querySelector("#maLessonFeedbackFormLessonNameError")
 const lessonFeedbackFormLessonMaterialsField = document.querySelector("#maLessonFeedbackFormLessonMaterialsField")

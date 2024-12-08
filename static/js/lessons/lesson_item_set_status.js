@@ -344,7 +344,7 @@ function lessonItemSetStatusCancelledValidation(errors){
 
 function lessonItemSetStatusPassedSet(){
     if (isAdmin || lessonItemSetStatusPassedValidation()){
-        lessonsAPISetStatus(lessonID,
+        lessonsAPISetPassed(lessonID,
             new FormData(lessonItemStatusPassedModalForm)).then(request => {
             switch (request.status){
                 case 201:

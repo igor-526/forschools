@@ -12,7 +12,8 @@ from tgbot.funcs.materials import send_material_item
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCuratorCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_hwlogs_buttons, get_homework_menu_buttons, get_homework_lessons_buttons,
-                                      get_homework_editing_buttons, get_homework_curator_button)
+                                      get_homework_editing_buttons, get_homework_curator_button,
+                                      get_homework_add_ready_buttons)
 from tgbot.keyboards.default import cancel_keyboard, message_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
@@ -103,7 +104,7 @@ async def add_homework_select_lesson(user_tg_id: int, message: types.Message = N
             } async for lesson in Lesson.objects.filter(
                 learningphases__learningplan__curators=user,
                 date=date,
-                status__in=[0, 1]
+                status__in=[1]
             )]
         return l
 
@@ -139,46 +140,60 @@ async def add_homework_set_homework_ready(state: FSMContext,
         is_curator = user.id in curators_ids
         is_methodist = methodist == user
         is_teacher = teacher == user
-        lesson_can_be_passed = get_lesson_can_be_passed(lesson)
-        if is_curator or is_methodist:
-            if lesson_can_be_passed:
-                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} успешно задано\nЗанятие будет считаться проведённым"
-                await hw.aset_assigned(check_methodist=False)
-                await lesson.aset_passed()
+        lesson_can_be_passed = get_lesson_can_be_passed(lesson) if lesson else False
+        rm = None
+        msg_text = "!"
+        if is_teacher:
+            if lesson.status == 1 and methodist:
+                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} отправлено на согласование"
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
+                await homework_tg_notify(user,
+                                         methodist.id,
+                                         [hw],
+                                         "Преподаватель задал ДЗ. Требуется согласование")
+                for cur_id in curators_ids:
+                    await homework_tg_notify(user,
+                                             cur_id,
+                                             [hw],
+                                             "Преподаватель задал новое ДЗ")
+            elif lesson.status == 1 and methodist is None:
+                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          listener.id,
-                                         [hw])
-
-            else:
-                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно создано и будет задано после "
-                            f"проведения занятия")
-            if is_curator:
-                await homework_tg_notify(user,
-                                         teacher.id,
                                          [hw],
-                                         "Куратор задал новое домашнее заданее")
-
-        elif is_teacher:
-            if lesson.status == 1 or (lesson.status == 0 and lesson_can_be_passed):
-                result = await hw.aset_assigned()
-                if result.get("agreement"):
-                    msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} будет задано после проверки "
-                                f"методистом")
+                                         "У вас новое домашнее задание!")
+                for cur_id in curators_ids:
                     await homework_tg_notify(user,
-                                             plan.metodist.id,
+                                             cur_id,
                                              [hw],
-                                             "Требуется согласование действия преподавателя")
-                else:
-                    msg_text = f"ДЗ для {listener.first_name} {listener.last_name} успешно задано"
-                    if lesson_can_be_passed:
-                        await lesson.aset_passed()
-                        msg_text += "\nЗанятие будет считаться проведённым"
-                        await homework_tg_notify(user,
-                                                 listener.id,
-                                                 [hw])
-            else:
-                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} успешно создано и будет задано после "
+                                             "Преподаватель задал новое ДЗ")
+            elif lesson.status == 0 and lesson_can_be_passed and methodist:
+                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет отправлено на "
+                            f"согласование методисту после заполнения формы занятия")
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=lesson.id,
+                                                    for_curator_status=True if curators_ids else None)
+            elif lesson.status == 0 and lesson_can_be_passed and methodist is None:
+                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет задано после "
+                            f"заполнения формы занятия")
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=lesson.id,
+                                                    for_curator_status=True if curators_ids else None)
+            elif lesson.status == 0 and not lesson_can_be_passed:
+                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет задано после "
                             f"проведения занятия")
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
+        elif is_curator:
+            pass
+        elif is_methodist:
+            pass
         else:
             msg_text = "Вы не можете задать ДЗ к этому занятию"
         if message:
@@ -237,7 +252,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
         plan = await lesson.aget_learning_plan() if lesson else None
         teacher = plan.default_hw_teacher if plan else user
         methodist = plan.metodist if plan else None
-        curators_ids = [u.id async for u in plan.curators.all()]
+        curators_ids = [u.id async for u in plan.curators.all()] if plan else []
 
         for listener in listeners:
             hw = await Homework.objects.acreate(
@@ -249,8 +264,6 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 teacher=teacher,
                 for_curator=True
             )
-            rm = get_homework_curator_button(hw.id) if ((teacher == user and curators_ids) or
-                                                        (methodist == user and curators_ids)) else None
             await hw.materials.aset(statedata.get("new_hw").get("materials"))
             if lesson:
                 await lesson.homeworks.aadd(hw)

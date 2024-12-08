@@ -100,7 +100,7 @@ async function lessonsAPIUpdateLesson(fd, lessonID){
     return APIPostPatchToObject(request)
 }
 
-async function lessonsAPISetStatus(lessonID, fd){
+async function lessonsAPISetPassed(lessonID, fd){
     const request = await fetch(`/api/v1/lessons/${lessonID}/set_passed/`, {
         method: "POST",
         credentials: 'same-origin',

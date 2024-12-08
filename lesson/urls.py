@@ -23,5 +23,5 @@ apiv1patterns = [
 ]
 
 ma_patterns = [
-    path('<int:pk>/', LessonMAReviewFormPage.as_view()),
+    path('<int:pk>/form/', LessonMAReviewFormPage.as_view()),
 ]
