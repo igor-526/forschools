@@ -248,7 +248,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")
     current_deadline = statedata.get("new_hw").get("deadline")
-    user = await get_user(callback.from_user.id)
+    user = await get_user(callback.from_user.id) if callback else await get_user(message.from_user.id)
     current_deadline_dt = datetime.datetime(
         current_deadline.get("year"),
         current_deadline.get("month"),

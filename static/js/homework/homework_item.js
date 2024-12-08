@@ -91,6 +91,7 @@ function homeworkItemShowLogs(logs=[], clear=true){
         })
         return a
     }
+
     if (clear){
         hwItemLogList.innerHTML = ''
     }

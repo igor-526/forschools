@@ -44,9 +44,8 @@ async function homeworkAPIGetLogs(hw, last=false){
     if (queryParams.length > 0){
         url += "?" + queryParams.join("&")
     }
-    const response = await fetch(url)
-    return {status: response.status,
-        response: await response.json()}
+    const request = await fetch(url)
+    return APIGetToObject(request)
 }
 
 async function homeworkAPIGetLog(log_id){
@@ -121,6 +120,11 @@ async function homeworkAPIGet(lesson=null, status=null, teachers=[],
 
 async function homeworkAPIGetInfo(homeworkID){
     const request = await fetch(`/api/v1/homeworks/${homeworkID}/info/`)
+    return await APIGetToObject(request)
+}
+
+async function homeworkAPIGetItem(homeworkID){
+    const request = await fetch(`/api/v1/homeworks/${homeworkID}/`)
     return await APIGetToObject(request)
 }
 

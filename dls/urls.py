@@ -11,7 +11,8 @@ from lesson.urls import (urlpatterns as lesson_urlpatterns,
                          apiv1patterns as lesson_apiv1patterns,
                          ma_patterns as lesson_ma_patterns)
 from homework.urls import (urlpatterns as homework_urlpatterns,
-                           apiv1patterns as homework_apiv1patterns)
+                           apiv1patterns as homework_apiv1patterns,
+                           ma_patterns as homework_ma_patterns)
 from data_collections.urls import (urlpatterns as data_collections_urlpatterns,
                                    apiv1patterns as data_collections_apiv1patterns)
 from learning_plan.urls import (urlpatterns as learning_plan_urlpatterns,
@@ -43,6 +44,7 @@ urlpatterns = [
 
     path('homeworks/', include(homework_urlpatterns)),
     path('api/v1/homeworks/', include(homework_apiv1patterns)),
+    path('ma/homeworks/', include(homework_ma_patterns)),
 
     path('learning_plans/', include(learning_plan_urlpatterns)),
     path('api/v1/learning_plans/', include(learning_plan_apiv1patterns)),

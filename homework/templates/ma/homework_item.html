@@ -1,0 +1,59 @@
+{% extends 'ma_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="accordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="maHomeworkItemMainHeader">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#maHomeworkItemMainCollapse" aria-expanded="true" aria-controls="maHomeworkItemMainCollapse">
+                    Основные данные
+                </button>
+            </h2>
+            <div id="maHomeworkItemMainCollapse" class="accordion-collapse collapse show" aria-labelledby="maHomeworkItemMainHeader">
+                <div class="accordion-body">
+                    <ul class="list-group list-group-flush" id="maHomeworkItemMainList"></ul>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item d-none" id="maHomeworkItemLastAnswer">
+            <h2 class="accordion-header" id="maHomeworkItemLastAnswerHeader">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#maHomeworkItemLastAnswerCollapse" aria-expanded="true" aria-controls="maHomeworkItemLastAnswerCollapse">
+                    Последний ответ
+                </button>
+            </h2>
+            <div id="maHomeworkItemLastAnswerCollapse" class="accordion-collapse collapse show" aria-labelledby="maHomeworkItemLastAnswerHeader">
+                <div id="maHomeworkItemLastAnswerBody" class="accordion-body"></div>
+            </div>
+        </div>
+        <div class="accordion-item d-none" id="maHomeworkItemMaterials">
+            <h2 class="accordion-header" id="maHomeworkItemMaterialsHeader">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#maHomeworkItemMaterialsCollapse" aria-expanded="false" aria-controls="maHomeworkItemMaterialsCollapse">
+                    Материалы
+                </button>
+            </h2>
+            <div id="maHomeworkItemMaterialsCollapse" class="accordion-collapse collapse" aria-labelledby="maHomeworkItemMaterialsHeader">
+                <div class="accordion-body" id="maHomeworkItemMaterialsBody"></div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="maHomeworkItemLogsHeader">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#maHomeworkItemLogsCollapse" aria-expanded="false" aria-controls="maHomeworkItemLogsCollapse">
+                    История
+                </button>
+            </h2>
+            <div id="maHomeworkItemLogsCollapse" class="accordion-collapse collapse" aria-labelledby="maHomeworkItemLogsHeader">
+                <div class="accordion-body">
+                    <div class="list-group" id="maHomeworkItemLogsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'ma/homework_item_log_modal.html' %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        const hwID = {{ homework_id }}
+    </script>
+    <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    <script src="{% static 'js/homework/ma/homework_item.js' %}"></script>
+    <script src="{% static 'js/homework/ma/homework_item_log.js' %}"></script>
+{% endblock %}

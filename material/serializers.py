@@ -45,9 +45,15 @@ class MaterialSerializer(serializers.ModelSerializer):
 
 
 class MaterialListSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
     class Meta:
         model = Material
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'file', 'type']
+
+    def get_type(self, obj):
+        filetype = get_type(obj.file.path.split('.')[-1])
+        return filetype
 
 
 class FileSerializer(serializers.ModelSerializer):

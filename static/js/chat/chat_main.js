@@ -325,7 +325,6 @@ function chatShowMessages(messages=[], currentUserID, clear=true){
                 messageBodySenderName.innerHTML = message.sender ? `${message.sender.first_name} ${message.sender.last_name}` :
                     `${message.sender_tg.user.first_name} ${message.sender_tg.user.last_name} [${message.sender_tg.usertype}]`
                 messageBodySenderName.classList.add("chats-message-receiver-name", "mb-1")
-                console.log(message)
                 messageBody.insertAdjacentElement("beforeend", messageBodySenderName)
             }
         }

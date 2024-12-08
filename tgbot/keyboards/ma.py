@@ -6,23 +6,23 @@ def get_miniapp_button() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
         text="1",
-        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/lessons/1493/")
+        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/homeworks/342/")
     )
     builder.button(
         text="2",
-        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/lessons/1601/")
+        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/homeworks/310/")
     )
     builder.button(
         text="3",
-        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/lessons/863/")
+        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/homeworks/306/")
     )
     builder.button(
         text="4",
-        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/lessons/1698/")
+        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/homeworks/293/")
     )
     builder.button(
         text="5",
-        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/lessons/864/")
+        web_app=WebAppInfo(url="https://kitai-school.forschools.ru/ma/homeworks/280/")
     )
     builder.adjust(1)
     return builder.as_markup()

@@ -132,7 +132,7 @@ function materialsMainCollapseAction(materialID, action="show"){
                             element.innerHTML = `<video controls src="${request.response.file}" type="video/webm" style="max-height: 150px;"></video>`
                             break
                         case "Текст":
-                            await fetch(`${request.response.file}`).then(async request => {
+                            fetch(`${request.response.file}`).then(async request => {
                                 if (request.status === 200) {
                                     element.innerHTML = await request.text()
                                 } else {
