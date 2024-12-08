@@ -44,6 +44,7 @@
 <script>
     const tgAPI = window.Telegram.WebApp
     const tgUserdata = tgAPI.initDataUnsafe
+    const csrftoken = '{{ csrf_token }}'
 </script>
 {% if not is_authenticated %}
     <script src="{% static 'js/telegram/ma/login.js' %}"></script>
