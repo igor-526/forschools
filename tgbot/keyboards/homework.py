@@ -86,27 +86,32 @@ def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:
 
 
 def get_homework_item_buttons(hw_id,
-                              can_send=False,
-                              can_check=False,
-                              materials=0,
-                              history_button=True,
-                              agreement_buttons=False) -> InlineKeyboardMarkup:
+                              mat_button,
+                              send_button,
+                              check_button,
+                              last_logs_button,
+                              agreement_buttons) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    if history_button:
+    builder.button(
+        text="ПРОСМОТР",
+        web_app=WebAppInfo(
+            url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/homeworks/{hw_id}/"))
+    )
+    if mat_button:
         builder.button(
-            text="История",
-            callback_data=HomeworkCallback(
-                hw_id=hw_id,
-                action="logs")
-        )
-    if materials:
-        builder.button(
-            text=f"Показать материалы ({materials})",
+            text=f"Показать материалы",
             callback_data=HomeworkCallback(
                 hw_id=hw_id,
                 action="materials")
         )
-    if can_send:
+    if last_logs_button:
+        builder.button(
+            text="Последний ответ",
+            callback_data=HomeworkCallback(
+                hw_id=hw_id,
+                action="logs")
+        )
+    if send_button:
         builder.button(
             text="Отправить решение",
             callback_data=HomeworkCallback(
@@ -114,7 +119,7 @@ def get_homework_item_buttons(hw_id,
                 action="send"
             )
         )
-    if can_check:
+    if check_button:
         builder.button(
             text="Принять",
             callback_data=HomeworkCallback(
@@ -206,7 +211,9 @@ def get_homework_curator_button(hw_id: int, for_curator_status=True) -> InlineKe
     return builder.as_markup()
 
 
-def get_homework_add_ready_buttons(hw_id: int = None, lesson_id: int = None, for_curator_status: bool = None) -> InlineKeyboardMarkup:
+def get_homework_add_ready_buttons(hw_id: int = None,
+                                   lesson_id: int = None,
+                                   for_curator_status: bool = None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if hw_id:
         builder.button(

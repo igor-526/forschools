@@ -213,8 +213,9 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                              [hw],
                                              "Куратор задал новое домашнее задание!\nСогласование не требуется")
             else:
-                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} не может быть задано, так как занятие не"
-                            f" проведено. ДЗ удалено")
+                msg_text = (
+                    f"ДЗ для {listener.first_name} {listener.last_name} не может быть задано, так как занятие не"
+                    f" проведено. ДЗ удалено")
                 await hw.adelete()
         else:
             msg_text = "Вы не можете задать ДЗ к этому занятию"
@@ -444,11 +445,81 @@ async def search_homeworks_query(message: types.Message):
 
 
 async def show_homework(callback: CallbackQuery,
-                        callback_data: HomeworkCallback | Type[HomeworkCallback],
+                        callback_data: HomeworkCallback,
                         state: FSMContext,
-                        materials_button: bool = True,
-                        show_last_logs: bool = True):
+                        mat_auto: bool = True):
+    async def get_check_button() -> bool:
+        if hw_status.status not in [3, 5]:
+            return False
+        if 'Teacher' in gp['groups'] and hw.teacher == user:
+            return True
+        if lp:
+            return (('Metodist' in gp['groups'] and lp.metodist == user) or
+                    ('Curator' in gp['groups'] and
+                     hw.for_curator and
+                     (await lp.curators.filter(pk=user.id).aexists())))
 
+    async def get_last_logs_button() -> bool:
+        last_log = None
+        is_listener = 'Listener' in gp['groups']
+        is_not_listener = ('Curator' in gp['groups'] or 'Teacher' in gp['groups'] or
+                           'Metodist' in gp['groups'] or 'Admin' in gp['groups'])
+        if is_listener:
+            last_log = await hw.log.filter(Q(agreement__accepted=True) | Q(agreement__accepted={})).afirst()
+        if is_not_listener:
+            last_log = await hw.log.afirst()
+        if last_log:
+            return ((last_log.status in [4, 5] and is_listener) or
+                    (last_log.status == 3 and is_not_listener))
+        else:
+            return False
+
+    async def get_agreement_buttons() -> bool:
+        can_agreement_logs = lp and lp.metodist and lp.metodist == user
+        if can_agreement_logs:
+            last_log = await hw.log.afirst()
+            return last_log.agreement.get("accepted") is False
+        else:
+            return False
+
+    async def get_reply_markup():
+        mat_button = (not tg_note.setting_show_hw_materials and ((await hw.materials.acount()) > 0)) if mat_auto else False
+        send_button = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7] and hw.listener == user
+        check_button = await get_check_button()
+        last_logs_button = await get_last_logs_button()
+        agreement_buttons = await get_agreement_buttons()
+        return get_homework_item_buttons(hw.id, mat_button, send_button,
+                                         check_button, last_logs_button, agreement_buttons)
+
+    tg_note = await get_tg_note(callback.from_user.id)
+    hw = await (Homework.objects.select_related("listener")
+                .select_related("teacher")
+                .aget(pk=callback_data.hw_id))
+    hw_status = await hw.aget_status()
+    user = await get_user(callback.from_user.id)
+    gp = await get_group_and_perms(user.id)
+    lesson = await hw.aget_lesson()
+    lp = None
+    if lesson:
+        lp = await lesson.aget_learning_plan()
+    msgtext = f"ДЗ <b>{hw.name}</b>\n"
+    if hw.description:
+        msgtext += f"{hw.description}\n"
+    msgtext += "Выберите действие:"
+    if mat_auto and tg_note.setting_show_hw_materials:
+        await send_hw_materials([mat.id async for mat in hw.materials.all()], hw.id, callback.from_user.id,
+                                callback, state,
+                                False if 'Listener' in gp.get('groups') else True, False)
+    await bot.send_message(chat_id=callback.from_user.id,
+                           text=msgtext,
+                           reply_markup=await get_reply_markup())
+
+
+async def show_homework_old(callback: CallbackQuery,
+                            callback_data: HomeworkCallback | Type[HomeworkCallback],
+                            state: FSMContext,
+                            materials_button: bool = True,
+                            show_last_logs: bool = True):
     async def get_history_button() -> bool:
         logs_status = [3, 4, 5] if 'Listener' in gp['groups'] else [1, 2, 3, 4, 5, 6, 7]
         l = await HomeworkLog.objects.filter(homework=callback_data.hw_id,
@@ -584,8 +655,9 @@ async def show_log_item(callback: CallbackQuery, log_id: int):
         msg = f"<b>{log.homework.name}</b> к занятию '<b>{lesson.name}</b>'\n"
     else:
         msg = f"<b>{log.homework.name}</b>\n"
-    msg += (f"<b>{log.user}: {status_code_to_string(log.status)}</b> - {log.dt.astimezone().strftime('%d.%m %H:%M')}\n\n"
-            f"{comment}\n")
+    msg += (
+        f"<b>{log.user}: {status_code_to_string(log.status)}</b> - {log.dt.astimezone().strftime('%d.%m %H:%M')}\n\n"
+        f"{comment}\n")
     await bot.send_message(chat_id=callback.from_user.id,
                            text=msg)
     if len(files) > 0:
