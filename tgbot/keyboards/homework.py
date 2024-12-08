@@ -3,6 +3,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkLogCallback, HomeworkMenuCallback,
                                                 HomeworkNewCallback, HomeworkNewSettingCallback,
                                                 HomeworkNewSelectDateCallback, HomeworkCuratorCallback)
+from tgbot.keyboards.utils import keyboard_anti_cache_url
 
 
 def get_homework_menu_buttons(params: dict) -> InlineKeyboardMarkup:
@@ -207,22 +208,16 @@ def get_homework_curator_button(hw_id: int, for_curator_status=True) -> InlineKe
 
 def get_homework_add_ready_buttons(hw_id: int = None, lesson_id: int = None, for_curator_status: bool = None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    print(hw_id)
-    print(lesson_id)
     if hw_id:
-        print("HW")
-        x = builder.button(
+        builder.button(
             text="Домашнее задание",
-            web_app=WebAppInfo(url=f"https://kitai-school.forschools.ru/ma/homeworks/{hw_id}/")
+            web_app=WebAppInfo(url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/homeworks/{hw_id}/"))
         )
-        print(x)
     if lesson_id:
-        print("LESSON")
-        x = builder.button(
+        builder.button(
             text="ФОРМА ЗАНЯТИЯ",
-            web_app=WebAppInfo(url=f"https://kitai-school.forschools.ru/ma/lessons/{lesson_id}/form/")
+            web_app=WebAppInfo(url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/lessons/{lesson_id}/form/"))
         )
-        print(x)
     if for_curator_status is not None:
         btn_curator_text = "\u2705" if for_curator_status else "\u274C"
         btn_curator_text += " кураторы работают с ДЗ"
