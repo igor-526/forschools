@@ -354,7 +354,9 @@ def send_homework_edit(hw: Homework, user: NewUser):
                                     reply_markup=get_homework_edit_button(hw.id))
 
 
-def notify_lesson_passed(tg_id: int, text: str = "Занятие успешно проведено!", lesson_id: int = None):
+def notify_lesson_passed(tg_id: int,
+                         text: str = "Занятие успешно проведено!",
+                         lesson_id: int = None):
     rm = None
     if lesson_id:
         rm = get_lesson_ma_button(lesson_id)

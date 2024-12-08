@@ -196,10 +196,6 @@ class LessonReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
 
 
 class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
-    def notify_tg(self, tg_id: int, l: Lesson, text: str = None, ):
-        notify_lesson_passed(tg_id, text, l.id)
-        pass
-
     def post(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
@@ -241,8 +237,9 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                                              homeworks=[hw],
                                              text="Преподаватель задал ДЗ. Требуется согалсование")
                 if request.POST.get("notify_tg_id"):
-                    self.notify_tg(tg_id=int(request.POST.get("notify_tg_id")),
-                                   l=lesson)
+                    notify_lesson_passed(tg_id=int(request.POST.get("notify_tg_id")),
+                                         text="Занятие успешно проведено!",
+                                         lesson_id=lesson.id)
                 return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
                 return Response(validation['errors'], status=status.HTTP_400_BAD_REQUEST)
