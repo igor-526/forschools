@@ -146,6 +146,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
         if is_teacher:
             if lesson.status == 1 and methodist:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} отправлено на согласование"
+                await hw.aset_assigned()
                 rm = get_homework_add_ready_buttons(hw_id=hw.id,
                                                     lesson_id=None,
                                                     for_curator_status=True if curators_ids else None)
@@ -160,6 +161,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                              "Преподаватель задал новое ДЗ")
             elif lesson.status == 1 and methodist is None:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
+                await hw.aset_assigned()
                 rm = get_homework_add_ready_buttons(hw_id=hw.id,
                                                     lesson_id=None,
                                                     for_curator_status=True if curators_ids else None)
@@ -191,9 +193,29 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                                     lesson_id=None,
                                                     for_curator_status=True if curators_ids else None)
         elif is_curator:
-            pass
-        elif is_methodist:
-            pass
+            if lesson.status == 1:
+                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
+                await hw.aset_assigned(check_methodist=False)
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=None)
+                await homework_tg_notify(user,
+                                         listener.id,
+                                         [hw],
+                                         "У вас новое домашнее задание!")
+                await homework_tg_notify(user,
+                                         hw.teacher.id,
+                                         [hw],
+                                         "Куратор задал новое домашнее задание!")
+                if methodist:
+                    await homework_tg_notify(user,
+                                             methodist.id,
+                                             [hw],
+                                             "Куратор задал новое домашнее задание!\nСогласование не требуется")
+            else:
+                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} не может быть задано, так как занятие не"
+                            f" проведено. ДЗ удалено")
+                await hw.adelete()
         else:
             msg_text = "Вы не можете задать ДЗ к этому занятию"
         if message:

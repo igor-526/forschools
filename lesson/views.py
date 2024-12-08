@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
+
+from learning_plan.models import LearningPlan
 from learning_plan.permissions import plans_button
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from material.models import Material
@@ -193,9 +195,14 @@ class LessonReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
 
 
 class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
+    def notify_tg(self):
+        self.request.user
+        pass
+
     def post(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
+            plan = lesson.get_learning_plan()
         except Lesson.DoesNotExist:
             return Response({'error': "Занятие не найдено"}, status=status.HTTP_400_BAD_REQUEST)
         if lesson.status == 1:
@@ -217,16 +224,21 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                 lesson.lesson_teacher_review = review
                 lesson.save()
                 for listener in lesson.get_learning_plan().listeners.all():
-                    homeworks = lesson.homeworks.filter(listener=listener)
-                    for hw in homeworks:
+                    for hw in lesson.homeworks.filter(listener=listener):
                         res = hw.set_assigned()
                         if res.get("agreement") is not None and res.get("agreement") == False:
                             send_homework_tg(request.user, listener, [hw])
+                            if hw.for_curator:
+                                for curator in plan.curators.all():
+                                    send_homework_tg(initiator=hw.teacher,
+                                                     listener=curator,
+                                                     homeworks=[hw],
+                                                     text="Преподаватель задал ДЗ")
                         else:
                             send_homework_tg(initiator=hw.teacher,
-                                             listener=hw.get_lesson().get_learning_plan().metodist,
+                                             listener=plan.metodist,
                                              homeworks=[hw],
-                                             text="Требуется согласование действия преподавталя")
+                                             text="Преподаватель задал ДЗ. Требуется согалсование")
                 return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
                 return Response(validation['errors'], status=status.HTTP_400_BAD_REQUEST)
