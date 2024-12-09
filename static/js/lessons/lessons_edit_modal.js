@@ -132,8 +132,6 @@ function lessonEditSave(){
                     case 200:
                         bsLessonEditModal.hide()
                         showSuccessToast("Занятия успешно изменено")
-                        console.log(lessonEditSelectedElements)
-                        console.log(request.response)
                         if (lessonEditSelectedElements){
                             if(lessonEditSelectedElements.hasOwnProperty("name")){
                                 lessonEditSelectedElements.name.innerHTML = request.response.name

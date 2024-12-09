@@ -25,7 +25,6 @@ function supportTicketsGet(){
         supportTicketsFilteringSelectedUsers).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 supportTicketsShow(request.response)
                 break
             default:

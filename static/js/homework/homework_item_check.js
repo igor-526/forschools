@@ -131,7 +131,6 @@ function hwItemCheck(status){
                     break
                 case 400:
                     hwItemSendValidation(request.response)
-                    console.log(request.response)
                     break
                 default:
                     bsHwItemCheckModal.hide()

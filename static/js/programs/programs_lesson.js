@@ -83,8 +83,6 @@ async function programsLessonSetModal(lessonID=0){
                     })
                 }
                 if (homeworks.status === 200){
-                    console.log(homeworks.response)
-                    console.log(request.response.homeworks)
                     homeworks.response.forEach(hw => {
                         const selected = request.response.homeworks.find(h => h.id === hw.id)
                         if (selected === undefined){

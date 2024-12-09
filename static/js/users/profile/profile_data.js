@@ -27,7 +27,7 @@ async function profileDataShowLessons(){
     profileDataTabHW.classList.remove("active")
     await usersAPIGetLessons(userID).then(request => {
         if (request.status === 200){
-            console.log(request.response)
+
             profileDataTableHead.innerHTML = "<tr>" +
                 "<th>Наименование</th>" +
                 "<th>Преподаватель</th>" +

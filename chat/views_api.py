@@ -1,7 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import JsonResponse
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+
 from profile_management.models import NewUser, Telegram
 from .models import Message
 from .serializers import ChatMessageSerializer, ChatGroupInfoSerailizer
@@ -18,13 +19,13 @@ class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
                 try:
                     from_user = NewUser.objects.get(pk=from_user)
                     chats = from_user.get_users_for_chat()
-                    return JsonResponse(chats, safe=False, status=status.HTTP_200_OK)
+                    return Response(chats, status=status.HTTP_200_OK)
                 except NewUser.DoesNotExist:
                     raise PermissionDenied
             else:
                 raise PermissionDenied()
         chats = request.user.get_users_for_chat()
-        return JsonResponse(chats, safe=False, status=status.HTTP_200_OK)
+        return Response(chats, status=status.HTTP_200_OK)
 
 
 class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -94,9 +95,9 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         elif self.chat_type == "Group":
             group_chat = GroupChats.objects.get(pk=self.kwargs.get("user"))
             username = group_chat.name
-        return JsonResponse({'messages': serializer.data,
-                             'username': username,
-                             'current_user_id': int(current_user_id)}, status=200, safe=False)
+        return Response({'messages': serializer.data,
+                         'username': username,
+                         'current_user_id': int(current_user_id)}, status=200)
 
     def create(self, request, *args, **kwargs):
         self.set_chat_type()
@@ -106,7 +107,7 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                                                   'chat_type': self.chat_type})
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class ChatGroupsCreateAPIView(LoginRequiredMixin, CreateAPIView):

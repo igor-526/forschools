@@ -205,7 +205,6 @@ async function createMaterial() {
                     formData.delete("type")
                 }
                 const requestEdit = await materialsAPIUpdate(formData, material_id)
-                console.log(requestEdit)
                 if (requestEdit.status === 200){
                     bsOffcanvasNewMaterial.hide()
                     showToast("Редактирование материала", "Материал успешно отредактирован")

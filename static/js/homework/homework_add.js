@@ -143,7 +143,7 @@ function HWAddClientValidation(){
 }
 
 function HWAddServerValidation(errors){
-    console.log(errors)
+
 }
 
 function HWAddSearchListeners(){

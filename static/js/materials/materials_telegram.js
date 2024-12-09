@@ -2,7 +2,6 @@ function materialsTelegramMain(){
     telegramAPIGetUsers().then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 materialsTelegramUsersShow(request.response)
                 break
             default:

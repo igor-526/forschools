@@ -59,7 +59,7 @@ function lessonItemHomeworksClientValidation() {
 }
 
 function lessonItemHomeworksServerValidation(errors) {
-    console.log(errors)
+
 }
 
 async function lessonItemHomeworksSave(go = false){

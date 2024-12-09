@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login, logout
@@ -59,10 +59,10 @@ def register_view(request):
                 if status_groups != "success":
                     raise ValidationError({'role': status_groups})
             except ValidationError as err:
-                return JsonResponse(dict(err), status=400, safe=False)
-            return JsonResponse({'status': 'success'})
+                return Response(dict(err), status=400)
+            return Response({'status': 'success'})
         else:
-            return JsonResponse(form.errors, status=400)
+            return Response(form.errors, status=400)
 
 
 class AdminLoginAPIView(LoginRequiredMixin, APIView):

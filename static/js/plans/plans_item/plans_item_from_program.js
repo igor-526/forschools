@@ -33,7 +33,6 @@ function plansItemFromProgramSetPrograms(programs){
         plansItemFromProgramModalSelected = Number(this.attributes.getNamedItem("data-program-id").value)
         programsAPIProgramGetItem(this.attributes.getNamedItem("data-program-id").value).then(request => {
             if (request.status === 200){
-                console.log(request.response)
                 pFromProgramModalProgInfoTitle.innerHTML = request.response.name
                 pFromProgramModalProgInfoList.innerHTML = `
                     <li class="list-group-item">Количество этапов: ${request.response.info.phases}</li>

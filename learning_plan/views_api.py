@@ -1,7 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse, Http404
+from django.http import Http404
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from homework.models import Homework, HomeworkLog
 from lesson.models import Lesson
@@ -20,7 +21,7 @@ class PlansItemStatusAPIView(LoginRequiredMixin, APIView):
         lessons_all =Lesson.objects.filter(learningphases__learningplan=plan).count()
         lessons_passed = Lesson.objects.filter(learningphases__learningplan=plan,
                                                status__in=[1, 2]).count()
-        return JsonResponse({
+        return Response({
             "phases_passed": phases_passed,
             "lessons_all": lessons_all,
             "lessons_passed": lessons_passed,
@@ -44,7 +45,7 @@ class PlansItemStatusAPIView(LoginRequiredMixin, APIView):
         for phase in all_phases:
             if phase.lessons.count() == 0:
                 phase.delete()
-        return JsonResponse({"status": "success"}, status=200)
+        return Response({"status": "success"}, status=200)
 
 
 class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -113,7 +114,7 @@ class PlanPhasesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset(plan_pk=self.kwargs.get("plan_pk"))
         serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(serializer.data, status=200, safe=False)
+        return Response(serializer.data, status=200, safe=False)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -125,9 +126,9 @@ class PlanPhasesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                                              context={"plan": plan})
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                return JsonResponse(serializer.data, status=201)
+                return Response(serializer.data, status=201)
             else:
-                return JsonResponse(serializer.data, status=400)
+                return Response(serializer.data, status=400)
         else:
             raise PermissionDenied
 
@@ -150,9 +151,9 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
                                              context={"plan": phase.learningplan_set.first()})
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                return JsonResponse(serializer.data, status=201)
+                return Response(serializer.data, status=201)
             else:
-                return JsonResponse(serializer.data, status=400)
+                return Response(serializer.data, status=400)
         else:
             raise PermissionDenied
 
@@ -164,14 +165,14 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
         if can_edit_plan(request, phase=phase):
             if phase.lessons.count() == 0:
                 phase.delete()
-                return JsonResponse({"status": "ok"}, status=204)
+                return Response({"status": "ok"}, status=204)
         raise PermissionDenied
 
 
 class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
         program = LearningProgram.objects.get(pk=request.query_params.get("programID"))
-        return JsonResponse(plan_calculated_info(
+        return Response(plan_calculated_info(
             datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
             get_schedule(request.query_params),
             program
@@ -188,9 +189,9 @@ class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
                 plan
             )
             setter.set_program()
-            return JsonResponse({"status": "ok"}, status=201)
+            return Response({"status": "ok"}, status=201)
         else:
-            return JsonResponse({"error": "Вы не можете сгенерировать план на основе программы"}, status=400)
+            return Response({"error": "Вы не можете сгенерировать план на основе программы"}, status=400)
 
 
 class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
@@ -202,4 +203,4 @@ class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
             plan
         )
         lessons_generator.add_lessons()
-        return JsonResponse({"status": "ok"}, status=201)
+        return Response({"status": "ok"}, status=201)

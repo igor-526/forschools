@@ -10,7 +10,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.response import Response
 from .models import Homework, HomeworkLog
 from rest_framework.views import APIView
-from django.http import JsonResponse
 from rest_framework import status
 from material.models import File
 
@@ -125,7 +124,7 @@ class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
         can_edit = (hw.teacher == request.user or
                     request.user.groups.filter(name__in=["Metodist", "Admin"]).exists())
         can_add_materials_tg = can_edit and request.user.telegram.exists()
-        return JsonResponse({
+        return Response({
             "status": hw_status,
             "can_edit": can_edit,
             "can_add_materials_tg": can_add_materials_tg,
@@ -137,7 +136,7 @@ class HomeworkItemPageEditAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
         hw = Homework.objects.get(pk=kwargs.get('pk'))
         send_homework_edit(hw, request.user)
-        return JsonResponse({})
+        return Response({})
 
 
 class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -266,9 +265,9 @@ class HomeworkReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
             hw = Homework.objects.get(pk=kwargs.get("pk"))
             hw.teacher_id = request.data.get('teacher_id')
             hw.save()
-            return JsonResponse({'status': 'ok'}, status=status.HTTP_200_OK)
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
         except Homework.DoesNotExist:
-            return JsonResponse({'error': 'ДЗ не найдено'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'ДЗ не найдено'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -286,10 +285,10 @@ class HomeworkSetCancelledAPIView(LoginRequiredMixin, APIView):
         try:
             hw = Homework.objects.get(pk=kwargs.get('pk'))
         except Homework.DoesNotExist:
-            return JsonResponse({'status': 'Ошибка! ДЗ не найдено'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'status': 'Ошибка! ДЗ не найдено'}, status=status.HTTP_404_NOT_FOUND)
         if hw.get_status().status in [4, 6]:
-            return JsonResponse({'status': 'Невозможно отменить ДЗ, так как оно либо принято, либо уже отменено'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'Невозможно отменить ДЗ, так как оно либо принято, либо уже отменено'},
+                            status=status.HTTP_400_BAD_REQUEST)
         else:
             hl = HomeworkLog.objects.create(
                 homework=hw,
@@ -298,4 +297,4 @@ class HomeworkSetCancelledAPIView(LoginRequiredMixin, APIView):
                 status=6
             )
             serializer = HomeworkLogSerializer(hl, many=False, context={'request': request})
-            return JsonResponse({'status': 'ok', 'log': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'status': 'ok', 'log': serializer.data}, status=status.HTTP_200_OK)

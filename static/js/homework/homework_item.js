@@ -12,7 +12,6 @@ function homeworkItemMain(){
     homeworkAPIGetInfo(hwID).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 hwCanAcceptLogs = request.response.can_answer_logs
                 if (request.response.can_add_materials_tg){
                     hwItemAddMaterialsTG.classList.remove("d-none")

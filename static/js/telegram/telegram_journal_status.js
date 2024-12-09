@@ -12,7 +12,6 @@ function tgJournalStatusSetModal(noteID){
     telegramAPIGetJournalNote(noteID).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 tgJournalStatusModalInfo.innerHTML = `
                     <b>Тип события:</b> ${tgJournalGetEventStr(request.response.event)}<br>
                     <b>Дата и время:</b> ${timeUtilsDateTimeToStr(request.response.dt)}<br>

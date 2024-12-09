@@ -1,11 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from dls.utils import get_menu
 from lesson.models import Lesson
@@ -152,14 +152,14 @@ class SendMaterialsTGView(LoginRequiredMixin, APIView):
                 return None
         return users
 
-    def post(self, request) -> JsonResponse:
+    def post(self, request):
         users = self.get_users(request)
         mat_ids = request.POST.getlist("materials")
         materials = Material.objects.filter(id__in=mat_ids)
         if materials:
             for user in NewUser.objects.filter(id__in=users):
                 send_materials(request.user, user, materials, "manual")
-        return JsonResponse({'status': 'success'}, status=status.HTTP_200_OK)
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
 
 class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
@@ -182,7 +182,7 @@ class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
         queryset = self.get_queryset(*args, **kwargs)
         serializer = self.get_serializer_class()
         serialized = serializer(queryset, many=True)
-        return JsonResponse({
+        return Response({
             'admin_mode': self.get_admin_mode(*args, **kwargs),
             'telegrams': serialized.data,
             'code': NewUser.objects.get(pk=kwargs.get("user_id")).tg_code
@@ -197,7 +197,7 @@ class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
             tg_notes = Telegram.objects.filter(user=tg_note.user)
             for tg in tg_notes:
                 tg.delete()
-        return JsonResponse({'status': 'success'}, status=status.HTTP_200_OK)
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
     def patch(self, request, *args, **kwargs):
         tg_note = Telegram.objects.get(pk=kwargs.get("user_id"))
@@ -207,12 +207,13 @@ class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
                 if len(ut) <= 20:
                     tg_note.usertype = ut
                     tg_note.save()
-                    return JsonResponse({'status': 'success'}, status=status.HTTP_200_OK)
+                    return Response({'status': 'success'}, status=status.HTTP_200_OK)
                 else:
-                    return JsonResponse({'error': 'Ограничение 20 символов'},
-                                        status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return JsonResponse({'error': 'Обязательное поле'},
+                    return Response({'error': 'Ограничение 20 символов'},
                                     status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'Обязательное поле'},
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
-            return JsonResponse({'error': 'Невозможно поменять роль основного Telegram'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Невозможно поменять роль основного Telegram'},
+                            status=status.HTTP_400_BAD_REQUEST)

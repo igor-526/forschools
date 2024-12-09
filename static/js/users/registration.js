@@ -327,7 +327,6 @@ function usersRegistrationRegister(){
                     usersAdminGetAll()
                     break
                 case 400:
-                    console.log(request.response)
                     usersRegistrationValidation(request.response)
                     break
                 default:

@@ -385,7 +385,6 @@ function plansItemReschedulingValidation(errors){
 
     let validationStatus = true
     plansItemReschedulingReset(true)
-    console.log(errors)
     if (errors){
         if (errors.errors){
             plansItemFromProgramModalErrorsAlert.classList.remove("d-none")
@@ -452,7 +451,6 @@ function plansItemRescheduling(){
                             plansItemReschedulingSetButton("set")
                             break
                         case 400:
-                            console.log(request.response)
                             plansItemReschedulingValidation(request.response)
                             break
                         default:
