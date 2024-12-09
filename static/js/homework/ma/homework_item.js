@@ -12,37 +12,58 @@ function maHomeworkItemSetMainInfo(){
         return li
     }
 
+    function getLessonButton(lesson_info){
+        const li = document.createElement("li")
+        li.classList.add("list-group-item")
+        li.innerHTML = '<b>Занятие: </b>'
+        const a = document.createElement("a")
+        const btn = document.createElement("button")
+        a.insertAdjacentElement("beforeend", btn)
+        a.href = `/ma/lessons/${lesson_info.id}/`
+        btn.innerHTML = lesson_info.name
+        btn.classList.add("btn", "btn-outline-primary", "btn-sm")
+        li.insertAdjacentElement("beforeend", a)
+        return li
+    }
+
     homeworkAPIGetItem(hwID).then(request => {
         switch (request.status){
             case 200:
-                if (request.response.description){
+                if (hwInfo){
+                    maHWItemMain.classList.remove("d-none")
+                    if (request.response.lesson_info){
+                        maHWItemMainList.insertAdjacentElement("beforeend",
+                            getLessonButton(request.response.lesson_info))
+                    }
+                    if (request.response.description){
+                        maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
+                            "Описание",
+                            request.response.description
+                        ))
+                    }
+                    if (request.response.deadline){
+                        maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
+                            "Выполнить до",
+                            new Date(request.response.deadline).toLocaleDateString()
+                        ))
+                    }
+                    if (request.response.teacher){
+                        maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
+                            "Преподаватель",
+                            `${request.response.teacher.first_name} ${request.response.teacher.last_name}`
+                        ))
+                    }
+                    if (request.response.listener){
+                        maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
+                            "Ученик",
+                            `${request.response.listener.first_name} ${request.response.listener.last_name}`
+                        ))
+                    }
                     maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
-                        "Описание",
-                        request.response.description
+                        "C ДЗ работает куратор",
+                        request.response.for_curator ? "да" : "нет"
                     ))
                 }
-                if (request.response.deadline){
-                    maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
-                        "Выполнить до",
-                        new Date(request.response.deadline).toLocaleDateString()
-                    ))
-                }
-                if (request.response.teacher){
-                    maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
-                        "Преподаватель",
-                        `${request.response.teacher.first_name} ${request.response.teacher.last_name}`
-                    ))
-                }
-                if (request.response.listener){
-                    maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
-                        "Ученик",
-                        `${request.response.listener.first_name} ${request.response.listener.last_name}`
-                    ))
-                }
-                maHWItemMainList.insertAdjacentElement("beforeend", getListItem(
-                    "C ДЗ работает куратор",
-                    request.response.for_curator ? "да" : "нет"
-                ))
                 maHomeworkItemSetMaterials(request.response.materials)
                 break
             default:
@@ -164,6 +185,7 @@ function maHomeworkItemSetLastAnswer(){
     })
 }
 
+const maHWItemMain = document.querySelector("#maHomeworkItemMain")
 const maHWItemMainList = document.querySelector("#maHomeworkItemMainList")
 const maHWItemLastAnswer = document.querySelector("#maHomeworkItemLastAnswer")
 const maHWItemLastAnswerBody = document.querySelector("#maHomeworkItemLastAnswerBody")

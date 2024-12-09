@@ -15,7 +15,6 @@ function maLessonReviewLessonInfo() {
         switch (request.status){
             case 200:
                 lessonAccordion.classList.remove("d-none")
-                lessonFeedbackFormReadyButton.disabled = false
                 lessonAccordionInfoList.innerHTML = ""
                 lessonAccordionInfoList.insertAdjacentElement("beforeend", getListItem(
                     "Наименование", request.response.name
@@ -30,10 +29,25 @@ function maLessonReviewLessonInfo() {
                         "Дата и время", getLessonDateTimeRangeString(request.response)
                     ))
                 }
-                lessonFeedbackFormLessonMaterialsField.innerHTML = request.response.materials.map(mat => {
-                    return `${mat.name}(https://kitai-school.forschools.ru/materials/${mat.id})`
-                }).join("\n")
-
+                if (request.response.lesson_teacher_review){
+                    lessonFeedbackFormLessonMaterialsField.value = request.response.lesson_teacher_review.materials
+                    lessonFeedbackFormLessonLexisField.value = request.response.lesson_teacher_review.lexis
+                    lessonFeedbackFormLessonGrammarField.value = request.response.lesson_teacher_review.grammar
+                    lessonFeedbackFormLessonNoteField.value = request.response.lesson_teacher_review.note
+                    lessonFeedbackFormLessonOrgField.value = request.response.lesson_teacher_review.org
+                    lessonFeedbackFormLessonNameField.disabled = true
+                    lessonFeedbackFormLessonMaterialsField.disabled = true
+                    lessonFeedbackFormLessonLexisField.disabled = true
+                    lessonFeedbackFormLessonGrammarField.disabled = true
+                    lessonFeedbackFormLessonNoteField.disabled = true
+                    lessonFeedbackFormLessonOrgField.disabled = true
+                    lessonFeedbackFormReadyButton.disabled = true
+                } else {
+                    lessonFeedbackFormReadyButton.disabled = false
+                    lessonFeedbackFormLessonMaterialsField.innerHTML = request.response.materials.map(mat => {
+                        return `${mat.name}(https://kitai-school.forschools.ru/materials/${mat.id})`
+                    }).join("\n")
+                }
                 break
             default:
                 showErrorToast("Не удалось загрузить информацию о занятии")

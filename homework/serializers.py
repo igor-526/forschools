@@ -13,10 +13,20 @@ class HomeworkSerializer(serializers.ModelSerializer):
     listener = NewUserNameOnlyListSerializer()
     teacher = NewUserNameOnlyListSerializer()
     materials = MaterialListSerializer(many=True)
+    lesson_info = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Homework
         fields = '__all__'
+
+    def get_lesson_info(self, obj):
+        lesson = obj.get_lesson()
+        if lesson:
+            return {
+                "id": lesson.id,
+                "name": lesson.name,
+            } if lesson else None
+
 
 
 class HomeworkListSerializer(serializers.ModelSerializer):

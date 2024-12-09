@@ -2,7 +2,6 @@ function lessonItemMain(){
     lessonsAPIGetItem(lessonID).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 if (lessonItemAddMaterialsButton !== null){
                     lessonItemAddMaterialsButton.addEventListener("click", function () {
                         materialEmbedAction = "addToLesson"
@@ -54,6 +53,7 @@ function lessonItemSetReview(review){
         li.innerHTML = `<b>${name}: </b>${val}`
         return li
     }
+
     LessonItemReview.classList.remove("d-none")
     if (review.hasOwnProperty("materials")){
         LessonItemReviewList.insertAdjacentElement("beforeend", getListElement(

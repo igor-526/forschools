@@ -48,10 +48,10 @@
     const tgUserdata = tgAPI.initDataUnsafe
     const csrftoken = '{{ csrf_token }}'
 </script>
-{% if not is_authenticated %}
-    <script src="{% static 'js/telegram/ma/login.js' %}"></script>
-{% else %}
+{#{% if not is_authenticated %}#}
+{#    <script src="{% static 'js/telegram/ma/login.js' %}"></script>#}
+{#{% else %}#}
     {% block static_js %} {% endblock %}
-{% endif %}
+{#{% endif %}#}
 </body>
 </html>

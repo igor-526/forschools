@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
     <div class="accordion">
-        <div class="accordion-item">
+        <div class="accordion-item d-none" id="maHomeworkItemMain">
             <h2 class="accordion-header" id="maHomeworkItemMainHeader">
                 <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#maHomeworkItemMainCollapse" aria-expanded="true" aria-controls="maHomeworkItemMainCollapse">
                     Основные данные
@@ -52,6 +52,7 @@
 {% block static_js %}
     <script>
         const hwID = {{ homework_id }}
+        const hwInfo = {% if homework_info %}true{% else %}false{% endif %}
     </script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/homework/ma/homework_item.js' %}"></script>

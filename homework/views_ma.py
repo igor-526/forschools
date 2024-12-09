@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
@@ -16,6 +15,7 @@ class HomeworkItemMAPage(TemplateView):
         context = {
             "title": "Домашнее задание",
             "homework_id": kwargs.get("pk"),
+            "homework_info": request.user.groups.filter(name__in=["Admin", "Metodist", "Teacher", "Curator"]).exists(),
             "is_authenticated": request.user.is_authenticated,
         }
         return render(request, self.template_name, context)

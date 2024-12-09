@@ -20,7 +20,7 @@ class LessonSerializer(serializers.ModelSerializer):
     replace_teacher = NewUserNameOnlyListSerializer(required=False)
     materials = MaterialListSerializer(many=True, required=False)
     homeworks = HomeworkListSerializer(many=True, required=False)
-    lesson_teacher_review = LessonTeacherReviewSerializer(many=False, required=False)
+    lesson_teacher_review = serializers.SerializerMethodField(read_only=True)
     place = PlaceSerializer()
     deletable = serializers.SerializerMethodField(read_only=True)
     can_set_not_held = serializers.SerializerMethodField(read_only=True)
@@ -28,6 +28,14 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = "__all__"
+
+    def get_lesson_teacher_review(self, obj):
+        request = self.context.get("request")
+        if request and request.user.groups.filter(name__in=["Admin", "Metodist", "Teacher"]).exists():
+            return LessonTeacherReviewSerializer(obj.lesson_teacher_review, many=False).data \
+                if obj.lesson_teacher_review else None
+        else:
+            return None
 
     def get_deletable(self, obj):
         return obj.status == 0
