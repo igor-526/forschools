@@ -306,5 +306,3 @@ class AddLessons:
                 place_id=self.schedule[next_date.get("date").weekday()]["place"]
             )
             counter += 1
-
-

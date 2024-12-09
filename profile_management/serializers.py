@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
-
 from .models import NewUser, Telegram
 from django.contrib.auth.models import Group
 from data_collections.serializers import EngagementChannelSerializer, LevelSerializer
@@ -24,7 +23,6 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
     engagement_channel = EngagementChannelSerializer(read_only=True)
     level = LevelSerializer(read_only=True)
     can_edit = serializers.SerializerMethodField(read_only=True)
-
 
     class Meta:
         model = NewUser

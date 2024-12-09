@@ -81,7 +81,6 @@ class SupportTicketsListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     def filter_queryset_status(self, queryset):
         q_status = self.request.query_params.getlist('status')
         if q_status:
-            print(q_status)
             if "null" in q_status:
                 q_status.remove("null")
                 filteres_ids = list(filter(lambda ticket: ticket.get_status() in q_status, queryset))

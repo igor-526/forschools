@@ -262,12 +262,6 @@ class NewUser(AbstractUser):
                 "last_message_text": None,
                 "last_message_date": None
             }
-            # last_message = Message.objects.filter(
-            #     Q(sender=u, receiver=self) | Q(receiver=u, sender=self)
-            # ).order_by('-date').first()
-            # if last_message:
-            #     info["last_message_text"] = last_message.message[:50] if last_message.message else ""
-            #     info["last_message_date"] = last_message.date
             return info
 
         users = []
@@ -353,12 +347,6 @@ class NewUser(AbstractUser):
                 "last_message_text": None,
                 "last_message_date": None
             }
-            # last_message = Message.objects.filter(
-            #     Q(sender=u, receiver=self) | Q(receiver=u, sender=self)
-            # ).order_by('-date').first()
-            # if last_message:
-            #     info["last_message_text"] = last_message.message[:50] if last_message.message else ""
-            #     info["last_message_date"] = last_message.date
             return info
 
         users = []

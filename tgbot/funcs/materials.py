@@ -218,7 +218,6 @@ async def send_material_to_tg(callback: CallbackQuery, callback_data: MaterialIt
         await callback.message.edit_text("Материал успешно доставлен")
     except Exception as e:
         await callback.answer("Произошла ошибка, материал не доставлен")
-        print(e)
 
 
 async def search_materials(message: types.Message, state: FSMContext) -> None:

@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework import status
@@ -7,9 +6,6 @@ from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
-
-import lesson
-from learning_plan.models import LearningPlan
 from learning_plan.permissions import plans_button
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from material.models import Material
@@ -138,7 +134,7 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         if self.request.user.groups.filter(name="Curator").exists():
             if queryset is not None:
                 queryset = Lesson.objects.filter(Q(learningphases__learningplan__curators=self.request.user) |
-                                                 Q(id__in=[l.id for l in queryset]))
+                                                 Q(id__in=[lesson.id for lesson in queryset]))
             else:
                 queryset = Lesson.objects.filter(learningphases__learningplan__curators=self.request.user)
         queryset = self.filter_status(queryset)
@@ -169,7 +165,7 @@ class LessonSetMaterialsAPIView(LoginRequiredMixin, APIView):
                         send_materials(request.user, listener, Material.objects.filter(id__in=new_materials), "auto")
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return JsonResponse({'status': 'ok'})
+        return Response({'status': 'ok'})
 
     def delete(self, request, *args, **kwargs):
         try:
@@ -177,7 +173,7 @@ class LessonSetMaterialsAPIView(LoginRequiredMixin, APIView):
             materials = request.data.get('materials')
             lesson.materials.remove(*materials)
             lesson.save()
-            return JsonResponse({'status': 'ok'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'status': 'ok'}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -188,9 +184,9 @@ class LessonReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
             lesson.replace_teacher_id = request.data.get('teacher_id')
             lesson.save()
-            return JsonResponse({'status': 'ok'}, status=status.HTTP_200_OK)
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
         except Lesson.DoesNotExist:
-            return JsonResponse({'error': 'Занятие не найдено'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Занятие не найдено'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -223,7 +219,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                 for listener in plan.listeners.all():
                     for hw in lesson.homeworks.filter(listener=listener):
                         res = hw.set_assigned()
-                        if res.get("agreement") is not None and res.get("agreement") == False:
+                        if res.get("agreement") is not None and res.get("agreement") is False:
                             send_homework_tg(request.user, listener, [hw])
                             if hw.for_curator:
                                 for curator in plan.curators.all():
@@ -253,7 +249,7 @@ class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         except Lesson.DoesNotExist:
-            return JsonResponse({'error': "Занятие не найдено"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': "Занятие не найдено"}, status=status.HTTP_400_BAD_REQUEST)
         if lesson.status != 0:
             if can_set_not_held(request, lesson):
                 lesson.status = 0
@@ -261,18 +257,18 @@ class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
                 serialized_lesson = LessonSerializer(lesson, context={'request': request})
                 return Response(serialized_lesson.data, status=status.HTTP_201_CREATED)
             else:
-                return JsonResponse({'error': "Недостаточно прав для изменения статуса занятия"},
+                return Response({'error': "Недостаточно прав для изменения статуса занятия"},
                                     status=status.HTTP_400_BAD_REQUEST)
         else:
-            return JsonResponse({'error': "Занятие в статусе непроведённого"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': "Занятие в статусе непроведённого"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLessonListAPIView(LoginRequiredMixin, ListAPIView):
     serializer_class = LessonListSerializer
 
     def get_queryset(self, *args, **kwargs):
-        userID = self.kwargs.get('pk')
-        return Lesson.objects.filter(learningphases__learningplan__listeners__id=userID)
+        user_id = self.kwargs.get('pk')
+        return Lesson.objects.filter(learningphases__learningplan__listeners__id=user_id)
 
 
 class PlansItemRescheduling(LoginRequiredMixin, APIView):
@@ -331,16 +327,16 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
         return {"status": "ok" if not warns and not errors else "error", "warnings": warns, "errors": errors}
 
     def validate_plan_rescheduling(self, params, *args, **kwargs):
-        print(params)
+        pass
 
     def get(self, request, *args, **kwargs):
         lesson_id = kwargs.get('pk')
         try:
             lesson = Lesson.objects.get(pk=lesson_id)
         except Lesson.DoesNotExist:
-            return JsonResponse({"errors": "Занятие не найдено<br>Обновите страницу и повторите попытку"})
-        validation = self.validate_plan_rescheduling(request.query_params, *args, **kwargs)
-        return JsonResponse(
+            return Response({"errors": "Занятие не найдено<br>Обновите страницу и повторите попытку"})
+        # validation = self.validate_plan_rescheduling(request.query_params, *args, **kwargs)
+        return Response(
             plan_rescheduling_info(
                 datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
                 get_schedule(request.query_params),
@@ -360,17 +356,17 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
         )
 
         rescheduler.set_lessons_dt()
-        return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
+        return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
 
     def patch(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         except Lesson.DoesNotExist:
-            return JsonResponse({'errors': "Занятие не найдено<br>Обновите страницу и повторите попытку"},
+            return Response({'errors': "Занятие не найдено<br>Обновите страницу и повторите попытку"},
                                 status=status.HTTP_400_BAD_REQUEST)
         validation = self.validate_item_rescheduling(request, lesson, *args, **kwargs)
         if validation['status'] == "error":
-            return JsonResponse(validation, status=status.HTTP_400_BAD_REQUEST)
+            return Response(validation, status=status.HTTP_400_BAD_REQUEST)
         if request.data.get("action") == 'cancel':
             if request.data.get("date"):
                 new_lesson = Lesson.objects.create(
@@ -391,7 +387,7 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
                 phase.save()
                 lesson.status = 2
                 lesson.save()
-                return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
+                return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
             else:
                 pass
         else:
@@ -400,9 +396,9 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
                 lesson.end_time = datetime.strptime(request.data.get("end"), "%H:%M").time()
                 lesson.date = datetime.strptime(request.data.get("date"), "%Y-%m-%d")
                 lesson.save()
-                return JsonResponse({'status': 'ok'}, status=status.HTTP_201_CREATED)
+                return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
             pass
-        return JsonResponse({'errors': 'Функция в разработке'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'errors': 'Функция в разработке'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LessonRestoreAPIView(LoginRequiredMixin, APIView):
@@ -444,9 +440,9 @@ class LessonRestoreAPIView(LoginRequiredMixin, APIView):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         except Lesson.DoesNotExist:
-            return JsonResponse({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
         if not lesson.from_program_lesson:
-            return JsonResponse({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
         restore_info = request.POST.get("info")
         restore_materials = request.POST.get("materials")
         restore_homeworks = request.POST.get("homeworks")
@@ -458,4 +454,4 @@ class LessonRestoreAPIView(LoginRequiredMixin, APIView):
         if restore_homeworks:
             if lesson.status == 0:
                 self.restore_homeworks(lesson)
-        return JsonResponse(LessonSerializer(lesson).data, status=status.HTTP_200_OK)
+        return Response(LessonSerializer(lesson).data, status=status.HTTP_200_OK)

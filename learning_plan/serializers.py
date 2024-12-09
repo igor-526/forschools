@@ -1,8 +1,6 @@
 from django.utils import timezone
-
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-
 from .models import LearningPlan, LearningPhases
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser

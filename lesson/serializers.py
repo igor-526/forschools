@@ -93,6 +93,3 @@ class LessonListSerializer(serializers.ModelSerializer):
         phase = LearningPhases.objects.get(pk=self.context.get('phase_pk'))
         phase.lessons.add(lesson)
         return lesson
-
-
-

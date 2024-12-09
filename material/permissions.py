@@ -12,7 +12,7 @@ class CanSeeMaterialMixin(LoginRequiredMixin):
 
 def has_material_access(request, mat_id):
     usergroups = [group.name for group in request.user.groups.all()]
-    if ("Admin" in usergroups):
+    if "Admin" in usergroups:
         return True
     try:
         material = Material.objects.get(pk=mat_id)
@@ -28,5 +28,3 @@ def has_material_access(request, mat_id):
         if request.user in material.access.all():
             return True
         return material.lesson.filter(learningphases__learningplan__listeners=request.user).exists()
-
-

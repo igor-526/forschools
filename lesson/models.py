@@ -179,5 +179,3 @@ class Lesson(models.Model):
     async def aset_passed(self):
         self.status = 1
         await self.asave()
-
-

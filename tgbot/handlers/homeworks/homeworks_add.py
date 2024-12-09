@@ -8,13 +8,14 @@ from tgbot.funcs.homeworks import (add_homework_select_lesson, add_homework_set_
                                    add_homework_set_homework_ready, send_hw_materials, hw_for_curator_set)
 from tgbot.funcs.materials_add import add_material_add
 from tgbot.funcs.menu import send_menu
-from tgbot.keyboards.callbacks.homework import HomeworkMenuCallback, HomeworkNewCallback, HomeworkNewSettingCallback, \
-    HomeworkCallback, HomeworkNewSelectDateCallback, HomeworkCuratorCallback
+from tgbot.keyboards.callbacks.homework import (HomeworkMenuCallback, HomeworkNewCallback,
+                                                HomeworkCallback, HomeworkNewSelectDateCallback,
+                                                HomeworkCuratorCallback)
 
 router = Router(name=__name__)
 
 
-@router.callback_query(HomeworkCallback.filter(F.action == "edit"))     # Редактирование готового ДЗ кнопка
+@router.callback_query(HomeworkCallback.filter(F.action == "edit"))
 async def h_homework_edit(callback: CallbackQuery,
                           callback_data: HomeworkCallback,
                           state: FSMContext) -> None:
@@ -37,7 +38,7 @@ async def h_homework_edit(callback: CallbackQuery,
     await add_homework_set_homework_message(callback.from_user.id, state)
 
 
-@router.message(StateFilter(HomeworkNewFSM.change_menu),    # Подтверждение ДЗ
+@router.message(StateFilter(HomeworkNewFSM.change_menu),
                 F.text == "Подтвердить ДЗ")
 async def h_homework_sethw_ready(message: types.Message, state: FSMContext) -> None:
     sd = await state.get_data()

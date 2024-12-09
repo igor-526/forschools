@@ -1,15 +1,15 @@
 from django.urls import path
-from .views import (CollectionPageView,
-                    LevelListAPIView,
-                    LevelAPIView,
-                    MaterialCategoryListAPIView,
-                    MaterialCategoryAPIView,
-                    EngagementChannelListAPIView,
-                    EngagementChannelAPIView,
-                    PlaceListAPIView,
-                    PlaceAPIView,
-                    MaterialLevelListAPIView,
-                    MaterialLevelAPIView)
+from .views import CollectionPageView
+from .views_api import (LevelListAPIView,
+                        LevelAPIView,
+                        MaterialCategoryListAPIView,
+                        MaterialCategoryAPIView,
+                        EngagementChannelListAPIView,
+                        EngagementChannelAPIView,
+                        PlaceListAPIView,
+                        PlaceAPIView,
+                        MaterialLevelListAPIView,
+                        MaterialLevelAPIView)
 
 urlpatterns = [
     path('administration/collections', CollectionPageView.as_view(),

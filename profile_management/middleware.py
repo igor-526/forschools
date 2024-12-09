@@ -1,9 +1,6 @@
 import traceback
-
-from django.core.handlers.wsgi import WSGIRequest
-from rest_framework import response
-
 from support.models import WSGIErrorsLog
+
 
 class LastActivityMiddleware:
     def __init__(self, get_response):
@@ -63,6 +60,3 @@ class ErrorLogsMiddleware:
             params=params,
         )
         return None
-
-
-

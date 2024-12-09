@@ -193,7 +193,7 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
         except Exception as e:
-            print(e)
+            pass
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

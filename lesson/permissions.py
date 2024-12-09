@@ -66,7 +66,8 @@ def can_see_lesson_materials(request, lesson: Lesson):
                 return True
             else:
                 return lesson.materials_access
-        return timezone.now().timestamp() >= (lessondt - datetime.timedelta(days=learning_plan.show_materials)).timestamp()
+        return timezone.now().timestamp() >= (
+                lessondt - datetime.timedelta(days=learning_plan.show_materials)).timestamp()
 
 
 def can_add_homework(request, lesson: Lesson):
@@ -83,7 +84,8 @@ def can_add_homework(request, lesson: Lesson):
 def can_set_passed(request, lesson: Lesson):
     if lesson.status == 0:
         if not request.user.groups.filter(name="Listener").exists():
-            if request.user.groups.filter(name__in=["Metodist", "Admin"]).exists() or lesson.get_teacher() == request.user:
+            if (request.user.groups.filter(name__in=["Metodist", "Admin"]).exists() or
+                    lesson.get_teacher() == request.user):
                 lesson_end = lesson.date
                 if lesson.end_time:
                     lesson_end = datetime.datetime(
