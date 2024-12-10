@@ -18,7 +18,7 @@ class PlansItemStatusAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
         plan = LearningPlan.objects.get(pk=kwargs.get('pk'))
         phases_passed = 0
-        lessons_all =Lesson.objects.filter(learningphases__learningplan=plan).count()
+        lessons_all = Lesson.objects.filter(learningphases__learningplan=plan).count()
         lessons_passed = Lesson.objects.filter(learningphases__learningplan=plan,
                                                status__in=[1, 2]).count()
         return Response({
@@ -114,7 +114,7 @@ class PlanPhasesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset(plan_pk=self.kwargs.get("plan_pk"))
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, status=200, safe=False)
+        return Response(serializer.data, status=200)
 
     def post(self, request, *args, **kwargs):
         try:
