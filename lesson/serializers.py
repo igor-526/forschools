@@ -24,10 +24,21 @@ class LessonSerializer(serializers.ModelSerializer):
     place = PlaceSerializer()
     deletable = serializers.SerializerMethodField(read_only=True)
     can_set_not_held = serializers.SerializerMethodField(read_only=True)
+    learning_plan = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Lesson
         fields = "__all__"
+
+    def get_learning_plan(self, obj):
+        plan = obj.get_learning_plan()
+        if plan:
+            return {"id": plan.id,
+                    "name": plan.name,
+                    "teacher": NewUserNameOnlyListSerializer(plan.teacher, many=False).data,
+                    "listeners": NewUserNameOnlyListSerializer(plan.listeners.all(), many=True).data}
+        else:
+            return None
 
     def get_lesson_teacher_review(self, obj):
         request = self.context.get("request")

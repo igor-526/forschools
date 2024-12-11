@@ -4,7 +4,7 @@ from .views import (LessonPage, LessonItemPage,
                     LessonReplaceTeacherAPIView, LessonAPIView,
                     LessonSetPassedAPIView, PlansItemRescheduling,
                     LessonSetNotHeldAPIView, LessonRestoreAPIView)
-from .views_ma import LessonMAReviewFormPage
+from .views_ma import LessonMAReviewFormPage, LessonItemMAPage
 
 urlpatterns = [
     path('', LessonPage.as_view(), name='lessons'),
@@ -24,4 +24,5 @@ apiv1patterns = [
 
 ma_patterns = [
     path('<int:pk>/form/', LessonMAReviewFormPage.as_view()),
+    path('<int:pk>/', LessonItemMAPage.as_view()),
 ]

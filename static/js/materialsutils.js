@@ -61,6 +61,10 @@ function materialToHTMLMobile(href=null, type=null) {
                     }
                 })
                 return getCard(p)
+            case "presentation_formats":
+                const pres = document.createElement("p")
+                pres.innerHTML = "Показ презентаций не поддерживается"
+                return getCard(pres)
             case "unsupported":
                 const uns = document.createElement("p")
                 uns.innerHTML = "Материал не поддерживается"

@@ -11,13 +11,13 @@ class Message(models.Model):
                                null=True,
                                blank=True)
     receiver = models.ForeignKey("profile_management.NewUser",
-                                 on_delete=models.DO_NOTHING,
+                                 on_delete=models.SET_NULL,
                                  verbose_name="Получатель",
                                  related_name='message_receiver',
                                  null=True,
                                  blank=True)
     sender_tg = models.ForeignKey("profile_management.Telegram",
-                                  on_delete=models.DO_NOTHING,
+                                  on_delete=models.SET_NULL,
                                   verbose_name="Отправитель TG",
                                   related_name='message_tg_sender',
                                   null=True,
