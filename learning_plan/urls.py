@@ -3,7 +3,7 @@ from .views import PlansPageView, PlansItemPageView
 from .views_api import (PlansListCreateAPIView, PlanPhasesListCreateAPIView,
                         PlanPhaseItemAPIView, PlansItemAPIView, PlansItemSetProgramAPIView,
                         PlanItemAddLessonsAPIView, PlansItemStatusAPIView)
-from lesson.views import LessonListCreateAPIView
+from lesson.views_api import LessonListCreateAPIView
 
 urlpatterns = [
     path('', PlansPageView.as_view(), name='learning_plans'),

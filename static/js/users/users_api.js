@@ -18,6 +18,24 @@ async function usersAPIGetMetodists(){
     return await APIGetToObject(request)
 }
 
+async function usersAPIGetForSchedule(name=null, role=null){
+    let url = "/api/v1/users/schedule/"
+    const query = []
+
+    if (name){
+        query.push(`name=${name}`)
+    }
+    if (role){
+        query.push(`role=${role}`)
+    }
+
+    if (query.length > 0){
+        url += "?" + query.join("&")
+    }
+    const request = await fetch(url)
+    return await APIGetToObject(request)
+}
+
 async function usersAPIGetAll(setting=null, id=null, tg=null, username=null,
                               fullName=null, roles=[], sortUsername=null,
                               sortFullName=null, excludeMe=false){

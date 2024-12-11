@@ -5,11 +5,12 @@ from .views_api import (UserListAPIView, UserDetailAPIView,
                         UserPhotoAPIView, TelegramAPIView,
                         DeactivateUserAPIView, ActivateUserAPIView,
                         ChangePasswordAPIView, TeacherListenersListAPIView,
-                        UsersForJournalListAPIView)
+                        UsersForJournalListAPIView, UsersForScheduleListAPIView,
+                        )
 from .views_login import (user_login, user_logout,
                           register_view, AdminLoginAPIView)
+from lesson.views_api import UserLessonListAPIView
 from homework.views_api import UserHWListAPIView
-from lesson.views import UserLessonListAPIView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='dashboard')),
@@ -27,6 +28,7 @@ apiv1patterns = [
     path('', UserListAPIView.as_view()),
     path('forjournals/', UsersForJournalListAPIView.as_view()),
     path('teacherslisteners/', TeacherListenersListAPIView.as_view()),
+    path('schedule/', UsersForScheduleListAPIView.as_view()),
     path('<int:pk>/', UserDetailAPIView.as_view()),
     path('<int:pk>/photo/', UserPhotoAPIView.as_view()),
     path('<int:pk>/telegram/', TelegramAPIView.as_view()),

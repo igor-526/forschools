@@ -30,3 +30,29 @@ class LessonItemMAPage(TemplateView):
             "is_authenticated": request.user.is_authenticated,
         }
         return render(request, self.template_name, context)
+
+
+@method_decorator(decorators, name='dispatch')
+class ScheduleSelectMAPage(TemplateView):
+    template_name = "ma/schedule_select.html"
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            "title": "Пользователь",
+            "is_authenticated": request.user.is_authenticated,
+            "me": request.user.groups.filter(name__in=["Teacher", "Listener"]).exists()
+        }
+        return render(request, self.template_name, context)
+
+
+@method_decorator(decorators, name='dispatch')
+class ScheduleMAPage(TemplateView):
+    template_name = "ma/schedule.html"
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            "title": "Расписание",
+            "is_authenticated": request.user.is_authenticated,
+            "user_id": kwargs.get("pk")
+        }
+        return render(request, self.template_name, context)

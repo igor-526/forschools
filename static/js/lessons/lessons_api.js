@@ -164,3 +164,12 @@ async function lessonsAPIRestore(lessonID, fd){
     })
     return await APIPostPatchToObject(request)
 }
+
+async function lessonsAPIGetSchedule(userID=0, offset=0){
+    let url = `/api/v1/lessons/schedule/${userID}/`
+    if (offset){
+        url += `?offset=${offset}`
+    }
+    const request = await fetch(url)
+    return await APIGetToObject(request)
+}

@@ -269,3 +269,59 @@ class TelegramAPIView(LoginRequiredMixin, APIView):
             return Response({"status": "disconnected",
                              "code": user.tg_code},
                             status=status.HTTP_200_OK)
+
+
+class UsersForScheduleListAPIView(LoginRequiredMixin, ListAPIView):
+    serializer_class = NewUserNameOnlyListSerializer
+
+    def filter_queryset_name(self, queryset):
+        if queryset is None:
+            return None
+        name = self.request.query_params.get('name')
+        if name is None:
+            return queryset
+        splitted_fullname = name.split(" ")
+        q = Q()
+        for query in splitted_fullname:
+            q |= Q(first_name__icontains=query)
+            q |= Q(last_name__icontains=query)
+            q |= Q(patronymic__icontains=query)
+        return queryset.filter(q)
+
+    def filter_queryset_role(self, queryset):
+        if queryset is None:
+            return None
+        role = self.request.query_params.get('role')
+        if role == "listeners":
+            return queryset.filter(groups__name="Listener")
+        elif role == "teachers":
+            return queryset.filter(groups__name="Teacher")
+        else:
+            return queryset
+
+    def get_queryset(self):
+        usergroups = [g.name for g in self.request.user.groups.all()]
+        queryset = None
+        if "Admin" in usergroups:
+            queryset = NewUser.objects.filter(groups__name__in=["Teacher", "Listener"],
+                                              is_active=True).exclude(pk=self.request.user.id)
+        elif "Metodist" in usergroups:
+            queryset = NewUser.objects.filter(Q(groups__name__in=["Teacher", "Listener"],
+                                                is_active=True,
+                                                plan_listeners__metodist=self.request.user.id) |
+                                              Q(groups__name__in=["Teacher", "Listener"],
+                                                is_active=True,
+                                                plan_teacher__metodist=self.request.user.id
+                                                )).exclude(pk=self.request.user.id)
+        elif "Teacher" in usergroups:
+            queryset = NewUser.objects.filter(
+                groups__name="Listener",
+                is_active=True,
+                plan_listeners__metodist=self.request.user.id
+            ).exclude(pk=self.request.user.id)
+        elif "Listener" in usergroups:
+            queryset = None
+        if queryset:
+            queryset = self.filter_queryset_name(queryset)
+            queryset = self.filter_queryset_role(queryset)
+        return queryset.distinct() if queryset else None
