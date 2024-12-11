@@ -8,7 +8,7 @@ from tgbot.create_bot import bot
 from tgbot.finite_states.lessons import LessonsFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.default import cancel_keyboard
-from tgbot.keyboards.lessons import lessons_get_users_buttons
+from tgbot.keyboards.lessons import lessons_get_users_buttons, get_schedule_ma_button
 from tgbot.utils import get_user, get_group_and_perms
 
 
@@ -85,7 +85,18 @@ async def lessons_generate_schedule_message(lessons: list[Lesson], monday: datet
     return msg
 
 
-async def lessons_get_schedule(tg_id: int, state: FSMContext, user: NewUser = None):
+async def lessons_get_schedule(message: types.Message):
+    user = await get_user(message.from_user.id)
+    self_schedule = await user.groups.filter(name__in=["Listener", "Teacher"]).aexists()
+    if self_schedule:
+        rm = get_schedule_ma_button()
+    else:
+        rm = get_schedule_ma_button(False)
+    await message.answer(text="Нажмите на кнопку ниже для открытия расписания",
+                         reply_markup=rm)
+
+
+async def lessons_get_schedule_old(tg_id: int, state: FSMContext, user: NewUser = None):
     if not user:
         user = await get_user(tg_id)
     perms = await get_group_and_perms(user.id)

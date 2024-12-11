@@ -25,8 +25,8 @@ async def h_mainmenu_homeworks(message: types.Message, state: FSMContext) -> Non
 
 @router.message(StateFilter(None),
                 F.text == "Расписание")
-async def h_mainmenu_lessons(message: types.Message, state: FSMContext) -> None:
-    await lessons_get_schedule(message.from_user.id, state)
+async def h_mainmenu_lessons(message: types.Message) -> None:
+    await lessons_get_schedule(message)
 
 
 @router.message(StateFilter(None),

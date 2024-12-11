@@ -49,6 +49,3 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
                 hwdeadline = hwdeadline.strftime('%Y-%m-%d')
             context["hwdeadline"] = hwdeadline
         return render(request, self.template_name, context)
-
-
-
