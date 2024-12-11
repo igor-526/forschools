@@ -5,7 +5,7 @@ from material.models import File
 
 class Message(models.Model):
     sender = models.ForeignKey("profile_management.NewUser",
-                               on_delete=models.DO_NOTHING,
+                               on_delete=models.SET_NULL,
                                verbose_name="Отправитель",
                                related_name='message_sender',
                                null=True,
@@ -23,7 +23,7 @@ class Message(models.Model):
                                   null=True,
                                   blank=True)
     receiver_tg = models.ForeignKey("profile_management.Telegram",
-                                    on_delete=models.DO_NOTHING,
+                                    on_delete=models.SET_NULL,
                                     verbose_name="Получатель TG",
                                     related_name='message_tg_receiver',
                                     null=True,
