@@ -59,3 +59,14 @@ def get_can_accept_log_permission(hw: Homework, request):
     lp = lesson.get_learning_plan() if lesson else None
     return (request.user.groups.filter(name="Admin").exists() or
             (lp and lp.metodist == request.user))
+
+
+def get_can_edit_hw_permission(hw: Homework, request):
+    if hw.teacher == request.user:
+        return True
+    lesson = hw.get_lesson()
+    if lesson:
+        plan = lesson.get_learning_plan()
+        if plan.metodist == request.user or (plan.curators.filter(id=request.user.id).exists() and hw.for_curator):
+            return True
+    return request.user.groups.filter(name="Admin").exists()

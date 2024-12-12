@@ -1,11 +1,9 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-
 from homework.models import Homework
-from tgbot.funcs.homeworks import (show_homework, show_logs,
-                                   show_log_item, send_hw_materials)
-from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkLogCallback
+from tgbot.funcs.homeworks import show_homework, send_hw_materials
+from tgbot.keyboards.callbacks.homework import HomeworkCallback
 
 router = Router(name=__name__)
 
@@ -17,12 +15,6 @@ async def h_homework_show_hw(callback: CallbackQuery,
     await show_homework(callback, callback_data, state)
 
 
-@router.callback_query(HomeworkCallback.filter(F.action == 'logs'))
-async def h_homework_show_hw_logs(callback: CallbackQuery,
-                                  callback_data: HomeworkCallback) -> None:
-    await show_logs(callback, callback_data)
-
-
 @router.callback_query(HomeworkCallback.filter(F.action == 'materials'))
 async def h_homework_show_materials(callback: CallbackQuery,
                                     callback_data: HomeworkCallback,
@@ -32,9 +24,3 @@ async def h_homework_show_materials(callback: CallbackQuery,
                 .aget(pk=callback_data.hw_id))
     await send_hw_materials([mat.id async for mat in hw.materials.all()], hw.id, callback.from_user.id,
                             callback, state, True)
-
-
-@router.callback_query(HomeworkLogCallback.filter())
-async def h_homework_show_hw_log_item(callback: CallbackQuery,
-                                      callback_data: HomeworkLogCallback) -> None:
-    await show_log_item(callback, callback_data.log_id)

@@ -2,7 +2,7 @@ import datetime
 from django.db.models import Q
 from chat.models import Message
 from lesson.permissions import CanReplaceTeacherMixin
-from .permissions import get_delete_log_permission, get_can_accept_log_permission
+from .permissions import get_delete_log_permission, get_can_accept_log_permission, get_can_edit_hw_permission
 from .serializers import HomeworkListSerializer, HomeworkLogListSerializer, HomeworkLogSerializer, HomeworkSerializer
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
 from tgbot.utils import send_homework_tg, send_homework_edit, notify_chat_message, send_homework_answer_tg
@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from .models import Homework, HomeworkLog
 from rest_framework.views import APIView
 from rest_framework import status
-from material.models import File
+from material.models import File, Material
 
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -298,3 +298,19 @@ class HomeworkSetCancelledAPIView(LoginRequiredMixin, APIView):
             )
             serializer = HomeworkLogSerializer(hl, many=False, context={'request': request})
             return Response({'status': 'ok', 'log': serializer.data}, status=status.HTTP_200_OK)
+
+
+class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
+    def delete(self, request, *args, **kwargs):
+        try:
+            hw = Homework.objects.get(pk=kwargs.get('hw_id'))
+        except Homework.DoesNotExist:
+            return Response({"error": "ДЗ не найдено"}, status=status.HTTP_404_NOT_FOUND)
+        perm = get_can_edit_hw_permission(hw, request)
+        if not perm:
+            return Response({"error": "Нет прав для редактирования ДЗ"}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            hw.materials.set(hw.materials.exclude(pk=kwargs.get('mat_id')))
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

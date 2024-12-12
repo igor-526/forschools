@@ -11,7 +11,7 @@ from tgbot.funcs.lessons import get_lesson_can_be_passed
 from tgbot.funcs.materials import send_material_item
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCuratorCallback
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
-                                      get_hwlogs_buttons, get_homework_menu_buttons, get_homework_lessons_buttons,
+                                      get_homework_menu_buttons, get_homework_lessons_buttons,
                                       get_homework_editing_buttons, get_homework_curator_button,
                                       get_homework_add_ready_buttons)
 from tgbot.keyboards.default import cancel_keyboard, message_typing_keyboard
@@ -124,12 +124,18 @@ async def add_homework_select_lesson(user_tg_id: int, message: types.Message = N
     if message:
         await message.reply(text=f"К какому занятию прикрепить ДЗ?",
                             reply_markup=get_homework_lessons_buttons(
-                                lessons, prev_date, next_date)
+                                lessons,
+                                prev_date,
+                                date.strftime("%d.%m.%Y"),
+                                next_date)
                             )
     elif callback:
         await callback.message.edit_text(text=f"К какому занятию прикрепить ДЗ?",
                                          reply_markup=get_homework_lessons_buttons(
-                                             lessons, prev_date, next_date)
+                                             lessons,
+                                             prev_date,
+                                             date.strftime("%d.%m.%Y"),
+                                             next_date)
                                          )
 
 
@@ -459,20 +465,36 @@ async def show_homework(callback: CallbackQuery,
                      hw.for_curator and
                      (await lp.curators.filter(pk=user.id).aexists())))
 
-    async def get_last_logs_button() -> bool:
-        last_log = None
+    async def get_last_logs() -> list:
         is_listener = 'Listener' in gp['groups']
         is_not_listener = ('Curator' in gp['groups'] or 'Teacher' in gp['groups'] or
                            'Metodist' in gp['groups'] or 'Admin' in gp['groups'])
+        logs = []
         if is_listener:
-            last_log = await hw.log.filter(Q(agreement__accepted=True) | Q(agreement__accepted={})).afirst()
+            print("listener")
+            logs = [{"status": log.status,
+                     "id": log.id} async for log in hw.log.filter(
+                Q(agreement__accepted=True,
+                  status__in=[3, 4, 5]) |
+                Q(agreement__accepted={},
+                  status__in=[3, 4, 5])
+            ).order_by("-dt")]
+            print(logs)
         if is_not_listener:
-            last_log = await hw.log.afirst()
-        if last_log:
-            return ((last_log.status in [4, 5] and is_listener) or
-                    (last_log.status == 3 and is_not_listener))
-        else:
-            return False
+            print("not_listener")
+            logs = [{"status": log.status,
+                     "id": log.id} async for log in hw.log.order_by("-dt")]
+        last_logs = []
+        for log in logs:
+            print(last_logs)
+            if last_logs:
+                if log["status"] == last_logs[-1]["status"]:
+                    last_logs.append(log)
+                else:
+                    break
+            else:
+                last_logs.append(log)
+        return last_logs
 
     async def get_agreement_buttons() -> bool:
         can_agreement_logs = lp and lp.metodist and lp.metodist == user
@@ -485,11 +507,10 @@ async def show_homework(callback: CallbackQuery,
     async def get_reply_markup():
         mat_button = (not tg_note.setting_show_hw_materials and ((await hw.materials.acount()) > 0)) if mat_auto else False
         send_button = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7] and hw.listener == user
-        check_button = await get_check_button()
-        last_logs_button = await get_last_logs_button()
         agreement_buttons = await get_agreement_buttons()
+        check_button = False if agreement_buttons else (await get_check_button())
         return get_homework_item_buttons(hw.id, mat_button, send_button,
-                                         check_button, last_logs_button, agreement_buttons)
+                                         check_button, agreement_buttons)
 
     tg_note = await get_tg_note(callback.from_user.id)
     hw = await (Homework.objects.select_related("listener")
@@ -507,101 +528,21 @@ async def show_homework(callback: CallbackQuery,
         msgtext += f"{hw.description}\n"
     msgtext += "Выберите действие:"
     if mat_auto and tg_note.setting_show_hw_materials:
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text="Материалы к ДЗ:")
         await send_hw_materials([mat.id async for mat in hw.materials.all()], hw.id, callback.from_user.id,
                                 callback, state,
                                 False if 'Listener' in gp.get('groups') else True, False)
+    last_logs = await get_last_logs()
+    if last_logs:
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text="Последний ответ:")
+    for log in [l["id"] for l in last_logs]:
+        await show_log_item(callback.from_user.id, log)
+
     await bot.send_message(chat_id=callback.from_user.id,
                            text=msgtext,
                            reply_markup=await get_reply_markup())
-
-
-async def show_homework_old(callback: CallbackQuery,
-                            callback_data: HomeworkCallback | Type[HomeworkCallback],
-                            state: FSMContext,
-                            materials_button: bool = True,
-                            show_last_logs: bool = True):
-    async def get_history_button() -> bool:
-        logs_status = [3, 4, 5] if 'Listener' in gp['groups'] else [1, 2, 3, 4, 5, 6, 7]
-        l = await HomeworkLog.objects.filter(homework=callback_data.hw_id,
-                                             status__in=logs_status).aexists()
-        return l
-
-    async def send_materials_and_get_reply_markup():
-        if not materials_button:
-            rm = get_homework_item_buttons(hw.id,
-                                           can_send,
-                                           can_check,
-                                           0,
-                                           await get_history_button())
-            return rm
-        if tg_note.setting_show_hw_materials:
-            await send_hw_materials([mat.id async for mat in hw.materials.all()], hw.id, callback.from_user.id,
-                                    callback, state,
-                                    False if 'Listener' in gp.get('groups') else True, False)
-            rm = get_homework_item_buttons(hw.id,
-                                           can_send,
-                                           can_check,
-                                           0,
-                                           await get_history_button(),
-                                           can_agreement_logs)
-        else:
-            rm = get_homework_item_buttons(hw.id,
-                                           can_send,
-                                           can_check,
-                                           await hw.materials.acount(),
-                                           await get_history_button(),
-                                           can_agreement_logs)
-        return rm
-
-    async def send_last_log():
-        logs = [{
-            "id": log.id,
-            "status": log.status
-        } async for log in hw.log.all()]
-        logs_to_show = []
-        for log in logs:
-            if not logs_to_show:
-                logs_to_show.append(log)
-            else:
-                if log['status'] == logs_to_show[-1]['status']:
-                    logs_to_show.append(log)
-                else:
-                    break
-        for log in list(reversed(logs_to_show)):
-            await show_log_item(callback, log['id'])
-
-    tg_note = await get_tg_note(callback.from_user.id)
-    hw = await (Homework.objects.select_related("listener")
-                .select_related("teacher")
-                .aget(pk=callback_data.hw_id))
-    hw_status = await hw.aget_status()
-    user = await get_user(callback.from_user.id)
-    gp = await get_group_and_perms(user.id)
-    lesson = await hw.aget_lesson()
-    lp = None
-    if lesson:
-        lp = await lesson.aget_learning_plan()
-    can_send = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7] and hw.listener == user
-    if lp:
-        can_check = (('Teacher' in gp['groups'] and hw_status.status in [3, 5] and hw.teacher == user) or
-                     ('Metodist' in gp['groups'] and hw_status.status in [3, 5]) and lp.metodist == user or
-                     ('Curator' in gp['groups'] and hw_status.status in [3, 5] and
-                      (await lp.curators.filter(pk=user.id).aexists())))
-    else:
-        can_check = 'Teacher' in gp['groups'] and hw_status.status in [3, 5] and hw.teacher == user
-    can_agreement_logs = lp and lp.metodist and lp.metodist == user
-    reply_markup = await send_materials_and_get_reply_markup()
-    if hw_status.status == 7 and 'Listener' in gp.get('groups'):
-        await hw.aopen()
-    if show_last_logs:
-        await send_last_log()
-    msgtext = f"ДЗ <b>{hw.name}</b>\n"
-    if hw.description:
-        msgtext += f"{hw.description}\n"
-    msgtext += "Выберите действие:"
-    await bot.send_message(chat_id=callback.from_user.id,
-                           text=msgtext,
-                           reply_markup=reply_markup)
 
 
 async def send_hw_materials(mat_ids: list, hw_id: int | None, user_id: int, callback: CallbackQuery | None,
@@ -626,39 +567,14 @@ async def send_hw_materials(mat_ids: list, hw_id: int | None, user_id: int, call
         await callback.message.delete()
 
 
-async def show_logs(callback: CallbackQuery, callback_data: HomeworkCallback):
-    user = await get_user(callback.from_user.id)
-    is_listener = await user.groups.filter(name="Listener").aexists()
-    logs_status = [3, 4, 5] if is_listener else [1, 2, 3, 4, 5, 6, 7]
-    dt_info = False if is_listener else True
-    logs = [{
-        'id': log.id,
-        'status': status_code_to_string(log.status),
-        'dt': log.dt.astimezone().strftime("%d.%m %H:%M"),
-    } async for log in HomeworkLog.objects.filter(homework=callback_data.hw_id,
-                                                  status__in=logs_status)]
-    if logs:
-        await bot.send_message(chat_id=callback.from_user.id,
-                               text="История ДЗ:",
-                               reply_markup=get_hwlogs_buttons(logs, dt_info))
-    else:
-        await bot.send_message(chat_id=callback.from_user.id,
-                               text="События отсутствуют")
-
-
-async def show_log_item(callback: CallbackQuery, log_id: int):
+async def show_log_item(chat_id: int, log_id: int):
     log = await HomeworkLog.objects.select_related("user").select_related("homework").aget(pk=log_id)
     files = [_ async for _ in log.files.all()]
     comment = log.comment.replace('<br>', '\n') if log.comment else '-'
-    lesson = await log.homework.aget_lesson()
-    if lesson:
-        msg = f"<b>{log.homework.name}</b> к занятию '<b>{lesson.name}</b>'\n"
-    else:
-        msg = f"<b>{log.homework.name}</b>\n"
-    msg += (
+    msg = (
         f"<b>{log.user}: {status_code_to_string(log.status)}</b> - {log.dt.astimezone().strftime('%d.%m %H:%M')}\n\n"
         f"{comment}\n")
-    await bot.send_message(chat_id=callback.from_user.id,
+    await bot.send_message(chat_id=chat_id,
                            text=msg)
     if len(files) > 0:
         album_builder = MediaGroupBuilder()
@@ -680,25 +596,25 @@ async def show_log_item(callback: CallbackQuery, log_id: int):
                                             caption=file.caption)
             elif file_type == "audio_formats":
                 if file.tg_url:
-                    await bot.send_audio(chat_id=callback.from_user.id,
+                    await bot.send_audio(chat_id=chat_id,
                                          audio=file.tg_url,
                                          caption=file.caption)
                 else:
-                    await bot.send_audio(chat_id=callback.from_user.id,
+                    await bot.send_audio(chat_id=chat_id,
                                          audio=types.FSInputFile(file.path.path),
                                          caption=file.caption)
             elif file_type == "voice_formats":
                 if file.tg_url:
-                    await bot.send_voice(chat_id=callback.from_user.id,
+                    await bot.send_voice(chat_id=chat_id,
                                          voice=file.tg_url,
                                          caption=file.caption)
                 else:
-                    await bot.send_voice(chat_id=callback.from_user.id,
+                    await bot.send_voice(chat_id=chat_id,
                                          voice=types.FSInputFile(file.path.path),
                                          caption=file.caption)
         photos = album_builder.build()
         if photos:
-            await bot.send_media_group(chat_id=callback.from_user.id,
+            await bot.send_media_group(chat_id=chat_id,
                                        media=photos)
 
 

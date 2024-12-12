@@ -10,7 +10,7 @@ from tgbot.funcs.materials_add import add_material_add
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import (HomeworkMenuCallback, HomeworkNewCallback,
                                                 HomeworkCallback, HomeworkNewSelectDateCallback,
-                                                HomeworkCuratorCallback)
+                                                HomeworkCuratorCallback, HomeworkNewSelectDateFakeCallback)
 
 router = Router(name=__name__)
 
@@ -36,6 +36,11 @@ async def h_homework_edit(callback: CallbackQuery,
         "messages_to_delete": []
     })
     await add_homework_set_homework_message(callback.from_user.id, state)
+
+
+@router.callback_query(HomeworkNewSelectDateFakeCallback.filter(F.action == "show"))
+async def h_homework_select_lesson_current_date(callback: CallbackQuery) -> None:
+    await callback.answer("Показаны занятия текущей даты. Пожалуйста, выберите занятие, к которому прикрепить ДЗ")
 
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),

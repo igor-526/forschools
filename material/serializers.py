@@ -9,14 +9,19 @@ class MaterialSerializer(serializers.ModelSerializer):
     category = MaterialCategorySerializer(many=True, required=False)
     level = MaterialLevelSerializer(many=True, required=False)
     owner = NewUserNameOnlyListSerializer(required=False)
+    file_type = serializers.SerializerMethodField()
 
     class Meta:
         model = Material
-        fields = ['id', 'name', 'category', 'owner', 'visible', 'file', 'level', 'description', 'type']
-        read_only_fields = ['category', 'owner', 'level', 'file']
+        fields = ['id', 'name', 'category', 'owner', 'visible', 'file', 'level', 'description', 'type', 'file_type']
+        read_only_fields = ['category', 'owner', 'level', 'file', 'file_type']
 
     def validate_visible(self, value):
         return True
+
+    def get_file_type(self, obj):
+        filetype = get_type(obj.file.path.split('.')[-1])
+        return filetype
 
     def create(self, validated_data):
         request = self.context.get('request')

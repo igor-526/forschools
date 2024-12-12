@@ -159,3 +159,14 @@ async function homeworkAPISetCancelled(homeworkID){
     })
     return await APIPostPatchToObject(request)
 }
+
+async function homeworkAPIDeleteMaterial(homeworkID, materialID){
+    const request = await fetch(`/api/v1/homeworks/${homeworkID}/mat/${materialID}/`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: {
+            "X-CSRFToken": csrftoken,
+        },
+    })
+    return APIDeleteToObject(request)
+}

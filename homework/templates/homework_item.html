@@ -9,21 +9,9 @@
         <div class="row">
             <div class="col-6">
                 <div class="card mb-3">
-                    <div class="card-header">Домашнее задание</div>
+                    <div class="card-header">Основные данные</div>
                     <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Описание:<br>
-                                {{ hw.description }}</li>
-                            <li class="list-group-item">Проверяющий: <a href="/profile/{{ hw.teacher.id }}">{{ hw.teacher }}</a>
-                                {% if can_set_replace %}
-                                    <button id="LessonItemReplaceTeacherButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#LessonItemReplaceTeacherModal"><i class="bi bi-person-gear"></i></button>
-                                    {% include "modal_set_replace.html" %}
-                                {% endif %}
-                            </li>
-                            <li class="list-group-item">Ученик: <a href="/profile/{{ hw.listener.id }}">{{ hw.listener }}</a></li>
-                            <li class="list-group-item">Выполнить до: {{ hw.deadline }}</li>
-                            <li class="list-group-item">Статус: <span id="hwItemStatus"></span></li>
-                        </ul>
+                        <ul class="list-group list-group-flush" id="hwItemMainInfoList"></ul>
                     </div>
                 </div>
 
@@ -32,13 +20,7 @@
                         <button id="hwItemAddMaterialsTG" class="btn-primary btn btn-sm d-none"><i class="bi bi-plus-lg"></i> <i class="bi bi-telegram"></i></button>
                     </div>
                     <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            {% for material in hw.materials.all %}
-                                <li class="list-group-item">
-                                    <a href="/materials/{{ material.id }}">{{ material.name }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                        <ul class="list-group list-group-flush" id="hwItemMaterialsList"></ul>
                     </div>
                 </div>
             </div>
@@ -70,14 +52,23 @@
             </div>
         </div>
     </div>
+    {% include "material_preview_modal.html" %}
+    {% if can_set_replace %}
+        {% include "modal_set_replace.html" %}
+    {% endif %}
+    {% if can_edit_hw %}
+        {% include "homework_item_modal_del_material.html" %}
+    {% endif %}
 {% endblock %}
 {% block static_js %}
     <script>
         const hwID = {{ hw.id }}
     </script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    <script src="{% static 'js/materials/materials_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_item.js' %}"></script>
     <script src="{% static 'js/homework/homework_item_log.js' %}"></script>
+    <script src="{% static 'js/materialsutils.js' %}"></script>
     {% if can_send %}
         <script src="{% static 'js/homework/homework_item_send.js' %}"></script>
     {% endif %}
@@ -87,13 +78,29 @@
     {% if can_cancel %}
         <script src="{% static 'js/homework/homework_item_cancel.js' %}"></script>
     {% endif %}
+    {% if can_edit_hw %}
+        <script>
+            const hwItemCanEdit = true
+        </script>
+        <script src="{% static 'js/homework/homework_item_delete_material.js' %}"></script>
+    {% else %}
+        <script>
+            const hwItemCanEdit = false
+        </script>
+    {% endif %}
+
     {% if can_set_replace %}
         <script>
-            let replaceAction = "homework"
+            const hwItemCanSetReplace = true
             const userID = {{ request.user.id }}
         </script>
         <script src="{% static 'js/users/users_api.js' %}"></script>
-        <script src="{% static 'js/lessons/lesson_hw_replace_teacher.js' %}"></script>
+        <script src="{% static 'js/users/users_replace_teacher.js' %}"></script>
+    {% else %}
+        <script>
+            const hwItemCanSetReplace = false
+            const userID = {{ request.user.id }}
+        </script>
     {% endif %}
 
 {% endblock %}

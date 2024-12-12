@@ -1,4 +1,17 @@
 function homeworkItemMain(){
+    homeworkAPIGetItem(hwID).then(request => {
+        switch (request.status){
+            case 200:
+                homeworkItemSetMainInfo(request.response)
+                if (request.response.materials.length > 0){
+                    homeworkItemSetMaterials(request.response.materials)
+                }
+                break
+            default:
+                showErrorToast("Не удалось загрузить основную информацию")
+                break
+        }
+    })
     homeworkAPIGetLogs(hwID).then(request => {
         switch (request.status){
             case 200:
@@ -28,12 +41,115 @@ function homeworkItemMain(){
                         })
                     })
                 }
-                hwItemStatus.innerHTML = homeworkItemShowLogsStrStatus(request.response.status)
+                homeworkItemSetMainInfo({hw_status: homeworkItemShowLogsStrStatus(request.response.status)})
                 break
             default:
                 showErrorToast()
                 break
         }
+    })
+}
+
+function homeworkItemSetMainInfo(hw){
+    function getReplaceButton(){
+        const btn = document.createElement("button")
+        btn.type = "button"
+        btn.innerHTML = '<i class="bi bi-person-gear"></i>'
+        btn.classList.add("btn", "btn-primary", "btn-sm", "ms-2")
+        btn.addEventListener("click", function () {
+            usersReplaceTeacherSetModal("hw", hwID)
+        })
+        return btn
+    }
+
+    function getListElement(name, value){
+        const li = document.createElement("li")
+        li.classList.add("list-group-item")
+        li.innerHTML = `<b>${name}:</b> ${value}`
+        return li
+    }
+
+    if (hw.lesson_info){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Занятие",
+            `<a href="/lessons/${hw.lesson_info.id}" target="_blank">${hw.lesson_info.name}</a>`
+        ))
+    }
+    if (hw.description && hw.description !== "-"){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Описание", hw.description
+        ))
+    }
+    if (hw.teacher){
+        const elem = getListElement("Проверяющий", getUsersString([hw.teacher]))
+        if (hwItemCanSetReplace){
+            elem.insertAdjacentElement("beforeend", getReplaceButton())
+        }
+        hwItemMainInfoList.insertAdjacentElement("beforeend", elem)
+    }
+    if (hw.listener){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Ученик", getUsersString([hw.listener])
+        ))
+    }
+    if (hw.deadline){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Выполнить до", new Date(hw.deadline).toLocaleDateString())
+        )
+    }
+    if (hw.for_curator === true || hw.for_curator === false){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "С ДЗ работает куратор", hw.for_curator === true ? "Да" : "Нет")
+        )
+    }
+    if (hw.hw_status){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Статус", hw.hw_status)
+        )
+    }
+
+}
+
+function homeworkItemSetMaterials(materials){
+    function getShowButton(matID){
+        const btn = document.createElement("button")
+        btn.type = "button"
+        btn.innerHTML = '<i class="bi bi bi-eye"></i>'
+        btn.classList.add("btn", "btn-primary", "btn-sm", "mx-1")
+        btn.addEventListener("click", function () {
+            materialsUtilsPreview(matID)
+        })
+        return btn
+    }
+
+    function getDeleteButton(matID){
+        const btn = document.createElement("button")
+        btn.type = "button"
+        btn.innerHTML = '<i class="bi bi-trash3"></i>'
+        btn.classList.add("btn", "btn-danger", "btn-sm", "mx-1")
+        btn.addEventListener("click", function () {
+            hwItemMaterialDeleteSetModal(matID, btn)
+        })
+        return btn
+    }
+
+    function getMatElement(mat){
+        const li = document.createElement("li")
+        const a = document.createElement("a")
+        li.insertAdjacentElement("beforeend", getShowButton(mat.id))
+        if (hwItemCanEdit){
+            li.insertAdjacentElement("beforeend", getDeleteButton(mat.id))
+        }
+        li.classList.add("list-group-item")
+        a.href = `/materials/${mat.id}`
+        a.target = "_blank"
+        a.innerHTML = mat.name
+        li.insertAdjacentElement("beforeend", a)
+        return li
+    }
+
+    materials.forEach(mat => {
+        hwItemMaterialsList.insertAdjacentElement("beforeend", getMatElement(mat))
     })
 }
 
@@ -103,6 +219,7 @@ function homeworkItemShowLogs(logs=[], clear=true){
 let hwCanAcceptLogs
 const hwItemLogList = document.querySelector("#hwItemLogList")
 const hwItemAddMaterialsTG = document.querySelector("#hwItemAddMaterialsTG")
-const hwItemStatus = document.querySelector("#hwItemStatus")
+const hwItemMaterialsList = document.querySelector("#hwItemMaterialsList")
+const hwItemMainInfoList = document.querySelector("#hwItemMainInfoList")
 
 homeworkItemMain()

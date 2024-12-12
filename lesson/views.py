@@ -5,7 +5,7 @@ from learning_plan.permissions import plans_button
 from .models import Lesson
 from dls.utils import get_menu
 from dls.settings import MATERIAL_FORMATS
-from .permissions import (CanSeeLessonMixin, replace_teacher_button,
+from .permissions import (CanSeeLessonMixin, hw_perm_can_set_replace,
                           can_edit_lesson_materials, can_see_lesson_materials,
                           can_add_homework, can_set_passed)
 
@@ -34,7 +34,7 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
             'title': lesson.name,
             'menu': get_menu(request.user),
             'lesson': lesson,
-            'can_set_replace': replace_teacher_button(request),
+            'can_set_replace': hw_perm_can_set_replace(request),
             'can_see_materials': can_see_lesson_materials(request, lesson),
             'can_edit_materials': can_edit_lesson_materials(request, lesson),
             'can_add_hw': can_add_hw,

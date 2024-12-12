@@ -1,8 +1,8 @@
 from aiogram.types import InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkLogCallback, HomeworkMenuCallback,
-                                                HomeworkNewCallback, HomeworkNewSettingCallback,
-                                                HomeworkNewSelectDateCallback, HomeworkCuratorCallback)
+from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkMenuCallback,
+                                                HomeworkNewCallback, HomeworkNewSelectDateCallback,
+                                                HomeworkCuratorCallback, HomeworkNewSelectDateFakeCallback)
 from tgbot.keyboards.utils import keyboard_anti_cache_url
 
 
@@ -36,7 +36,7 @@ def get_homework_editing_buttons() -> ReplyKeyboardMarkup:
                                                                [cancel_button]])
 
 
-def get_homework_lessons_buttons(lessons: list, prev_date=None, next_date=None) -> InlineKeyboardMarkup:
+def get_homework_lessons_buttons(lessons: list, prev_date=None, current_date: str = None, next_date=None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for lsn in lessons:
         btn_text = f'{("("+"X"+")") if lsn.get("status") == 0 else ""} {lsn.get("start_time")}-{lsn.get("end_time")}: {", ".join([l.first_name+" "+l.last_name for l in lsn.get("listeners")])}'
@@ -49,6 +49,12 @@ def get_homework_lessons_buttons(lessons: list, prev_date=None, next_date=None) 
         builder.button(
             text=f"<< {prev_date.get('string')}",
             callback_data=HomeworkNewSelectDateCallback(date=prev_date.get('callback'))
+        )
+        last_row_counter += 1
+    if current_date:
+        builder.button(
+            text=current_date,
+            callback_data=HomeworkNewSelectDateFakeCallback(action="show")
         )
         last_row_counter += 1
     if next_date:
@@ -88,7 +94,6 @@ def get_homework_item_buttons(hw_id,
                               mat_button,
                               send_button,
                               check_button,
-                              last_logs_button,
                               agreement_buttons) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
@@ -102,13 +107,6 @@ def get_homework_item_buttons(hw_id,
             callback_data=HomeworkCallback(
                 hw_id=hw_id,
                 action="materials")
-        )
-    if last_logs_button:
-        builder.button(
-            text="Последний ответ",
-            callback_data=HomeworkCallback(
-                hw_id=hw_id,
-                action="logs")
         )
     if send_button:
         builder.button(
@@ -148,27 +146,6 @@ def get_homework_item_buttons(hw_id,
                 action="agreement_decline"
             )
         )
-    builder.adjust(1)
-    return builder.as_markup()
-
-
-def get_hwlogs_buttons(hwlogs: list[dict], dt_info: bool = True) -> InlineKeyboardMarkup:
-    def set_button(hw_log):
-        log_dt = hw_log.get("dt")
-        log_status = hw_log.get("status")
-        log_id = hw_log.get("id")
-        if dt_info:
-            btn_text = f"{log_dt} - {log_status}"
-        else:
-            btn_text = log_status
-        builder.button(
-            text=btn_text,
-            callback_data=HomeworkLogCallback(log_id=log_id)
-        )
-
-    builder = InlineKeyboardBuilder()
-    for hwlog in hwlogs:
-        set_button(hwlog)
     builder.adjust(1)
     return builder.as_markup()
 

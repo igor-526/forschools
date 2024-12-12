@@ -7,7 +7,7 @@ from lesson.models import Lesson
 
 class CanReplaceTeacherMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
-        if replace_teacher_button(request):
+        if hw_perm_can_set_replace(request):
             return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
 
@@ -39,9 +39,8 @@ def get_usergroups(user):
     return [group.name for group in user.groups.all()]
 
 
-def replace_teacher_button(request):
-    usergroups = get_usergroups(request.user)
-    return ("Admin" in usergroups) or ("Metodist" in usergroups)
+def hw_perm_can_set_replace(request):
+    return request.user.groups.filter(name="Admin").exists()
 
 
 def can_edit_lesson_materials(request, lesson: Lesson):
