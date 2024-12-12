@@ -6,7 +6,7 @@ def validate_lesson_review_form(data: dict) -> dict:
         else:
             stripped_field = data.get(name).strip()
             field_len = len(stripped_field)
-            if 5 < field_len < max_l:
+            if 5 <= field_len <= max_l:
                 result['review'][name] = stripped_field
             else:
                 result['errors'][name] = f"Поле должно содержать от 5 до {max_l} символов. У вас {field_len}"
@@ -22,5 +22,6 @@ def validate_lesson_review_form(data: dict) -> dict:
     validate_field("grammar", 300)
     validate_field("note", 2000)
     validate_field("org", 2000)
-    result["review"].pop("name")
+    if result['review'].get('name'):
+        result["review"].pop("name")
     return result

@@ -14,7 +14,11 @@ router = Router(name=__name__)
 async def h_homework_agr_accept(callback: CallbackQuery,
                                 callback_data: HomeworkCallback,
                                 state: FSMContext) -> None:
-    await f_homework_agr_message(callback, callback_data, state)
+    await state.set_data({
+        "action": callback_data.action,
+        "hw_id": callback_data.hw_id
+    })
+    await f_homework_agr_send(callback.from_user.id, state)
 
 
 @router.callback_query(HomeworkCallback.filter(F.action == "agreement_decline"))
@@ -32,17 +36,10 @@ async def h_homework_agr_cancel(message: types.Message, state: FSMContext) -> No
 
 
 @router.message(StateFilter(HomeworkAgreementFSM.message),
-                F.text == "Согласовать")
-async def h_homework_agr_accept_send(message: types.Message, state: FSMContext) -> None:
-    await message.delete()
-    await f_homework_agr_send(message, state)
-
-
-@router.message(StateFilter(HomeworkAgreementFSM.message),
                 F.text == "Отправить на корректировку")
 async def h_homework_agr_decline_send(message: types.Message, state: FSMContext) -> None:
     await message.delete()
-    await f_homework_agr_send(message, state)
+    await f_homework_agr_send(message.from_user.id, state)
 
 
 @router.message(StateFilter(HomeworkAgreementFSM.message))

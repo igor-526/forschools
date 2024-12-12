@@ -11,7 +11,6 @@ from tgbot.funcs.menu import send_menu
 from tgbot.funcs.chats import chats_notificate
 from homework.models import Homework, HomeworkLog
 from tgbot.create_bot import bot
-from tgbot.models import TgBotJournal
 from tgbot.utils import get_user, get_tg_id
 
 
@@ -67,93 +66,69 @@ async def f_homework_agr_add_comment(message: types.Message,
                         reply_markup=rm)
 
 
-async def f_homework_agr_send(message: types.Message,
+async def f_homework_agr_send(tg_id: int,
                               state: FSMContext):
     async def notify_users(log_status, action):
-        teacher_tg_id = await get_tg_id(hw.teacher.id, "main")
+        msg_teacher = ""
+        msg_curator = ""
+        msg_listener = ""
         if action == "agreement_accept":
-            if teacher_tg_id:
-                if log_status == 7:
-                    teacher_msg_text = "Домашнее задание согласовано и задано"
-                    await homework_tg_notify(hw.teacher,
-                                             hw.listener.id,
-                                             [hw])
-                elif log_status == 4:
-                    teacher_msg_text = "Ответ на решение согласован. ДЗ принято"
-                elif log_status == 5:
-                    teacher_msg_text = "Ответ на решение согласован. ДЗ отправлено на доработку"
-                else:
-                    teacher_msg_text = "Домашнее задание согласовано"
-                if stdata.get("comment"):
-                    teacher_msg_text += f'\n{stdata.get("comment")}'
-                rm = get_homeworks_buttons([{
-                    'name': hw.name,
-                    'id': hw.id
-                }], sb=False)
-                await bot.send_message(chat_id=teacher_tg_id,
-                                       text=teacher_msg_text,
-                                       reply_markup=rm)
-                if log_status in [4, 5]:
-                    listener_tgs = await get_tg_id(hw.listener.id)
-                    for listener_tg in listener_tgs:
-                        try:
-                            msg = f"Пришёл новый ответ от преподавателя по ДЗ <b>'{hw.name}'</b>"
-                            msg_object = await bot.send_message(chat_id=listener_tg.get("tg_id"),
-                                                                text=msg,
-                                                                reply_markup=get_homeworks_buttons([{
-                                                                    'name': hw.name,
-                                                                    'id': hw.id
-                                                                }]))
-                            await TgBotJournal.objects.acreate(
-                                recipient=hw.listener,
-                                initiator=hw.teacher,
-                                event=4,
-                                data={
-                                    "status": "success",
-                                    "text": msg,
-                                    "msg_id": msg_object.message_id,
-                                    "errors": [],
-                                    "attachments": []
-                                }
-                            )
-                        except Exception as e:
-                            await TgBotJournal.objects.acreate(
-                                recipient=hw.listener,
-                                initiator=hw.teacher,
-                                event=4,
-                                data={
-                                    "status": "error",
-                                    "text": None,
-                                    "msg_id": None,
-                                    "errors": [str(e)],
-                                    "attachments": []
-                                }
-                            )
+            if log_status == 7:
+                msg_teacher = "ДЗ согласовано методистом и задано ученику"
+                msg_curator = "Преподаватель задал новое ДЗ"
+                msg_listener = "У вас новое домашнее задание!"
+            elif log_status == 4:
+                msg_teacher = "Принятие ДЗ согласовано методистом. Ученик уведомлён"
+                msg_curator = "Преподаватель принял у ученика ДЗ"
+                msg_listener = "Домашнее задание принято!"
+            elif log_status == 5:
+                msg_teacher = "Отправка ДЗ на доработку согласовано методистом. Ученик уведомлён"
+                msg_curator = "Преподаватель отправил на доработку ДЗ"
+                msg_listener = "Домашнее задание отправлено на доработку!"
+            await homework_tg_notify(lp.metodist,
+                                     hw.teacher.id,
+                                     [hw],
+                                     msg_teacher)
+            await homework_tg_notify(lp.metodist,
+                                     hw.listener.id,
+                                     [hw],
+                                     msg_listener)
+            if hw.for_curator:
+                [await homework_tg_notify(lp.metodist,
+                                          curator.id,
+                                          [hw],
+                                          msg_curator)
+                 async for curator in lp.curators.all()]
+
         elif action == "agreement_decline":
+            if log_status == 7:
+                msg_teacher = "ДЗ НЕ согласовано методистом и не задано"
+            elif log_status == 4:
+                msg_teacher = "Принятие ДЗ НЕ согласовано методистом"
+            elif log_status == 5:
+                msg_teacher = "Отправка ДЗ на доработку НЕ согласовано методистом"
             msg = await Message.objects.acreate(
                 receiver=hw.teacher,
-                sender=await get_user(message.from_user.id),
+                sender=await get_user(tg_id),
                 message=stdata.get("comment"),
             )
             await chats_notificate(chat_message_id=msg.id, show=False)
-            await bot.send_message(chat_id=teacher_tg_id,
-                                   text="Редактировать ДЗ:",
-                                   reply_markup=get_homework_edit_button(hw.id))
+            await homework_tg_notify(lp.metodist,
+                                     hw.teacher.id,
+                                     [hw],
+                                     msg_teacher)
 
     stdata = await state.get_data()
     hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=stdata.get("hw_id"))
+    lesson = await hw.aget_lesson()
+    lp = (await lesson.aget_learning_plan()) if lesson else None
     logs = [log async for log in HomeworkLog.objects.filter(status__in=[5, 4, 7],
                                                             agreement__accepted=False,
                                                             homework=hw).order_by("-dt")]
-    last_logs = []
-    for log in logs:
-        if last_logs:
-            if last_logs[-1].status == log.status:
-                last_logs.append(log)
-            else:
-                break
-        else:
-            last_logs.append(log)
+    if not logs:
+        await bot.send_message(chat_id=tg_id,
+                               text="ДЗ не нуждается в согласовании")
+        return
     now = datetime.datetime.now()
     agreement = {
         "accepted_dt": {
@@ -164,17 +139,19 @@ async def f_homework_agr_send(message: types.Message,
             "minute": now.minute
         }
     }
+    answer_msg = "Отправлено успешно"
     if stdata.get("action") == "agreement_accept":
-        agreement["accepted"] = False
-        if stdata.get("comment"):
-            agreement["comment"] = stdata.get("comment")
+        agreement["accepted"] = True
+        answer_msg = "Действия преподавателя согласованы. Уведомления отправлены"
     elif stdata.get("action") == "agreement_decline":
         agreement["accepted"] = False
         agreement["comment"] = stdata.get("comment")
-    for log in last_logs:
+        answer_msg = "Действия преподавателя не согласованы. Уведомления отправлены"
+    for log in logs:
         log.agreement = agreement
         await log.asave()
-    await notify_users(last_logs[-1].status, stdata.get("action"))
-    await message.answer("Успешно отправлено")
-    await send_menu(message.from_user.id, state)
+    await notify_users(logs[-1].status, stdata.get("action"))
+    await bot.send_message(chat_id=tg_id,
+                           text=answer_msg)
+    await send_menu(tg_id, state)
 

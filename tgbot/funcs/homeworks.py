@@ -4,6 +4,8 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
+
+from learning_plan.models import LearningPlan
 from lesson.models import Lesson
 from material.models import Material
 from tgbot.funcs.fileutils import filechecker, filedownloader
@@ -160,11 +162,6 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                          methodist.id,
                                          [hw],
                                          "Преподаватель задал ДЗ. Требуется согласование")
-                for cur_id in curators_ids:
-                    await homework_tg_notify(user,
-                                             cur_id,
-                                             [hw],
-                                             "Преподаватель задал новое ДЗ")
             elif lesson.status == 1 and methodist is None:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
@@ -471,22 +468,18 @@ async def show_homework(callback: CallbackQuery,
                            'Metodist' in gp['groups'] or 'Admin' in gp['groups'])
         logs = []
         if is_listener:
-            print("listener")
             logs = [{"status": log.status,
                      "id": log.id} async for log in hw.log.filter(
                 Q(agreement__accepted=True,
                   status__in=[3, 4, 5]) |
-                Q(agreement__accepted={},
+                Q(agreement={},
                   status__in=[3, 4, 5])
             ).order_by("-dt")]
-            print(logs)
         if is_not_listener:
-            print("not_listener")
             logs = [{"status": log.status,
                      "id": log.id} async for log in hw.log.order_by("-dt")]
         last_logs = []
         for log in logs:
-            print(last_logs)
             if last_logs:
                 if log["status"] == last_logs[-1]["status"]:
                     last_logs.append(log)
@@ -687,7 +680,7 @@ async def hw_send(message: types.Message, state: FSMContext):
             hw_log = await HomeworkLog.objects.acreate(homework=hw,
                                                        user=user,
                                                        comment=hwdata.get("comment"),
-                                                       status=status,
+                                                       status=hwlog_status,
                                                        agreement={
                                                            "accepted_dt": None,
                                                            "accepted": False
@@ -696,17 +689,16 @@ async def hw_send(message: types.Message, state: FSMContext):
             hw_log = await HomeworkLog.objects.acreate(homework=hw,
                                                        user=user,
                                                        comment=hwdata.get("comment"),
-                                                       status=status
+                                                       status=hwlog_status
                                                        )
         await hw_log.files.aset(hwdata.get("files_db"))
         await hw_log.asave()
         return hw_log
 
-    async def notify_teacher():
+    async def notify_teacher(msg="Пришёл новый ответ от ученика по ДЗ"):
         teacher_tg = await get_tg_id(hw.teacher.id, "main")
         if teacher_tg:
             try:
-                msg = f"Пришёл новый ответ от ученика по ДЗ <b>'{hw.name}'</b>"
                 msg_object = await bot.send_message(chat_id=teacher_tg,
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([{
@@ -753,11 +745,10 @@ async def hw_send(message: types.Message, state: FSMContext):
                 }
             )
 
-    async def notify_listener():
+    async def notify_listener(msg="Пришёл новый ответ от преподавателя по ДЗ"):
         listener_tgs = await get_tg_id(hw.listener.id)
         for listener_tg in listener_tgs:
             try:
-                msg = f"Пришёл новый ответ от преподавателя по ДЗ <b>'{hw.name}'</b>"
                 msg_object = await bot.send_message(chat_id=listener_tg.get("tg_id"),
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([{
@@ -790,11 +781,10 @@ async def hw_send(message: types.Message, state: FSMContext):
                     }
                 )
 
-    async def notify_metodist():
+    async def notify_methodist(msg="Требуется проверка действия преподавателя"):
         metodist_tg = await get_tg_id(lp.metodist.id, "main")
         if metodist_tg:
             try:
-                msg = f"Требуется проверка действия преподавателя"
                 msg_object = await bot.send_message(chat_id=metodist_tg,
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([{
@@ -841,6 +831,57 @@ async def hw_send(message: types.Message, state: FSMContext):
                 }
             )
 
+    async def notify_curators(msg="Новое событие с ДЗ"):
+        hw_curators = [curator async for curator in lp.curators.all()]
+        for curator in hw_curators:
+            curator_tg_id = await get_tg_id(curator.id, "main")
+            if curator_tg_id:
+                try:
+                    msg_object = await bot.send_message(chat_id=curator_tg_id,
+                                                        text=msg,
+                                                        reply_markup=get_homeworks_buttons([{
+                                                            'name': hw.name,
+                                                            'id': hw.id
+                                                        }]))
+                    await TgBotJournal.objects.acreate(
+                        recipient=curator,
+                        initiator=user,
+                        event=4,
+                        data={
+                            "status": "success",
+                            "text": msg,
+                            "msg_id": msg_object.message_id,
+                            "errors": [],
+                            "attachments": []
+                        }
+                    )
+                except Exception as e:
+                    await TgBotJournal.objects.acreate(
+                        recipient=curator,
+                        initiator=user,
+                        event=4,
+                        data={
+                            "status": "error",
+                            "text": None,
+                            "msg_id": None,
+                            "errors": [str(e)],
+                            "attachments": []
+                        }
+                    )
+            else:
+                await TgBotJournal.objects.acreate(
+                    recipient=curator,
+                    initiator=user,
+                    event=4,
+                    data={
+                        "status": "error",
+                        "text": None,
+                        "msg_id": None,
+                        "errors": ["У пользователя не привязан Telegram"],
+                        "attachments": []
+                    }
+                )
+
     data = await state.get_data()
     if not filechecker(data):
         await message.answer("Вы не можете отправить путой ответ. Пожалуйста, пришлите мне текст, фотографии, "
@@ -849,38 +890,74 @@ async def hw_send(message: types.Message, state: FSMContext):
     hw = await (Homework.objects.select_related("teacher")
                 .select_related("listener").aget(pk=data.get("hw_id")))
     user = await get_user(message.from_user.id)
+    lesson = await hw.aget_lesson()
+    lp = None
+    if lesson:
+        lp = await lesson.aget_learning_plan()
+
+    is_listener = hw.listener == user
+    is_teacher = hw.teacher == user
+    is_curator = await lp.curators.filter(pk=user.id).aexists()
+
     hwdata = await filedownloader(data, owner=user, t="ДЗ", error_reply=message)
-    status = None
-    if data.get('action') == 'send':
-        status = 3
-        await message.answer("Решение успешно отправлено\n"
-                             "Ожидайте ответа преподавателя")
-        await get_hwlog_object(False)
-        await notify_teacher()
-    if data.get('action') in ['check_accept', 'check_revision']:
-        lesson = await hw.aget_lesson()
-        lp = None
-        if lesson:
-            lp = await lesson.aget_learning_plan()
-        if data.get('action') == 'check_accept':
-            status = 4
-        elif data.get('action') == 'check_revision':
-            status = 5
-        if lp and lp.metodist:
-            await get_hwlog_object(True)
-            await message.answer("Ответ отправлен на согласование методисту")
-            await notify_metodist()
+    hwlog_status = None
+    hw_action = data.get('action')
+    if hw_action == 'send':
+        if is_listener:
+            hwlog_status = 3
+            await message.answer("Решение успешно отправлено\n"
+                                 "Ожидайте ответа преподавателя")
+            await get_hwlog_object(False)
+            await notify_teacher("Новый ответ на ДЗ от ученика")
+            if hw.for_curator:
+                await notify_curators("Ученик отправил решение ДЗ")
         else:
+            await message.answer("Вы не можете отправить решение на это ДЗ")
+    if hw_action in ['check_accept', 'check_revision']:
+        if hw_action == 'check_accept':
+            hwlog_status = 4
+        elif hw_action == 'check_revision':
+            hwlog_status = 5
+
+        if is_curator:
             await get_hwlog_object(False)
             await message.answer("Ответ был отправлен ученику")
-            await notify_listener()
+            if hw_action == 'check_accept':
+                await notify_listener("Домашнее задание принято!")
+                await notify_teacher("Куратор принял домашнее задание")
+                await notify_methodist("Куратор принял домашнее задание")
+            elif hw_action == 'check_revision':
+                await notify_listener("Домашнее задание отправлено на доработку")
+                await notify_teacher("Куратор отправил домашнее задание на доработку")
+                await notify_methodist("Куратор отправил домашнее задание на доработку")
+        elif is_teacher:
+            if lp and lp.metodist:
+                await get_hwlog_object(True)
+                await message.answer("Ответ отправлен на согласование методисту")
+                if hw_action == 'check_accept':
+                    await notify_methodist("Преподаватель принимает ДЗ. Требуется согласование")
+                elif hw_action == 'check_revision':
+                    await notify_methodist("Преподаватель отправляет ДЗ на доработку. Требуется согласование")
+            else:
+                await get_hwlog_object(False)
+                await message.answer("Ответ был отправлен ученику")
+                if hw_action == 'check_accept':
+                    await notify_listener("Домашнее задание принято!")
+                    if hw.for_curator:
+                        await notify_curators("Преподаватель принял домашнее задание")
+                elif hw_action == 'check_revision':
+                    await notify_listener("Домашнее задание отправлено на доработку")
+                    if hw.for_curator:
+                        await notify_curators("Преподаватель отправил на доработку домашнее задание")
+        else:
+            await message.answer("Вы не можете отправить решение на это ДЗ")
     await send_menu(message.from_user.id, state)
 
 
-async def homework_tg_notify(initiator: NewUser, listener: int,
+async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
                              homeworks: list[Homework], text="У вас новые домашние задания!"):
-    listener_tgs = await get_tg_id(listener)
-    for user_tg_note in listener_tgs:
+    recipients_tgs = await get_tg_id(recipient_user_id)
+    for user_tg_note in recipients_tgs:
         try:
             msg = await bot.send_message(chat_id=user_tg_note.get("tg_id"),
                                          text=text,
@@ -889,7 +966,7 @@ async def homework_tg_notify(initiator: NewUser, listener: int,
                                              "id": hw.id
                                          } for hw in homeworks]))
             await TgBotJournal.objects.acreate(
-                recipient_id=listener,
+                recipient_id=recipient_user_id,
                 initiator=initiator,
                 event=3,
                 data={
@@ -902,7 +979,7 @@ async def homework_tg_notify(initiator: NewUser, listener: int,
             )
         except Exception as e:
             await TgBotJournal.objects.acreate(
-                recipient_id=listener,
+                recipient_id=recipient_user_id,
                 initiator=initiator,
                 event=3,
                 data={
@@ -913,9 +990,9 @@ async def homework_tg_notify(initiator: NewUser, listener: int,
                     "attachments": []
                 }
             )
-    if not listener_tgs:
+    if not recipients_tgs:
         await TgBotJournal.objects.acreate(
-            recipient_id=listener,
+            recipient_id=recipient_user_id,
             initiator=initiator,
             event=3,
             data={

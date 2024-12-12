@@ -1,57 +1,64 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    {% load static %}
-    <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.png' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    {% block static_css %} {% endblock %}
-</head>
-
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #003366">
-    <div class="container-fluid">
-
-        {% if menu %}
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#maBaseNavbarCollapse" aria-controls="maBaseNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <a class="navbar-brand" href="#">{{ title }}</a>
-            <div class="collapse navbar-collapse" id="maBaseNavbarCollapse">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
-                </ul>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ title }}</title>
+        {% load static %}
+        <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.png' %}">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        {% block static_css %} {% endblock %}
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #003366">
+            <div class="container-fluid">
+                {% if menu %}
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#maBaseNavbarCollapse" aria-controls="maBaseNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">
+                        <button class="btn btn-sm btn-outline-light me-3" id="maBaseButtonBack"><i class="bi bi-chevron-compact-left"></i></button>
+                        {{ title }}</a>
+                    <div class="collapse navbar-collapse" id="maBaseNavbarCollapse">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <span class="navbar-brand">
+                        <button class="btn btn-sm btn-outline-light me-3" id="maBaseButtonBack"><i class="bi bi-chevron-compact-left"></i></button>
+                        {{ title }} </span>
+                {% endif %}
             </div>
+        </nav>
+        {% block content %}{% endblock %}
+        {% include 'toast.html' %}
+        {% include 'ma_image_modal.html' %}
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/@jarstone/dselect/dist/js/dselect.js"></script>
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        <script src="{% static 'js/toasts.js' %}"></script>
+        <script src="{% static 'js/timeutils.js' %}"></script>
+        <script src="{% static 'js/apitostr.js' %}"></script>
+        <script src="{% static 'js/materialsutils.js' %}"></script>
+        <script>
+            const tgAPI = window.Telegram.WebApp
+            const tgUserdata = tgAPI.initDataUnsafe
+            const csrftoken = '{{ csrf_token }}'
+            tgAPI.isVerticalSwipesEnabled = false
+            tgAPI.setHeaderColor("#003366")
+            const maBaseButtonBack = document.querySelector("#maBaseButtonBack")
+            maBaseButtonBack.addEventListener("click", function () {
+                window.history.back()
+            })
+        </script>
+        {% if not is_authenticated %}
+            <script src="{% static 'js/telegram/ma/login.js' %}"></script>
         {% else %}
-            <span class="navbar-brand">{{ title }}</span>
+            {% block static_js %} {% endblock %}
         {% endif %}
-
-    </div>
-</nav>
-{% block content %}{% endblock %}
-{% include 'toast.html' %}
-{% include 'ma_image_modal.html' %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@jarstone/dselect/dist/js/dselect.js"></script>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="{% static 'js/toasts.js' %}"></script>
-<script src="{% static 'js/timeutils.js' %}"></script>
-<script src="{% static 'js/apitostr.js' %}"></script>
-<script src="{% static 'js/materialsutils.js' %}"></script>
-<script>
-    const tgAPI = window.Telegram.WebApp
-    const tgUserdata = tgAPI.initDataUnsafe
-    const csrftoken = '{{ csrf_token }}'
-</script>
-{% if not is_authenticated %}
-    <script src="{% static 'js/telegram/ma/login.js' %}"></script>
-{% else %}
-    {% block static_js %} {% endblock %}
-{% endif %}
-</body>
+    </body>
 </html>
