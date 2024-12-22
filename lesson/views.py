@@ -30,8 +30,14 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
                              lesson.replace_teacher == request.user or
                              lesson.get_learning_plan().metodist == request.user or
                              request.user.groups.filter(name="Admin").exists())
+        lp = lesson.get_learning_plan()
+        plan_button = None
+        if (request.user.groups.filter(name="Admin").exists() or
+                lp.metodist == request.user or lp.teacher == request.user or
+                lp.curators.filter(pk=request.user.pk).exists() or
+                lesson.replace_teacher == request.user):
+            plan_button = lp.id
         context = {
-            'title': lesson.name,
             'menu': get_menu(request.user),
             'lesson': lesson,
             'can_set_replace': hw_perm_can_set_replace(request),
@@ -42,6 +48,7 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
             'hw_curator_button': hw_curator_button,
             'material_formats': MATERIAL_FORMATS,
             'is_admin': request.user.groups.filter(name="Admin").exists(),
+            'plan_button': plan_button
         }
         if can_add_hw:
             hwdeadline = (lesson.get_hw_deadline())

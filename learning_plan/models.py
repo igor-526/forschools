@@ -73,7 +73,7 @@ class LearningPlan(models.Model):
                                  on_delete=models.SET_NULL)
     curators = models.ManyToManyField("profile_management.NewUser",
                                       verbose_name="Кураторы",
-                                      related_name="plan_cuarator")
+                                      related_name="plan_curator")
     purpose = models.CharField(verbose_name="Цель",
                                blank=True,
                                null=True)

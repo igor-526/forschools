@@ -2,7 +2,16 @@
 {% load static %}
 {% block content %}
     <div class="container-xxl mt-4 mb-3">
-        <h1>{{ lesson.name }}</h1>
+        <div class="row justify-content-between">
+            <div class="col-auto">
+                <h1>{{ lesson.name }}</h1>
+            </div>
+            {% if plan_button %}
+            <div class="col-auto">
+                <a target="_blank" href="/learning_plans/{{ plan_button }}"><button type="button" class="btn btn-primary mt-1" role="button">План обучения</button></a>
+            </div>
+        {% endif %}
+        </div>
     </div>
 
     <div class="container-xxl">
@@ -20,59 +29,19 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            {% if lesson.description %}
-                                <li class="list-group-item">Описание: {{ lesson.description }}</li>
-                            {% endif %}
-                            {% if lesson.date %}
-                                <li class="list-group-item">Дата: {{ lesson.date }}</li>
-                            {% else %}
-                                <li class="list-group-item">Дата: не установлена</li>
-                            {% endif %}
-                            {% if lesson.start_time %}
-                                <li class="list-group-item">Время: {{ lesson.start_time }} - {{ lesson.end_time }}</li>
-                            {% else %}
-                                <li class="list-group-item">Время: не установлено</li>
-                            {% endif %}
-
-                            {% if lesson.place %}
-                                <li class="list-group-item"><a href="{{ lesson.place.url }}">Ссылка на занятие</a><br><b>ПРОСЬБА НЕ ПОДКЛЮЧАТЬСЯ ЗАРАНЕЕ</b></li>
-                            {% else %}
-                                <li class="list-group-item">Место проведения: отсутствует</li>
-                            {% endif %}
-
-                            {% if lesson.status == 0 %}
-                                <li id="lessonItemStatus" class="list-group-item list-group-item-warning">Занятие не проведено</li>
-                            {% endif %}
-                            {% if lesson.status == 1 %}
-                                <li id="lessonItemStatus" class="list-group-item list-group-item-success">Занятие проведено</li>
-                            {% endif %}
-                            {% if lesson.status == 2 %}
-                                <li id="lessonItemStatus" class="list-group-item list-group-item-danger">Занятие отменено</li>
-                            {% endif %}
-                        </ul>
+                        <ul class="list-group list-group-flush" id="lessonItemMainInfo"></ul>
                     </div>
                 </div>
 
                 <div class="card mb-3">
                     <div class="card-header">Участники</div>
                     <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Преподаватель: <a href="/profile/{{ lesson.get_teacher.id }}">{{ lesson.get_teacher }}</a>
-                                {% if can_set_replace %}
-                                    <button id="LessonItemReplaceTeacherButton" type="button" class="btn btn-primary btn-sm ms-2 lesson-item-not-passed" data-bs-toggle="modal" data-bs-target="#LessonItemReplaceTeacherModal"><i class="bi bi-person-gear"></i></button>
-                                    {% include "modal_set_replace.html" %}
-                                {% endif %}
-                            </li>
-                            {% for listener in lesson.get_listeners %}
-                                <li class="list-group-item">Ученик: <a href="/profile/{{ listener.id }}">{{ listener }}</a></li>
-                            {% endfor %}
-                        </ul>
+                        <ul class="list-group list-group-flush" id="lessonItemParticipants"></ul>
                     </div>
                 </div>
 
                 {% if can_set_passed %}
-                    <div class="card mb-3 lesson-item-not-passed">
+                    <div class="card mb-3">
                         <div class="card-header">Занятие было проведено?</div>
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
@@ -85,7 +54,6 @@
                         {% include "modal_set_status.html" %}
                     </div>
                 {% endif %}
-
             </div>
             <div class="col-6">
                 <div class="card mb-3">
@@ -130,6 +98,9 @@
             </div>
         </div>
     </div>
+    {% if can_set_replace %}
+        {% include "modal_set_replace.html" %}
+    {% endif %}
 {% endblock %}
 {% block static_js %}
     <script>
@@ -137,21 +108,28 @@
         const can_see_materials = {% if can_see_materials %}true{% else %}false{% endif %}
         const isAdmin = {% if is_admin %}true{% else %}false{% endif %}
     </script>
+    {% if can_set_replace %}
+        <script>
+            const lessonItemCanSetReplace = true
+            const userID = {{ request.user.id }}
+        </script>
+        <script src="{% static 'js/users/users_api.js' %}"></script>
+        <script src="{% static 'js/users/users_replace_teacher.js' %}"></script>
+    {% else %}
+        <script>
+            const lessonItemCanSetReplace = false
+        </script>
+    {% endif %}
+
+
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
     <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
+    <script src="{% static 'js/list_utils.js' %}"></script>
     {% if can_set_passed %}
         <script src="{% static 'js/collections/collections_api.js' %}"></script>
         <script src="{% static 'js/lessons/lesson_item_set_status.js' %}"></script>
-    {% endif %}
-    {% if can_set_replace %}
-        <script>
-            let replaceAction = "lesson"
-            const userID = {{ request.user.id }}
-        </script>
-        <script src="{% static 'js/users/users_api.js' %}"></script>
-        <script src="{% static 'js/lessons/lesson_hw_replace_teacher.js' %}"></script>
     {% endif %}
     {% if can_edit_materials %}
         <script>
@@ -185,16 +163,8 @@
     {% if can_add_hw %}
         <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script>
-            {% if hw_curator_button %}
-                const HWNewCuratorSwitch = true
-            {% else %}
-                const HWNewCuratorSwitch = false
-            {% endif %}
-            {% if hwdeadline %}
-                const lessonItemNewHwDeadline = '{{ hwdeadline }}'
-            {% else %}
-                const lessonItemNewHwDeadline = null
-            {% endif %}
+            const HWNewCuratorSwitch = {% if hw_curator_button %}true{% else %}false{% endif %}
+            const lessonItemNewHwDeadline = {% if hwdeadline %}"{{ hwdeadline }}"{% else %}null{% endif %}
         </script>
         <script src="{% static 'js/lessons/lesson_item_homeworks.js' %}"></script>
     {% endif %}

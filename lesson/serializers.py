@@ -36,7 +36,9 @@ class LessonSerializer(serializers.ModelSerializer):
             return {"id": plan.id,
                     "name": plan.name,
                     "teacher": NewUserNameOnlyListSerializer(plan.teacher, many=False).data,
-                    "listeners": NewUserNameOnlyListSerializer(plan.listeners.all(), many=True).data}
+                    "listeners": NewUserNameOnlyListSerializer(plan.listeners.all(), many=True).data,
+                    "curators": NewUserNameOnlyListSerializer(plan.curators.all(), many=True).data,
+                    "methodist": NewUserNameOnlyListSerializer(plan.metodist, many=False).data}
         else:
             return None
 

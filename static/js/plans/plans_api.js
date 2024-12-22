@@ -44,7 +44,7 @@ async function plansItemAPIClosePlan(){
 
 async function plansAPICreate(fd){
     const request = await fetch('/api/v1/learning_plans/', {
-        method: "post",
+        method: "POST",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

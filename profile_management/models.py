@@ -203,9 +203,10 @@ class NewUser(AbstractUser):
         self.save()
 
     def _sort_users_for_chat(self, users):
-        unread_list = list(filter(lambda u: u.get("unread"), users))
-        has_messages_list = list(filter(lambda u: u.get("last_message_text") and u not in unread_list, users))
-        no_messages_list = list(filter(lambda u: u.get("last_message_text") is None, users))
+        filtered_users = list(set(users))
+        unread_list = list(filter(lambda u: u.get("unread"), filtered_users))
+        has_messages_list = list(filter(lambda u: u.get("last_message_text") and u not in unread_list, filtered_users))
+        no_messages_list = list(filter(lambda u: u.get("last_message_text") is None, filtered_users))
         unread_list = sorted(unread_list, key=itemgetter("last_message_date"), reverse=True)
         has_messages_list = sorted(has_messages_list, key=itemgetter("last_message_date"), reverse=True)
         no_messages_list = sorted(no_messages_list, key=itemgetter("name"))
@@ -349,50 +350,52 @@ class NewUser(AbstractUser):
             }
             return info
 
-        users = []
-        role = ""
         tgnote = await Telegram.objects.select_related("user").aget(tg_id=tg_id)
         if tgnote.usertype == "main":
             groups = [await get_group_info(g) async for g in tgnote.user.group_chats.all()]
         else:
             groups = [await get_group_info(g) async for g in tgnote.group_chats.all()]
-        if await self.groups.filter(name__in=['Admin', 'Metodist']).aexists():
-            role = "AdminOrMetodist"
-        elif await self.groups.filter(name="Teacher").aexists():
-            role = "Teacher"
-        elif await self.groups.filter(name='Listener').aexists():
-            role = "Listener"
+        roles = [g.name async for g in self.groups.all()]
+        users_profiles = []
 
-        if role == "AdminOrMetodist":
-            users_profiles = [await get_user_chat_info(u) async for u in NewUser.objects.filter(is_active=True)]
-            users_telegrams = [await get_user_tg_chat_info(u) async for u in
-                               Telegram.objects.select_related("user").filter(
-                                   user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
-            users = [*users_profiles, *users_telegrams, *groups]
-
-        elif role == "Teacher":
-            users_profiles = [await get_user_chat_info(u) async for u in NewUser.objects.filter(
+        if "Admin" in roles:
+            users_profiles.extend([await get_user_chat_info(u) async for u in NewUser.objects.filter(
+                is_active=True).exclude(pk=self.id)])
+        if "Metodist" in roles:
+            users_profiles.extend([await get_user_chat_info(u) async for u in NewUser.objects.filter(
+                Q(plan_listeners__metodist=self,
+                  is_active=True) |
+                Q(plan_curator__metodist=self,
+                  is_active=True) |
+                Q(plan_teacher__metodist=self,
+                  is_active=True)).exclude(pk=self.id).distinct()])
+        if "Teacher" in roles:
+            users_profiles.extend([await get_user_chat_info(u) async for u in NewUser.objects.filter(
                 Q(plan_listeners__teacher=self,
                   is_active=True) |
-                Q(groups__name__in=["Admin", "Metodist"]) |
-                Q(plan_listeners__phases__lessons__replace_teacher=self,
-                  is_active=True)).distinct()]
-            users_telegrams = [await get_user_tg_chat_info(u) async for u in
-                               Telegram.objects.select_related("user").filter(
-                                   user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
-            users = [*users_profiles, *users_telegrams, *groups]
-        elif role == "Listener":
-            users_profiles = [await get_user_chat_info(u) async for u in NewUser.objects.filter(
+                Q(plan_curator__teacher=self,
+                  is_active=True) |
+                Q(plan_metodist__teacher=self,
+                  is_active=True)).exclude(pk=self.id).distinct()])
+        if "Curator" in roles:
+            users_profiles.extend([await get_user_chat_info(u) async for u in NewUser.objects.filter(
+                Q(plan_listeners__curator=self,
+                  is_active=True) |
+                Q(plan_teacher__curator=self,
+                  is_active=True) |
+                Q(plan_metodist__curator=self,
+                  is_active=True)).exclude(pk=self.id).distinct()])
+        if "Listener" in roles:
+            users_profiles.extend([await get_user_chat_info(u) async for u in NewUser.objects.filter(
                 Q(plan_teacher__listeners=self,
                   is_active=True) |
-                Q(groups__name="Admin",
-                  is_active=True) |
-                Q(replace_teacher__learningphases__learningplan__listeners=self,
-                  is_active=True)).distinct()]
-            users_telegrams = [await get_user_tg_chat_info(u) async for u in
-                               Telegram.objects.select_related("user").filter(
-                                   user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
-            users = [*users_profiles, *users_telegrams, *groups]
+                Q(plan_curator__listeners=self,
+                  is_active=True)).exclude(pk=self.id).distinct()])
+
+        users_telegrams = [await get_user_tg_chat_info(u) async for u in
+                           Telegram.objects.select_related("user").filter(
+                               user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
+        users = [*users_profiles, *users_telegrams, *groups]
         return self._sort_users_for_chat(users)
 
     def get_unread_messages_count(self, sender=None):
