@@ -203,7 +203,7 @@ class NewUser(AbstractUser):
         self.save()
 
     def _sort_users_for_chat(self, users):
-        filtered_users = list(set(users))
+        filtered_users = users
         unread_list = list(filter(lambda u: u.get("unread"), filtered_users))
         has_messages_list = list(filter(lambda u: u.get("last_message_text") and u not in unread_list, filtered_users))
         no_messages_list = list(filter(lambda u: u.get("last_message_text") is None, filtered_users))
