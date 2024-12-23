@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from learning_plan.permissions import plans_button
+from learning_plan.permissions import plans_button, get_can_see_plan
 from .models import Lesson
 from dls.utils import get_menu
 from dls.settings import MATERIAL_FORMATS
@@ -30,12 +30,9 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
                              lesson.replace_teacher == request.user or
                              lesson.get_learning_plan().metodist == request.user or
                              request.user.groups.filter(name="Admin").exists())
-        lp = lesson.get_learning_plan()
         plan_button = None
-        if (request.user.groups.filter(name="Admin").exists() or
-                lp.metodist == request.user or lp.teacher == request.user or
-                lp.curators.filter(pk=request.user.pk).exists() or
-                lesson.replace_teacher == request.user):
+        lp = lesson.get_learning_plan()
+        if get_can_see_plan(request, lp, lesson):
             plan_button = lp.id
         context = {
             'menu': get_menu(request.user),

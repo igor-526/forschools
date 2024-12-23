@@ -3,6 +3,7 @@ function lessonItemMain(){
         switch (request.status){
             case 200:
                 lessonItemSetInfo(request.response)
+                console.log(request.response)
 
                 if (can_see_materials){
                     lessonItemSetMaterials(request.response.materials)

@@ -2,6 +2,7 @@ function homeworkItemMain(){
     homeworkAPIGetItem(hwID).then(request => {
         switch (request.status){
             case 200:
+                console.log(request.response)
                 homeworkItemSetMainInfo(request.response)
                 if (request.response.materials.length > 0){
                     homeworkItemSetMaterials(request.response.materials)
@@ -62,19 +63,6 @@ function homeworkItemSetMainInfo(hw){
         return btn
     }
 
-    function getListElement(name, value){
-        const li = document.createElement("li")
-        li.classList.add("list-group-item")
-        li.innerHTML = `<b>${name}:</b> ${value}`
-        return li
-    }
-
-    if (hw.lesson_info){
-        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
-            "Занятие",
-            `<a href="/lessons/${hw.lesson_info.id}" target="_blank">${hw.lesson_info.name}</a>`
-        ))
-    }
     if (hw.description && hw.description !== "-"){
         hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
             "Описание", hw.description
@@ -107,7 +95,46 @@ function homeworkItemSetMainInfo(hw){
             "Статус", hw.hw_status)
         )
     }
+    if (hw.lesson_info){
+        homeworkItemSetLessonInfo(hw.lesson_info)
+    }
+}
 
+function homeworkItemSetLessonInfo(lesson_info){
+    hwItemPlanInfo.classList.remove("d-none")
+    if (lesson_info.id && lesson_info.name){
+        hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Занятие",
+            `<a target="_blank" href="/lessons/${lesson_info.id}"><button class="btn btn-sm btn-primary">${lesson_info.name}</button></a>`)
+        )
+    }
+    if (lesson_info.plan){
+        hwItemPlanInfoHeader.innerHTML = `<a target="_blank" href="/learning_plans/${lesson_info.plan.id}"><button class="btn btn-sm btn-primary">План обучения</button></a>`
+
+        if (lesson_info.plan.teacher) {
+            hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+                "Преподаватель", getUsersString([lesson_info.plan.teacher])
+            ))
+        }
+
+        lesson_info.plan.listeners.forEach(listener => {
+            hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+                "Ученик", getUsersString([listener])
+            ))
+        })
+
+        if (lesson_info.plan.methodist) {
+            hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+                "Методист", getUsersString([lesson_info.plan.methodist])
+            ))
+        }
+
+        lesson_info.plan.curators.forEach(curator => {
+            hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+                "Куратор", getUsersString([curator])
+            ))
+        })
+    }
 }
 
 function homeworkItemSetMaterials(materials){
@@ -221,5 +248,8 @@ const hwItemLogList = document.querySelector("#hwItemLogList")
 const hwItemAddMaterialsTG = document.querySelector("#hwItemAddMaterialsTG")
 const hwItemMaterialsList = document.querySelector("#hwItemMaterialsList")
 const hwItemMainInfoList = document.querySelector("#hwItemMainInfoList")
+const hwItemPlanInfo = document.querySelector("#hwItemPlanInfo")
+const hwItemPlanInfoList = document.querySelector("#hwItemPlanInfoList")
+const hwItemPlanInfoHeader = document.querySelector("#hwItemPlanInfoHeader")
 
 homeworkItemMain()

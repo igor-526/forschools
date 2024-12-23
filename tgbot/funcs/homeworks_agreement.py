@@ -68,64 +68,81 @@ async def f_homework_agr_add_comment(message: types.Message,
 
 async def f_homework_agr_send(tg_id: int,
                               state: FSMContext):
-    async def notify_users(log_status, action):
+    async def get_logs_info():
+        hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=stdata.get("hw_id"))
+        last_log = await hw.aget_status()
+        if last_log and last_log.status == 7:
+            hw_group = await hw.homeworkgroups_set.afirst()
+            hws = [hw async for hw in hw_group.homeworks.select_related("teacher").select_related("listener").all()] \
+                if hw_group else [hw]
+        else:
+            hws = [hw]
+        lesson = await hw.aget_lesson()
+        lp = (await lesson.aget_learning_plan()) if lesson else None
+        to_agreement = [log async for log in
+                        HomeworkLog.objects.select_related("homework").select_related("homework__listener")
+                        .select_related("homework__teacher").filter(status__in=[5, 4, 7],
+                                                                    homework__id__in=[hw.id for hw in hws],
+                                                                    agreement__accepted=False)]
+        return {
+            "homeworks": hws,
+            "logs": to_agreement,
+            "plan": lp
+        }
+
+    async def notify_users(logs, action):
         msg_teacher = ""
         msg_curator = ""
         msg_listener = ""
-        if action == "agreement_accept":
-            if log_status == 7:
-                msg_teacher = "ДЗ согласовано методистом и задано ученику"
-                msg_curator = "Преподаватель задал новое ДЗ"
-                msg_listener = "У вас новое домашнее задание!"
-            elif log_status == 4:
-                msg_teacher = "Принятие ДЗ согласовано методистом. Ученик уведомлён"
-                msg_curator = "Преподаватель принял у ученика ДЗ"
-                msg_listener = "Домашнее задание принято!"
-            elif log_status == 5:
-                msg_teacher = "Отправка ДЗ на доработку согласовано методистом. Ученик уведомлён"
-                msg_curator = "Преподаватель отправил на доработку ДЗ"
-                msg_listener = "Домашнее задание отправлено на доработку!"
-            await homework_tg_notify(lp.metodist,
-                                     hw.teacher.id,
-                                     [hw],
-                                     msg_teacher)
-            await homework_tg_notify(lp.metodist,
-                                     hw.listener.id,
-                                     [hw],
-                                     msg_listener)
-            if hw.for_curator:
-                [await homework_tg_notify(lp.metodist,
-                                          curator.id,
-                                          [hw],
-                                          msg_curator)
-                 async for curator in lp.curators.all()]
-
-        elif action == "agreement_decline":
-            if log_status == 7:
-                msg_teacher = "ДЗ НЕ согласовано методистом и не задано"
-            elif log_status == 4:
-                msg_teacher = "Принятие ДЗ НЕ согласовано методистом"
-            elif log_status == 5:
-                msg_teacher = "Отправка ДЗ на доработку НЕ согласовано методистом"
-            msg = await Message.objects.acreate(
-                receiver=hw.teacher,
-                sender=await get_user(tg_id),
-                message=stdata.get("comment"),
-            )
-            await chats_notificate(chat_message_id=msg.id, show=False)
-            await homework_tg_notify(lp.metodist,
-                                     hw.teacher.id,
-                                     [hw],
-                                     msg_teacher)
+        for log_ in logs:
+            if action == "agreement_accept":
+                if log_.status == 7:
+                    msg_teacher = "ДЗ согласовано методистом и задано ученику"
+                    msg_curator = "Преподаватель задал новое ДЗ"
+                    msg_listener = "У вас новое домашнее задание!"
+                elif log_.status == 4:
+                    msg_teacher = "Принятие ДЗ согласовано методистом. Ученик уведомлён"
+                    msg_curator = "Преподаватель принял у ученика ДЗ"
+                    msg_listener = "Домашнее задание принято!"
+                elif log_.status == 5:
+                    msg_teacher = "Отправка ДЗ на доработку согласовано методистом. Ученик уведомлён"
+                    msg_curator = "Преподаватель отправил на доработку ДЗ"
+                    msg_listener = "Домашнее задание отправлено на доработку!"
+                await homework_tg_notify(logs_info.get("plan").metodist,
+                                         log_.homework.teacher.id,
+                                         [log_.homework],
+                                         msg_teacher)
+                await homework_tg_notify(logs_info.get("plan").metodist,
+                                         log_.homework.listener.id,
+                                         [log_.homework],
+                                         msg_listener)
+                if log_.homework.for_curator:
+                    [await homework_tg_notify(logs_info.get("plan").metodist,
+                                              curator.id,
+                                              [log_.homework],
+                                              msg_curator)
+                     async for curator in logs_info.get("plan").curators.all()]
+            elif action == "agreement_decline":
+                if log_.status == 7:
+                    msg_teacher = "ДЗ НЕ согласовано методистом и не задано"
+                elif log_.status == 4:
+                    msg_teacher = "Принятие ДЗ НЕ согласовано методистом"
+                elif log_.status == 5:
+                    msg_teacher = "Отправка ДЗ на доработку НЕ согласовано методистом"
+                msg = await Message.objects.acreate(
+                    receiver=log_.homework.teacher,
+                    sender=await get_user(tg_id),
+                    message=stdata.get("comment"),
+                )
+                await chats_notificate(chat_message_id=msg.id, show=False)
+                await homework_tg_notify(logs_info.get("plan").metodist,
+                                         log_.homework.teacher.id,
+                                         [log_.homework],
+                                         msg_teacher)
 
     stdata = await state.get_data()
-    hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=stdata.get("hw_id"))
-    lesson = await hw.aget_lesson()
-    lp = (await lesson.aget_learning_plan()) if lesson else None
-    logs = [log async for log in HomeworkLog.objects.filter(status__in=[5, 4, 7],
-                                                            agreement__accepted=False,
-                                                            homework=hw).order_by("-dt")]
-    if not logs:
+    logs_info = await get_logs_info()
+    if not logs_info.get("logs"):
         await bot.send_message(chat_id=tg_id,
                                text="ДЗ не нуждается в согласовании")
         return
@@ -143,14 +160,18 @@ async def f_homework_agr_send(tg_id: int,
     if stdata.get("action") == "agreement_accept":
         agreement["accepted"] = True
         answer_msg = "Действия преподавателя согласованы. Уведомления отправлены"
+        if logs_info.get("homeworks") and len(logs_info.get("homeworks")) > 1:
+            answer_msg += "\nНет необходимости согласовывать другие ДЗ для группового занятия"
     elif stdata.get("action") == "agreement_decline":
         agreement["accepted"] = False
         agreement["comment"] = stdata.get("comment")
         answer_msg = "Действия преподавателя не согласованы. Уведомления отправлены"
-    for log in logs:
+        if logs_info.get("homeworks") and len(logs_info.get("homeworks") > 1):
+            answer_msg += "\nНет необходимости согласовывать другие ДЗ для группового занятия"
+    for log in logs_info.get("logs"):
         log.agreement = agreement
         await log.asave()
-    await notify_users(logs[-1].status, stdata.get("action"))
+        await notify_users(logs_info.get("logs"), stdata.get("action"))
     await bot.send_message(chat_id=tg_id,
                            text=answer_msg)
     await send_menu(tg_id, state)

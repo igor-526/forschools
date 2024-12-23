@@ -89,7 +89,8 @@ async function homeworkAPISend(homeworkID, fd){
 }
 
 async function homeworkAPIGet(lesson=null, status=null, teachers=[],
-                              listeners=[], dateFrom=null, dateTo=null){
+                              listeners=[], dateFrom=null, dateTo=null,
+                              dateChangedFrom=null, dateChangedTo=null){
     let url = "/api/v1/homeworks/"
     let queryArray = []
     if (lesson){
@@ -103,6 +104,12 @@ async function homeworkAPIGet(lesson=null, status=null, teachers=[],
     }
     if (dateTo){
         queryArray.push(`date_to=${dateTo}`)
+    }
+    if (dateChangedFrom){
+        queryArray.push(`date_changed_from=${dateChangedFrom}`)
+    }
+    if (dateChangedTo){
+        queryArray.push(`date_changed_to=${dateChangedTo}`)
     }
     teachers.forEach(teacher => {
         queryArray.push(`teacher=${teacher}`)

@@ -208,7 +208,7 @@ function usersLearnInfoSetHomeworks(){
                 <th scope="col">Наименование</th>
                 <th scope="col">Преподаватель</th>
                 <th scope="col">Ученик</th>
-                <th scope="col">Срок</th>
+                <th scope="col">Посл. изменение</th>
             </tr>`
         usersLearningInfoModalTableBody.innerHTML = ""
     }
@@ -221,12 +221,12 @@ function usersLearnInfoSetHomeworks(){
         tdTeacher.innerHTML = getUsersHTML([hw.teacher])
         const tdListener = document.createElement("td")
         tdListener.innerHTML = getUsersHTML([hw.listener])
-        const tdDeadline = document.createElement("td")
-        tdDeadline.innerHTML = new Date(hw.deadline).toLocaleDateString()
+        const tdLastChanged = document.createElement("td")
+        tdLastChanged.innerHTML = new Date(hw.status.dt).toLocaleDateString()
         tr.insertAdjacentElement("beforeend", tdName)
         tr.insertAdjacentElement("beforeend", tdTeacher)
         tr.insertAdjacentElement("beforeend", tdListener)
-        tr.insertAdjacentElement("beforeend", tdDeadline)
+        tr.insertAdjacentElement("beforeend", tdLastChanged)
         return tr
     }
 

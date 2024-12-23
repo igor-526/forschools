@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from .models import Homework, HomeworkLog
 from rest_framework.views import APIView
 from rest_framework import status
-from material.models import File, Material
+from material.models import File
 
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -53,6 +53,23 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
         return queryset
 
+    def filter_queryset_date_changed(self, queryset):
+        date_changed_from = self.request.query_params.get("date_changed_from")
+        date_changed_to = self.request.query_params.get("date_changed_to")
+        if date_changed_from or date_changed_to:
+            listed_queryset = list(queryset)
+            listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None, listed_queryset))
+            if date_changed_from:
+                date_changed_from = datetime.datetime.strptime(date_changed_from, "%Y-%m-%d").date()
+                listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() >= date_changed_from,
+                                              listed_queryset))
+            if date_changed_to:
+                date_changed_to = datetime.datetime.strptime(date_changed_to, "%Y-%m-%d").date()
+                listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() <= date_changed_to,
+                                              listed_queryset))
+            queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
+        return queryset
+
     def filter_queryset_status(self, queryset):
         if queryset is None:
             return None
@@ -90,7 +107,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         queryset = self.filter_queryset_lesson(queryset)
         queryset = self.filter_queryset_teacher(queryset)
         queryset = self.filter_queryset_listener(queryset)
-        queryset = self.filter_queryset_assigned(queryset)
+        queryset = self.filter_queryset_date_changed(queryset)
         queryset = self.filter_queryset_status(queryset)
         return queryset[:50] if queryset is not None else None
 
@@ -113,7 +130,8 @@ class HomeworkRetrieveUpdateDestroyAPIView(APIView):
     serializer_class = HomeworkSerializer
 
     def get(self, request, *args, **kwargs):
-        serializer = HomeworkSerializer(Homework.objects.get(pk=kwargs.get("pk")), many=False)
+        serializer = HomeworkSerializer(Homework.objects.get(pk=kwargs.get("pk")), many=False,
+                                        context={"request": request})
         return Response(serializer.data)
 
 
@@ -219,41 +237,61 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
         if not get_can_accept_log_permission(instance.homework, request):
             return Response(status=status.HTTP_403_FORBIDDEN)
         if instance:
+            if instance.status == 7:
+                hw_group = instance.homework.homeworkgroups_set.first()
+                hws = hw_group.homeworks.all() if hw_group else [instance.homework.id]
+            else:
+                hws = [instance.homework]
+            to_agreement = HomeworkLog.objects.filter(homework__id__in=[hw.id for hw in hws],
+                                                      dt__lte=instance.dt,
+                                                      agreement__accepted=False)
+            accepted_dt = datetime.datetime.now()
             agreement = {
-                "accepted_dt": None,
+                "accepted_dt": {
+                    "year": accepted_dt.year,
+                    "month": accepted_dt.month,
+                    "day": accepted_dt.day,
+                    "hour": accepted_dt.hour,
+                    "minute": accepted_dt.minute
+                },
                 "accepted": False
             }
             if request.POST.get('action') == 'accept':
                 agreement['accepted'] = True
                 if instance.status == 7:
-                    teacher_msg_text = "Домашнее задание согласовано и задано"
-                    send_homework_tg(initiator=instance.homework.teacher,
-                                     listener=instance.homework.listener,
-                                     homeworks=[instance.homework])
-                elif instance.status == 4:
-                    teacher_msg_text = "Ответ на решение согласован. ДЗ принято"
-                    send_homework_answer_tg(instance.homework.listener, instance.homework, 4)
-                elif instance.status == 5:
-                    teacher_msg_text = "Ответ на решение согласован. ДЗ отправлено на доработку"
-                    send_homework_answer_tg(instance.homework.listener, instance.homework, 5)
+                    for hw in hws:
+                        send_homework_tg(initiator=instance.homework.teacher,
+                                         listener=instance.homework.listener,
+                                         homeworks=[hw])
+                    send_homework_tg(initiator=instance.homework.get_lesson().get_learning_plan().metodist,
+                                     listener=instance.homework.teacher,
+                                     homeworks=hws,
+                                     text="Следующие ДЗ были согласованы и заданы")
                 else:
-                    teacher_msg_text = "Домашнее задание согласовано"
-                send_homework_tg(initiator=instance.homework.get_lesson().get_learning_plan().metodist,
-                                 listener=instance.homework.teacher,
-                                 homeworks=[instance.homework],
-                                 text=teacher_msg_text)
+                    if instance.status == 4:
+                        teacher_msg_text = "Ответ на решение согласован. ДЗ принято"
+                        send_homework_answer_tg(instance.homework.listener, hws[0], 4)
+                    elif instance.status == 5:
+                        teacher_msg_text = "Ответ на решение согласован. ДЗ отправлено на доработку"
+                        send_homework_answer_tg(instance.homework.listener, hws[0], 5)
+                    else:
+                        teacher_msg_text = "Домашнее задание согласовано"
+                    send_homework_tg(initiator=instance.homework.get_lesson().get_learning_plan().metodist,
+                                     listener=instance.homework.teacher,
+                                     homeworks=hws,
+                                     text=teacher_msg_text)
             elif request.POST.get('action') == 'decline':
-                agreement['accepted'] = False
-                send_homework_edit(instance.homework, instance.homework.teacher)
+                for hw in hws:
+                    send_homework_edit(hw, instance.homework.teacher)
             if request.POST.get('message'):
                 agreement['message'] = request.POST.get('message')
                 message = Message.objects.create(sender=request.user,
                                                  receiver=instance.homework.teacher,
                                                  message=request.POST.get('message'))
                 notify_chat_message(message)
-
-            instance.agreement = agreement
-            instance.save()
+            for log in to_agreement:
+                log.agreement = agreement
+                log.save()
             return Response(data={'status': True}, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)

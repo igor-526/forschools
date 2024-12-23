@@ -2,6 +2,8 @@ import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+
+from learning_plan.models import LearningPlan
 from lesson.models import Lesson
 
 
@@ -50,23 +52,26 @@ def can_edit_lesson_materials(request, lesson: Lesson):
 
 
 def can_see_lesson_materials(request, lesson: Lesson):
-    if lesson.status == 1:
+    if request.user.groups.filter(name="Admin").exists():
         return True
-    usergroups = get_usergroups(request.user)
-    if ("Admin" in usergroups) or ("Metodist" in usergroups):
+    lp = lesson.get_learning_plan()
+    if not lp:
+        return False
+    if (lp.teacher == request.user or lp.metodist == request.user or
+            lesson.replace_teacher == request.user or lp.curators.filter(id=request.user.id).exists()):
         return True
-    if "Listener" in usergroups:
+    if LearningPlan.listeners.filter(id=request.user.id).exists():
         if not lesson.date:
             return False
-        learning_plan = lesson.learningphases_set.first().learningplan_set.first()
         lessondt = timezone.datetime(lesson.date.year, lesson.date.month, lesson.date.day)
-        if not learning_plan.show_materials:
+        if not lp.show_materials:
             if lesson.status == 1:
                 return True
             else:
                 return lesson.materials_access
         return timezone.now().timestamp() >= (
-                lessondt - datetime.timedelta(days=learning_plan.show_materials)).timestamp()
+                lessondt - datetime.timedelta(days=lp.show_materials)).timestamp()
+    return False
 
 
 def can_add_homework(request, lesson: Lesson):

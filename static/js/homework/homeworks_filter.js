@@ -106,6 +106,20 @@ function homeworksFilterEraseListeners(){
         homeworksTableFilterDateEndField.classList.remove("is-invalid")
     }
 
+    function eraseDateChangedStartField(){
+        homeworksTableFilterLastChangeDateStartField.value = ""
+        homeworksFilterDateChangedFrom = null
+        homeworksTableFilterLastChangeDateStartField.classList.remove("is-invalid")
+        homeworksTableFilterLastChangeDateEndField.classList.remove("is-invalid")
+    }
+
+    function eraseDateChangedEndField(){
+        homeworksTableFilterLastChangeDateEndField.value = ""
+        homeworksFilterDateChangedTo = null
+        homeworksTableFilterLastChangeDateStartField.classList.remove("is-invalid")
+        homeworksTableFilterLastChangeDateEndField.classList.remove("is-invalid")
+    }
+
     function cancelTeachersSearchField(){
         eraseTeachersSearchField(true)
         homeworksFilterSelectedTeachers = []
@@ -121,6 +135,8 @@ function homeworksFilterEraseListeners(){
         eraseDateEndField()
         cancelTeachersSearchField()
         cancelListenersSearchField()
+        eraseDateChangedStartField()
+        eraseDateChangedEndField()
         homeworksFilterCurrentLesson = null
         homeworksGet()
     })
@@ -144,6 +160,14 @@ function homeworksFilterEraseListeners(){
     })
     homeworksTableFilterDateEndFieldErase.addEventListener("click", function () {
         eraseDateEndField()
+        homeworksGet()
+    })
+    homeworksTableFilterLastChangeDateStartFieldErase.addEventListener("click", function () {
+        eraseDateChangedStartField()
+        homeworksGet()
+    })
+    homeworksTableFilterLastChangeDateEndFieldErase.addEventListener("click", function () {
+        eraseDateChangedEndField()
         homeworksGet()
     })
 
@@ -170,36 +194,48 @@ function homeworksFilterSearchListeners(){
 }
 
 function homeworksFilterListeners(){
-    function validateDates(){
+    function validateDates(s, e){
         let validationStatus = true
         let dateStart
         let dateEnd
-        if (homeworksTableFilterDateStartField.value !== ""){
-            dateStart = new Date(homeworksTableFilterDateStartField.value)
+        if (s.value !== ""){
+            dateStart = new Date(s.value)
         }
-        if (homeworksTableFilterDateEndField.value !== ""){
-            dateEnd = new Date(homeworksTableFilterDateEndField.value)
+        if (e.value !== ""){
+            dateEnd = new Date(e.value)
         }
 
         if (dateStart && dateEnd){
             if (dateStart > dateEnd) {
                 validationStatus = false
-                homeworksTableFilterDateStartField.classList.add("is-invalid")
-                homeworksTableFilterDateEndField.classList.add("is-invalid")
+                s.classList.add("is-invalid")
+                e.classList.add("is-invalid")
             }
         }
         return validationStatus
     }
 
     homeworksTableFilterDateStartField.addEventListener("input", function () {
-        if (validateDates()){
+        if (validateDates(homeworksTableFilterDateStartField, homeworksTableFilterDateEndField)){
             homeworksFilterDateFrom = homeworksTableFilterDateStartField.value
             homeworksGet()
         }
     })
     homeworksTableFilterDateEndField.addEventListener("input", function () {
-        if (validateDates()){
+        if (validateDates(homeworksTableFilterDateStartField, homeworksTableFilterDateEndField)){
             homeworksFilterDateTo = homeworksTableFilterDateEndField.value
+            homeworksGet()
+        }
+    })
+    homeworksTableFilterLastChangeDateStartField.addEventListener("input", function () {
+        if (validateDates(homeworksTableFilterLastChangeDateStartField, homeworksTableFilterLastChangeDateEndField)){
+            homeworksFilterDateChangedFrom = homeworksTableFilterLastChangeDateStartField.value
+            homeworksGet()
+        }
+    })
+    homeworksTableFilterLastChangeDateEndField.addEventListener("input", function () {
+        if (validateDates(homeworksTableFilterLastChangeDateStartField, homeworksTableFilterLastChangeDateEndField)){
+            homeworksFilterDateChangedTo = homeworksTableFilterLastChangeDateEndField.value
             homeworksGet()
         }
     })
@@ -213,12 +249,16 @@ const homeworksTableFilterListenerSearchFieldErase = document.querySelector("#ho
 const homeworksTableFilterDateStartFieldErase = document.querySelector("#homeworksTableFilterDateStartFieldErase")
 const homeworksTableFilterDateEndFieldErase = document.querySelector("#homeworksTableFilterDateEndFieldErase")
 const homeworksTableFilterListenerSearchFieldReset = document.querySelector("#homeworksTableFilterListenerSearchFieldReset")
+const homeworksTableFilterLastChangeDateStartFieldErase = document.querySelector("#homeworksTableFilterLastChangeDateStartFieldErase")
+const homeworksTableFilterLastChangeDateEndFieldErase = document.querySelector("#homeworksTableFilterLastChangeDateEndFieldErase")
 
 //Fields
 const homeworksTableFilterTeacherSearchField = document.querySelector("#homeworksTableFilterTeacherSearchField")
 const homeworksTableFilterListenerSearchField = document.querySelector("#homeworksTableFilterListenerSearchField")
 const homeworksTableFilterDateStartField = document.querySelector("#homeworksTableFilterDateStartField")
 const homeworksTableFilterDateEndField = document.querySelector("#homeworksTableFilterDateEndField")
+const homeworksTableFilterLastChangeDateStartField = document.querySelector("#homeworksTableFilterLastChangeDateStartField")
+const homeworksTableFilterLastChangeDateEndField = document.querySelector("#homeworksTableFilterLastChangeDateEndField")
 
 //Lists
 const homeworksTableFilterTeacherList = document.querySelector("#homeworksTableFilterTeacherList")

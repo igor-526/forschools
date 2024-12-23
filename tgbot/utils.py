@@ -350,7 +350,7 @@ def notify_chat_message(message: Message):
 
 def send_homework_edit(hw: Homework, user: NewUser):
     sync_funcs.send_tg_message_sync(tg_id=user.telegram.filter(usertype="main").first().tg_id,
-                                    message=f"ДЗ '{hw.name}'",
+                                    message=f"Действие по ДЗ '{hw.name}' не согласовано",
                                     reply_markup=get_homework_edit_button(hw.id))
 
 

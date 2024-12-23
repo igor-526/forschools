@@ -27,13 +27,15 @@ function homeworksMain(){
 }
 
 function homeworksGet(status = homeworksFilterCurrentStatus,
-                            teachers = homeworksFilterSelectedTeachers,
-                            listeners = homeworksFilterSelectedListeners,
-                            dateFrom = homeworksFilterDateFrom,
-                            dateTo = homeworksFilterDateTo){
+                      teachers = homeworksFilterSelectedTeachers,
+                      listeners = homeworksFilterSelectedListeners,
+                      dateFrom = homeworksFilterDateFrom,
+                      dateTo = homeworksFilterDateTo,
+                      dateChangedFrom= homeworksFilterDateChangedFrom,
+                      dateChangedTo= homeworksFilterDateChangedTo){
     homeworksFilterCurrentStatus = status
     homeworkAPIGet(homeworksFilterCurrentLesson, status, teachers,
-        listeners, dateFrom, dateTo).then(request => {
+        listeners, dateFrom, dateTo, dateChangedFrom, dateChangedTo).then(request => {
         switch (request.status){
             case 200:
                 homeworksShow(request.response)
@@ -88,12 +90,12 @@ function homeworksShow(homeworks){
         const tdTeacher = document.createElement("td")
         const tdListener = document.createElement("td")
         const tdAssigned = document.createElement("td")
-        const tdDeadline = document.createElement("td")
+        const tdLastChanged = document.createElement("td")
         tr.insertAdjacentElement("beforeend", tdName)
         tr.insertAdjacentElement("beforeend", tdTeacher)
         tr.insertAdjacentElement("beforeend", tdListener)
         tr.insertAdjacentElement("beforeend", tdAssigned)
-        tr.insertAdjacentElement("beforeend", tdDeadline)
+        tr.insertAdjacentElement("beforeend", tdLastChanged)
         if (hw.lesson_info){
             const tdNameLessonButtonA = document.createElement("a")
             const tdNameLessonButtonButton = document.createElement("button")
@@ -113,7 +115,7 @@ function homeworksShow(homeworks){
         tdListener.innerHTML = `<a target="_blank" href="/profile/${hw.listener.id}">${hw.listener.first_name} ${hw.listener.last_name}</a>`
         if (hw.assigned){
             tdAssigned.innerHTML = new Date(hw.assigned).toLocaleDateString()
-            tdDeadline.innerHTML = new Date(hw.deadline).toLocaleDateString()
+            tdLastChanged.innerHTML = new Date(hw.status.dt).toLocaleDateString()
         }
         return tr
     }
@@ -131,6 +133,8 @@ let homeworksFilterSelectedTeachers = []
 let homeworksFilterSelectedListeners = []
 let homeworksFilterDateFrom = null
 let homeworksFilterDateTo = null
+let homeworksFilterDateChangedFrom = null
+let homeworksFilterDateChangedTo = null
 
 
 //Tabs

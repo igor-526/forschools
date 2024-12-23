@@ -193,6 +193,16 @@ class HomeworkLog(models.Model):
         return f'{self.user} - {self.status}'
 
 
+class HomeworkGroups(models.Model):
+    homeworks = models.ManyToManyField(Homework,
+                                       verbose_name="Домашние заания")
+
+    class Meta:
+        verbose_name = 'Группа домашних заданий'
+        verbose_name_plural = 'Группы домашних заданий'
+        ordering = ['id']
+
+
 def homework_new_log(sender, instance, created, **kwargs):
     if created:
         HomeworkLog.objects.create(homework=instance,

@@ -22,7 +22,7 @@ from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id, get_tg_note
 from profile_management.models import NewUser
-from homework.models import Homework, HomeworkLog
+from homework.models import Homework, HomeworkLog, HomeworkGroups
 from tgbot.create_bot import bot
 from tgbot.utils import get_group_and_perms, get_user
 from homework.utils import status_code_to_string
@@ -279,7 +279,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
         teacher = plan.default_hw_teacher if plan else user
         methodist = plan.metodist if plan else None
         curators_ids = [u.id async for u in plan.curators.all()] if plan else []
-
+        homeworks = []
         for listener in listeners:
             hw = await Homework.objects.acreate(
                 name=f'{statedata.get("new_hw").get("name")} ({listener.first_name} {listener.last_name})',
@@ -294,6 +294,10 @@ async def add_homework_set_homework_ready(state: FSMContext,
             if lesson:
                 await lesson.homeworks.aadd(hw)
             await new_hw_result()
+            homeworks.append(hw)
+        if len(homeworks) > 1:
+            hw_group = await HomeworkGroups.objects.acreate()
+            await hw_group.homeworks.aset(homeworks)
 
 
 async def add_homework_set_homework_message(tg_id: int,

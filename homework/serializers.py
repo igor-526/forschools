@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Homework, HomeworkLog
+from learning_plan.permissions import get_can_see_plan
+from .models import Homework, HomeworkLog, HomeworkGroups
 from lesson.models import Lesson
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
@@ -22,11 +23,20 @@ class HomeworkSerializer(serializers.ModelSerializer):
     def get_lesson_info(self, obj):
         lesson = obj.get_lesson()
         if lesson:
-            return {
+            plan = lesson.get_learning_plan()
+            result = {
                 "id": lesson.id,
                 "name": lesson.name,
-            } if lesson else None
-
+            }
+            if get_can_see_plan(self.context.get('request'), plan, lesson):
+                result['plan'] = {"id": plan.id,
+                                  "teacher": NewUserNameOnlyListSerializer(plan.teacher, many=False).data,
+                                  "listeners": NewUserNameOnlyListSerializer(plan.listeners.all(), many=True).data,
+                                  "curators": NewUserNameOnlyListSerializer(plan.curators.all(), many=True).data,
+                                  "methodist": NewUserNameOnlyListSerializer(plan.metodist, many=False).data}
+            return result
+        else:
+            return None
 
 
 class HomeworkListSerializer(serializers.ModelSerializer):
@@ -39,13 +49,14 @@ class HomeworkListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Homework
-        fields = ["id", "name", "deadline", "description", "teacher", "for_curator",
+        fields = ["id", "name", "description", "teacher", "for_curator",
                   "listener", "status", "lesson_info", "assigned", "color"]
 
     def get_status(self, obj):
         status = obj.get_status()
         if status:
-            return status.status
+            return {"status": status.status,
+                    "dt": status.dt}
         else:
             return None
 
@@ -135,6 +146,9 @@ class HomeworkListSerializer(serializers.ModelSerializer):
                                      listener=homework.get_lesson().get_learning_plan().metodist,
                                      homeworks=[homework],
                                      text="Требуется согласование действия преподавталя")
+        if len(homeworks) > 1:
+            hw_group = HomeworkGroups.objects.create()
+            hw_group.homeworks.add(*homeworks)
         return homeworks[0]
 
 
