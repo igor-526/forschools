@@ -14,7 +14,7 @@
                     <button id="chatsGroupAddButton" type="button" class="btn btn-primary"><i class="bi bi-plus-lg"></i><i class="bi bi-people-fill"></i><i class="bi bi-chat"></i></button>
                     {% include 'chat_groups_admin_modal.html' %}
                 {% endif %}
-                {% if "auth.can_read_all_messages" in perms %}
+                {% if can_see_other_users_messages %}
                     <div class="btn-group" role="group" aria-label="">
                         <button id="chatsFromUserCancelButton" type="button" class="btn btn-outline-danger" disabled><i class="bi bi-x-lg"></i></button>
                         <div class="btn-group" role="group">
@@ -77,7 +77,7 @@
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/chat/chatAPI.js' %}"></script>
     <script src="{% static 'js/chat/chat_main.js' %}"></script>
-    {% if "auth.can_read_all_messages" in perms %}
+    {% if can_see_other_users_messages %}
         <script src="{% static 'js/chat/chat_from_user.js' %}"></script>
     {% endif %}
     {% if can_add_group_chat %}

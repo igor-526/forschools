@@ -2,7 +2,6 @@ import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
-
 from learning_plan.models import LearningPlan
 from lesson.models import Lesson
 

@@ -48,7 +48,8 @@
             const tgAPI = window.Telegram.WebApp
             const tgUserdata = tgAPI.initDataUnsafe
             const csrftoken = '{{ csrf_token }}'
-            tgAPI.isVerticalSwipesEnabled = false
+            tgAPI.expand()
+            tgAPI.disableVerticalSwipes()
             tgAPI.setHeaderColor("#003366")
             const maBaseButtonBack = document.querySelector("#maBaseButtonBack")
             maBaseButtonBack.addEventListener("click", function () {

@@ -7,6 +7,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from chat.permissions import can_see_other_users_messages
 from .permissions import get_editable_perm, get_secretinfo_perm
 from .models import NewUser
 from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
@@ -61,18 +63,12 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
     def get_serializer_class(self):
         setting = self.request.query_params.get("setting")
         if setting == 'messagesadmin':
-            if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
+            if can_see_other_users_messages(self.request):
                 return NewUserLastMessageDateListSerializer
             else:
                 raise PermissionDenied
         else:
             return NewUserListSerializer
-
-    def filter_id(self, queryset):
-        q_id = self.request.query_params.get('id')
-        if q_id:
-            queryset = queryset.filter(id=q_id)
-        return queryset
 
     def filter_tg(self, queryset):
         q_tg = self.request.query_params.get('tg_status')
@@ -80,12 +76,6 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
             queryset = queryset.annotate(tg_count=Count("telegram")).filter(tg_count__gt=0)
         elif q_tg == "disconnected":
             queryset = queryset.annotate(tg_count=Count("telegram")).filter(tg_count=0)
-        return queryset
-
-    def filter_username(self, queryset):
-        q_username = self.request.query_params.get('username')
-        if q_username:
-            queryset = queryset.filter(username__icontains=q_username)
         return queryset
 
     def filter_fullname(self, queryset):
@@ -100,11 +90,25 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
             queryset = queryset.filter(q)
         return queryset
 
-    def filter_roles(self, queryset):
+    def filter_queryset_fields(self, queryset):
+        query = dict()
+        q_id = self.request.query_params.get('id')
+        q_username = self.request.query_params.get('username')
         q_roles = self.request.query_params.getlist('role')
+        if q_id:
+            query['id'] = q_id
+        if q_username:
+            query['username__icontains'] = q_username
         if q_roles:
-            queryset = queryset.filter(groups__name__in=q_roles)
-        return queryset
+            query['groups__name__in'] = q_roles
+        exclude_me = self.request.query_params.get('exclude_me')
+        if query:
+            if exclude_me == "True":
+                return queryset.filter(**query).exclude(id=self.request.user.id)
+            else:
+                return queryset.filter(**query)
+        else:
+            return queryset
 
     def sort_username(self, queryset):
         sort_username = self.request.query_params.get('sort_username')
@@ -122,42 +126,79 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
             queryset = queryset.order_by('-last_name')
         return queryset
 
-    def exclude_me(self, queryset):
-        exclude_me = self.request.query_params.get('exclude_me')
-        if exclude_me == "True":
-            queryset = queryset.exclude(id=self.request.user.id)
+    def get_queryset_read_all_messages(self):
+        user_groups = [group.name for group in self.request.user.groups.all()]
+        if "Admin" in user_groups:
+            queryset = NewUser.objects.all().exclude(id=self.request.user.id)
+        elif "Metodist" in user_groups:
+            queryset = NewUser.objects.filter(
+                Q(plan_listeners__metodist=self.request.user,
+                  is_active=True) |
+                Q(plan_curator__metodist=self.request.user,
+                  is_active=True) |
+                Q(plan_teacher__metodist=self.request.user,
+                  is_active=True)
+            ).exclude(id=self.request.user.id)
+        else:
+            queryset = None
         return queryset
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name="Admin"):
-            queryset = NewUser.objects.all()
-        elif self.request.user.groups.filter(name="Metodist"):
-            queryset = NewUser.objects.filter(is_active=True)
-        elif self.request.user.groups.filter(name="Teacher"):
-            queryset = NewUser.objects.filter(
-                Q(plan_listeners__teacher=self.request.user,
-                  is_active=True) |
-                Q(plan_listeners__phases__lessons__replace_teacher=self.request.user,
-                  is_active=True) |
-                Q(groups__name__in=['Admin', 'Metodist'],
-                  is_active=True))
+        setting = self.request.query_params.get("setting")
+        if setting == 'messagesadmin':
+            return self.get_queryset_read_all_messages()
         else:
-            queryset = None
+            user_groups = [group.name for group in self.request.user.groups.all()]
+            if "Admin" in user_groups:
+                queryset = NewUser.objects.all()
+            elif "Metodist" in user_groups:
+                queryset = NewUser.objects.filter(
+                    Q(plan_listeners__metodist=self.request.user,
+                      is_active=True) |
+                    Q(plan_curator__metodist=self.request.user,
+                      is_active=True) |
+                    Q(plan_teacher__metodist=self.request.user,
+                      is_active=True)
+                )
+            elif "Teacher" in user_groups:
+                queryset = NewUser.objects.filter(
+                    Q(plan_listeners__curator=self,
+                      is_active=True) |
+                    Q(plan_teacher__curator=self,
+                      is_active=True) |
+                    Q(plan_metodist__curator=self,
+                      is_active=True)
+                )
+            elif "Curator" in user_groups:
+                queryset = NewUser.objects.filter(
+                    Q(plan_listeners__teacher=self,
+                      is_active=True) |
+                    Q(plan_curator__teacher=self,
+                      is_active=True) |
+                    Q(plan_metodist__teacher=self,
+                      is_active=True)
+                )
+            elif "Listener" in user_groups:
+                queryset = NewUser.objects.filter(
+                    Q(plan_teacher__listeners=self,
+                      is_active=True) |
+                    Q(plan_curator__listeners=self,
+                      is_active=True)
+                )
+            else:
+                queryset = None
 
-        if queryset:
-            queryset = self.exclude_me(queryset)
-            queryset = self.filter_id(queryset)
-            queryset = self.filter_tg(queryset)
-            queryset = self.filter_username(queryset)
-            queryset = self.filter_fullname(queryset)
-            queryset = self.filter_roles(queryset)
-            queryset = self.sort_username(queryset)
-            queryset = self.sort_fullname(queryset)
-            queryset = queryset.order_by("-is_active")
-        if queryset:
-            return queryset.distinct()
-        else:
-            return None
+            if queryset:
+                queryset = self.filter_queryset_fields(queryset)
+                queryset = self.filter_tg(queryset)
+                queryset = self.filter_fullname(queryset)
+                queryset = self.sort_username(queryset)
+                queryset = self.sort_fullname(queryset)
+                queryset = queryset.order_by("-is_active")
+            if queryset:
+                return queryset.distinct()
+            else:
+                return None
 
 
 class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):

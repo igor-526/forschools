@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from profile_management.models import NewUser, Telegram
 from .models import Message
+from .permissions import can_see_chat
 from .serializers import ChatMessageSerializer, ChatGroupInfoSerailizer
 from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
 from rest_framework import status
@@ -15,7 +16,7 @@ class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
     def list(self, request, *args, **kwargs):
         from_user = self.request.query_params.get('from_user')
         if from_user:
-            if request.user.user_permissions.filter(codename="can_read_all_messages").exists():
+            if can_see_chat(request, from_user):
                 try:
                     from_user = NewUser.objects.get(pk=from_user)
                     chats = from_user.get_users_for_chat()
@@ -43,7 +44,7 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     def get_queryset(self, *args, **kwargs):
         from_user = self.request.query_params.get('from_user')
         if from_user:
-            if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
+            if can_see_chat(self.request, from_user):
                 from_user = NewUser.objects.get(pk=from_user)
             else:
                 raise PermissionDenied()
