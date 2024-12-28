@@ -8,6 +8,7 @@ async function chatAPIGetChats(user=null){
 }
 
 async function chatAPIGetMessages(userID, chatType=null, fromUserID= null){
+    console.log(fromUserID)
     let url = `/api/v1/messages/${userID}/`
     const queryArray = []
     if (chatType){

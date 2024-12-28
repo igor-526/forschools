@@ -20,7 +20,8 @@ from learning_plan.urls import (urlpatterns as learning_plan_urlpatterns,
 from learning_program.urls import (urlpatterns as learning_program_urlpatterns,
                                    apiv1patterns as learning_program_apiv1patterns)
 from chat.urls import (urlpatterns as chat_urlpatterns,
-                       apiv1patterns as chat_apiv1patterns)
+                       apiv1patterns as chat_apiv1patterns,
+                       ma_patterns as chat_ma_patterns)
 from tgbot.urls import (apiv1patterns as tgbot_apiv1patterns,
                         urlpatterns as tgbot_urlpatterns,
                         apiv1journalpatterns as tgbot_journal_apiv1patterns,
@@ -54,6 +55,7 @@ urlpatterns = [
 
     path('messages/', include(chat_urlpatterns)),
     path('api/v1/messages/', include(chat_apiv1patterns)),
+    path('ma/messages/', include(chat_ma_patterns)),
 
     path('api/v1/telegram/', include(tgbot_apiv1patterns)),
     path('tgjournal/', include(tgbot_urlpatterns)),

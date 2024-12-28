@@ -156,18 +156,29 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
         if not is_admin and lesson.homeworks.count() == 0:
             return Response({'error': "Необходимо задать ДЗ"}, status=status.HTTP_400_BAD_REQUEST)
         if can_set_passed(request, lesson):
+            validation = validate_lesson_review_form(request.POST)
+            review = LessonTeacherReview.objects.create(**validation.get("review")) if validation.get("status") \
+                else None
+            lesson_name = request.POST.get("name").strip(" ") if request.POST.get("name") else None
             if is_admin:
-                validation = {'status': True}
-                review = None
-            else:
-                validation = validate_lesson_review_form(request.POST)
-                review = LessonTeacherReview.objects.create(**validation.get("review"))
-            if validation['status']:
-                if request.POST.get("name"):
-                    lesson.name = request.POST.get("name").strip(" ")
+                if lesson_name and len(lesson_name) < 200:
+                    lesson.name = lesson_name
+                else:
+                    return Response({'error': 'Наименование занятия не может быть более 200 символов'},
+                                    status=status.HTTP_400_BAD_REQUEST)
+                if review:
+                    lesson.lesson_teacher_review = review
                 lesson.status = 1
-                lesson.lesson_teacher_review = review
                 lesson.save()
+            else:
+                if validation.get("status"):
+                    lesson.name = lesson_name
+                    lesson.lesson_teacher_review = review
+                    lesson.status = 1
+                    lesson.save()
+                else:
+                    return Response({'error': "\n".join(validation.get("errors"))},
+                                    status=status.HTTP_400_BAD_REQUEST)
                 for listener in plan.listeners.all():
                     for hw in lesson.homeworks.filter(listener=listener):
                         res = hw.set_assigned()
@@ -189,8 +200,6 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                                          text="Занятие успешно проведено!",
                                          lesson_id=lesson.id)
                 return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response(validation['errors'], status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error': "Недостаточно прав для изменения статуса занятия"},
                             status=status.HTTP_400_BAD_REQUEST)

@@ -221,15 +221,12 @@ function maLessonReviewSend() {
                     break
                 case 400:
                     if (request.response.hasOwnProperty("error")) {
-                        showErrorToast(request.response.error)
+                        tgAPI.showAlert(request.response.error)
                     }
                     maLessonReviewValidate(request.response)
                     break
                 default:
-                    showErrorToast()
-                    setTimeout(function () {
-                        tgAPI.close()
-                    }, 1000)
+                    tgAPI.showAlert("На сервере произошла ошибка")
                     break
             }
         })

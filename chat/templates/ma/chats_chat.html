@@ -1,0 +1,40 @@
+{% extends 'ma_base.html' %}
+{% load static %}
+{% block static_css %}
+    <link rel="stylesheet" href="{% static 'css/chat_users_ma.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div id="chatMA"></div>
+        <div id="chatMANew" class="d-none">
+            <div class="input-group">
+                <button id="chatMANewAttachmentButton" class="btn btn-outline-secondary" type="button">Вложение (0)</button>
+                <input id="chatMANewAttachmentInput" type="file" class="form-control d-none" aria-label="" multiple>
+                <input id="chatMANewText" type="text" class="form-control" placeholder="Сообщение" aria-label="">
+                <button id="chatMANewSend" class="btn btn-outline-secondary" type="button"><i class="bi bi-send"></i></button>
+                <div class="invalid-feedback" id="chatMANewTextError"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block static_js %}
+    <script>
+        const chatMAchatID = {{ chat_id }}
+        const mediaFormats = {
+            imageFormats: {{ material_formats.image_formats | safe }},
+            videoFormats: {{ material_formats.video_formats | safe }},
+            animationFormats: {{ material_formats.animation_formats | safe }},
+            archiveFormats: {{ material_formats.archive_formats | safe }},
+            pdfFormats: {{ material_formats.pdf_formats | safe }},
+            voiceFormats: {{ material_formats.voice_formats | safe }},
+            audioFormats: {{ material_formats.audio_formats | safe }},
+            textFormats: {{ material_formats.text_formats | safe }},
+            presentationFormats: {{ material_formats.presentation_formats | safe }}
+        }
+    </script>
+    <script src="{% static 'js/hashutils.js' %}"></script>
+    <script src="{% static 'js/chat/chat_utils.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/chat/chatAPI.js' %}"></script>
+    <script src="{% static 'js/chat/ma/chat_chat.js' %}"></script>
+{% endblock %}

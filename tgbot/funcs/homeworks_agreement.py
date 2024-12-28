@@ -166,7 +166,7 @@ async def f_homework_agr_send(tg_id: int,
         agreement["accepted"] = False
         agreement["comment"] = stdata.get("comment")
         answer_msg = "Действия преподавателя не согласованы. Уведомления отправлены"
-        if logs_info.get("homeworks") and len(logs_info.get("homeworks") > 1):
+        if logs_info.get("homeworks") and len(logs_info.get("homeworks")) > 1:
             answer_msg += "\nНет необходимости согласовывать другие ДЗ для группового занятия"
     for log in logs_info.get("logs"):
         log.agreement = agreement

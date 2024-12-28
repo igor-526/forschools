@@ -1,0 +1,25 @@
+{% extends 'ma_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-3">
+        <div class="input-group mb-3">
+            {% if can_see_other_users_messages %}
+                <button id="chatUsersMAAllUsers" class="btn btn-outline-primary" type="button"><i class="bi bi-person-gear"></i></button>
+            {% endif %}
+            <input id="chatUsersMASearchField" type="text" class="form-control" placeholder="Поиск: " aria-label="" aria-describedby="">
+            <button id="chatUsersMASearchErase" class="btn btn-outline-danger" type="button"><i class="bi bi-eraser"></i></button>
+        </div>
+        <ul class="list-group" id="chatUsersMAList"></ul>
+    </div>
+    {% if can_see_other_users_messages %}
+        {% include 'ma/chat_users_offcanvas.html' %}
+    {% endif %}
+{% endblock %}
+{% block static_js %}
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/chat/chatAPI.js' %}"></script>
+    <script src="{% static 'js/chat/ma/chat_users.js' %}"></script>
+    {% if can_see_other_users_messages %}
+        <script src="{% static 'js/chat/ma/chat_from_user_ma.js' %}"></script>
+    {% endif %}
+{% endblock %}

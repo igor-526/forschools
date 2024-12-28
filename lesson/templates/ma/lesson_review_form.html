@@ -67,6 +67,7 @@
 {% block static_js %}
     <script>
         const lessonID = {{ lesson_id }}
+        const csrftoken = '{{ csrf_token }}'
     </script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
     <script src="{% static 'js/lessons/ma/lesson_review.js' %}"></script>

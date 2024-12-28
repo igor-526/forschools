@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-
 from chat.permissions import can_see_other_users_messages
 from dls.settings import MATERIAL_FORMATS
 from django.shortcuts import render
