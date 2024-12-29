@@ -44,22 +44,22 @@
         <script src="{% static 'js/timeutils.js' %}"></script>
         <script src="{% static 'js/apitostr.js' %}"></script>
         <script src="{% static 'js/materialsutils.js' %}"></script>
-{#        <script>#}
-{#            const tgAPI = window.Telegram.WebApp#}
-{#            const tgUserdata = tgAPI.initDataUnsafe#}
-{#            const csrftoken = '{{ csrf_token }}'#}
-{#            tgAPI.expand()#}
-{#            tgAPI.disableVerticalSwipes()#}
-{#            tgAPI.setHeaderColor("#003366")#}
-{#            const maBaseButtonBack = document.querySelector("#maBaseButtonBack")#}
-{#            maBaseButtonBack.addEventListener("click", function () {#}
-{#                window.history.back()#}
-{#            })#}
-{#        </script>#}
-{#        {% if not is_authenticated %}#}
-{#            <script src="{% static 'js/telegram/ma/login.js' %}"></script>#}
-{#        {% else %}#}
+        <script>
+            const tgAPI = window.Telegram.WebApp
+            const tgUserdata = tgAPI.initDataUnsafe
+            const csrftoken = '{{ csrf_token }}'
+            tgAPI.expand()
+            tgAPI.disableVerticalSwipes()
+            tgAPI.setHeaderColor("#003366")
+            const maBaseButtonBack = document.querySelector("#maBaseButtonBack")
+            maBaseButtonBack.addEventListener("click", function () {
+                window.history.back()
+            })
+        </script>
+        {% if not is_authenticated %}
+            <script src="{% static 'js/telegram/ma/login.js' %}"></script>
+        {% else %}
             {% block static_js %} {% endblock %}
-{#        {% endif %}#}
+        {% endif %}
     </body>
 </html>
