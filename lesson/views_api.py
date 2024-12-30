@@ -195,11 +195,11 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                                              listener=plan.metodist,
                                              homeworks=[hw],
                                              text="Преподаватель задал ДЗ. Требуется согалсование")
-                if request.POST.get("notify_tg_id"):
-                    notify_lesson_passed(tg_id=int(request.POST.get("notify_tg_id")),
-                                         text="Занятие успешно проведено!",
-                                         lesson_id=lesson.id)
-                return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
+            if request.POST.get("notify_tg_id"):
+                notify_lesson_passed(tg_id=int(request.POST.get("notify_tg_id")),
+                                     text="Занятие успешно проведено!",
+                                     lesson_id=lesson.id)
+            return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
         else:
             return Response({'error': "Недостаточно прав для изменения статуса занятия"},
                             status=status.HTTP_400_BAD_REQUEST)
