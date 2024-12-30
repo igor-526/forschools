@@ -4,7 +4,6 @@ function chatShowMessagesGetAttachmentsElement(attachments = [], mobile=false){
     let videos = []
     let files = []
     attachments.forEach(file => {
-        console.log(file)
         switch (file.type){
             case "image_formats":
                 const cardImg = document.createElement("div")

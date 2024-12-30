@@ -1,23 +1,24 @@
 function chatMAMain(){
     selectedChatType = getHashValue("chat_type")
     chatMAFromUser = getHashValue("from_user")
-    chatMA.style = `height: ${window.innerHeight - 120}px;`
-    chatMAAttachmentTypesArray = chatMAAttachmentTypesArray
-        .concat(
-            mediaFormats.imageFormats,
-            mediaFormats.videoFormats,
-            mediaFormats.animationFormats,
-            mediaFormats.archiveFormats,
-            mediaFormats.pdfFormats,
-            mediaFormats.voiceFormats,
-            mediaFormats.audioFormats,
-            mediaFormats.textFormats,
-            mediaFormats.presentationFormats
-        )
-    chatMANewAttachmentButton.addEventListener("click", function (){
-        chatMANewAttachmentInput.click()
-    })
-    chatMANewSend.addEventListener("click", chatMASend)
+    if (!chatMAFromUser){
+        chatMA.style = `height: ${window.innerHeight - 120}px;`
+        chatMANew.classList.remove("d-none")
+        chatMAAttachmentTypesArray = chatMAAttachmentTypesArray
+            .concat(
+                mediaFormats.imageFormats,
+                mediaFormats.videoFormats,
+                mediaFormats.animationFormats,
+                mediaFormats.archiveFormats,
+                mediaFormats.pdfFormats,
+                mediaFormats.voiceFormats,
+                mediaFormats.audioFormats,
+                mediaFormats.textFormats,
+                mediaFormats.presentationFormats
+            )
+        chatMAAttachmentsListeners()
+        chatMANewSend.addEventListener("click", chatMASend)
+    }
     chatMAGetMessages()
 }
 
@@ -34,7 +35,7 @@ function chatMAGetMessages(){
     })
 }
 
-function chatMAShowMessages(messages=[], currentUserID){
+function chatMAShowMessages(messages=[], currentUserID, down=false){
     function getElement(message){
         const messageDiv = document.createElement("div")
         const messageBody = document.createElement("div")
@@ -66,7 +67,8 @@ function chatMAShowMessages(messages=[], currentUserID){
             case 1:
                 const rdtObj = (message.read_data[read_data[0]])
                 const rdt = new Date()
-                rdt.setUTCFullYear(rdtObj.year, rdtObj.month, rdtObj.day)
+                const rdtObjM = rdtObj.month === 1 ? 12 : rdtObj.month - 1
+                rdt.setUTCFullYear(rdtObj.year, rdtObjM, rdtObj.day)
                 rdt.setUTCHours(rdtObj.hour, rdtObj.minute, 0, 0)
                 messageBodyData.innerHTML += ` | прочитано ${timeUtilsDateTimeToStr(rdt)}`
                 break
@@ -81,8 +83,39 @@ function chatMAShowMessages(messages=[], currentUserID){
         return messageDiv
     }
 
+    let scrollTo = false
     messages.forEach(message => {
-        chatMA.insertAdjacentElement("afterbegin", getElement(message))
+        const element = getElement(message)
+        if (!scrollTo){
+            scrollTo = element
+        }
+        chatMA.insertAdjacentElement(down ? "afterend" : "afterbegin", element)
+    })
+    scrollTo.scrollIntoView({alignToTop: true, behavior: "auto"})
+}
+
+function chatMAAttachmentsListeners(){
+    chatMANewAttachmentButton.addEventListener("click", function (){
+        switch (this.attributes.getNamedItem("data-att-action").value){
+            case "open":
+                chatMANewAttachmentInput.click()
+                break
+            case "delete":
+                chatMANewAttachmentInput.value = ""
+                chatMANewAttachmentButton.classList.add("btn-outline-secondary")
+                chatMANewAttachmentButton.classList.remove("btn-danger")
+                chatMANewAttachmentButton.setAttribute("data-att-action", "open")
+                chatMANewAttachmentButton.innerHTML = 'Вложение'
+                break
+        }
+    })
+    chatMANewAttachmentInput.addEventListener("input", function (){
+        const filesCount = chatMANewAttachmentInput.files.length
+        chatMANewAttachmentButton.classList.remove("btn-outline-secondary")
+        chatMANewAttachmentButton.classList.add("btn-danger")
+        chatMANewAttachmentButton.setAttribute("data-att-action", "delete")
+        chatMANewAttachmentButton.innerHTML = `Удалить (${filesCount})`
+
     })
 }
 
@@ -93,16 +126,17 @@ function chatMAMessageValidation(){
     }
 
     function validateAttachments(){
-        console.log(chatMANewAttachmentInput.value())
-
         const filelist = chatMANewAttachmentInput.files
         for (const file of filelist){
             const filename = file.name.split(/([\\./])/g)
             const type = filename[filename.length-1]
-            if (!chatMessagesAttachmentTypesArray.includes(type)){
-                setInvalid("Формат файла не поддерживается")
+            if (!chatMAAttachmentTypesArray.includes(type)){
+                chatMANewText.classList.add("is-invalid")
+                chatMANewTextError.innerHTML = "Формат файла не поддерживается"
+                validationStatus = false
                 return
             }
+            attachmentsCount += 1
         }
     }
 
@@ -134,7 +168,7 @@ function chatMAMessageValidation(){
 function chatMASend(){
     function getFD(){
         const fd = new FormData()
-        fd.set("message", chatMANewAttachmentInput.value.trim())
+        fd.set("message", chatMANewText.value.trim())
         fd.set("chat_type", selectedChatType)
         const files = chatMANewAttachmentInput.files
         for (const file of files){
@@ -144,13 +178,17 @@ function chatMASend(){
     }
 
     if (chatMAMessageValidation()){
-        chatAPISendMessage(chatMessagesSelectedUserID, getFD()).then(request => {
+        chatAPISendMessage(chatMAchatID, getFD()).then(request => {
             switch (request.status){
                 case 201:
-                    chatShowMessages([request.response], "sender", false)
-                    chatMessagesNewText.value = ""
+                    chatMAShowMessages([request.response], "sender", true)
                     chatMANewAttachmentInput.value = ""
-                    chatMANewText.innerHTML = "Вложение (0)"
+                    chatMANewText.value = ""
+                    chatMANewAttachmentButton.classList.add("btn-outline-secondary")
+                    chatMANewAttachmentButton.classList.remove("btn-danger")
+                    chatMANewAttachmentButton.setAttribute("data-att-action", "open")
+                    chatMANewAttachmentButton.innerHTML = 'Вложение'
+                    console.log(request.response)
                     break
                 case 400:
                     tgAPI.showAlert("Произошла ошибка. Сообщение не доставлено")
@@ -162,9 +200,6 @@ function chatMASend(){
         })
     }
 }
-
-
-
 
 let selectedChatType = null
 let chatMAFromUser = null
