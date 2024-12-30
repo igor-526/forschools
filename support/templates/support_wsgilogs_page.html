@@ -8,7 +8,7 @@
     <div class="container-xxl">
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
-                <a class="nav-link active" href="#" id="">Все</a>
+                <a class="nav-link active" href="#" id="supportWSGIErrorsAll">Все</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#" id="supportWSGIErrorsNew">Новые</a>
@@ -21,6 +21,8 @@
             </li>
             <li class="nav-item">
                 <button id="supportWSGIErrorsTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i>Сбросить</button>
+                <button id="supportWSGIErrorsSelectedSetStatusProcessing" type="button" class="btn btn-sm btn-outline-warning mx-1" role="button" disabled><i class="bi bi-bug"></i></i>В работу</button>
+                <button id="supportWSGIErrorsSelectedSetStatusReady" type="button" class="btn btn-sm btn-outline-success mx-1" role="button" disabled><i class="bi bi-check-lg"></i>Выполнено</button>
             </li>
         </ul>
 
@@ -29,19 +31,25 @@
                 <thead>
                 <tr>
                     <th scope="col">
+                        <input class="form-check-input" type="checkbox" id="supportWSGIErrorsTableSelect">
+                        <label class="form-check-label" for="supportWSGIErrorsTableSelect" id="supportWSGIErrorsTableSelectLabel">
+                            (0)
+                        </label>
+                    </th>
+                    <th scope="col">
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                                 <b>Дата и время</b></button>
                             <ul class="dropdown-menu" style="min-width: 320px;">
                                 <li class="input-group px-1 mb-1">
                                     <span class="input-group-text">Начало</span>
-                                    <input id="" type="date" class="form-control form-control-sm" aria-label="date start">
-                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                    <input id="supportWSGIErrorsFilteringDateStart" type="date" class="form-control form-control-sm" aria-label="date start">
+                                    <button id="supportWSGIErrorsFilteringDateStartErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
                                 </li>
                                 <li class="input-group px-1">
                                     <span class="input-group-text">Конец</span>
-                                    <input id="" type="date" class="form-control form-control-sm" aria-label="date end">
-                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                    <input id="supportWSGIErrorsFilteringDateEnd" type="date" class="form-control form-control-sm" aria-label="date end">
+                                    <button id="supportWSGIErrorsFilteringDateEndErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
                                 </li>
                             </ul>
                         </div>
@@ -50,10 +58,10 @@
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                                 <b>Пользователь</b></button>
-                            <ul id="" class="dropdown-menu" style="min-width: 250px;">
+                            <ul id="supportWSGIErrorsFilteringUserList" class="dropdown-menu" style="min-width: 250px;">
                                 <li class="input-group px-1">
-                                    <input id="" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
-                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                    <input id="supportWSGIErrorsFilteringUserSearch" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                    <button id="supportWSGIErrorsFilteringUserSearchErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
                                 </li>
                             </ul>
                         </div>
@@ -62,29 +70,24 @@
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                                 <b>Метод</b></button>
-                            <ul id="" class="dropdown-menu" style="min-width: 250px;"> </ul>
+                            <ul id="supportWSGIErrorsFilteringMethodList" class="dropdown-menu" style="min-width: 250px;"> </ul>
                         </div>
                     </th>
                     <th scope="col">
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                                 <b>Код</b></button>
-                            <ul id="" class="dropdown-menu" style="min-width: 250px;">
-                                <li class="input-group px-1">
-                                    <input id="" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
-                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
-                                </li>
-                            </ul>
+                            <ul id="supportWSGIErrorsFilteringCodeList" class="dropdown-menu" style="min-width: 250px;"></ul>
                         </div>
                     </th>
                     <th scope="col">
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                                 <b>URL</b></button>
-                            <ul id="" class="dropdown-menu" style="min-width: 250px;">
+                            <ul class="dropdown-menu" style="min-width: 250px;">
                                 <li class="input-group px-1">
-                                    <input id="" type="text" class="form-control form-control-sm" placeholder="Поиск: ">
-                                    <button id="" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                    <input id="supportWSGIErrorsFilteringURLField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                    <button id="supportWSGIErrorsFilteringURLFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
                                 </li>
                             </ul>
                         </div>
@@ -99,6 +102,7 @@
     {% include 'support_wsgilogs_modal.html' %}
 {% endblock %}
 {% block static_js %}
+    <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/support/support_api.js' %}"></script>
     <script src="{% static 'js/support/wsgilogs/wsgilogs.js' %}"></script>
     <script src="{% static 'js/support/wsgilogs/wsgilogs_filters.js' %}"></script>

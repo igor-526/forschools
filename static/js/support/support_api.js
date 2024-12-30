@@ -1,5 +1,5 @@
 async function supportWSGILogsAPIGet(handling_status=null, dt_start=null, dt_end=null,
-                                     users=[], methods=[], path=null, code=null){
+                                     users=[], methods=[], path=null, codes=[]){
     let url = "/api/v1/support/wsgierrors/"
     let searchParams = []
     if (handling_status){
@@ -14,8 +14,10 @@ async function supportWSGILogsAPIGet(handling_status=null, dt_start=null, dt_end
     if (path){
         searchParams.push(`path=${path}`)
     }
-    if (code){
-        searchParams.push(`code=${code}`)
+    if (codes){
+        codes.forEach(code => {
+            searchParams.push(`code=${code}`)
+        })
     }
     if (users){
         users.forEach(user => {
@@ -44,6 +46,18 @@ async function supportWSGILogsAPIUpdate(wsgiErrorID, newStatus){
     fd.set("handling_status", newStatus)
     const request = await fetch(`/api/v1/support/wsgierrors/${wsgiErrorID}/`, {
         method: "PATCH",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
+}
+
+async function supportWSGILogsAPIUpdateMany(fd){
+    const request = await fetch(`/api/v1/support/wsgierrors/set_status/`, {
+        method: "POST",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

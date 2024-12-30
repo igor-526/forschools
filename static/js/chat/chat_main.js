@@ -160,7 +160,8 @@ function chatShowMessages(messages=[], currentUserID, clear=true){
             case 1:
                 const rdtObj = (message.read_data[read_data[0]])
                 const rdt = new Date()
-                rdt.setUTCFullYear(rdtObj.year, rdtObj.month, rdtObj.day)
+                const rdtObjM = rdtObj.month === 1 ? 12 : rdtObj.month - 1
+                rdt.setUTCFullYear(rdtObj.year, rdtObjM, rdtObj.day)
                 rdt.setUTCHours(rdtObj.hour, rdtObj.minute, 0, 0)
                 messageBodyData.innerHTML += ` | прочитано ${timeUtilsDateTimeToStr(rdt)}`
                 break

@@ -29,12 +29,20 @@ class ErrorLogsMiddleware:
                     params = {}
             except Exception as e:
                 params = None
+            try:
+                if request.method in ["POST", "PATCH"]:
+                    data = request.data
+                else:
+                    data = None
+            except Exception as e:
+                data = None
             WSGIErrorsLog.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 path_info=request.path_info,
                 method=request.method,
                 status_code=response.status_code,
                 params=params,
+                response=data,
             )
         return response
 

@@ -42,6 +42,8 @@ class WSGIErrorsLog(models.Model):
                                           null=False,
                                           default=0,
                                           choices=HANDLING_STATUS_CHOICES)
+    response = models.JSONField(verbose_name="Ответ сервера",
+                                null=True)
 
 
 class SupportTicketAnswers(models.Model):
