@@ -3,7 +3,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from chat.models import Message
-from tgbot.funcs.chats import chats_send_ask, chats_type_message, chats_notificate
+from tgbot.funcs.chats import chats_send_ask, chats_type_message, chats_notify
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatShowMessageCallback
 from tgbot.finite_states.chats import ChatsFSM
@@ -27,7 +27,7 @@ async def h_chats_show(callback: CallbackQuery,
                        state: FSMContext) -> None:
     chat_message = await (Message.objects.select_related("receiver").select_related("sender")
                           .aget(pk=callback_data.chat_message_id))
-    await chats_notificate(chat_message.id)
+    await chats_notify(chat_message.id)
 
 
 @router.message(StateFilter(ChatsFSM.send_message),

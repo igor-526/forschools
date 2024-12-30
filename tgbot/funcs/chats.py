@@ -5,6 +5,7 @@ from django.db.models import Q
 from profile_management.models import Telegram, aget_unread_messages_count
 from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
 from tgbot.keyboards.callbacks.chats import ChatListCallback
+from tgbot.keyboards.chats import chats_get_show_message_page_button
 from tgbot.keyboards.default import message_typing_keyboard
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
@@ -39,12 +40,15 @@ async def chats_show(message: types.Message, state: FSMContext):
         ]
         for msg in unread_messages:
             await msg.aset_read(**query['reading'])
-            await chats_notificate(msg.id, True)
+            await chats_notify(msg.id, True)
 
     tg_note = await Telegram.objects.select_related("user").aget(tg_id=message.from_user.id)
     unread = await aget_unread_messages_count(tg_note)
     if unread > 0:
         await show_unread()
+    else:
+        await message.answer(text="Все диалоги:",
+                             reply_markup=chats_get_show_message_page_button())
     await send_menu(message.from_user.id,
                     state=state,
                     custom_text="Непрочитанных сообщений нет")
@@ -101,7 +105,7 @@ async def chats_send(user_tg_id: int, state: FSMContext):
     try:
         attdata = await filedownloader(data, owner=tgnote.user, t="Сообщение")
         chat_message = await create_message(tgnote, data, chat_type, attdata)
-        await chats_notificate(chat_message.id)
+        await chats_notify(chat_message.id)
         await message_status.edit_text("Сообщение отправлено")
         await aget_unread_messages_count(tgnote, {
             "id": data.get('message_for'),
@@ -226,7 +230,7 @@ async def chats_send_ask(callback: CallbackQuery,
                           })
 
 
-async def chats_notificate(chat_message_id: int, show=False):
+async def chats_notify(chat_message_id: int, show=False):
     async def journal_note(result, message: Message):
         message_sender_type = "NewUser" if message.sender else "Telegram"
         if message.receiver or message.receiver_tg:
@@ -255,7 +259,7 @@ async def chats_notificate(chat_message_id: int, show=False):
                 **usersdata
             )
 
-    async def notificate_parents(message: Message):
+    async def notify_parents(message: Message):
         if message.sender:
             if message.receiver:
                 receiver_fullname = f'{chat_message.receiver.first_name} {chat_message.receiver.last_name}'
@@ -310,7 +314,7 @@ async def chats_notificate(chat_message_id: int, show=False):
                         await bot.send_message(chat_id=parent_tg_id,
                                                text=msg_text,
                                                reply_markup=None)
-                    await notificate_parents(chat_message)
+                    await notify_parents(chat_message)
             attachments = [f async for f in chat_message.files.all()]
             for attachment in attachments:
                 await send_file(tg_id, attachment)

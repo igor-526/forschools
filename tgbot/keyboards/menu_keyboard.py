@@ -17,7 +17,7 @@ def get_menu_keyboard(chats: int, materials=False, homeworks=False,
         keys.append([hw_button])
     if lessons:
         keys.append([lessons_button])
-    if messages and chats > 0:
+    if messages:
         keys.append([KeyboardButton(text=f'Сообщения ({chats})')])
     if settings:
         keys.append([settings_button])

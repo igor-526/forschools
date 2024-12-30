@@ -8,7 +8,7 @@ from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_agreement_buttons, get_homework_edit_button
 from tgbot.finite_states.homework import HomeworkAgreementFSM
 from tgbot.funcs.menu import send_menu
-from tgbot.funcs.chats import chats_notificate
+from tgbot.funcs.chats import chats_notify
 from homework.models import Homework, HomeworkLog
 from tgbot.create_bot import bot
 from tgbot.utils import get_user, get_tg_id
@@ -134,7 +134,7 @@ async def f_homework_agr_send(tg_id: int,
                     sender=await get_user(tg_id),
                     message=stdata.get("comment"),
                 )
-                await chats_notificate(chat_message_id=msg.id, show=False)
+                await chats_notify(chat_message_id=msg.id, show=False)
                 await homework_tg_notify(logs_info.get("plan").metodist,
                                          log_.homework.teacher.id,
                                          [log_.homework],
