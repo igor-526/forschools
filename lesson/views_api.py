@@ -179,22 +179,22 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                 else:
                     return Response({'error': "\n".join(validation.get("errors"))},
                                     status=status.HTTP_400_BAD_REQUEST)
-                for listener in plan.listeners.all():
-                    for hw in lesson.homeworks.filter(listener=listener):
-                        res = hw.set_assigned()
-                        if res.get("agreement") is not None and res.get("agreement") is False:
-                            send_homework_tg(request.user, listener, [hw])
-                            if hw.for_curator:
-                                for curator in plan.curators.all():
-                                    send_homework_tg(initiator=hw.teacher,
-                                                     listener=curator,
-                                                     homeworks=[hw],
-                                                     text="Преподаватель задал ДЗ")
-                        else:
-                            send_homework_tg(initiator=hw.teacher,
-                                             listener=plan.metodist,
-                                             homeworks=[hw],
-                                             text="Преподаватель задал ДЗ. Требуется согалсование")
+            for listener in plan.listeners.all():
+                for hw in lesson.homeworks.filter(listener=listener):
+                    res = hw.set_assigned()
+                    if res.get("agreement") is not None and res.get("agreement") is False:
+                        send_homework_tg(request.user, listener, [hw])
+                        if hw.for_curator:
+                            for curator in plan.curators.all():
+                                send_homework_tg(initiator=hw.teacher,
+                                                 listener=curator,
+                                                 homeworks=[hw],
+                                                 text="Преподаватель задал ДЗ")
+                    else:
+                        send_homework_tg(initiator=hw.teacher,
+                                         listener=plan.metodist,
+                                         homeworks=[hw],
+                                         text="Преподаватель задал ДЗ. Требуется согалсование")
             if request.POST.get("notify_tg_id"):
                 notify_lesson_passed(tg_id=int(request.POST.get("notify_tg_id")),
                                      text="Занятие успешно проведено!",
