@@ -214,6 +214,9 @@ class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
         if lesson.status != 0:
             if can_set_not_held(request, lesson):
                 lesson.status = 0
+                if lesson.lesson_teacher_review:
+                    lesson.lesson_teacher_review.delete()
+                    lesson.lesson_teacher_review = None
                 lesson.save()
                 serialized_lesson = LessonSerializer(lesson, context={'request': request})
                 return Response(serialized_lesson.data, status=status.HTTP_201_CREATED)

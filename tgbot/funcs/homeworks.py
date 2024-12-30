@@ -1,11 +1,8 @@
 import datetime
-from typing import Type
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
-
-from learning_plan.models import LearningPlan
 from lesson.models import Lesson
 from material.models import Material
 from tgbot.funcs.fileutils import filechecker, filedownloader
@@ -37,6 +34,7 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
         "new_hw_btn": False,
         "check_hw_btn": False,
         "compl_hw_btn": False,
+        "sended_hw_btn": False,
         "main_func": "",
         "func_counter": 0
     }
@@ -48,10 +46,15 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
         func_params["compl_hw_btn"] = True
         func_params["func_counter"] += 1
         func_params["main_func"] = "complete"
-    if "Teacher" in perms.get("groups") or "Metodist" in perms.get("groups"):
+    if "Metodist" in perms.get("groups"):
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
         func_params["func_counter"] += 2
+    if "Teacher" in perms.get("groups"):
+        func_params["new_hw_btn"] = True
+        func_params["check_hw_btn"] = True
+        func_params["sended_hw_btn"] = True
+        func_params["func_counter"] += 3
     if func_params["func_counter"] == 0:
         await message.answer("Функция для Вашей роли недоступна")
     elif func_params["func_counter"] == 1:
@@ -414,6 +417,24 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
                                    reply_markup=get_homeworks_buttons(
                                        [*methodist_homeworks, *teacher_homeworks, *curator_homeworks],
                                        sb=True))
+    elif func == "sended":
+        homeworks = list(filter(lambda hw: hw['hw_status'] in [1, 2, 7],
+                                [{
+                                    'obj': hw,
+                                    'hw_status': (await hw.aget_status()).status
+                                } async for hw in Homework.objects.filter(teacher=user)]))
+        homeworks = [{
+            'name': hw.get("obj").name,
+            'status': hw.get("hw_status") == 3,
+            'id': hw.get("obj").id
+        } for hw in homeworks]
+        if len(homeworks) == 0:
+            await bot.send_message(chat_id=tg_id,
+                                   text="Нет отправленных ДЗ, на которые не ответил ученик")
+        else:
+            await bot.send_message(chat_id=tg_id,
+                                   text="Вот домашние задания, которые были отправлены и на которые не ответил ученик:",
+                                   reply_markup=get_homeworks_buttons(homeworks))
 
 
 async def search_homeworks_message(callback: CallbackQuery, state: FSMContext):
@@ -501,13 +522,22 @@ async def show_homework(callback: CallbackQuery,
         else:
             return False
 
+    async def get_edit_button() -> bool:
+        if hw_status.status not in [1, 2, 3, 5, 7]:
+            return False
+        if 'Teacher' in gp['groups'] and hw.teacher == user:
+            return True
+        if lp:
+            return 'Metodist' in gp['groups'] and lp.metodist == user
+
     async def get_reply_markup():
         mat_button = (not tg_note.setting_show_hw_materials and ((await hw.materials.acount()) > 0)) if mat_auto else False
         send_button = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7] and hw.listener == user
         agreement_buttons = await get_agreement_buttons()
         check_button = False if agreement_buttons else (await get_check_button())
+        edit_button = await get_edit_button()
         return get_homework_item_buttons(hw.id, mat_button, send_button,
-                                         check_button, agreement_buttons)
+                                         check_button, agreement_buttons, edit_button)
 
     tg_note = await get_tg_note(callback.from_user.id)
     hw = await (Homework.objects.select_related("listener")

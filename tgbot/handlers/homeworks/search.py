@@ -11,7 +11,7 @@ router = Router(name=__name__)
 
 
 @router.callback_query(HomeworkMenuCallback.filter(F.action == 'complete'))
-async def h_homework_show(callback: CallbackQuery,
+async def h_homework_show_complete(callback: CallbackQuery,
                           callback_data: HomeworkMenuCallback,
                           state: FSMContext) -> None:
     await callback.message.delete()
@@ -20,6 +20,14 @@ async def h_homework_show(callback: CallbackQuery,
 
 @router.callback_query(HomeworkMenuCallback.filter(F.action == 'check'))
 async def h_homework_show_check(callback: CallbackQuery,
+                                callback_data: HomeworkMenuCallback,
+                                state: FSMContext) -> None:
+    await callback.message.delete()
+    await show_homework_queryset(callback.from_user.id, state, callback_data.action)
+
+
+@router.callback_query(HomeworkMenuCallback.filter(F.action == 'sended'))
+async def h_homework_show_sended(callback: CallbackQuery,
                                 callback_data: HomeworkMenuCallback,
                                 state: FSMContext) -> None:
     await callback.message.delete()

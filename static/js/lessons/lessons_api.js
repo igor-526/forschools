@@ -53,10 +53,13 @@ async function lessonsAPIReplaceTeacher(teacherID, lesson){
     return await APIPostPatchToObject(request)
 }
 
-async function lessonsAPIGetAll(status=null, teachers=[], listeners=[],
+async function lessonsAPIGetAll(offset=0, status=null, teachers=[], listeners=[],
                                 ds= null, de= null, foruser=null){
     let url = '/api/v1/lessons/'
     const searchParams=[]
+    if (offset){
+        searchParams.push(`offset=${offset}`)
+    }
     if (status){
         searchParams.push(`status=${status}`)
     }

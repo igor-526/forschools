@@ -33,7 +33,7 @@ function lessonsGet(status=currentStatus,
                     listeners=lessonsTableFilterListenersSelected,
                     ds=lessonsTableFilterDateStart,
                     de=lessonsTableFilterDateEnd){
-    lessonsAPIGetAll(status, teachers, listeners, ds, de).then(request => {
+    lessonsAPIGetAll(currentOffset, status, teachers, listeners, ds, de).then(request => {
         switch (request.status){
             case 200:
                 lessonsShow(request.response)
@@ -46,7 +46,7 @@ function lessonsGet(status=currentStatus,
     })
 }
 
-function lessonsShow(list){
+function lessonsShow(list, clear=true){
     function getListeners(listeners){
         const listenersArray = listeners.map(listener => {
             return `<a target="_blank" href="/profile/${listener.id}">${listener.first_name} ${listener.last_name}</a>`
@@ -114,6 +114,7 @@ function lessonsShow(list){
         return tr
     }
 
+
     lessonsTableBody.innerHTML = ""
     list.forEach(lesson => {
         lessonsTableBody.insertAdjacentElement("beforeend", getLessonElement(lesson))
@@ -126,6 +127,7 @@ const lessonsTabPassed = document.querySelector("#LessonsTabPassed")
 
 //Table
 const lessonsTableBody = document.querySelector("#LessonsTableBody")
+const lessonsTableShowMoreButton = document.querySelector("#lessonsTableShowMoreButton")
 
 //Filters
 let lessonsTableFilterTeachersSelected = []
@@ -133,6 +135,7 @@ let lessonsTableFilterListenersSelected = []
 let lessonsTableFilterDateStart = null
 let lessonsTableFilterDateEnd = null
 let currentStatus = 0
+let currentOffset = 0
 
 
 lessonsMain()

@@ -13,6 +13,11 @@ def get_homework_menu_buttons(params: dict) -> InlineKeyboardMarkup:
             text=f"Проверка домашних заданий",
             callback_data=HomeworkMenuCallback(action="check")
         )
+    if params.get("sended_hw_btn"):
+        builder.button(
+            text=f"Отправленные ДЗ",
+            callback_data=HomeworkMenuCallback(action="sended")
+        )
     if params.get("new_hw_btn"):
         builder.button(
             text=f"Задать новое ДЗ",
@@ -94,7 +99,8 @@ def get_homework_item_buttons(hw_id,
                               mat_button,
                               send_button,
                               check_button,
-                              agreement_buttons) -> InlineKeyboardMarkup:
+                              agreement_buttons,
+                              edit_button) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
         text="ПРОСМОТР",
@@ -144,6 +150,14 @@ def get_homework_item_buttons(hw_id,
             callback_data=HomeworkCallback(
                 hw_id=hw_id,
                 action="agreement_decline"
+            )
+        )
+    if edit_button:
+        builder.button(
+            text="Редактировать",
+            callback_data=HomeworkCallback(
+                hw_id=hw_id,
+                action="edit"
             )
         )
     builder.adjust(1)
