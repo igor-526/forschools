@@ -482,6 +482,8 @@ async def show_homework(callback: CallbackQuery,
         if 'Teacher' in gp['groups'] and hw.teacher == user:
             return True
         if lp:
+            c = await lp.curators.filter(pk=user.id).aexists()
+            print(c)
             return (('Metodist' in gp['groups'] and lp.metodist == user) or
                     ('Curator' in gp['groups'] and
                      hw.for_curator and

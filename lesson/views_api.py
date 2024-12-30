@@ -161,11 +161,12 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                 else None
             lesson_name = request.POST.get("name").strip(" ") if request.POST.get("name") else None
             if is_admin:
-                if lesson_name and len(lesson_name) < 200:
-                    lesson.name = lesson_name
-                else:
-                    return Response({'error': 'Наименование занятия не может быть более 200 символов'},
-                                    status=status.HTTP_400_BAD_REQUEST)
+                if lesson_name:
+                    if len(lesson_name) < 200:
+                        lesson.name = lesson_name
+                    else:
+                        return Response({'error': 'Наименование занятия не может быть более 200 символов'},
+                                        status=status.HTTP_400_BAD_REQUEST)
                 if review:
                     lesson.lesson_teacher_review = review
                 lesson.status = 1
@@ -182,7 +183,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
             for listener in plan.listeners.all():
                 for hw in lesson.homeworks.filter(listener=listener):
                     res = hw.set_assigned()
-                    if res.get("agreement") is not None and res.get("agreement") is False:
+                    if res and res.get("agreement") is not None and res.get("agreement") is False:
                         send_homework_tg(request.user, listener, [hw])
                         if hw.for_curator:
                             for curator in plan.curators.all():
