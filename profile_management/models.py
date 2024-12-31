@@ -202,6 +202,13 @@ class NewUser(AbstractUser):
         self.photo = 'profile_pictures/base_avatar.png'
         self.save()
 
+    def _remove_duplicates(self, lst):
+        result = []
+        for item in lst:
+            if item not in result:
+                result.append(item)
+        return result
+
     def _sort_users_for_chat(self, users):
         filtered_users = users
         unread_list = list(filter(lambda u: u.get("unread"), filtered_users))
@@ -265,36 +272,49 @@ class NewUser(AbstractUser):
             }
             return info
 
-        users = []
         groups = [get_group_info(g) for g in self.group_chats.all()]
-        if self.groups.filter(name__in=['Admin', 'Metodist']).exists():
-            users = NewUser.objects.filter(is_active=True).exclude(id=self.id)
-            users_profiles = [get_user_info(u) for u in users]
-            users_telegrams = [get_user_tg_info(u) for u in
-                               Telegram.objects.filter(user__in=users).exclude(usertype="main")]
-            users = [*users_profiles, *users_telegrams, *groups]
-        elif self.groups.filter(name="Teacher").exists():
-            users = NewUser.objects.filter(
+        roles = [g.name for g in self.groups.all()]
+        users_profiles = []
+
+        if "Admin" in roles:
+            users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
+                is_active=True).exclude(pk=self.id)])
+        if "Metodist" in roles:
+            users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
+                Q(plan_listeners__metodist=self,
+                  is_active=True) |
+                Q(plan_curator__metodist=self,
+                  is_active=True) |
+                Q(plan_teacher__metodist=self,
+                  is_active=True)).exclude(pk=self.id).distinct()])
+        if "Teacher" in roles:
+            users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
                 Q(plan_listeners__teacher=self,
                   is_active=True) |
-                Q(plan_listeners__phases__lessons__replace_teacher=self,
+                Q(plan_curator__teacher=self,
                   is_active=True) |
-                Q(groups__name__in=['Admin', 'Metodist'],
-                  is_active=True)).exclude(id=self.id).distinct()
-            users_profiles = [get_user_info(u) for u in users]
-            users_telegrams = [get_user_tg_info(u) for u in
-                               Telegram.objects.filter(user__in=users).exclude(usertype="main")]
-            users = [*users_profiles, *users_telegrams, *groups]
-        elif self.groups.filter(name='Listener').exists():
-            users = [get_user_info(u) for u in NewUser.objects.filter(
+                Q(plan_metodist__teacher=self,
+                  is_active=True)).exclude(pk=self.id).distinct()])
+        if "Curator" in roles:
+            users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
+                Q(plan_listeners__curator=self,
+                  is_active=True) |
+                Q(plan_teacher__curator=self,
+                  is_active=True) |
+                Q(plan_metodist__curator=self,
+                  is_active=True)).exclude(pk=self.id).distinct()])
+        if "Listener" in roles:
+            users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
                 Q(plan_teacher__listeners=self,
                   is_active=True) |
-                Q(replace_teacher__learningphases__learningplan__listeners=self,
-                  is_active=True) |
-                Q(groups__name__in=['Admin'],
-                  is_active=True)).exclude(id=self.id).distinct()]
-            users = [*users, *groups]
+                Q(plan_curator__listeners=self,
+                  is_active=True)).exclude(pk=self.id).distinct()])
 
+        users_telegrams = [get_user_tg_info(u) for u in
+                           Telegram.objects.select_related("user").filter(
+                               user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
+        users = [*users_profiles, *users_telegrams, *groups]
+        users = self._remove_duplicates(users)
         return self._sort_users_for_chat(users)
 
     async def aget_users_for_chat(self, tg_id):
@@ -396,6 +416,7 @@ class NewUser(AbstractUser):
                            Telegram.objects.select_related("user").filter(
                                user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
         users = [*users_profiles, *users_telegrams, *groups]
+        users = self._remove_duplicates(users)
         return self._sort_users_for_chat(users)
 
     def get_unread_messages_count(self, sender=None):

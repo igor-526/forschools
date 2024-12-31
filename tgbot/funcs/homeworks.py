@@ -482,8 +482,6 @@ async def show_homework(callback: CallbackQuery,
         if 'Teacher' in gp['groups'] and hw.teacher == user:
             return True
         if lp:
-            c = await lp.curators.filter(pk=user.id).aexists()
-            print(c)
             return (('Metodist' in gp['groups'] and lp.metodist == user) or
                     ('Curator' in gp['groups'] and
                      hw.for_curator and
@@ -920,7 +918,7 @@ async def hw_send(message: types.Message, state: FSMContext):
 
     data = await state.get_data()
     if not filechecker(data):
-        await message.answer("Вы не можете отправить путой ответ. Пожалуйста, пришлите мне текст, фотографии, "
+        await message.answer("Вы не можете отправить пустой ответ. Пожалуйста, пришлите мне текст, фотографии, "
                              "аудио или голосовые сообщения")
         return
     hw = await (Homework.objects.select_related("teacher")
