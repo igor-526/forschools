@@ -2,7 +2,6 @@ function homeworkItemMain(){
     homeworkAPIGetItem(hwID).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 homeworkItemSetMainInfo(request.response)
                 if (request.response.materials.length > 0){
                     homeworkItemSetMaterials(request.response.materials)
@@ -178,27 +177,6 @@ function homeworkItemSetMaterials(materials){
     materials.forEach(mat => {
         hwItemMaterialsList.insertAdjacentElement("beforeend", getMatElement(mat))
     })
-}
-
-function homeworkItemShowLogsStrStatus(status){
-    switch (status){
-        case 1:
-            return  "Создано"
-        case 2:
-            return  "Открыто"
-        case 3:
-            return  "На проверке"
-        case 4:
-            return  "Принято"
-        case 5:
-            return  "На доработке"
-        case 6:
-            return  "Отменено"
-        case 7:
-            return  "Задано"
-        default:
-            return ""
-    }
 }
 
 function homeworkItemShowLogs(logs=[], clear=true){

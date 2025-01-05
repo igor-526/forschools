@@ -29,6 +29,9 @@ from tgbot.urls import (apiv1patterns as tgbot_apiv1patterns,
 from automatic_fields.urls import apiv1patterns as automatic_fields_apiv1patterns
 from support.urls import (urlpatterns as support_urlpatterns,
                           apiv1patterns as support_apiv1patterns)
+from user_logs.urls import (urlpatterns as user_logs_urlpatterns,
+                            api_v1_patterns as user_logs_api_v1_patterns,
+                            ma_patterns as user_logs_ma_patterns)
 
 
 urlpatterns = [
@@ -56,6 +59,10 @@ urlpatterns = [
     path('messages/', include(chat_urlpatterns)),
     path('api/v1/messages/', include(chat_apiv1patterns)),
     path('ma/messages/', include(chat_ma_patterns)),
+
+    path('user_logs/', include(user_logs_urlpatterns)),
+    path('api/v1/user_logs/', include(user_logs_api_v1_patterns)),
+    path('ma/user_logs/', include(user_logs_ma_patterns)),
 
     path('api/v1/telegram/', include(tgbot_apiv1patterns)),
     path('tgjournal/', include(tgbot_urlpatterns)),

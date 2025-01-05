@@ -115,8 +115,8 @@ function homeworksShow(homeworks){
         tdListener.innerHTML = `<a target="_blank" href="/profile/${hw.listener.id}">${hw.listener.first_name} ${hw.listener.last_name}</a>`
         if (hw.assigned){
             tdAssigned.innerHTML = new Date(hw.assigned).toLocaleDateString()
-            tdLastChanged.innerHTML = new Date(hw.status.dt).toLocaleDateString()
         }
+        tdLastChanged.innerHTML = `${homeworkItemShowLogsStrStatus(hw.status.status)} (${new Date(hw.status.dt).toLocaleDateString()})`
         return tr
     }
 

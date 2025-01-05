@@ -30,11 +30,12 @@ def get_menu(user):
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
             {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
+            {'name': 'Логи пользователей', 'url': reverse('user_logs')},
+            {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},
+            {'name': 'Ошибки Telegram', 'url': "#"},
         ]},
         {'name': 'Техподдержка', 'type': 'dropdown', 'menu': [
             {'name': 'Тикеты', 'url': reverse('supporttickets')},
-            {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},
-            {'name': 'Ошибки Telegram', 'url': "#"},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
@@ -52,6 +53,8 @@ def get_menu(user):
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
             {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
+            {'name': 'Логи пользователей', 'url': reverse('user_logs')},
+            {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
