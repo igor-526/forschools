@@ -108,7 +108,11 @@ function homeworkItemSetLessonInfo(lesson_info){
         )
     }
     if (lesson_info.plan){
-        hwItemPlanInfoHeader.innerHTML = `<a target="_blank" href="/learning_plans/${lesson_info.plan.id}"><button class="btn btn-sm btn-primary">План обучения</button></a>`
+        hwItemPlanInfoHeader.innerHTML = `
+            <div class="btn-group" role="group">
+                <a target="_blank" href="/user_logs/#plan_id=${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button"><i class="bi bi-card-list"></i> логи</a>
+                <a target="_blank" href="/learning_plans/${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button">План обучения</a>
+            </div>`
 
         if (lesson_info.plan.teacher) {
             hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
@@ -185,7 +189,7 @@ function homeworkItemShowLogs(logs=[], clear=true){
         a.href = "#"
         a.classList.add("list-group-item", "list-group-item-action")
         if (log.agreement.hasOwnProperty("accepted")){
-            a.classList.add(log.agreement.accepted?"list-group-item-success":"list-group-item-warning")
+            a.classList.add(log.agreement.accepted?"list-group-item-info":"list-group-item-warning")
         }
         const statusAndDTBlock = document.createElement("div")
         statusAndDTBlock.classList.add("d-flex", "w-100", "justify-content-between")

@@ -3,17 +3,27 @@ function userLogsMain(){
     userLogsSetDate()
     userLogsPlanActionsFiltersDateSetWeek.addEventListener("click", function () {
         userLogsSetDate(6)
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsPlanActionsFiltersDateSet3Days.addEventListener("click", function () {
         userLogsSetDate(2)
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsPlanActionsFiltersDateSetToday.addEventListener("click", function () {
         userLogsSetDate(0)
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsFiltersListeners()
+    userLogsSelectedPlan = getHashValue("plan_id")
+    if (userLogsSelectedPlan){
+        userLogsGetActions(true)
+    }
 }
 
 function userLogsSetDate(daysCount = 2){
@@ -48,8 +58,8 @@ function userLogsGetActions(clear=true){
 function userLogsShowActions(actions=[]){
     function getElement(action){
         const li = document.createElement("li")
-        li.classList.add("list-group-item")
-
+        li.classList.add("list-group-item", "mb-1")
+        li.style = "border-width: 2px;"
         const header = document.createElement("div")
         header.classList.add("d-flex", "w-100", "justify-content-between")
         const headerText = document.createElement("h5")
@@ -106,7 +116,6 @@ function userLogsShowActions(actions=[]){
     }
 
     actions.forEach(action => {
-        console.log(action)
         userLogsBodyActions.insertAdjacentElement("beforeend", getElement(action))
     })
 }
@@ -114,35 +123,49 @@ function userLogsShowActions(actions=[]){
 function userLogsFiltersListeners(){
     userLogsPlanActionsFiltersHW.addEventListener("change", function () {
         userLogsFilterHW = userLogsPlanActionsFiltersHW.checked
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsPlanActionsFiltersTGJournal.addEventListener("change", function () {
         userLogsFilterTGJournal = userLogsPlanActionsFiltersTGJournal.checked
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsPlanActionsFiltersMessages.addEventListener("change", function () {
         userLogsFilterMessages = userLogsPlanActionsFiltersMessages.checked
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsPlanActionsFiltersLessons.addEventListener("change", function () {
         userLogsFilterLessons = userLogsPlanActionsFiltersLessons.checked
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsPlanActionsFiltersPlans.addEventListener("change", function () {
         userLogsFilterPlans = userLogsPlanActionsFiltersPlans.checked
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsPlanActionsFiltersDateFrom.addEventListener("change", function () {
         userLogsFilterDateFrom = new Date(userLogsPlanActionsFiltersDateFrom.value)
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
     userLogsPlanActionsFiltersDateTo.addEventListener("change", function () {
         userLogsFilterDateTo = new Date(userLogsPlanActionsFiltersDateTo.value)
-        userLogsGetActions(true)
+        if (userLogsSelectedPlan){
+            userLogsGetActions(true)
+        }
     })
 }
 
-let userLogsSelectedPlan = null
+let userLogsSelectedPlan
 let userLogsFilterDateFrom = null
 let userLogsFilterDateTo = null
 let userLogsFilterHW = true

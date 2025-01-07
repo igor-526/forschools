@@ -8,6 +8,6 @@ class UserLogsPageTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "user_logs.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Логи плана обучения',
+        context = {'title': 'Логи пользователей',
                    'menu': get_menu(request.user)}
         return render(request, self.template_name, context)

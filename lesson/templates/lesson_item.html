@@ -8,7 +8,10 @@
             </div>
             {% if plan_button %}
             <div class="col-auto">
-                <a target="_blank" href="/learning_plans/{{ plan_button }}"><button type="button" class="btn btn-primary mt-1" role="button">План обучения</button></a>
+                <div class="btn-group" role="group">
+                    <a target="_blank" href="/user_logs/#plan_id={{ plan_button }}" class="btn btn-outline-primary mt-1" role="button"><i class="bi bi-card-list"></i> логи</a>
+                    <a target="_blank" href="/learning_plans/{{ plan_button }}" class="btn btn-outline-primary mt-1" role="button">План обучения</a>
+                </div>
             </div>
         {% endif %}
         </div>

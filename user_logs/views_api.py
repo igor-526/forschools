@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from homework.models import HomeworkLog
+from profile_management.models import NewUser
 from tgbot.models import TgBotJournal
 from chat.models import Message
 from learning_plan.models import LearningPlan
@@ -42,7 +43,8 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
         return UserLogsHWLogsSerializer(logs_queryset, many=True).data
 
     def get_tg_journal_notes(self):
-        query = {"recipient__id__in": self.all_users_id}
+        query = {"recipient__id__in": self.all_users_id,
+                 "initiator__id__in": self.all_users_id,}
         date_from = self.request.query_params.get('date_from')
         if date_from:
             date_from = datetime.strptime(date_from.split("T")[0], '%Y-%m-%d')

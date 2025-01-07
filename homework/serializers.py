@@ -79,22 +79,23 @@ class HomeworkListSerializer(serializers.ModelSerializer):
             return None
 
     def get_color(self, obj):
-        if obj.get_status().status == 6:
+        hw_status = obj.get_status()
+        if hw_status.status == 6:
             return "danger"
-        elif obj.get_status().status == 4:
+        elif hw_status.status == 4:
             return "success"
-
-        if self.context.get("request").user.groups.filter(name__in=["Admin", "Metodist"]).exists():
-            status_agreement = obj.get_status().agreement
+        user_groups = [g.name for g in self.context.get("request").user.groups.all()]
+        if "Admin" in user_groups or "Metodist" in user_groups:
+            status_agreement = hw_status.agreement
             if status_agreement.get("accepted") is not None and not status_agreement.get("accepted"):
-                return "primary"
-        elif self.context.get("request").user.groups.filter(name="Teacher").exists():
-            if obj.get_status().status == 3:
+                return "warning"
+            elif status_agreement.get("accepted"):
                 return "info"
-        elif self.context.get("request").user.groups.filter(name="Listener").exists():
-            if obj.get_status().status == 7:
-                return "secondary"
-            elif obj.get_status().status in [2, 5]:
+        if "Teacher" in user_groups or "Curator" in user_groups:
+            if hw_status.status == 3:
+                return "warning"
+        if "Listener" in user_groups:
+            if hw_status.status in [1, 2, 5]:
                 return "warning"
         else:
             return None

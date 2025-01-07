@@ -24,54 +24,64 @@ function learningPlansGet(){
 
 function learningPlansShow(plans){
     function getElement(plan){
-    const tr = document.createElement("tr")
-    const tdName = document.createElement("td")
-    const tdTeacher = document.createElement("td")
-    const tdListeners = document.createElement("td")
-    const tdActions = document.createElement("td")
+        const tr = document.createElement("tr")
+        const tdName = document.createElement("td")
+        const tdTeacher = document.createElement("td")
+        const tdListeners = document.createElement("td")
+        const tdActions = document.createElement("td")
 
-    tdName.innerHTML = plan.name
-    tdTeacher.innerHTML = getUsersString([plan.teacher])
-    tdListeners.innerHTML = getUsersString(plan.listeners)
+        tdName.innerHTML = plan.name
+        tdTeacher.innerHTML = getUsersString([plan.teacher])
+        tdListeners.innerHTML = getUsersString(plan.listeners)
 
-    if (plan.deletable){
-        const tdActionsDelete = document.createElement("button")
-        tdActionsDelete.classList.add("btn", "btn-danger", "mx-1")
-        tdActionsDelete.type = "button"
-        tdActionsDelete.innerHTML = '<i class="bi bi-trash3"></i>'
-        tdActionsDelete.addEventListener("click", function (){
-            plansAddDestroySetModal(plan.id)
+        if (plan.deletable){
+            const tdActionsDelete = document.createElement("button")
+            tdActionsDelete.classList.add("btn", "btn-danger", "mx-1")
+            tdActionsDelete.type = "button"
+            tdActionsDelete.innerHTML = '<i class="bi bi-trash3"></i>'
+            tdActionsDelete.addEventListener("click", function (){
+                plansAddDestroySetModal(plan.id)
+            })
+            tdActions.insertAdjacentElement("beforeend", tdActionsDelete)
+        }
+
+        const tdActionsBtnGroup = document.createElement("div")
+        tdActionsBtnGroup.role = "group"
+        tdActionsBtnGroup.classList.add("btn-group")
+
+        const tdActionsEdit = document.createElement("button")
+        tdActionsEdit.classList.add("btn", "btn-primary")
+        tdActionsEdit.type = "button"
+        tdActionsEdit.innerHTML = '<i class="bi bi-pencil"></i>'
+        tdActionsEdit.addEventListener("click", function (){
+            plansAddSetOffcanvas(plan.id)
         })
-        tdActions.insertAdjacentElement("beforeend", tdActionsDelete)
+        tdActionsBtnGroup.insertAdjacentElement("beforeend", tdActionsEdit)
+
+        const tdActionsLogs = document.createElement("a")
+        tdActionsLogs.target = "_blank"
+        tdActionsLogs.href = `/user_logs/#plan_id=${plan.id}`
+        tdActionsLogs.classList.add("btn", "btn-primary")
+        tdActionsLogs.innerHTML = '<i class="bi bi-card-list"></i>'
+        tdActionsBtnGroup.insertAdjacentElement("beforeend", tdActionsLogs)
+
+        const tdActionsGo = document.createElement("a")
+        tdActionsGo.target = "_blank"
+        tdActionsGo.href = `/learning_plans/${plan.id}`
+        tdActionsGo.classList.add("btn", "btn-primary")
+        tdActionsGo.innerHTML = '<i class="bi bi-chevron-right"></i>'
+        tdActionsBtnGroup.insertAdjacentElement("beforeend", tdActionsGo)
+
+        tdActions.insertAdjacentElement("beforeend", tdActionsBtnGroup)
+
+
+        tr.insertAdjacentElement("beforeend", tdName)
+        tr.insertAdjacentElement("beforeend", tdTeacher)
+        tr.insertAdjacentElement("beforeend", tdListeners)
+        tr.insertAdjacentElement("beforeend", tdActions)
+        return tr
+
     }
-
-    const tdActionsEdit = document.createElement("button")
-    tdActionsEdit.classList.add("btn", "btn-primary", "mx-1")
-    tdActionsEdit.type = "button"
-    tdActionsEdit.innerHTML = '<i class="bi bi-pencil"></i>'
-    tdActionsEdit.addEventListener("click", function (){
-        plansAddSetOffcanvas(plan.id)
-    })
-    tdActions.insertAdjacentElement("beforeend", tdActionsEdit)
-
-    const tdActionsGo = document.createElement("button")
-    const tdActionsGoA = document.createElement("a")
-    tdActionsGoA.insertAdjacentElement("beforeend", tdActionsGo)
-    tdActionsGoA.target = "_blank"
-    tdActionsGoA.href = `/learning_plans/${plan.id}`
-    tdActionsGo.classList.add("btn", "btn-primary", "mx-1")
-    tdActionsGo.type = "button"
-    tdActionsGo.innerHTML = '<i class="bi bi-chevron-right"></i>'
-    tdActions.insertAdjacentElement("beforeend", tdActionsGoA)
-
-
-    tr.insertAdjacentElement("beforeend", tdName)
-    tr.insertAdjacentElement("beforeend", tdTeacher)
-    tr.insertAdjacentElement("beforeend", tdListeners)
-    tr.insertAdjacentElement("beforeend", tdActions)
-    return tr
-
-}
 
     plansTableBody.innerHTML = ''
     plans.forEach(plan => {
