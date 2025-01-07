@@ -62,6 +62,10 @@ class LessonTeacherReview(models.Model):
                            max_length=2000,
                            null=False,
                            blank=False)
+    dt = models.DateTimeField(verbose_name='Дата и время заполнения',
+                              auto_now_add=True,
+                              null=True,
+                              blank=True)
 
     class Meta:
         verbose_name = 'Отзыв преподавателя о занятии'
