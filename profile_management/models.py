@@ -511,30 +511,6 @@ class Telegram(models.Model):
         await self.asave()
 
 
-class UserLog(models.Model):
-    user = models.ForeignKey(NewUser,
-                             verbose_name='Пользователь',
-                             on_delete=models.CASCADE,
-                             related_name='log',
-                             null=False,
-                             blank=False)
-    dt = models.DateTimeField(verbose_name='Дата и время',
-                              auto_now_add=True,
-                              null=False,
-                              blank=False)
-    comment = models.TextField(verbose_name='Комментарий',
-                               null=False,
-                               blank=False)
-
-    class Meta:
-        verbose_name = 'Лог',
-        verbose_name_plural = 'Логи',
-        ordering = ['dt']
-
-    def __str__(self):
-        return f'{self.user} - {self.comment} - {self.dt}'
-
-
 async def aget_unread_messages_count(tgnote, sender=None, read=False):
     query = {"filter": {},
              "exclude": {},

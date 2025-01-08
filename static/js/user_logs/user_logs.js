@@ -46,7 +46,8 @@ function userLogsGetActions(clear=true){
         userLogsFilterLessons, userLogsFilterPlans).then(request => {
         switch (request.status){
             case 200:
-                userLogsShowActions(request.response)
+                userLogsShowPlanInfo(request.response.plan_info)
+                userLogsShowActions(request.response.logs)
                 userLogsBodySpinner.classList.add("d-none")
                 break
             default:
@@ -55,11 +56,56 @@ function userLogsGetActions(clear=true){
     })
 }
 
+function userLogsShowPlanInfo(info){
+    function getLPButton(plan_id){
+        const a = document.createElement("a")
+        a.href = `/learning_plans/${plan_id}`
+        a.innerHTML = "План обучения"
+        a.classList.add("btn", "btn-outline-primary", "btn-sm", "ms-2")
+        a.target = "_blank"
+        return a
+    }
+
+    userLogsPlanInformation.innerHTML = ""
+    userLogsPlanInformationHeaderBtn.innerHTML = ""
+    if (info.id){
+        userLogsPlanInformationHeaderBtn.insertAdjacentElement("beforeend", getLPButton(info.id))
+    }
+    if (info.name){
+        userLogsPlanInformation.insertAdjacentElement("beforeend",
+            getListElement("Наименование", info.name))
+    }
+    if (info.teacher){
+        userLogsPlanInformation.insertAdjacentElement("beforeend",
+            getListElement("Преподаватель", getUsersString([info.teacher])))
+    }
+    if (info.default_hw_teacher){
+        userLogsPlanInformation.insertAdjacentElement("beforeend",
+            getListElement("Проверяющий ДЗ по умолчанию", getUsersString([info.default_hw_teacher])))
+    }
+    if (info.methodist){
+        userLogsPlanInformation.insertAdjacentElement("beforeend",
+            getListElement("Методист", getUsersString([info.methodist])))
+    }
+    info.curators?.forEach(user => {
+        userLogsPlanInformation.insertAdjacentElement("beforeend",
+            getListElement("Куратор", getUsersString([user])))
+    })
+    info.listeners?.forEach(user => {
+        userLogsPlanInformation.insertAdjacentElement("beforeend",
+            getListElement("Ученик", getUsersString([user])))
+    })
+}
+
 function userLogsShowActions(actions=[]){
     function getElement(action){
+        console.log(action)
         const li = document.createElement("li")
         li.classList.add("list-group-item", "mb-1")
         li.style = "border-width: 2px;"
+        if (action.color){
+            li.classList.add(`list-group-item-${action.color}`)
+        }
         const header = document.createElement("div")
         header.classList.add("d-flex", "w-100", "justify-content-between")
         const headerText = document.createElement("h5")
@@ -169,7 +215,7 @@ let userLogsSelectedPlan
 let userLogsFilterDateFrom = null
 let userLogsFilterDateTo = null
 let userLogsFilterHW = true
-let userLogsFilterTGJournal = true
+let userLogsFilterTGJournal = false
 let userLogsFilterMessages = true
 let userLogsFilterLessons = true
 let userLogsFilterPlans = true
@@ -177,6 +223,7 @@ let userLogsFilterPlans = true
 
 const userLogsSelectPlanButton = document.querySelector("#userLogsSelectPlanButton")
 const userLogsPlanInformation = document.querySelector("#userLogsPlanInformation")
+const userLogsPlanInformationHeaderBtn = document.querySelector("#userLogsPlanInformationHeaderBtn")
 const userLogsTabsActions = document.querySelector("#userLogsTabsActions")
 const userLogsBodyActions = document.querySelector("#userLogsBodyActions")
 const userLogsTabsMessages = document.querySelector("#userLogsTabsMessages")
@@ -194,6 +241,5 @@ const userLogsPlanActionsFiltersTGJournal = userLogsPlanActionsFilters.querySele
 const userLogsPlanActionsFiltersMessages = userLogsPlanActionsFilters.querySelector("#userLogsPlanActionsFiltersMessages")
 const userLogsPlanActionsFiltersLessons = userLogsPlanActionsFilters.querySelector("#userLogsPlanActionsFiltersLessons")
 const userLogsPlanActionsFiltersPlans = userLogsPlanActionsFilters.querySelector("#userLogsPlanActionsFiltersPlans")
-const userLogsPlanActionsFiltersConfirm = userLogsPlanActionsFilters.querySelector("#userLogsPlanActionsFiltersConfirm")
 
 userLogsMain()

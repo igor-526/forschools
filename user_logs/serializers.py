@@ -1,7 +1,11 @@
+from datetime import datetime
+
 from rest_framework import serializers
 from homework.models import HomeworkLog
 from tgbot.models import TgBotJournal
 from chat.models import Message
+from lesson.models import LessonTeacherReview
+from .models import UserLog
 from profile_management.serializers import NewUserNameOnlyListSerializer
 
 
@@ -87,9 +91,9 @@ class UserLogsTGBotJournalSerializer(serializers.ModelSerializer):
         })
         if obj.data.get("text"):
             list_data.append({
-                    "name": "Текст уведомления",
-                    "val": obj.data.get("text")
-                })
+                "name": "Текст уведомления",
+                "val": obj.data.get("text")
+            })
         for err in obj.data.get("errors"):
             list_data.append({
                 "name": "Ошибка",
@@ -143,6 +147,92 @@ class UserLogsMessageSerializer(serializers.ModelSerializer):
 
     def get_buttons(self, obj):
         return []
+
+    def get_files(self, obj):
+        return []
+
+
+class UserLogsLessonReviewSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
+    buttons = serializers.SerializerMethodField()
+    files = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+    color = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LessonTeacherReview
+        fields = ["title", "content", "user", "date", "buttons", "files", "color"]
+
+    def get_title(self, obj):
+        lesson = obj.lesson_set.first()
+        return f"Занятие {lesson.name} от {lesson.date.strftime('%d.%m.%Y')} проведено"
+
+    def get_color(self, obj):
+        return "success"
+
+    def get_content(self, obj):
+        list_data = []
+        if obj.materials:
+            list_data.append({
+                "name": "Используемые материалы",
+                "val": obj.materials
+            })
+        if obj.lexis:
+            list_data.append({
+                "name": "Лексика",
+                "val": obj.lexis
+            })
+        if obj.grammar:
+            list_data.append({
+                "name": "Грамматика",
+                "val": obj.grammar
+            })
+        if obj.note:
+            list_data.append({
+                "name": "Примечание",
+                "val": obj.note
+            })
+        if obj.org:
+            list_data.append({
+                "name": "Орг. моменты и поведение ученика",
+                "val": obj.org
+            })
+        return {"text": [],
+                "list": list_data}
+
+    def get_user(self, obj):
+        lesson = obj.lesson_set.first()
+        lp = lesson.get_learning_plan()
+        return NewUserNameOnlyListSerializer(lp.teacher, many=False).data
+
+    def get_date(self, obj):
+        if obj.dt:
+            return obj.dt
+        else:
+            lesson = obj.lesson_set.first()
+            return datetime.combine(lesson.date, lesson.end_time)
+
+    def get_buttons(self, obj):
+        return [{"inner": "Занятие",
+                 "href": f"/lessons/{obj.lesson_set.first().id}"}]
+
+    def get_files(self, obj):
+        return []
+
+
+class UserLogsSerializer(serializers.ModelSerializer):
+    files = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+    user = NewUserNameOnlyListSerializer(many=False)
+
+    class Meta:
+        model = UserLog
+        fields = ["title", "content", "user", "date", "buttons", "files", "color"]
+
+    def get_date(self, obj):
+        return obj.date
 
     def get_files(self, obj):
         return []

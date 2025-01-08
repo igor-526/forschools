@@ -5,13 +5,14 @@ from aiogram.types import CallbackQuery
 from chat.models import Message
 from tgbot.funcs.homeworks import homework_tg_notify
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
-from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_agreement_buttons, get_homework_edit_button
+from tgbot.keyboards.homework import get_homework_agreement_buttons
 from tgbot.finite_states.homework import HomeworkAgreementFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.funcs.chats import chats_notify
 from homework.models import Homework, HomeworkLog
 from tgbot.create_bot import bot
-from tgbot.utils import get_user, get_tg_id
+from tgbot.utils import get_user
+from user_logs.models import UserLog
 
 
 async def f_homework_agr_message(callback: CallbackQuery,
@@ -81,7 +82,7 @@ async def f_homework_agr_send(tg_id: int,
         lp = (await lesson.aget_learning_plan()) if lesson else None
         to_agreement = [log async for log in
                         HomeworkLog.objects.select_related("homework").select_related("homework__listener")
-                        .select_related("homework__teacher").filter(status__in=[5, 4, 7],
+                        .select_related("homework__teacher").select_related("user").filter(status__in=[5, 4, 7],
                                                                     homework__id__in=[hw.id for hw in hws],
                                                                     agreement__accepted=False)]
         return {
@@ -140,6 +141,57 @@ async def f_homework_agr_send(tg_id: int,
                                          [log_.homework],
                                          msg_teacher)
 
+    async def journal_log():
+        title = "Действие преподавателя согласовано" if stdata.get("action") == "agreement_accept" else \
+            "Действие преподавателя НЕ согласовано"
+        color = "info" if stdata.get("action") == "agreement_accept" else "warning"
+        lesson = await logs_info.get("homeworks")[0].lesson_set.afirst()
+        content = {"list": [],
+                   "text": [f'Методист обработал действие преподавателя по ДЗ к занятию '
+                            f'"{lesson.name}" от {lesson.date.strftime("%d.%m.%Y")}',
+                            f'Проверяющий ДЗ: {logs_info.get("homeworks")[0].teacher.first_name} '
+                            f'{logs_info.get("homeworks")[0].teacher.last_name}']}
+        buttons = []
+        for l_ in logs_info.get("logs"):
+            if l_.status == 7:
+                content['list'].append({
+                    "name": "Тип события",
+                    "val": "согласование ДЗ"
+                })
+            elif l_.status == 4:
+                content['list'].append({
+                    "name": "Тип события",
+                    "val": "принятие ДЗ"
+                })
+            elif l_.status == 5:
+                content['list'].append({
+                    "name": "Тип события",
+                    "val": "отправка ДЗ на доработку"
+                })
+        for hw in logs_info.get("homeworks"):
+            content['list'].append({
+                "name": "Ученик",
+                "val": f"{hw.listener.first_name} {hw.listener.last_name}"
+            })
+            buttons.append({"inner": hw.name,
+                            "href": f"/homeworks/{hw.id}"})
+        buttons.append({"inner": "Занятие",
+                        "href": f"/lessons/{lesson.id}"})
+        if stdata.get("comment"):
+            content['list'].append({
+                "name": "Комментарий",
+                "val": stdata.get("comment")
+            })
+        await UserLog.objects.acreate(
+            log_type=1,
+            learning_plan=logs_info.get("plan"),
+            title=title,
+            content=content,
+            buttons=buttons,
+            user=logs_info.get("plan").metodist,
+            color=color
+        )
+
     stdata = await state.get_data()
     logs_info = await get_logs_info()
     if not logs_info.get("logs"):
@@ -172,6 +224,7 @@ async def f_homework_agr_send(tg_id: int,
         log.agreement = agreement
         await log.asave()
         await notify_users(logs_info.get("logs"), stdata.get("action"))
+    await journal_log()
     await bot.send_message(chat_id=tg_id,
                            text=answer_msg)
     await send_menu(tg_id, state)

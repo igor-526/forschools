@@ -12,6 +12,7 @@ from .models import Homework, HomeworkLog
 from rest_framework.views import APIView
 from rest_framework import status
 from material.models import File
+from user_logs.models import UserLog
 
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -239,13 +240,14 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
         if instance:
             if instance.status == 7:
                 hw_group = instance.homework.homeworkgroups_set.first()
-                hws = hw_group.homeworks.all() if hw_group else [instance.homework.id]
+                hws = hw_group.homeworks.all() if hw_group else [instance.homework]
             else:
                 hws = [instance.homework]
             to_agreement = HomeworkLog.objects.filter(homework__id__in=[hw.id for hw in hws],
                                                       dt__lte=instance.dt,
                                                       agreement__accepted=False)
             accepted_dt = datetime.datetime.now()
+            lesson = hws[0].lesson_set.first()
             agreement = {
                 "accepted_dt": {
                     "year": accepted_dt.year,
@@ -256,8 +258,20 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                 },
                 "accepted": False
             }
+            user_log = {
+                "log_type": 1,
+                "learning_plan": lesson.get_learning_plan(),
+                "content": {"list": [],
+                            "text": [f'Методист обработал действие преподавателя по ДЗ к занятию '
+                                     f'"{lesson.name}" от {lesson.date.strftime("%d.%m.%Y")}',
+                                     f'Проверяющий ДЗ: {hws[0].teacher.first_name} '
+                                     f'{hws[0].teacher.last_name}']},
+                "user": request.user,
+                "buttons": []}
             if request.POST.get('action') == 'accept':
                 agreement['accepted'] = True
+                user_log["title"] = "Действие преподавателя согласовано"
+                user_log["color"] = "info"
                 if instance.status == 7:
                     for hw in hws:
                         send_homework_tg(initiator=instance.homework.teacher,
@@ -281,6 +295,8 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                                      homeworks=hws,
                                      text=teacher_msg_text)
             elif request.POST.get('action') == 'decline':
+                user_log["title"] = "Действие преподавателя НЕ согласовано"
+                user_log["color"] = "warning"
                 for hw in hws:
                     send_homework_edit(hw, instance.homework.teacher)
             if request.POST.get('message'):
@@ -292,6 +308,38 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
             for log in to_agreement:
                 log.agreement = agreement
                 log.save()
+
+            for l_ in to_agreement:
+                if l_.status == 7:
+                    user_log['content']['list'].append({
+                        "name": "Тип события",
+                        "val": "согласование ДЗ"
+                    })
+                elif l_.status == 4:
+                    user_log['content']['list'].append({
+                        "name": "Тип события",
+                        "val": "принятие ДЗ"
+                    })
+                elif l_.status == 5:
+                    user_log['content']['list'].append({
+                        "name": "Тип события",
+                        "val": "отправка ДЗ на доработку"
+                    })
+            for hw in hws:
+                user_log['content']['list'].append({
+                    "name": "Ученик",
+                    "val": f"{hw.listener.first_name} {hw.listener.last_name}"
+                })
+                user_log['buttons'].append({"inner": hw.name,
+                                            "href": f"/homeworks/{hw.id}"})
+            user_log['buttons'].append({"inner": "Занятие",
+                                        "href": f"/lessons/{lesson.id}"})
+            if request.POST.get('message'):
+                user_log['content']['list'].append({
+                    "name": "Комментарий",
+                    "val": request.POST.get('message')
+                })
+            UserLog.objects.create(**user_log)
             return Response(data={'status': True}, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)

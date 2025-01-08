@@ -380,7 +380,7 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
             else:
                 await bot.send_message(chat_id=tg_id,
                                        text="Вот домашние задания, действия преподавателей которых ждут Вашей проверки:",
-                                       reply_markup=get_homeworks_buttons(homeworks, sb=True))
+                                       reply_markup=get_homeworks_buttons(methodist_homeworks, sb=True))
         elif 'Teacher' in groups:
             homeworks = list(filter(lambda hw: hw['hw_status'].status in [3, 5] and
                                                (hw['hw_status'].agreement.get("accepted") is None or

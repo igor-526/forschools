@@ -5,42 +5,75 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from homework.models import HomeworkLog
-from profile_management.models import NewUser
+from profile_management.serializers import NewUserNameOnlyListSerializer
+from user_logs.models import UserLog
 from tgbot.models import TgBotJournal
 from chat.models import Message
 from learning_plan.models import LearningPlan
-from .serializers import UserLogsHWLogsSerializer, UserLogsTGBotJournalSerializer, UserLogsMessageSerializer
+from lesson.models import LessonTeacherReview
+from .serializers import UserLogsHWLogsSerializer, UserLogsTGBotJournalSerializer, UserLogsMessageSerializer, \
+    UserLogsSerializer, UserLogsLessonReviewSerializer
 
 
 class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
     all_users_id = None
+    plan_info = {}
 
-    def set_all_users_ids(self, plan_id: int):
+    def set_plan_info_and_all_users_ids(self, plan_id: int):
         lp = LearningPlan.objects.get(id=plan_id)
-        teacher_id = lp.teacher.id if lp.teacher else None
-        hw_teacher_id = lp.default_hw_teacher.id if lp.default_hw_teacher else None
-        methodist_id = lp.metodist.id if lp.metodist else None
-        listeners_ids = [l.id for l in lp.listeners.all()]
-        curators_ids = [l.id for l in lp.curators.all()]
-        all_users = [teacher_id, hw_teacher_id, methodist_id, *listeners_ids, *curators_ids]
+        self.plan_info["name"] = lp.name
+        self.plan_info["id"] = lp.id
+        if lp.teacher:
+            self.plan_info["teacher"] = NewUserNameOnlyListSerializer(lp.teacher, many=False).data
+            teacher_id = lp.teacher.id
+        else:
+            teacher_id = None
+
+        if lp.default_hw_teacher:
+            self.plan_info["default_hw_teacher"] = NewUserNameOnlyListSerializer(lp.default_hw_teacher, many=False).data
+            hw_teacher_id = lp.default_hw_teacher.id
+        else:
+            hw_teacher_id = None
+
+        if lp.metodist:
+            self.plan_info["methodist"] = NewUserNameOnlyListSerializer(lp.metodist, many=False).data
+            methodist_id = lp.metodist.id
+        else:
+            methodist_id = None
+        listeners = lp.listeners.all()
+        if listeners:
+            self.plan_info["listeners"] = NewUserNameOnlyListSerializer(listeners, many=True).data
+        listeners = [l.id for l in listeners] if listeners else []
+        curators = lp.curators.all()
+        if curators:
+            self.plan_info["curators"] = NewUserNameOnlyListSerializer(curators, many=True).data
+        curators = [c.id for c in curators] if curators else []
+        all_users = [teacher_id, hw_teacher_id, methodist_id, *listeners, *curators]
         while None in all_users:
             all_users.remove(None)
         self.all_users_id = all_users
 
     def get_hw_logs(self, plan_id: int):
-        query = {}
+        query_hw_logs = {}
+        query_user_logs = {"log_type": 1}
         if plan_id:
-            query['homework__lesson__learningphases__learningplan__id'] = plan_id
+            query_hw_logs['homework__lesson__learningphases__learningplan__id'] = plan_id
+            query_user_logs['learning_plan__id'] = plan_id
         date_from = self.request.query_params.get('date_from')
         if date_from:
             date_from = datetime.strptime(date_from.split("T")[0], '%Y-%m-%d')
-            query['dt__date__gte'] = date_from
+            query_hw_logs['dt__date__gte'] = date_from
+            query_user_logs['date__date__gte'] = date_from
         date_to = self.request.query_params.get('date_to')
         if date_to:
             date_to = datetime.strptime(date_to.split("T")[0], '%Y-%m-%d')
-            query['dt__date__lte'] = date_to
-        logs_queryset = HomeworkLog.objects.filter(**query)
-        return UserLogsHWLogsSerializer(logs_queryset, many=True).data
+            query_hw_logs['dt__date__lte'] = date_to
+            query_user_logs['date__date__lte'] = date_to
+        hw_logs_queryset = HomeworkLog.objects.filter(**query_hw_logs)
+        user_logs_queryset = UserLog.objects.filter(**query_user_logs)
+        hw_logs_ser = UserLogsHWLogsSerializer(hw_logs_queryset, many=True).data
+        user_logs_ser = UserLogsSerializer(user_logs_queryset, many=True).data
+        return [*hw_logs_ser, *user_logs_ser]
 
     def get_tg_journal_notes(self):
         query = {"recipient__id__in": self.all_users_id,
@@ -70,11 +103,26 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
         messages = Message.objects.filter(**query)
         return UserLogsMessageSerializer(messages, many=True).data
 
+    def get_lessons(self, plan_id: int):
+        query = {"lesson__learningphases__learningplan__id": plan_id}
+        date_from = self.request.query_params.get('date_from')
+        if date_from:
+            date_from = datetime.strptime(date_from.split("T")[0], '%Y-%m-%d')
+            query['dt__date__gte'] = date_from
+        date_to = self.request.query_params.get('date_to')
+        if date_to:
+            date_to = datetime.strptime(date_to.split("T")[0], '%Y-%m-%d')
+            query['dt__date__lte'] = date_to
+        reviews = LessonTeacherReview.objects.filter(**query)
+        return UserLogsLessonReviewSerializer(reviews, many=True).data
+
     def get(self, request, *args, **kwargs):
-        self.set_all_users_ids(kwargs.get('plan_pk'))
+        if kwargs.get('plan_pk'):
+            self.set_plan_info_and_all_users_ids(kwargs.get('plan_pk'))
         hw_logs = self.get_hw_logs(kwargs.get('plan_pk')) if request.query_params.get('homeworks') == 'true' else []
         tg_journal_notes = self.get_tg_journal_notes() if request.query_params.get('tg_journal') == 'true' else []
         messages = self.get_messages() if request.query_params.get('messages') == 'true' else []
-        all_notes = [*hw_logs, *tg_journal_notes, *messages][:50]
+        lessons = self.get_lessons(kwargs.get('plan_pk')) if request.query_params.get('lessons') == 'true' else []
+        all_notes = [*hw_logs, *tg_journal_notes, *messages, *lessons][:50]
         all_notes = sorted(all_notes, key=itemgetter("date"), reverse=True)
-        return Response(all_notes, status=status.HTTP_200_OK)
+        return Response({"plan_info": self.plan_info, "logs": all_notes}, status=status.HTTP_200_OK)
