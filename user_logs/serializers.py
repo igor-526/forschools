@@ -49,8 +49,8 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
 
     def get_files(self, obj):
         return [{
-            "type": get_type(f.path.path.split('.')[-1]),
-            "href": f.path
+            "type": get_type(f.path.name.split('.')[-1]),
+            "href": f.path.url
         } for f in obj.files.all()]
 
 
@@ -154,8 +154,8 @@ class UserLogsMessageSerializer(serializers.ModelSerializer):
 
     def get_files(self, obj):
         return [{
-            "type": get_type(f.path.path.split('.')[-1]),
-            "href": f.path
+            "type": get_type(f.path.name.split('.')[-1]),
+            "href": f.path.url
         } for f in obj.files.all()]
 
 

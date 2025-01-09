@@ -100,6 +100,49 @@ function userLogsShowPlanInfo(info){
 function userLogsShowActions(actions=[]){
     function getFilesElement(files){
         console.log(files)
+
+        const container = document.createElement("div")
+        container.classList.add("logs-information-files")
+
+        files.forEach(f => {
+            const fileContainer = document.createElement("div")
+            fileContainer.classList.add("logs-information-file")
+            switch (f.type){
+                case 'image_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-image"></i>'
+                    break
+                case 'video_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-file-easel"></i>'
+                    break
+                case 'animation_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-filetype-gif"></i>'
+                    break
+                case 'archive_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-zip"></i>'
+                    break
+                case 'pdf_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-pdf"></i>'
+                    break
+                case 'voice_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-play"></i>'
+                    break
+                case 'audio_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-music"></i>'
+                    break
+                case 'text_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-text"></i>'
+                    break
+                case 'presentation_formats':
+                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-ppt"></i>'
+                    break
+            }
+            fileContainer.addEventListener("click", function () {
+                materialsUtilsFilePreviewByHref(f.type, f.href)
+            })
+            container.insertAdjacentElement("beforeend", fileContainer)
+        })
+
+        return container
     }
 
     function getElement(action){
@@ -161,7 +204,7 @@ function userLogsShowActions(actions=[]){
         }
 
         if (action.files.length > 0){
-            getFilesElement(action.files)
+            li.insertAdjacentElement("beforeend", getFilesElement(action.files))
         }
 
         return li

@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block static_css %}
+    <link rel="stylesheet" href="{% static 'css/user_logs.css' %}">
+{% endblock %}
 {% block content %}
     <div class="container-xxl mt-4 mb-3">
         <div class="row justify-content-between">
@@ -13,58 +16,59 @@
     </div>
 
     <div class="container-xxl">
-        <div class="row">
-            <div class="col-6">
-                <div class="card mb-3">
-                    <div class="card-header">Информация<span id="userLogsPlanInformationHeaderBtn"></span></div>
-                    <div class="card-body">
-                        <ul id="userLogsPlanInformation" class="list-group list-group-flush"></ul>
-                    </div>
+    <div class="row">
+        <div class="col-6">
+            <div class="card mb-3">
+                <div class="card-header">Информация<span id="userLogsPlanInformationHeaderBtn"></span></div>
+                <div class="card-body">
+                    <ul id="userLogsPlanInformation" class="list-group list-group-flush"></ul>
                 </div>
+
             </div>
-            <div class="col-6">
-                <div class="card mb-3">
-                    <div class="card-header">Фильтры</div>
-                    <div class="card-body">
-                        <div id="userLogsPlanActionsFilters">
-                            <div class="input-group mb-3">
-                                <input id="userLogsPlanActionsFiltersDateFrom" type="date" class="form-control" aria-label="">
-                                <span class="input-group-text" id="basic-addon1">-</span>
-                                <input id="userLogsPlanActionsFiltersDateTo" type="date" class="form-control" aria-label="">
-                            </div>
+        </div>
+        <div class="col-6">
+                    <div class="card mb-3">
+                        <div class="card-header">Фильтры</div>
+                        <div class="card-body">
+                            <div id="userLogsPlanActionsFilters">
+                                <div class="input-group mb-3">
+                                    <input id="userLogsPlanActionsFiltersDateFrom" type="date" class="form-control" aria-label="">
+                                    <span class="input-group-text" id="basic-addon1">-</span>
+                                    <input id="userLogsPlanActionsFiltersDateTo" type="date" class="form-control" aria-label="">
+                                </div>
 
-                            <div class="btn-group mb-3" role="group">
-                                <button id="userLogsPlanActionsFiltersDateSetWeek" type="button" class="btn btn-sm btn-outline-primary">Неделя</button>
-                                <button id="userLogsPlanActionsFiltersDateSet3Days" type="button" class="btn btn-sm btn-outline-primary">3 дня</button>
-                                <button id="userLogsPlanActionsFiltersDateSetToday" type="button" class="btn btn-sm btn-outline-primary">Сегодня</button>
-                            </div>
+                                <div class="btn-group mb-3" role="group">
+                                    <button id="userLogsPlanActionsFiltersDateSetWeek" type="button" class="btn btn-sm btn-outline-primary">Неделя</button>
+                                    <button id="userLogsPlanActionsFiltersDateSet3Days" type="button" class="btn btn-sm btn-outline-primary">3 дня</button>
+                                    <button id="userLogsPlanActionsFiltersDateSetToday" type="button" class="btn btn-sm btn-outline-primary">Сегодня</button>
+                                </div>
 
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersHW" checked>
-                                    <label class="form-check-label" for="userLogsPlanActionsFiltersHW">Домашние задания</label>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersTGJournal">
-                                    <label class="form-check-label" for="userLogsPlanActionsFiltersTGJournal">Уведомления TG</label>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersMessages" checked>
-                                    <label class="form-check-label" for="userLogsPlanActionsFiltersMessages">Сообщения</label>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersLessons" checked>
-                                    <label class="form-check-label" for="userLogsPlanActionsFiltersLessons">Занятия</label>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersPlans" checked>
-                                    <label class="form-check-label" for="userLogsPlanActionsFiltersPlans">Планы обучения</label>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersHW" checked>
+                                        <label class="form-check-label" for="userLogsPlanActionsFiltersHW">Домашние задания</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersTGJournal">
+                                        <label class="form-check-label" for="userLogsPlanActionsFiltersTGJournal">Уведомления TG</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersMessages" checked>
+                                        <label class="form-check-label" for="userLogsPlanActionsFiltersMessages">Сообщения</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersLessons" checked>
+                                        <label class="form-check-label" for="userLogsPlanActionsFiltersLessons">Занятия</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="userLogsPlanActionsFiltersPlans" checked>
+                                        <label class="form-check-label" for="userLogsPlanActionsFiltersPlans">Планы обучения</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
         <div class="row">
             <ul class="nav nav-tabs mb-2">
@@ -99,9 +103,11 @@
         </div>
     </div>
     {% include 'user_logs_offcanvas_lp.html' %}
+    {% include "material_preview_modal.html" %}
 {% endblock %}
 {% block static_js %}
     <script src="{% static 'js/list_utils.js' %}"></script>
+    <script src="{% static 'js/materialsutils.js' %}"></script>
     <script src="{% static 'js/user_logs/user_logs_api.js' %}"></script>
     <script src="{% static 'js/plans/plans_api.js' %}"></script>
     <script src="{% static 'js/user_logs/user_logs_offcanvas_lp.js' %}"></script>
