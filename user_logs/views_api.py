@@ -123,6 +123,7 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
         tg_journal_notes = self.get_tg_journal_notes() if request.query_params.get('tg_journal') == 'true' else []
         messages = self.get_messages() if request.query_params.get('messages') == 'true' else []
         lessons = self.get_lessons(kwargs.get('plan_pk')) if request.query_params.get('lessons') == 'true' else []
-        all_notes = [*hw_logs, *tg_journal_notes, *messages, *lessons][:50]
+        offset = int(request.query_params.get('offset')) if request.query_params.get('offset') else 0
+        all_notes = [*hw_logs, *tg_journal_notes, *messages, *lessons][offset:offset + 50]
         all_notes = sorted(all_notes, key=itemgetter("date"), reverse=True)
         return Response({"plan_info": self.plan_info, "logs": all_notes}, status=status.HTTP_200_OK)

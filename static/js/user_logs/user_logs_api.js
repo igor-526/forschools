@@ -1,4 +1,4 @@
-async function userLogsAPIGetActions(planID=null, date_from=null, date_to=null,
+async function userLogsAPIGetActions(offset=null, planID=null, date_from=null, date_to=null,
                                      homeworks=true, tgJournal=true, messages=true,
                                      lessons=true, plans=true){
     let url = "/api/v1/user_logs/"
@@ -6,6 +6,9 @@ async function userLogsAPIGetActions(planID=null, date_from=null, date_to=null,
         url += `plan${planID}/`
     }
     const queryParams = []
+    if (offset){
+        queryParams.push(`offset=${offset}`)
+    }
     if (date_from){
         queryParams.push(`date_from=${date_from.toISOString()}`)
     }

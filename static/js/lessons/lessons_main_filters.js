@@ -1,6 +1,7 @@
 function lessonsFiltersMain(){
     lessonsFilterResetListeners()
     lessonsFilterSearchListeners()
+    lessonsFilterSetHWListeners()
     usersAPIGetTeachersListeners("teacher").then(request => {
         switch (request.status){
             case 200:
@@ -63,8 +64,7 @@ function lessonsFilterSetTeachers(list = []){
                 lessonsTableFilterTeachersSelected.splice(index, 1)
                 break
         }
-        lessonsGet(currentStatus, lessonsTableFilterTeachersSelected, lessonsTableFilterListenersSelected,
-            lessonsTableFilterDateStart, lessonsTableFilterDateEnd)
+        lessonsGet()
     }
 
     function getElement(teacher){
@@ -96,8 +96,7 @@ function lessonsFilterSetListeners(list = []){
                 lessonsTableFilterListenersSelected.splice(index, 1)
                 break
         }
-        lessonsGet(currentStatus, lessonsTableFilterTeachersSelected, lessonsTableFilterListenersSelected,
-            lessonsTableFilterDateStart, lessonsTableFilterDateEnd)
+        lessonsGet()
     }
 
     function getElement(listener){
@@ -137,21 +136,34 @@ function lessonsFilterSetDateListeners(){
             lessonsTableFilterDateStartField.classList.remove("is-invalid")
             lessonsTableFilterDateEndField.classList.remove("is-invalid")
             lessonsTableFilterDateStart = lessonsTableFilterDateStartField.value
-            lessonsGet(currentStatus, lessonsTableFilterTeachersSelected, lessonsTableFilterListenersSelected,
-                lessonsTableFilterDateStart, lessonsTableFilterDateEnd)
+            lessonsGet()
         }
     }
 
     function endListener(){
         if (validate()){
             lessonsTableFilterDateEnd = lessonsTableFilterDateEndField.value
-            lessonsGet(currentStatus, lessonsTableFilterTeachersSelected, lessonsTableFilterListenersSelected,
-                lessonsTableFilterDateStart, lessonsTableFilterDateEnd)
+            lessonsGet()
         }
     }
 
     lessonsTableFilterDateStartField.addEventListener("input", startListener)
     lessonsTableFilterDateEndField.addEventListener("input", endListener)
+}
+
+function lessonsFilterSetHWListeners(){
+    lessonsTableFilterHWAll.addEventListener("change", function () {
+        lessonsTableFilterHW = null
+        lessonsGet()
+    })
+    lessonsTableFilterHWTrue.addEventListener("change", function () {
+        lessonsTableFilterHW = "true"
+        lessonsGet()
+    })
+    lessonsTableFilterHWFalse.addEventListener("change", function () {
+        lessonsTableFilterHW = "false"
+        lessonsGet()
+    })
 }
 
 function lessonsFilterResetListeners(){
@@ -197,6 +209,13 @@ function lessonsFilterResetListeners(){
         lessonsTableFilterDateEnd = null
     }
 
+    function resetHW(){
+        lessonsTableFilterHW = null
+        lessonsTableFilterHWAll.checked = true
+        lessonsTableFilterHWTrue.checked = false
+        lessonsTableFilterHWFalse.checked = false
+    }
+
     lessonsTableFilterTeacherSearchFieldErase.addEventListener("click", function () {
         resetTeacherSearch()
     })
@@ -205,21 +224,19 @@ function lessonsFilterResetListeners(){
     })
     lessonsTableFilterDateStartFieldErase.addEventListener("click", function (){
         resetDateStart()
-        lessonsGet(currentStatus, lessonsTableFilterTeachersSelected, lessonsTableFilterListenersSelected,
-            lessonsTableFilterDateStart, lessonsTableFilterDateEnd)
+        lessonsGet()
     })
     lessonsTableFilterDateEndFieldErase.addEventListener("click", function (){
         resetDateEnd()
-        lessonsGet(currentStatus, lessonsTableFilterTeachersSelected, lessonsTableFilterListenersSelected,
-            lessonsTableFilterDateStart, lessonsTableFilterDateEnd)
+        lessonsGet()
     })
     lessonsTableFilterResetAll.addEventListener("click", function (){
         resetTeacherSearch(true)
         resetListenerSearch(true)
         resetDateStart()
         resetDateEnd()
-        lessonsGet(currentStatus, lessonsTableFilterTeachersSelected, lessonsTableFilterListenersSelected,
-            lessonsTableFilterDateStart, lessonsTableFilterDateEnd)
+        resetHW()
+        lessonsGet()
     })
 }
 
@@ -233,6 +250,9 @@ const lessonsTableFilterDateStartField = document.querySelector("#lessonsTableFi
 const lessonsTableFilterDateStartFieldErase = document.querySelector("#lessonsTableFilterDateStartFieldErase")
 const lessonsTableFilterDateEndField = document.querySelector("#lessonsTableFilterDateEndField")
 const lessonsTableFilterDateEndFieldErase = document.querySelector("#lessonsTableFilterDateEndFieldErase")
+const lessonsTableFilterHWAll = document.querySelector("#lessonsTableFilterHWAll")
+const lessonsTableFilterHWTrue = document.querySelector("#lessonsTableFilterHWTrue")
+const lessonsTableFilterHWFalse = document.querySelector("#lessonsTableFilterHWFalse")
 const lessonsTableFilterResetAll = document.querySelector("#lessonsTableFilterResetAll")
 
 lessonsFiltersMain()

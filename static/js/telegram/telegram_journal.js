@@ -1,23 +1,22 @@
 function tgJournalMain(){
     tgJournalGet()
+    tgJournalTableShowMoreButton.addEventListener("click", function () {
+        tgJournalCurrentOffset += 50
+        tgJournalGet(true)
+    })
 }
 
-function tgJournalGet(
-    event = [],
-    date = "",
-    timeFrom = "",
-    timeTo = "",
-    initiator = [],
-    recipient = [],
-    status = []
-){
-    telegramAPIGetJournal(
-        event, date, timeFrom, timeTo,
-        initiator, recipient, status
+function tgJournalGet(more=false){
+    if (!more && tgJournalCurrentOffset !== 0){
+        tgJournalCurrentOffset = 0
+    }
+    telegramAPIGetJournal(tgJournalCurrentOffset, tgJournalFilterSelectedEvent, tgJournalFilterSelectedDateFrom,
+        tgJournalFilterSelectedDateTo, tgJournalFilterSelectedTimeFrom, tgJournalFilterSelectedTimeTo,
+        tgJournalFilterSelectedInitiator, tgJournalFilterSelectedRecipient, tgJournalFilterSelectedStatus
     ).then(request => {
         switch (request.status){
             case 200:
-                tgJournalShow(request.response)
+                tgJournalShow(request.response, !more)
                 break
             default:
                 showErrorToast()
@@ -25,7 +24,7 @@ function tgJournalGet(
     })
 }
 
-function tgJournalShow(list=[], clear=true){
+function tgJournalShow(list, clear=true){
 
     function getElement(note){
         const tr = document.createElement("tr")
@@ -97,5 +96,16 @@ function tgJournalGetEventStr(event){
 
 
 const tgJournalTableBody = document.querySelector("#tgJournalTableBody")
+const tgJournalTableShowMoreButton = document.querySelector("#tgJournalTableShowMoreButton")
+
+let tgJournalCurrentOffset = 0
+let tgJournalFilterSelectedEvent = []
+let tgJournalFilterSelectedDateFrom = null
+let tgJournalFilterSelectedDateTo = null
+let tgJournalFilterSelectedTimeFrom = null
+let tgJournalFilterSelectedTimeTo = null
+let tgJournalFilterSelectedInitiator = []
+let tgJournalFilterSelectedRecipient = []
+let tgJournalFilterSelectedStatus = []
 
 tgJournalMain()

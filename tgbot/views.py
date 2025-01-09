@@ -17,7 +17,7 @@ from tgbot.utils import send_materials
 from .models import TgBotJournal
 
 
-class TgJournalPage(LoginRequiredMixin, TemplateView):  # страница журнала действий Telegram
+class TgJournalPage(LoginRequiredMixin, TemplateView):
     template_name = "tgbot_journal.html"
 
     def get(self, request, *args, **kwargs):
@@ -135,7 +135,7 @@ class TgJournalItemAPIView(LoginRequiredMixin, RetrieveAPIView):
     serializer_class = TgJournalSerializer
 
 
-class UserTelegramListAPIView(LoginRequiredMixin, ListAPIView):   # API для вывода списка пользователей c привязанным TG
+class UserTelegramListAPIView(LoginRequiredMixin, ListAPIView):
     queryset = NewUser.objects.filter(telegram__isnull=False).all()
     serializer_class = UserTelegramSerializer
 

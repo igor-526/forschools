@@ -239,7 +239,7 @@ function usersLearnInfoSetHomeworks(){
     changeElements()
     switch (usersLearningInfoModalCurrentUserRole){
         case "Teacher":
-            homeworkAPIGet(null, null, [usersLearningInfoModalCurrentUserID],
+            homeworkAPIGet(null, null, null, [usersLearningInfoModalCurrentUserID],
                 [], null, null).then(request => {
                 switch (request.status){
                     case 200:
@@ -251,7 +251,7 @@ function usersLearnInfoSetHomeworks(){
             })
             break
         case "Listener":
-            homeworkAPIGet(null, null, [], [usersLearningInfoModalCurrentUserID],
+            homeworkAPIGet(null, null, null, [], [usersLearningInfoModalCurrentUserID],
                 null, null).then(request => {
                 switch (request.status){
                     case 200:

@@ -24,6 +24,10 @@ function userLogsMain(){
     if (userLogsSelectedPlan){
         userLogsGetActions(true)
     }
+    userLogsBodyShowMoreButton.addEventListener("click", function () {
+        userLogsCurrentOffset += 50
+        userLogsGetActions(false, true)
+    })
 }
 
 function userLogsSetDate(daysCount = 2){
@@ -33,7 +37,10 @@ function userLogsSetDate(daysCount = 2){
     userLogsPlanActionsFiltersDateTo.value = userLogsFilterDateTo.toISOString().split('T')[0]
 }
 
-function userLogsGetActions(clear=true){
+function userLogsGetActions(clear=true, more=false){
+    if (!more && userLogsCurrentOffset !== 0){
+        userLogsCurrentOffset = 0
+    }
     userLogsTabsActions.classList.add("active")
     userLogsTabsMessages.classList.remove("active")
     userLogsBodyMessages.classList.add("active")
@@ -41,7 +48,7 @@ function userLogsGetActions(clear=true){
     if (clear){
         userLogsBodyActions.innerHTML = ""
     }
-    userLogsAPIGetActions(userLogsSelectedPlan, userLogsFilterDateFrom, userLogsFilterDateTo,
+    userLogsAPIGetActions(userLogsCurrentOffset, userLogsSelectedPlan, userLogsFilterDateFrom, userLogsFilterDateTo,
         userLogsFilterHW, userLogsFilterTGJournal, userLogsFilterMessages,
         userLogsFilterLessons, userLogsFilterPlans).then(request => {
         switch (request.status){
@@ -97,13 +104,10 @@ function userLogsShowPlanInfo(info){
     })
 }
 
-function userLogsShowActions(actions=[]){
+function userLogsShowActions(actions, clear=true){
     function getFilesElement(files){
-        console.log(files)
-
         const container = document.createElement("div")
         container.classList.add("logs-information-files")
-
         files.forEach(f => {
             const fileContainer = document.createElement("div")
             fileContainer.classList.add("logs-information-file")
@@ -141,7 +145,6 @@ function userLogsShowActions(actions=[]){
             })
             container.insertAdjacentElement("beforeend", fileContainer)
         })
-
         return container
     }
 
@@ -261,6 +264,7 @@ function userLogsFiltersListeners(){
 }
 
 let userLogsSelectedPlan
+let userLogsCurrentOffset = 0
 let userLogsFilterDateFrom = null
 let userLogsFilterDateTo = null
 let userLogsFilterHW = true
@@ -290,5 +294,7 @@ const userLogsPlanActionsFiltersTGJournal = userLogsPlanActionsFilters.querySele
 const userLogsPlanActionsFiltersMessages = userLogsPlanActionsFilters.querySelector("#userLogsPlanActionsFiltersMessages")
 const userLogsPlanActionsFiltersLessons = userLogsPlanActionsFilters.querySelector("#userLogsPlanActionsFiltersLessons")
 const userLogsPlanActionsFiltersPlans = userLogsPlanActionsFilters.querySelector("#userLogsPlanActionsFiltersPlans")
+
+const userLogsBodyShowMoreButton = document.querySelector("#userLogsBodyShowMoreButton")
 
 userLogsMain()

@@ -6,67 +6,84 @@ function tgJournalFilterMain(){
 }
 
 function tgJournalFilterEraseListeners(){
-    tgJournalFilterEventSearchFieldErase.addEventListener("click", function () {
+    function eraseEvent(reset=false){
+        if (reset){
+            tgJournalFilterSelectedEvent = []
+        }
         tgJournalFilterEventSearchField.value = ""
         tgJournalFilterEvent.querySelectorAll("a").forEach(element => {
             element.parentElement.classList.remove("d-none")
+            if (reset){
+                element.parentElement.classList.remove("active")
+            }
         })
+    }
+
+    function eraseDateFrom(){
+        tgJournalFilterDateFromField.value = ""
+        tgJournalFilterDateToField.value = ""
+        tgJournalFilterSelectedDateTo = null
+        tgJournalFilterSelectedDateFrom = null
+    }
+
+    function eraseTime(){
+        tgJournalFilterTimeFromField.value = ""
+        tgJournalFilterTimeToField.value = ""
+        tgJournalFilterSelectedTimeFrom = null
+        tgJournalFilterSelectedTimeTo = null
+    }
+
+    function eraseInitiator(reset=false){
+        if (reset){
+            tgJournalFilterSelectedInitiator = []
+        }
+        tgJournalFilterInitiatorSearchField.value = ""
+        tgJournalFilterInitiatorList.querySelectorAll("a").forEach(element => {
+            element.parentElement.classList.remove("d-none")
+            if (reset){
+                element.parentElement.classList.remove("active")
+            }
+        })
+    }
+
+    function eraseRecipient(reset=false){
+        if (reset){
+            tgJournalFilterSelectedRecipient = []
+        }
+        tgJournalFilterRecipientSearchField.value = ""
+        tgJournalFilterRecipientList.querySelectorAll("a").forEach(element => {
+            element.parentElement.classList.remove("d-none")
+            if (reset){
+                element.parentElement.classList.remove("active")
+            }
+        })
+    }
+
+
+    tgJournalFilterEventSearchFieldErase.addEventListener("click", function () {
+        eraseEvent(false)
     })
     tgJournalFilterDateFieldErase.addEventListener("click", function () {
-        tgJournalFilterDateField.value = ""
-        tgJournalFilterSelectedDate = ""
-        tgJournalFilterShowResult()
+        eraseDateFrom()
+        tgJournalGet()
     })
-    tgJournalFilterTimeFromFieldErase.addEventListener("click", function () {
-        tgJournalFilterTimeFromField.value = ""
-        tgJournalFilterSelectedTimeFrom = ""
-        tgJournalFilterShowResult()
-    })
-    tgJournalFilterTimeToFieldErase.addEventListener("click", function () {
-        tgJournalFilterTimeToField.value = ""
-        tgJournalFilterSelectedTimeTo = ""
-        tgJournalFilterShowResult()
+    tgJournalFilterTimeFieldErase.addEventListener("click", function () {
+        eraseTime()
+        tgJournalGet()
     })
     tgJournalFilterInitiatorSearchFieldErase.addEventListener("click", function () {
-        tgJournalFilterInitiatorSearchField.value = ""
-        tgJournalFilterInitiatorList.querySelectorAll("a").forEach(element => {
-            element.parentElement.classList.remove("d-none")
-        })
+        eraseInitiator(false)
     })
     tgJournalFilterRecipientSearchFieldErase.addEventListener("click", function () {
-        tgJournalFilterRecipientSearchField.value = ""
-        tgJournalFilterRecipientList.querySelectorAll("a").forEach(element => {
-            element.parentElement.classList.remove("d-none")
-        })
+        eraseRecipient(false)
     })
-
     tgJournalFilterResetAll.addEventListener("click", function(){
-        tgJournalFilterEventSearchField.value = ""
-        tgJournalFilterEvent.querySelectorAll("a").forEach(element => {
-            element.parentElement.classList.remove("d-none")
-            element.classList.remove("active")
-        })
-        tgJournalFilterDateField.value = ""
-        tgJournalFilterTimeFromField.value = ""
-        tgJournalFilterTimeToField.value = ""
-        tgJournalFilterInitiatorSearchField.value = ""
-        tgJournalFilterInitiatorList.querySelectorAll("a").forEach(element => {
-            element.parentElement.classList.remove("d-none")
-            element.classList.remove("active")
-        })
-        tgJournalFilterRecipientSearchField.value = ""
-        tgJournalFilterRecipientList.querySelectorAll("a").forEach(element => {
-            element.parentElement.classList.remove("d-none")
-            element.classList.remove("active")
-        })
-        tgJournalFilterSelectedEvent = []
-        tgJournalFilterSelectedDate = ""
-        tgJournalFilterSelectedTimeFrom = ""
-        tgJournalFilterSelectedTimeTo = ""
-        tgJournalFilterSelectedInitiator = []
-        tgJournalFilterSelectedRecipient = []
-        tgJournalFilterSelectedStatus = []
-        tgJournalFilterShowResult()
+        eraseEvent(true)
+        eraseDateFrom()
+        eraseTime()
+        eraseInitiator(true)
+        eraseRecipient(true)
+        tgJournalGet()
     })
 }
 
@@ -112,14 +129,7 @@ function tgJournalFilterEnterListeners(){
                 this.classList.remove("active")
                 break
         }
-        tgJournalFilterShowResult()
-    }
-
-    function enterDateListener(){
-        if (validateDate(this)){
-            tgJournalFilterSelectedDate = this.value
-            tgJournalFilterShowResult()
-        }
+        tgJournalGet()
     }
 
     function enterTimeListener(){
@@ -130,7 +140,7 @@ function tgJournalFilterEnterListeners(){
             if (tgJournalFilterTimeToField.value !== ""){
                 tgJournalFilterSelectedTimeTo = tgJournalFilterTimeToField.value
             }
-            tgJournalFilterShowResult()
+            tgJournalGet()
         }
     }
 
@@ -147,19 +157,38 @@ function tgJournalFilterEnterListeners(){
                 this.classList.remove("active")
                 break
         }
-        tgJournalFilterShowResult()
+        tgJournalGet()
     }
 
-    function validateDate(elem){
-        tgJournalFilterDateField.classList.remove("is-invalid")
-        const selectedDate = new Date(elem.value).setHours(0, 0, 0, 0)
+    function validateDate(){
+        let validationStatus = true
+        tgJournalFilterDateFromField.classList.remove("is-invalid")
+        tgJournalFilterDateToField.classList.remove("is-invalid")
+        let dateFrom = null
+        let dateTo = null
         const todayDate = new Date().setHours(0, 0, 0, 0)
-        if (selectedDate <= todayDate){
-            return true
-        } else {
-            tgJournalFilterDateField.classList.add("is-invalid")
-            return false
+        if (tgJournalFilterDateFromField.value !== ""){
+            dateFrom = new Date(tgJournalFilterDateFromField.value).setHours(0, 0, 0, 0)
+            if (dateFrom > todayDate){
+                tgJournalFilterDateFromField.classList.add("is-invalid")
+                validationStatus = false
+            }
         }
+        if (tgJournalFilterDateToField.value !== ""){
+            dateTo = new Date(tgJournalFilterDateFromField.value).setHours(0, 0, 0, 0)
+            if (dateTo > todayDate){
+                tgJournalFilterDateToField.classList.add("is-invalid")
+                validationStatus = false
+            }
+        }
+        if (dateFrom && dateTo){
+            if (dateFrom > dateTo){
+                tgJournalFilterDateFromField.classList.add("is-invalid")
+                tgJournalFilterDateToField.classList.add("is-invalid")
+                validationStatus = false
+            }
+        }
+        return validationStatus
     }
 
     function validateTime(){
@@ -184,7 +213,27 @@ function tgJournalFilterEnterListeners(){
     tgJournalFilterStatus.querySelectorAll("a").forEach(element => {
         element.addEventListener("click", enterStatusListener)
     })
-    tgJournalFilterDateField.addEventListener("input", enterDateListener)
+
+    tgJournalFilterDateFromField.addEventListener("input", function () {
+        if (validateDate()){
+            tgJournalFilterSelectedDateFrom = tgJournalFilterDateFromField.value
+            tgJournalFilterTimeFromField.value = ""
+            tgJournalFilterTimeToField.value = ""
+            tgJournalFilterSelectedTimeFrom = null
+            tgJournalFilterSelectedTimeTo = null
+            tgJournalGet()
+        }
+    })
+    tgJournalFilterDateToField.addEventListener("input", function () {
+        if (validateDate()){
+            tgJournalFilterSelectedDateTo = tgJournalFilterDateToField.value
+            tgJournalFilterTimeFromField.value = ""
+            tgJournalFilterTimeToField.value = ""
+            tgJournalFilterSelectedTimeFrom = null
+            tgJournalFilterSelectedTimeTo = null
+            tgJournalGet()
+        }
+    })
     tgJournalFilterTimeFromField.addEventListener("input", enterTimeListener)
     tgJournalFilterTimeToField.addEventListener("input", enterTimeListener)
 }
@@ -202,7 +251,7 @@ function tgJournalFilterSetUsers(){
                 element.classList.remove("active")
                 break
         }
-        tgJournalFilterShowResult()
+        tgJournalGet()
     }
 
     function listenerRecipient(userID, element){
@@ -217,7 +266,7 @@ function tgJournalFilterSetUsers(){
                 element.classList.remove("active")
                 break
         }
-        tgJournalFilterShowResult()
+        tgJournalGet()
     }
 
     function getElement(user, type="initiator"){
@@ -262,28 +311,16 @@ function tgJournalFilterSetUsers(){
     })
 }
 
-function tgJournalFilterShowResult(){
-    tgJournalGet(
-        tgJournalFilterSelectedEvent,
-        tgJournalFilterSelectedDate,
-        tgJournalFilterSelectedTimeFrom,
-        tgJournalFilterSelectedTimeTo,
-        tgJournalFilterSelectedInitiator,
-        tgJournalFilterSelectedRecipient,
-        tgJournalFilterSelectedStatus
-    )
-}
-
 const tgJournalFilterEventSearchFieldErase = document.querySelector("#tgJournalFilterEventSearchFieldErase")
 const tgJournalFilterDateFieldErase = document.querySelector("#tgJournalFilterDateFieldErase")
-const tgJournalFilterTimeFromFieldErase = document.querySelector("#tgJournalFilterTimeFromFieldErase")
-const tgJournalFilterTimeToFieldErase = document.querySelector("#tgJournalFilterTimeToFieldErase")
+const tgJournalFilterTimeFieldErase = document.querySelector("#tgJournalFilterTimeFieldErase")
 const tgJournalFilterInitiatorSearchFieldErase = document.querySelector("#tgJournalFilterInitiatorSearchFieldErase")
 const tgJournalFilterRecipientSearchFieldErase = document.querySelector("#tgJournalFilterRecipientSearchFieldErase")
 const tgJournalFilterEventSearchField = document.querySelector("#tgJournalFilterEventSearchField")
 const tgJournalFilterInitiatorSearchField = document.querySelector("#tgJournalFilterInitiatorSearchField")
 const tgJournalFilterRecipientSearchField = document.querySelector("#tgJournalFilterRecipientSearchField")
-const tgJournalFilterDateField = document.querySelector("#tgJournalFilterDateField")
+const tgJournalFilterDateFromField = document.querySelector("#tgJournalFilterDateFromField")
+const tgJournalFilterDateToField = document.querySelector("#tgJournalFilterDateToField")
 const tgJournalFilterTimeFromField = document.querySelector("#tgJournalFilterTimeFromField")
 const tgJournalFilterTimeToField = document.querySelector("#tgJournalFilterTimeToField")
 const tgJournalFilterEvent = document.querySelector("#tgJournalFilterEvent")
@@ -292,14 +329,6 @@ const tgJournalFilterInitiatorList = document.querySelector("#tgJournalFilterIni
 const tgJournalFilterRecipientList = document.querySelector("#tgJournalFilterRecipientList")
 
 const tgJournalFilterResetAll = document.querySelector("#tgJournalFilterResetAll")
-
-let tgJournalFilterSelectedEvent = []
-let tgJournalFilterSelectedDate = ""
-let tgJournalFilterSelectedTimeFrom = ""
-let tgJournalFilterSelectedTimeTo = ""
-let tgJournalFilterSelectedInitiator = []
-let tgJournalFilterSelectedRecipient = []
-let tgJournalFilterSelectedStatus = []
 
 
 tgJournalFilterMain()

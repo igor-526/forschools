@@ -19,104 +19,82 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = Homework
     serializer_class = HomeworkListSerializer
 
-    def filter_queryset_teacher(self, queryset):
+    def filter_queryset_all(self, q):
+        query = dict()
         teachers = self.request.query_params.getlist("teacher")
-        if teachers:
-            queryset = queryset.filter(teacher__id__in=teachers)
-        return queryset
-
-    def filter_queryset_listener(self, queryset):
         listeners = self.request.query_params.getlist("listener")
-        if listeners:
-            queryset = queryset.filter(listener__id__in=listeners)
-        return queryset
-
-    def filter_queryset_lesson(self, queryset):
         lesson = self.request.query_params.get("lesson")
+        if teachers:
+            query['teacher__id__in'] = teachers
+        if listeners:
+            query['listener__id__in'] = listeners
         if lesson:
-            queryset = queryset.filter(lesson=lesson)
-        return queryset
-
-    def filter_queryset_assigned(self, queryset):
-        assigned_date_from = self.request.query_params.get("date_from")
-        assigned_date_to = self.request.query_params.get("date_to")
-        if assigned_date_from or assigned_date_to:
-            listed_queryset = list(queryset)
-            listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None, listed_queryset))
-            if assigned_date_from:
-                assigned_date_from = datetime.datetime.strptime(assigned_date_from, "%Y-%m-%d").date()
-                listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() >= assigned_date_from,
-                                              listed_queryset))
-            if assigned_date_to:
-                assigned_date_to = datetime.datetime.strptime(assigned_date_to, "%Y-%m-%d").date()
-                listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() <= assigned_date_to,
-                                              listed_queryset))
-            queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
-        return queryset
-
-    def filter_queryset_date_changed(self, queryset):
-        date_changed_from = self.request.query_params.get("date_changed_from")
-        date_changed_to = self.request.query_params.get("date_changed_to")
-        if date_changed_from or date_changed_to:
-            listed_queryset = list(queryset)
-            listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None, listed_queryset))
-            if date_changed_from:
-                date_changed_from = datetime.datetime.strptime(date_changed_from, "%Y-%m-%d").date()
-                listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() >= date_changed_from,
-                                              listed_queryset))
-            if date_changed_to:
-                date_changed_to = datetime.datetime.strptime(date_changed_to, "%Y-%m-%d").date()
-                listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() <= date_changed_to,
-                                              listed_queryset))
-            queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
-        return queryset
-
-    def filter_queryset_status(self, queryset):
-        if queryset is None:
+            query['lesson'] = lesson
+        q |= Q(**query)
+        queryset = Homework.objects.filter(q)
+        if queryset:
+            assigned_date_from = self.request.query_params.get("date_from")
+            assigned_date_to = self.request.query_params.get("date_to")
+            if assigned_date_from or assigned_date_to:
+                listed_queryset = list(queryset)
+                listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None, listed_queryset))
+                if assigned_date_from:
+                    assigned_date_from = datetime.datetime.strptime(assigned_date_from, "%Y-%m-%d").date()
+                    listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() >= assigned_date_from,
+                                                  listed_queryset))
+                if assigned_date_to:
+                    assigned_date_to = datetime.datetime.strptime(assigned_date_to, "%Y-%m-%d").date()
+                    listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() <= assigned_date_to,
+                                                  listed_queryset))
+                queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
+        else:
             return None
-        hw_status = self.request.query_params.get("status")
-        if hw_status:
-            filtering_statuses = []
-            if hw_status == '7':
-                filtering_statuses = [7, 2, 5]
-            if hw_status == '3':
-                filtering_statuses = [3]
-            if hw_status == '4':
-                filtering_statuses = [4, 6]
-            listed_queryset = [{"id": hw.id,
-                                "status": hw.get_status().status} for hw in queryset]
-            filtered_queryset = list(filter(lambda hw: hw.get("status") in filtering_statuses, listed_queryset))
-            queryset = Homework.objects.filter(id__in=[hw.get("id") for hw in filtered_queryset])
-        return queryset
+        if queryset:
+            date_changed_from = self.request.query_params.get("date_changed_from")
+            date_changed_to = self.request.query_params.get("date_changed_to")
+            if date_changed_from or date_changed_to:
+                listed_queryset = list(queryset)
+                listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None, listed_queryset))
+                if date_changed_from:
+                    date_changed_from = datetime.datetime.strptime(date_changed_from, "%Y-%m-%d").date()
+                    listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() >= date_changed_from,
+                                                  listed_queryset))
+                if date_changed_to:
+                    date_changed_to = datetime.datetime.strptime(date_changed_to, "%Y-%m-%d").date()
+                    listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() <= date_changed_to,
+                                                  listed_queryset))
+                queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
+        else:
+            return None
+        if queryset:
+            hw_status = self.request.query_params.get("status")
+            if hw_status:
+                filtering_statuses = []
+                if hw_status == '7':
+                    filtering_statuses = [7, 2, 5]
+                if hw_status == '3':
+                    filtering_statuses = [3]
+                if hw_status == '4':
+                    filtering_statuses = [4, 6]
+                listed_queryset = [{"id": hw.id,
+                                    "status": hw.get_status().status} for hw in queryset]
+                filtered_queryset = list(filter(lambda hw: hw.get("status") in filtering_statuses, listed_queryset))
+                queryset = queryset.filter(id__in=[hw.get("id") for hw in filtered_queryset])
+        offset = int(self.request.query_params.get("offset")) if self.request.query_params.get("offset") else 0
+        return queryset[offset:offset + 50]
 
     def get_queryset(self, *args, **kwargs):
-        queryset = None
-        if kwargs.get("user").groups.filter(name="Admin").exists():
-            queryset = Homework.objects.all()
-        elif kwargs.get("user").groups.filter(name="Metodist").exists():
-            queryset = Homework.objects.filter(lesson__learningphases__learningplan__metodist=kwargs.get("user"))
-        elif kwargs.get("user").groups.filter(name="Teacher").exists():
-            queryset = Homework.objects.filter(teacher=kwargs.get("user"))
-        elif kwargs.get("user").groups.filter(name="Listener").exists():
-            queryset = Homework.objects.filter(listener=kwargs.get("user"))
-        if kwargs.get("user").groups.filter(name="Curator").exists():
-            if queryset is not None:
-                queryset = Homework.objects.filter(Q(lesson__learningphases__learningplan__curators=self.request.user) |
-                                                   Q(id__in=[h.id for h in queryset]))
-            else:
-                queryset = Homework.objects.filter(lesson__learningphases__learningplan__curators=self.request.user)
-        queryset = self.filter_queryset_lesson(queryset)
-        queryset = self.filter_queryset_teacher(queryset)
-        queryset = self.filter_queryset_listener(queryset)
-        queryset = self.filter_queryset_date_changed(queryset)
-        queryset = self.filter_queryset_status(queryset)
-        return queryset[:50] if queryset is not None else None
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset(status=request.query_params.get('status'),
-                                     user=request.user)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        user_groups = [group.name for group in self.request.user.groups.all()]
+        q = Q()
+        if "Metodist" in user_groups:
+            q |= Q(lesson__learningphases__learningplan__metodist=self.request.user)
+        if "Teacher" in user_groups:
+            q |= Q(teacher=self.request.user)
+        if "Listener" in user_groups:
+            q |= Q(listener=self.request.user)
+        if "Curator" in user_groups:
+            q |= Q(lesson__learningphases__learningplan__curators=self.request.user)
+        return self.filter_queryset_all(q)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data,

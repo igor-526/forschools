@@ -88,11 +88,14 @@ async function homeworkAPISend(homeworkID, fd){
     return APIPostPatchToObject(request)
 }
 
-async function homeworkAPIGet(lesson=null, status=null, teachers=[],
+async function homeworkAPIGet(offset=null, lesson=null, status=null, teachers=[],
                               listeners=[], dateFrom=null, dateTo=null,
                               dateChangedFrom=null, dateChangedTo=null){
     let url = "/api/v1/homeworks/"
     let queryArray = []
+    if (offset){
+        queryArray.push(`offset=${offset}`)
+    }
     if (lesson){
         queryArray.push(`lesson=${lesson}`)
     }
@@ -118,8 +121,7 @@ async function homeworkAPIGet(lesson=null, status=null, teachers=[],
         queryArray.push(`listener=${listener}`)
     })
     if (queryArray){
-        url += "?"
-        url += queryArray.join("&")
+        url += "?" + queryArray.join("&")
     }
     const request = await fetch(url)
     return await APIGetToObject(request)

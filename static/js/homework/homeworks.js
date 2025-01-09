@@ -24,21 +24,24 @@ function homeworksMain(){
     homeworksTabClosed.addEventListener("click", function () {
         homeworksSetTab("closed")
     })
+    homeworksTableShowMoreButton.addEventListener("click", function () {
+        homeworksCurrentOffset += 50
+        homeworksGet(true)
+    })
 }
 
-function homeworksGet(status = homeworksFilterCurrentStatus,
-                      teachers = homeworksFilterSelectedTeachers,
-                      listeners = homeworksFilterSelectedListeners,
-                      dateFrom = homeworksFilterDateFrom,
-                      dateTo = homeworksFilterDateTo,
-                      dateChangedFrom= homeworksFilterDateChangedFrom,
-                      dateChangedTo= homeworksFilterDateChangedTo){
-    homeworksFilterCurrentStatus = status
-    homeworkAPIGet(homeworksFilterCurrentLesson, status, teachers,
-        listeners, dateFrom, dateTo, dateChangedFrom, dateChangedTo).then(request => {
+function homeworksGet(more=false){
+    if (!more && homeworksCurrentOffset !== 0){
+        userLogsCurrentOffset = 0
+    }
+    homeworkAPIGet(homeworksCurrentOffset, homeworksFilterCurrentLesson, homeworksFilterCurrentStatus,
+        homeworksFilterSelectedTeachers, homeworksFilterSelectedListeners, homeworksFilterDateFrom,
+        homeworksFilterDateTo, homeworksFilterDateChangedFrom, homeworksFilterDateChangedTo).then(request => {
         switch (request.status){
             case 200:
-                homeworksShow(request.response)
+                homeworksShow(request.response, !more)
+                request.response.length === 50 ? homeworksTableShowMoreButton.classList.remove("d-none") :
+                    homeworksTableShowMoreButton.classList.add("d-none")
                 break
             default:
                 showErrorToast()
@@ -54,33 +57,37 @@ function homeworksSetTab(tab = "all"){
             homeworksTabDoing.classList.remove("active")
             homeworksTabChecking.classList.remove("active")
             homeworksTabClosed.classList.remove("active")
-            homeworksGet(null)
+            homeworksFilterCurrentStatus = null
+            homeworksGet()
             break
         case "doing":
             homeworksTabAll.classList.remove("active")
             homeworksTabDoing.classList.add("active")
             homeworksTabChecking.classList.remove("active")
             homeworksTabClosed.classList.remove("active")
-            homeworksGet(7)
+            homeworksFilterCurrentStatus = 7
+            homeworksGet()
             break
         case "checking":
             homeworksTabAll.classList.remove("active")
             homeworksTabDoing.classList.remove("active")
             homeworksTabChecking.classList.add("active")
             homeworksTabClosed.classList.remove("active")
-            homeworksGet(3)
+            homeworksFilterCurrentStatus = 3
+            homeworksGet()
             break
         case "closed":
             homeworksTabAll.classList.remove("active")
             homeworksTabDoing.classList.remove("active")
             homeworksTabChecking.classList.remove("active")
             homeworksTabClosed.classList.add("active")
-            homeworksGet(4)
+            homeworksFilterCurrentStatus = 4
+            homeworksGet()
             break
     }
 }
 
-function homeworksShow(homeworks){
+function homeworksShow(homeworks, clear=true){
     function getElement(hw){
         const tr = document.createElement("tr")
         if (hw.color){
@@ -120,13 +127,16 @@ function homeworksShow(homeworks){
         return tr
     }
 
-    homeworksTableBody.innerHTML = ''
+    if (clear){
+        homeworksTableBody.innerHTML = ''
+    }
     homeworks.forEach(hw => {
         homeworksTableBody.insertAdjacentElement("beforeend", getElement(hw))
     })
 }
 
 //Filtering
+let homeworksCurrentOffset = 0
 let homeworksFilterCurrentLesson
 let homeworksFilterCurrentStatus = null
 let homeworksFilterSelectedTeachers = []
@@ -145,5 +155,6 @@ const homeworksTabClosed = document.querySelector("#homeworksTabClosed")
 
 //Table
 const homeworksTableBody = document.querySelector("#homeworksTableBody")
+const homeworksTableShowMoreButton = document.querySelector("#homeworksTableShowMoreButton")
 
 homeworksMain()

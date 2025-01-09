@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework import status
 from rest_framework.response import Response
-from django.db.models import Q
+from django.db.models import Q, Count
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
@@ -32,43 +32,37 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
     model = Lesson
     serializer_class = LessonListSerializer
 
-    def filter_status(self, queryset):
+    def filter_all(self, queryset):
+        query = dict()
         lesson_status = self.request.query_params.get("status")
-        if lesson_status:
-            queryset = queryset.filter(status=lesson_status)
-        return queryset
-
-    def filter_date_start(self, queryset):
         ds = self.request.query_params.get("date_start")
-        if ds:
-            ds = datetime.strptime(ds, "%Y-%m-%d")
-            queryset = queryset.filter(date__gte=ds)
-        else:
-            queryset = queryset.filter(date__gte=date.today() - timedelta(days=2))
-        return queryset
-
-    def filter_date_end(self, queryset):
         de = self.request.query_params.get("date_end")
-        if de:
-            ds = datetime.strptime(de, "%Y-%m-%d")
-            queryset = queryset.filter(date__lte=ds)
-        else:
-            queryset = queryset.filter(date__lte=date.today() + timedelta(days=6))
-        return queryset
-
-    def filter_teachers(self, queryset):
         teachers = self.request.query_params.getlist("teacher")
+        listeners = self.request.query_params.getlist("listener")
+        has_hw = self.request.query_params.get("has_hw")
+        if lesson_status:
+            query['status'] = lesson_status
+        if ds:
+            query['date__gte'] = ds
+        else:
+            query['date__gte'] = date.today() - timedelta(days=2)
+        if de:
+            query['date__lte'] = de
+        else:
+            query['date__lte'] = date.today() + timedelta(days=6)
+        if listeners:
+            query['learningphases__learningplan__listeners__in'] = listeners
+        if has_hw == "false":
+            query['hw_count'] = 0
+        elif has_hw == "true":
+            query['hw_count__gt'] = 0
+        if query:
+            queryset = queryset.filter(**query)
         if teachers:
             queryset = queryset.filter(
                 Q(learningphases__learningplan__teacher_id__in=teachers) |
                 Q(replace_teacher_id__in=teachers)
             )
-        return queryset
-
-    def filter_listeners(self, queryset):
-        listeners = self.request.query_params.getlist("listener")
-        if listeners:
-            queryset = queryset.filter(learningphases__learningplan__listeners__in=listeners)
         return queryset
 
     def get_queryset(self, *args, **kwargs):
@@ -89,12 +83,9 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
                                                  Q(id__in=[lesson.id for lesson in queryset]))
             else:
                 queryset = Lesson.objects.filter(learningphases__learningplan__curators=self.request.user)
-        queryset = self.filter_status(queryset)
-        queryset = self.filter_date_start(queryset)
-        queryset = self.filter_date_end(queryset)
-        queryset = self.filter_teachers(queryset)
-        queryset = self.filter_listeners(queryset)
-        return queryset.distinct()[:50]
+        queryset = self.filter_all(queryset.annotate(hw_count=Count("homeworks")))
+        offset = int(self.request.query_params.get("offset")) if self.request.query_params.get("offset") else 0
+        return queryset.order_by("date", "start_time").distinct()[offset:offset + 50] if queryset is not None else None
 
 
 class LessonAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):

@@ -1,48 +1,49 @@
 function lessonsMain(){
     const teacher = getHashValue("teacher")
     const listener = getHashValue("listener")
-    if (teacher || listener){
-        lessonsSetSearch(teacher, listener)
-    } else {
-        lessonsSetUpcoming()
-    }
+    lessonsTableFilterTeachersSelected = teacher ? [teacher] : []
+    lessonsTableFilterListenersSelected = listener ? [listener] : []
+    lessonsSetUpcoming()
+
     lessonsTabUpcoming.addEventListener("click", lessonsSetUpcoming)
     lessonsTabPassed.addEventListener("click", lessonsSetPassed)
-}
-
-function lessonsSetSearch(teacher, listener){
-    lessonsTabUpcoming.classList.add("active")
-    lessonsTabPassed.classList.remove("active")
-    lessonsGet(0, teacher?[teacher]:[], listener?[listener]:[])
+    lessonsTableShowMoreButton.addEventListener("click", function (){
+        userLogsCurrentOffset += 50
+        lessonsGet(true)
+    })
 }
 
 function lessonsSetUpcoming(){
     lessonsTabUpcoming.classList.add("active")
     lessonsTabPassed.classList.remove("active")
-    lessonsGet(0)
+    lessonsCurrentStatus = 0
+    lessonsGet()
 }
 
 function lessonsSetPassed(){
     lessonsTabUpcoming.classList.remove("active")
     lessonsTabPassed.classList.add("active")
-    lessonsGet(1)
+    lessonsCurrentStatus = 1
+    lessonsGet()
 }
 
-function lessonsGet(status=currentStatus,
-                    teachers=lessonsTableFilterTeachersSelected,
-                    listeners=lessonsTableFilterListenersSelected,
-                    ds=lessonsTableFilterDateStart,
-                    de=lessonsTableFilterDateEnd){
-    lessonsAPIGetAll(currentOffset, status, teachers, listeners, ds, de).then(request => {
+function lessonsGet(more=false){
+    if (!more && lessonsCurrentOffset !== 0){
+        userLogsCurrentOffset = 0
+    }
+    lessonsAPIGetAll(lessonsCurrentOffset, lessonsCurrentStatus, lessonsTableFilterTeachersSelected,
+        lessonsTableFilterListenersSelected, lessonsTableFilterDateStart, lessonsTableFilterDateEnd,
+        lessonsTableFilterHW).then(request => {
         switch (request.status){
             case 200:
-                lessonsShow(request.response)
+                lessonsShow(request.response, !more)
+                request.response.length === 50 ? lessonsTableShowMoreButton.classList.remove("d-none") :
+                    lessonsTableShowMoreButton.classList.add("d-none")
                 break
             default:
                 showErrorToast()
                 break
         }
-        currentStatus = status
     })
 }
 
@@ -62,7 +63,6 @@ function lessonsShow(list, clear=true){
         const tdListeners = document.createElement("td")
         const tdHomeworks = document.createElement("td")
         const tdHomeworksA = document.createElement("a")
-        const tdHomeworksButton = document.createElement("button")
         const tdActions = document.createElement("td")
         const tdActionsGoA = document.createElement("a")
         const tdActionsGoButton = document.createElement("button")
@@ -80,13 +80,13 @@ function lessonsShow(list, clear=true){
                 tr.classList.add("table-danger")
                 break
         }
-        tdHomeworksButton.classList.add("btn", "btn-primary")
-        tdHomeworksButton.innerHTML = lesson.hws
+        tdHomeworksA.classList.add("btn", `btn-${lesson.hw_data.color}`)
+        tdHomeworksA.innerHTML = lesson.hw_data.count
         tdHomeworks.insertAdjacentElement("beforeend", tdHomeworksA)
-        switch (lesson.hws){
+        switch (lesson.hw_data.count){
             case 0:
                 tdHomeworksA.href = "#"
-                tdHomeworksButton.disabled = true
+                // tdHomeworksButton.disabled = true
                 break
             default:
                 tdHomeworksA.target = "_blank"
@@ -99,7 +99,6 @@ function lessonsShow(list, clear=true){
         tdActionsGoButton.classList.add("btn", "btn-primary")
         tdActionsGoButton.innerHTML = '<i class="bi bi-chevron-right"></i>'
         tdActionsGoA.insertAdjacentElement("beforeend", tdActionsGoButton)
-        tdHomeworksA.insertAdjacentElement("beforeend", tdHomeworksButton)
         tr.insertAdjacentElement("beforeend", tdName)
         tr.insertAdjacentElement("beforeend", tdDate)
         tr.insertAdjacentElement("beforeend", tdTeacher)
@@ -114,8 +113,9 @@ function lessonsShow(list, clear=true){
         return tr
     }
 
-
-    lessonsTableBody.innerHTML = ""
+    if (clear){
+        lessonsTableBody.innerHTML = ""
+    }
     list.forEach(lesson => {
         lessonsTableBody.insertAdjacentElement("beforeend", getLessonElement(lesson))
     })
@@ -130,12 +130,13 @@ const lessonsTableBody = document.querySelector("#LessonsTableBody")
 const lessonsTableShowMoreButton = document.querySelector("#lessonsTableShowMoreButton")
 
 //Filters
-let lessonsTableFilterTeachersSelected = []
-let lessonsTableFilterListenersSelected = []
+let lessonsTableFilterTeachersSelected
+let lessonsTableFilterListenersSelected
 let lessonsTableFilterDateStart = null
 let lessonsTableFilterDateEnd = null
-let currentStatus = 0
-let currentOffset = 0
+let lessonsTableFilterHW = null
+let lessonsCurrentStatus = 0
+let lessonsCurrentOffset = 0
 
 
 lessonsMain()

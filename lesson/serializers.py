@@ -78,7 +78,7 @@ class LessonListSerializer(serializers.ModelSerializer):
     can_set_not_held = serializers.SerializerMethodField(read_only=True)
     teacher = serializers.SerializerMethodField(read_only=True)
     listeners = serializers.SerializerMethodField(read_only=True)
-    hws = serializers.SerializerMethodField(read_only=True)
+    hw_data = serializers.SerializerMethodField(read_only=True)
     awaiting_action = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -88,8 +88,21 @@ class LessonListSerializer(serializers.ModelSerializer):
     def get_awaiting_action(self, obj):
         return can_set_passed(self.context.get('request'), obj)
 
-    def get_hws(self, obj):
-        return obj.homeworks.count()
+    def get_hw_data(self, obj):
+        def get_color():
+            if len(all_hws_statuses) == 0:
+                return "primary"
+            all_accepted = [hw.status for hw in all_hws_statuses].count(4) == len(all_hws_statuses)
+            if all_accepted:
+                return 'success'
+            not_log_accepted = list(filter(lambda s: s.agreement.get("accepted") is False, all_hws_statuses))
+            if not_log_accepted:
+                return "warning"
+            return "primary"
+
+        all_hws_statuses = [hw.get_status() for hw in obj.homeworks.exclude(log_set__status=6)]
+        return {"count": len(all_hws_statuses),
+                "color": get_color()}
 
     def get_teacher(self, obj):
         teacher = obj.get_teacher()

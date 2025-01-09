@@ -73,10 +73,12 @@ async function telegramAPISendLessonMaterials(lesson, materials=[]){
 }
 
 async function telegramAPIGetJournal(
+    offset=null,
     event = [],
-    date = "",
-    timeFrom = "",
-    timeTo = "",
+    dateFrom = null,
+    dateTo = null,
+    timeFrom = null,
+    timeTo = null,
     initiator = [],
     recipient = [],
     status = []
@@ -87,14 +89,17 @@ async function telegramAPIGetJournal(
     event.forEach(ev => {
         qp.push(`event=${ev}`)
     })
-    if (date !== ""){
-        qp.push(`date=${date}`)
+    if (dateFrom){
+        qp.push(`date_from=${dateFrom}`)
     }
-    if (timeFrom !== ""){
-        qp.push(`timeFrom=${timeFrom}`)
+    if (dateTo){
+        qp.push(`date_to=${dateTo}`)
     }
-    if (timeTo !== ""){
-        qp.push(`timeTo=${timeTo}`)
+    if (timeFrom){
+        qp.push(`time_from=${timeFrom}`)
+    }
+    if (timeTo){
+        qp.push(`time_to=${timeTo}`)
     }
     initiator.forEach(init => {
         qp.push(`initiator=${init}`)
