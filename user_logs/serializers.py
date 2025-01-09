@@ -2,6 +2,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 from homework.models import HomeworkLog
+from material.utils.get_type import get_type
 from tgbot.models import TgBotJournal
 from chat.models import Message
 from lesson.models import LessonTeacherReview
@@ -47,7 +48,10 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
         return buttons
 
     def get_files(self, obj):
-        return []
+        return [{
+            "type": get_type(f.path.path.split('.')[-1]),
+            "href": f.path
+        } for f in obj.files.all()]
 
 
 class UserLogsTGBotJournalSerializer(serializers.ModelSerializer):
@@ -149,7 +153,10 @@ class UserLogsMessageSerializer(serializers.ModelSerializer):
         return []
 
     def get_files(self, obj):
-        return []
+        return [{
+            "type": get_type(f.path.path.split('.')[-1]),
+            "href": f.path
+        } for f in obj.files.all()]
 
 
 class UserLogsLessonReviewSerializer(serializers.ModelSerializer):

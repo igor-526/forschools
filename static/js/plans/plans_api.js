@@ -1,7 +1,13 @@
-async function plansAPIGet(name=null, teacher=[],
+async function plansAPIGet(q_all=null, part_only=null, name=null, teacher=[],
                            listener=[], nameSort=null){
     let url = "/api/v1/learning_plans/"
     let searchParams = []
+    if (q_all){
+        searchParams.push(`q_all=${q_all}`)
+    }
+    if (part_only){
+        searchParams.push(`part_only=${part_only}`)
+    }
     if (name){
         searchParams.push(`name=${name}`)
     }

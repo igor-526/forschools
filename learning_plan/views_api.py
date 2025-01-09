@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import Http404
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -8,7 +9,8 @@ from homework.models import Homework, HomeworkLog
 from lesson.models import Lesson
 from .permissions import can_edit_plan, can_generate_from_program
 from .models import LearningPlan, LearningPhases
-from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer
+from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer, \
+    LearningPlanParticipantsOnlyListSerializer
 from .utils import plan_calculated_info, ProgramSetter, get_schedule, AddLessons
 from learning_program.models import LearningProgram
 from datetime import datetime
@@ -49,25 +51,49 @@ class PlansItemStatusAPIView(LoginRequiredMixin, APIView):
 
 
 class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
-    serializer_class = LearningPlanListSerializer
+    def get_serializer_class(self):
+        if self.request.query_params.get('part_only') == "true":
+            return LearningPlanParticipantsOnlyListSerializer
+        return LearningPlanListSerializer
 
-    def filter_name(self, queryset):
-        q_name = self.request.query_params.get('name')
-        if q_name:
-            queryset = queryset.filter(name__icontains=q_name)
-        return queryset
-
-    def filter_teacher(self, queryset):
-        q_teacher = self.request.query_params.getlist('teacher')
-        if q_teacher:
-            queryset = queryset.filter(teacher__id__in=q_teacher)
-        return queryset
-
-    def filter_listeners(self, queryset):
-        q_listeners = self.request.query_params.getlist('listener')
-        if q_listeners:
-            queryset = queryset.filter(listeners__id__in=q_listeners)
-        return queryset
+    def filter_all(self, queryset):
+        query = dict()
+        q_all = self.request.query_params.get('q_all')
+        if q_all:
+            splitted_query = q_all.split(' ')
+            q = Q()
+            for query in splitted_query:
+                q |= Q(teacher__first_name__icontains=query)
+                q |= Q(teacher__last_name__icontains=query)
+                q |= Q(teacher__patronymic__icontains=query)
+                q |= Q(listeners__first_name__icontains=query)
+                q |= Q(listeners__last_name__icontains=query)
+                q |= Q(listeners__patronymic__icontains=query)
+                q |= Q(metodist__first_name__icontains=query)
+                q |= Q(metodist__last_name__icontains=query)
+                q |= Q(metodist__patronymic__icontains=query)
+                q |= Q(default_hw_teacher__first_name__icontains=query)
+                q |= Q(default_hw_teacher__last_name__icontains=query)
+                q |= Q(default_hw_teacher__patronymic__icontains=query)
+                q |= Q(curators__first_name__icontains=query)
+                q |= Q(curators__last_name__icontains=query)
+                q |= Q(curators__patronymic__icontains=query)
+                q |= Q(name__icontains=query)
+                return queryset.filter(q)
+        else:
+            q_name = self.request.query_params.get('name')
+            q_teacher = self.request.query_params.getlist('teacher')
+            q_listeners = self.request.query_params.getlist('listener')
+            if q_name:
+                query["name__icontains"] = q_name
+            if q_teacher:
+                query["teacher__id__in"] = q_teacher
+            if q_listeners:
+                query["listeners__id__in"] = q_listeners
+            if not query:
+                return queryset
+            else:
+                return queryset.filter(**query)
 
     def order_by_name(self, queryset):
         order_name = self.request.query_params.get('sort_name')
@@ -83,11 +109,9 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = LearningPlan.objects.all()
         elif self.request.user.groups.filter(name="Teacher").exists():
             queryset = LearningPlan.objects.filter(teacher=self.request.user)
-        queryset = self.filter_name(queryset)
-        queryset = self.filter_teacher(queryset)
-        queryset = self.filter_listeners(queryset)
+        queryset = self.filter_all(queryset)
         queryset = self.order_by_name(queryset)
-        return queryset
+        return queryset.distinct()[:50] if queryset else None
 
 
 class PlansItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):

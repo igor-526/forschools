@@ -98,8 +98,11 @@ function userLogsShowPlanInfo(info){
 }
 
 function userLogsShowActions(actions=[]){
+    function getFilesElement(files){
+        console.log(files)
+    }
+
     function getElement(action){
-        console.log(action)
         const li = document.createElement("li")
         li.classList.add("list-group-item", "mb-1")
         li.style = "border-width: 2px;"
@@ -141,7 +144,6 @@ function userLogsShowActions(actions=[]){
         user.href = `/profile/${action.user.id}/`
         li.insertAdjacentElement("beforeend", user)
 
-
         if (action.buttons.length > 0){
             const buttons = document.createElement("div")
             buttons.classList.add("mt-2")
@@ -156,6 +158,10 @@ function userLogsShowActions(actions=[]){
                 buttons.insertAdjacentElement("beforeend", btnA)
             })
             content.insertAdjacentElement("beforeend", buttons)
+        }
+
+        if (action.files.length > 0){
+            getFilesElement(action.files)
         }
 
         return li

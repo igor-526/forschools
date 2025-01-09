@@ -115,6 +115,20 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
             raise PermissionDenied()
 
 
+class LearningPlanParticipantsOnlyListSerializer(serializers.ModelSerializer):
+    teacher = NewUserNameOnlyListSerializer(read_only=True)
+    default_hw_teacher = NewUserNameOnlyListSerializer(read_only=True)
+    listeners = NewUserNameOnlyListSerializer(many=True, read_only=True)
+    curators = NewUserNameOnlyListSerializer(many=True, read_only=True)
+    metodist = NewUserNameOnlyListSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = LearningPlan
+        fields = ['id', 'name', 'listeners',
+                  'teacher', 'default_hw_teacher',
+                  'metodist', 'curators']
+
+
 class LearningPhasesListSerializer(serializers.ModelSerializer):
     lessons = LessonListSerializer(required=False, many=True)
     deletable = serializers.SerializerMethodField(read_only=True)

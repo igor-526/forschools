@@ -9,7 +9,7 @@ function learningPlansMain(){
 }
 
 function learningPlansGet(){
-    plansAPIGet(learningPlansSelectedName, learningPlansSelectedTeachers,
+    plansAPIGet(null, null, learningPlansSelectedName, learningPlansSelectedTeachers,
         learningPlansSelectedListeners, learningPlansSelectedNameSort).then(request => {
         switch (request.status){
             case 200:
