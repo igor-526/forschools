@@ -8,7 +8,7 @@ function lessonsMain(){
     lessonsTabUpcoming.addEventListener("click", lessonsSetUpcoming)
     lessonsTabPassed.addEventListener("click", lessonsSetPassed)
     lessonsTableShowMoreButton.addEventListener("click", function (){
-        userLogsCurrentOffset += 50
+        lessonsCurrentOffset += 50
         lessonsGet(true)
     })
 }
@@ -29,7 +29,7 @@ function lessonsSetPassed(){
 
 function lessonsGet(more=false){
     if (!more && lessonsCurrentOffset !== 0){
-        userLogsCurrentOffset = 0
+        lessonsCurrentOffset = 0
     }
     lessonsAPIGetAll(lessonsCurrentOffset, lessonsCurrentStatus, lessonsTableFilterTeachersSelected,
         lessonsTableFilterListenersSelected, lessonsTableFilterDateStart, lessonsTableFilterDateEnd,

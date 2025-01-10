@@ -86,6 +86,8 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     def get_queryset(self, *args, **kwargs):
         user_groups = [group.name for group in self.request.user.groups.all()]
         q = Q()
+        if "Admin" in user_groups:
+            return self.filter_queryset_all(q)
         if "Metodist" in user_groups:
             q |= Q(lesson__learningphases__learningplan__metodist=self.request.user)
         if "Teacher" in user_groups:
