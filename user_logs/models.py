@@ -6,7 +6,8 @@ from profile_management.models import NewUser
 LOG_TYPE_CHOICES = (
     (0, 'Другое'),
     (1, 'Работа методиста'),
-    (2, 'Занятие')
+    (2, 'Занятие'),
+    (3, 'Учебный план')
 )
 
 

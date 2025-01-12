@@ -680,13 +680,26 @@ async def send_hw_answer(callback: CallbackQuery,
 async def send_hw_check(callback: CallbackQuery,
                         callback_data: HomeworkCallback,
                         state: FSMContext):
-    hw = await (Homework.objects.select_related("listener")
-                .select_related("teacher")
-                .aget(pk=callback_data.hw_id))
-    hw_status = await hw.aget_status()
-    user = await get_user(callback.from_user.id)
-    gp = await get_group_and_perms(user.id)
-    if 'Teacher' in gp['groups'] and hw_status.status in [3, 5]:
+    async def get_access():
+        hw = await (Homework.objects.select_related("listener")
+                    .select_related("teacher")
+                    .aget(pk=callback_data.hw_id))
+        user = await get_user(callback.from_user.id)
+        hw_status = await hw.aget_status()
+        gp = await get_group_and_perms(user.id)
+        if hw_status.status not in [3, 5]:
+            return False
+        if 'Teacher' in gp['groups'] and hw.teacher == user:
+            return True
+        lesson = await hw.aget_lesson()
+        lp = await lesson.aget_learning_plan() if lesson else None
+        if lp:
+            return (('Metodist' in gp['groups'] and lp.metodist == user) or
+                    ('Curator' in gp['groups'] and
+                     hw.for_curator and
+                     (await lp.curators.filter(pk=user.id).aexists())))
+
+    if await get_access():
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие проверку домашнего задания, "
                                     "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, аудио, "

@@ -8,6 +8,7 @@ from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_in
 from material.models import Material
 from profile_management.models import NewUser
 from tgbot.utils import send_homework_tg, send_materials, notify_lesson_passed
+from user_logs.models import UserLog
 from .models import Lesson, Place, LessonTeacherReview
 from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import CanReplaceTeacherMixin, can_set_passed, can_set_not_held
@@ -160,6 +161,21 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                                         status=status.HTTP_400_BAD_REQUEST)
                 if review:
                     lesson.lesson_teacher_review = review
+                else:
+                    UserLog.objects.create(log_type=2,
+                                           color="success",
+                                           learning_plan=lesson.get_learning_plan(),
+                                           title=f"Занятие '{lesson.name}' от {lesson.date.strftime('%d.%m.%Y')} "
+                                                 f"проведено",
+                                           content={
+                                               "list": [],
+                                               "text": ["Занятие было помечено проведённым АДМИНИСТРАТОРОМ"]
+                                           },
+                                           buttons=[{
+                                               "href": f"/lessons/{lesson.id}",
+                                               "inner": "Занятие"
+                                           }],
+                                           user=request.user)
                 lesson.status = 1
                 lesson.save()
             else:
@@ -211,6 +227,20 @@ class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
                     lesson.lesson_teacher_review = None
                 lesson.save()
                 serialized_lesson = LessonSerializer(lesson, context={'request': request})
+                UserLog.objects.create(log_type=2,
+                                       color="danger",
+                                       learning_plan=lesson.get_learning_plan(),
+                                       title=f"Занятие '{lesson.name}' от {lesson.date.strftime('%d.%m.%Y')} "
+                                             f"помечено непроведённым",
+                                       content={
+                                           "list": [],
+                                           "text": ["Занятие было помечено непроведённым"]
+                                       },
+                                       buttons=[{
+                                           "href": f"/lessons/{lesson.id}",
+                                           "inner": "Занятие"
+                                       }],
+                                       user=request.user)
                 return Response(serialized_lesson.data, status=status.HTTP_201_CREATED)
             else:
                 return Response({'error': "Недостаточно прав для изменения статуса занятия"},

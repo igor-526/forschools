@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from homework.models import Homework, HomeworkLog
 from lesson.models import Lesson
+from user_logs.models import UserLog
 from .permissions import can_edit_plan, can_generate_from_program
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer, \
@@ -221,10 +222,25 @@ class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
 class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
         plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
-        lessons_generator = AddLessons(
-            datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
-            get_schedule(request.POST),
-            plan
-        )
+        generator_query = {
+            "first_date": datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
+            "schedule": get_schedule(request.POST),
+            "plan": plan,
+        }
+        end_type = request.POST.get("end_type")
+        if end_type == 'date':
+            generator_query['last_lesson_date'] = datetime.strptime(request.POST.get("end_date"), "%Y-%m-%d")
+        elif end_type == 'count':
+            generator_query['lessons_count'] = int(request.POST.get("end_count"))
+        lessons_generator = AddLessons(**generator_query)
         lessons_generator.add_lessons()
+        UserLog.objects.create(log_type=3,
+                               learning_plan=plan,
+                               title=f"В учебный план добавлены занятия",
+                               content={
+                                   "list": [],
+                                   "text": []
+                               },
+                               buttons=[],
+                               user=request.user)
         return Response({"status": "ok"}, status=201)

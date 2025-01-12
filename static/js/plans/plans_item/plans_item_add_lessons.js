@@ -70,6 +70,14 @@ function plansItemAddLessonsMain(){
     plansItemAddLessonsModalSundayTimeStart.addEventListener("input", function () {
         plansItemAddLessonsModalSundayTimeEnd.value = getPlus1HourTime(plansItemAddLessonsModalSundayTimeStart)
     })
+    plansItemAddLessonsModalEndTypeDate.addEventListener("click", function () {
+        plansItemAddLessonsModalEndCount.classList.add("d-none")
+        plansItemAddLessonsModalEndDate.classList.remove("d-none")
+    })
+    plansItemAddLessonsModalEndTypeCount.addEventListener("click", function () {
+        plansItemAddLessonsModalEndCount.classList.remove("d-none")
+        plansItemAddLessonsModalEndDate.classList.add("d-none")
+    })
     plansItemAddLessonsModalAddButton.addEventListener("click", plansItemAddLessonsCreate)
 }
 
@@ -97,11 +105,26 @@ function plansItemAddLessonsResetModal(validationOnly = false){
         plansItemAddLessonsModalSaturdayTimeEnd.classList.remove("is-invalid")
         plansItemAddLessonsModalSundayTimeStart.classList.remove("is-invalid")
         plansItemAddLessonsModalSundayTimeEnd.classList.remove("is-invalid")
+        plansItemAddLessonsModalEndCountField.classList.remove("is-invalid")
+        plansItemAddLessonsModalEndDateField.classList.remove("is-invalid")
+    }
+
+    function getDates(){
+        const result = {
+            start: "",
+            endDate: ""
+        }
+        const today = new Date()
+        result.start = today.toISOString().split("T")[0]
+        today.setYear(today.getUTCFullYear() + 1)
+        result.endDate = today.toISOString().split("T")[0]
+        return result
     }
 
     resetValidation()
     if (!validationOnly){
-        plansItemAddLessonsModalDate.value = ""
+        const dates = getDates()
+        plansItemAddLessonsModalDate.value = dates.start
         plansItemAddLessonsModalMondayCheck.checked = false
         plansItemAddLessonsModalTuesdayCheck.checked = false
         plansItemAddLessonsModalWednesdayCheck.checked = false
@@ -151,6 +174,13 @@ function plansItemAddLessonsResetModal(validationOnly = false){
         plansItemAddLessonsModalSundayTimeStart.disabled = true
         plansItemAddLessonsModalSundayTimeEnd.disabled = true
         plansItemAddLessonsModalSundayPlace.disabled = true
+
+        plansItemAddLessonsModalEndTypeDate.checked = true
+        plansItemAddLessonsModalEndTypeCount.checked = false
+        plansItemAddLessonsModalEndCount.classList.add("d-none")
+        plansItemAddLessonsModalEndCountField.value = 20
+        plansItemAddLessonsModalEndDate.classList.remove("d-none")
+        plansItemAddLessonsModalEndDateField.value = dates.endDate
     }
 }
 
@@ -171,9 +201,39 @@ function plansItemAddLessonsValidation(errors=null, warnings=null){
             setInvalid("Необходимо указать дату начала обучения",
                 [plansItemAddLessonsModalDate])
         } else {
-            if (new Date().getDate() > new Date(plansItemAddLessonsModalDate.value).getDate()){
+            if (new Date().setHours(0, 0, 0, 0) > new Date(plansItemAddLessonsModalDate.value).setHours(0, 0, 0, 0)){
                 setInvalid("Дата начала обучения не может быть раньше, чем сегодня",
                     [plansItemAddLessonsModalDate])
+            }
+        }
+    }
+
+    function validateEnd(){
+        if (plansItemAddLessonsModalEndTypeDate.checked){
+            if (plansItemAddLessonsModalEndDateField.value === ""){
+                setInvalid("Необходимо указать дату окончания обучения",
+                    [plansItemAddLessonsModalEndDateField])
+            } else {
+                if (plansItemAddLessonsModalDate.value !== ""){
+                    const sd = new Date(plansItemAddLessonsModalDate.value).setHours(0, 0, 0, 0)
+                    const ed = new Date(plansItemAddLessonsModalEndDateField.value).setHours(0, 0, 0, 0)
+                    if (sd > ed){
+                        setInvalid("Дата окончания обучения не может быть раньше даты начала обучения",
+                            [plansItemAddLessonsModalEndDateField])
+                    }
+                }
+            }
+        }
+        if (plansItemAddLessonsModalEndTypeCount.checked){
+            if (plansItemAddLessonsModalEndCountField.value === ""){
+                setInvalid("Необходимо указать количество занятий",
+                    [plansItemAddLessonsModalEndCountField])
+            } else if (plansItemAddLessonsModalEndCountField.value < 1){
+                setInvalid("Количество занятий должно быть больше нуля",
+                    [plansItemAddLessonsModalEndCountField])
+            } else if (plansItemAddLessonsModalEndCountField.value > 200){
+                setInvalid("Количество занятий не может быть больше 200 за раз",
+                    [plansItemAddLessonsModalEndCountField])
             }
         }
     }
@@ -272,6 +332,7 @@ function plansItemAddLessonsValidation(errors=null, warnings=null){
     let validationStatus = true
     plansItemAddLessonsResetModal(true)
     validateStartDate()
+    validateEnd()
     validateChecks()
     validateMonday()
     validateTuesday()
@@ -308,6 +369,14 @@ const plansItemAddLessonsModal = document.querySelector("#plansItemAddLessonsMod
 const bsPlansItemAddLessonsModal = new bootstrap.Modal(plansItemAddLessonsModal)
 const plansItemAddLessonsModalForm = plansItemAddLessonsModal.querySelector("#plansItemAddLessonsModalForm")
 const plansItemAddLessonsModalDate = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalDate")
+
+const plansItemAddLessonsModalEndTypeDate = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalEndTypeDate")
+const plansItemAddLessonsModalEndTypeCount = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalEndTypeCount")
+const plansItemAddLessonsModalEndCount = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalEndCount")
+const plansItemAddLessonsModalEndCountField = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalEndCountField")
+const plansItemAddLessonsModalEndDate = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalEndDate")
+const plansItemAddLessonsModalEndDateField = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalEndDateField")
+
 const plansItemAddLessonsModalMondayCheck = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalMondayCheck")
 const plansItemAddLessonsModalMondayTimeStart = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalMondayTimeStart")
 const plansItemAddLessonsModalMondayTimeEnd = plansItemAddLessonsModalForm.querySelector("#plansItemAddLessonsModalMondayTimeEnd")

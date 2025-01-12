@@ -55,7 +55,8 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
 
     def get_hw_logs(self, plan_id: int):
         query_hw_logs = {}
-        query_user_logs = {"log_type": 1}
+        query_user_logs = {"log_type": 1,
+                           "learning_plan__id": plan_id}
         if plan_id:
             query_hw_logs['homework__lesson__learningphases__learningplan__id'] = plan_id
             query_user_logs['learning_plan__id'] = plan_id
@@ -104,17 +105,38 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
         return UserLogsMessageSerializer(messages, many=True).data
 
     def get_lessons(self, plan_id: int):
-        query = {"lesson__learningphases__learningplan__id": plan_id}
+        query_reviews = {"lesson__learningphases__learningplan__id": plan_id}
+        query_user_logs = {"log_type": 2,
+                           "learning_plan__id": plan_id}
         date_from = self.request.query_params.get('date_from')
         if date_from:
             date_from = datetime.strptime(date_from.split("T")[0], '%Y-%m-%d')
-            query['dt__date__gte'] = date_from
+            query_reviews['dt__date__gte'] = date_from
+            query_user_logs['date__date__gte'] = date_from
         date_to = self.request.query_params.get('date_to')
         if date_to:
             date_to = datetime.strptime(date_to.split("T")[0], '%Y-%m-%d')
-            query['dt__date__lte'] = date_to
-        reviews = LessonTeacherReview.objects.filter(**query)
-        return UserLogsLessonReviewSerializer(reviews, many=True).data
+            query_reviews['dt__date__lte'] = date_to
+            query_user_logs['date__date__lte'] = date_to
+        reviews = LessonTeacherReview.objects.filter(**query_reviews)
+        user_logs_queryset = UserLog.objects.filter(**query_user_logs)
+        reviews_ser = UserLogsLessonReviewSerializer(reviews, many=True).data
+        user_logs_ser = UserLogsSerializer(user_logs_queryset, many=True).data
+        return [*reviews_ser, *user_logs_ser]
+
+    def get_plans(self, plan_id: int):
+        query_user_logs = {"log_type": 3,
+                           "learning_plan__id": plan_id}
+        date_from = self.request.query_params.get('date_from')
+        if date_from:
+            date_from = datetime.strptime(date_from.split("T")[0], '%Y-%m-%d')
+            query_user_logs['date__date__gte'] = date_from
+        date_to = self.request.query_params.get('date_to')
+        if date_to:
+            date_to = datetime.strptime(date_to.split("T")[0], '%Y-%m-%d')
+            query_user_logs['date__date__lte'] = date_to
+        user_logs_queryset = UserLog.objects.filter(**query_user_logs)
+        return UserLogsSerializer(user_logs_queryset, many=True).data
 
     def get(self, request, *args, **kwargs):
         if kwargs.get('plan_pk'):
@@ -123,7 +145,8 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
         tg_journal_notes = self.get_tg_journal_notes() if request.query_params.get('tg_journal') == 'true' else []
         messages = self.get_messages() if request.query_params.get('messages') == 'true' else []
         lessons = self.get_lessons(kwargs.get('plan_pk')) if request.query_params.get('lessons') == 'true' else []
+        plans = self.get_plans(kwargs.get('plan_pk')) if request.query_params.get('plans') == 'true' else []
         offset = int(request.query_params.get('offset')) if request.query_params.get('offset') else 0
-        all_notes = [*hw_logs, *tg_journal_notes, *messages, *lessons][offset:offset + 50]
+        all_notes = [*hw_logs, *tg_journal_notes, *messages, *lessons, *plans][offset:offset + 50]
         all_notes = sorted(all_notes, key=itemgetter("date"), reverse=True)
         return Response({"plan_info": self.plan_info, "logs": all_notes}, status=status.HTTP_200_OK)

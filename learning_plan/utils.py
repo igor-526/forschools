@@ -255,14 +255,21 @@ class AddLessons:
     last_date: datetime
     schedule: dict
     plan: LearningPlan
+    lessons_count: int
+    last_lesson_date: datetime
 
     def __init__(self,
                  first_date: datetime,
                  schedule: dict,
-                 plan: LearningPlan):
+                 plan: LearningPlan,
+                 lessons_count: int = None,
+                 last_lesson_date: datetime = None
+    ):
         self.last_date = first_date
         self.schedule = schedule
         self.plan = plan
+        self.lessons_count = lessons_count
+        self.last_lesson_date = last_lesson_date
 
     def get_next_date(self, show=False) -> dict:
         ld = self.last_date
@@ -291,12 +298,21 @@ class AddLessons:
             self.plan.save()
         return phase
 
+    def get_next_lesson_break(self, counter: int = None, next_date: datetime = None):
+        if self.last_lesson_date and next_date > self.last_lesson_date:
+            return True
+        if self.lessons_count and counter > self.lessons_count:
+            return True
+        if counter > 200:
+            return True
+        return False
+
     def add_lessons(self):
         phase = self.get_phase()
         counter = 1
         while True:
             next_date = self.get_next_date(False)
-            if next_date.get('date').year > datetime.date.today().year+1:
+            if self.get_next_lesson_break(counter, next_date.get('date')):
                 break
             phase.lessons.create(
                 name=f'Занятие {counter}',
