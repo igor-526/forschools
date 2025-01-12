@@ -17,6 +17,8 @@ function tgJournalGet(more=false){
         switch (request.status){
             case 200:
                 tgJournalShow(request.response, !more)
+                request.response.length === 50 ? tgJournalTableShowMoreButton.classList.remove("d-none") :
+                    tgJournalTableShowMoreButton.classList.add("d-none")
                 break
             default:
                 showErrorToast()

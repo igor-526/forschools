@@ -89,6 +89,9 @@ async function telegramAPIGetJournal(
     event.forEach(ev => {
         qp.push(`event=${ev}`)
     })
+    if (offset){
+        qp.push(`offset=${offset}`)
+    }
     if (dateFrom){
         qp.push(`date_from=${dateFrom}`)
     }

@@ -166,6 +166,7 @@ function tgJournalFilterEnterListeners(){
         tgJournalFilterDateToField.classList.remove("is-invalid")
         let dateFrom = null
         let dateTo = null
+
         const todayDate = new Date().setHours(0, 0, 0, 0)
         if (tgJournalFilterDateFromField.value !== ""){
             dateFrom = new Date(tgJournalFilterDateFromField.value).setHours(0, 0, 0, 0)
@@ -175,7 +176,7 @@ function tgJournalFilterEnterListeners(){
             }
         }
         if (tgJournalFilterDateToField.value !== ""){
-            dateTo = new Date(tgJournalFilterDateFromField.value).setHours(0, 0, 0, 0)
+            dateTo = new Date(tgJournalFilterDateToField.value).setHours(0, 0, 0, 0)
             if (dateTo > todayDate){
                 tgJournalFilterDateToField.classList.add("is-invalid")
                 validationStatus = false

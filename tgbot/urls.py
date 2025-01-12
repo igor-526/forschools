@@ -1,6 +1,6 @@
-from .views import (UserTelegramListAPIView, SendMaterialsTGView,
-                    TgJournalPage, TgJournalListAPIView, TgJournalItemAPIView,
-                    TelegramSettingsAPIView)
+from .views import TgJournalPage
+from .views_api import (UserTelegramListAPIView, SendMaterialsTGView, TgJournalListAPIView,
+                        TgJournalItemAPIView, TelegramSettingsAPIView)
 from .views_ma import UserLoginMAAPIView, ErrorPageMATemplateView
 from django.urls import path
 
