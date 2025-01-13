@@ -82,14 +82,20 @@ function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
             if (main){
                 text = ""
             } else {
-                text = "Возможно привязать дополнительные аккаунты Telegram. С дополнительных аккаунтов можно будет наблюдать за пользователем и писать сообщения<br>"
+                text = "Возможно привязать дополнительные аккаунты Telegram. С дополнительных аккаунтов можно будет наблюдать за пользователем и писать сообщения<br><br>"
             }
             text += `
-                Для автоматической привязки необходимо с утройства, на котором установлен Telegram перейти по ссылке:<br>
-                <a href="https://t.me/kitai_school_study_bot?start=${code}" target="_blank">https://t.me/kitai_school_study_bot?start=${code}</a><br><br>
+                Для автоматической привязки необходимо с устройства, на котором установлен Telegram перейти по ссылке:<br>
+                <a href="https://t.me/kitai_school_study_bot?start=${code}" target="_blank">https://t.me/kitai_school_study_bot?start=${code}</a><br><br><b>ИЛИ</b><br><br>
                 Для ручной привязки необходимо найти в Telegram бота @kitai_school_study_bot, после чего написать команду "/start ${code}" (без кавычек)<br><br>
                 `
             return text
+        }
+
+        function getCopyText(){
+            return `Для автоматической привязки необходимо с устройства, на котором установлен Telegram перейти по 
+следующей ссылке: https://t.me/kitai_school_study_bot?start=${code}\nИЛИ\nДля ручной привязки необходимо 
+найти в Telegram бота @kitai_school_study_bot, после чего написать команду "/start ${code}" (без кавычек)`
         }
 
         const tr = document.createElement("tr")
@@ -123,8 +129,22 @@ function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
                 copyCommandButton.classList.remove("btn-success")
             }, 500)
         })
+        const copyAllButton = document.createElement("button")
+        copyAllButton.type = "button"
+        copyAllButton.innerHTML = '<i class="bi bi-copy"></i> инструкция'
+        copyAllButton.classList.add("btn", "btn-sm", "btn-primary", "mx-1")
+        copyAllButton.addEventListener("click", function () {
+            navigator.clipboard.writeText(getCopyText())
+            copyAllButton.classList.remove("btn-primary")
+            copyAllButton.classList.add("btn-success")
+            setTimeout(function (){
+                copyAllButton.classList.add("btn-primary")
+                copyAllButton.classList.remove("btn-success")
+            }, 500)
+        })
         td.insertAdjacentElement("beforeend", copyHrefButton)
         td.insertAdjacentElement("beforeend", copyCommandButton)
+        td.insertAdjacentElement("beforeend", copyAllButton)
         tr.insertAdjacentElement("beforeend", td)
         return tr
     }

@@ -110,21 +110,19 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
         else:
             return queryset
 
-    def sort_username(self, queryset):
+    def sort_queryset_all(self, queryset):
+        order_query = ["-is_active"]
         sort_username = self.request.query_params.get('sort_username')
-        if sort_username == "asc":
-            queryset = queryset.order_by('username')
-        elif sort_username == "desc":
-            queryset = queryset.order_by('-username')
-        return queryset
-
-    def sort_fullname(self, queryset):
         sort_full_name = self.request.query_params.get('sort_full_name')
+        if sort_username == "asc":
+            order_query.append('username')
+        elif sort_username == "desc":
+            order_query.append('-username')
         if sort_full_name == "asc":
-            queryset = queryset.order_by('last_name')
+            order_query.append('last_name')
         elif sort_full_name == "desc":
-            queryset = queryset.order_by('-last_name')
-        return queryset
+            order_query.append('-last_name')
+        return queryset.order_by(*order_query)
 
     def get_queryset_read_all_messages(self):
         user_groups = [group.name for group in self.request.user.groups.all()]
@@ -192,13 +190,8 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
                 queryset = self.filter_queryset_fields(queryset)
                 queryset = self.filter_tg(queryset)
                 queryset = self.filter_fullname(queryset)
-                queryset = self.sort_username(queryset)
-                queryset = self.sort_fullname(queryset)
-                queryset = queryset.order_by("-is_active")
-            if queryset:
-                return queryset.distinct()
-            else:
-                return None
+                queryset = self.sort_queryset_all(queryset)
+            return queryset.distinct() if queryset else None
 
 
 class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):
