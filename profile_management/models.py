@@ -227,21 +227,25 @@ class NewUser(AbstractUser):
             result["can_deactivate"] = False
             result["plan_curator"] = [{"id": item.id, "name": item.name} for item in plan_curator]
         plan_listeners = self.plan_listeners.all()
-        if plan_listeners:
+        listed_plans = list(filter(lambda plan: plan.get_is_closed(), plan_listeners))
+        if listed_plans:
             result["can_deactivate"] = False
-            result["plan_listeners"] = [{"id": item.id, "name": item.name} for item in plan_listeners]
+            result["plan_listeners"] = [{"id": item.id, "name": item.name} for item in listed_plans]
         plan_methodist = self.plan_metodist.all()
-        if plan_methodist:
+        listed_plans = list(filter(lambda plan: plan.get_is_closed(), plan_methodist))
+        if listed_plans:
             result["can_deactivate"] = False
-            result["plan_methodist"] = [{"id": item.id, "name": item.name} for item in plan_methodist]
+            result["plan_methodist"] = [{"id": item.id, "name": item.name} for item in listed_plans]
         plan_teacher = self.plan_teacher.all()
-        if plan_teacher:
+        listed_plans = list(filter(lambda plan: plan.get_is_closed(), plan_teacher))
+        if listed_plans:
             result["can_deactivate"] = False
-            result["plan_teacher"] = [{"id": item.id, "name": item.name} for item in plan_teacher]
+            result["plan_teacher"] = [{"id": item.id, "name": item.name} for item in listed_plans]
         plan_hw_teacher = self.hw_teacher.all()
-        if plan_hw_teacher:
+        listed_plans = list(filter(lambda plan: plan.get_is_closed(), plan_hw_teacher))
+        if listed_plans:
             result["can_deactivate"] = False
-            result["plan_hw_teacher"] = [{"id": item.id, "name": item.name} for item in plan_hw_teacher]
+            result["plan_hw_teacher"] = [{"id": item.id, "name": item.name} for item in listed_plans]
         lesson_replace_teacher = self.replace_teacher.filter(status=0)
         if lesson_replace_teacher:
             result["can_deactivate"] = False

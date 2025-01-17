@@ -135,20 +135,21 @@ function usersEditFunctionsSetActivationStatus(){
 function usersEditFunctionsActivationSetModal(){
     function getInfoList(infoText=null, itemList=[], href=null){
         const mainDiv = document.createElement("div")
+        mainDiv.classList.add("mb-4")
         if (infoText){
             const pText = document.createElement("p")
             pText.innerHTML = infoText
             mainDiv.insertAdjacentElement("beforeend", pText)
         }
         const ul = document.createElement("ul")
-        ul.classList.add("list_group")
+        ul.classList.add("list-group")
         itemList.forEach(item => {
             const li = document.createElement("li")
             li.classList.add("list-group-item")
             li.innerHTML = href ? `<a href="/${href}/${item.id}">${item.name}</a>` : item.name
-            mainDiv.insertAdjacentElement("beforeend", li)
+            ul.insertAdjacentElement("beforeend", li)
         })
-
+        mainDiv.insertAdjacentElement("beforeend", ul)
         return mainDiv
     }
 
@@ -158,37 +159,63 @@ function usersEditFunctionsActivationSetModal(){
         pInfo.innerHTML = "Пользователь не может быть деактивирован из за следующих ошибок:"
         usersEditActivationModalBody.insertAdjacentElement("beforeend", pInfo)
         if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя",
+                    info.group_chats))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.group_chats_admin){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является администратором в следующих групповых чатах. Необходимо " +
+                    "сменить администратора",
+                    info.group_chats_admin))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.homework_teacher){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является проверяющим следующих незакрытых ДЗ. Необходимо принять или " +
+                    "отменить ДЗ, либо сменить проверяющего ДЗ",
+                    info.homework_teacher, "homeworks"))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.homework_listener){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является учеником следующих незакрытых ДЗ. Необходимо принять или " +
+                    "отменить ДЗ",
+                    info.homework_listener, "homeworks"))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.plan_curator){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является куратором незакрытого плана обучения. Необходимо сменить " +
+                    "куратора или закрыть план обучения",
+                    info.plan_curator, "learning_plans"))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.plan_listeners){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является учеником незакрытого плана обучения. Необходимо закрыть " +
+                    "план обучения",
+                    info.plan_listeners, "learning_plans"))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.plan_methodist){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является методистом незакрытого плана обучения. Необходимо сменить " +
+                    "методиста или закрыть план обучения",
+                    info.plan_methodist, "learning_plans"))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.plan_teacher){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является преподавателем незакрытого плана обучения. Необходимо закрыть " +
+                    "план обучения",
+                    info.plan_teacher, "learning_plans"))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.plan_hw_teacher){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является проверяющим ДЗ незакрытого плана обучения. Необходимо сменить " +
+                    "проверяющего ДЗ или закрыть план обучения",
+                    info.plan_hw_teacher, "learning_plans"))
         }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
-        }
-        if (info.group_chats){
-            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        if (info.lesson_replace_teacher){
+            usersEditActivationModalBody.insertAdjacentElement("beforeend",
+                getInfoList("Пользователь является замещающим преподавателем непроведённого занятия. Необходимо " +
+                    "сменить замещающего преподавателя, провести занятие или отменить его",
+                    info.lesson_replace_teacher, "lessons"))
         }
     }
 

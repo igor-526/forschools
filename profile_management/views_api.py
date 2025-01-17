@@ -30,7 +30,7 @@ class DeactivateUserAPIView(LoginRequiredMixin, APIView):
     def patch(self, request, *args, **kwargs):
         try:
             user = NewUser.objects.get(pk=kwargs.get('pk'))
-            if get_secretinfo_perm(request.user, user):
+            if get_secretinfo_perm(request.user, user) and user.get_info_deactivate().get('can_deactivate') is True:
                 user.is_active = False
                 user.save()
                 return Response({'status': 'success'}, status=status.HTTP_200_OK)
