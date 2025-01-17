@@ -228,7 +228,6 @@ function lessonItemSetMaterials(materials, del=false){
         li.classList.add("list-group-item")
         a.href = `/materials/${material.id}`
         a.innerHTML = material.name
-        a.target = "_blank"
         check.classList.add("form-check-input", "me-3")
         check.type = "checkbox"
         check.value = material.id
@@ -282,7 +281,6 @@ function lessonItemSetHomeworks(homeworks, del=false){
         li.setAttribute("data-hw-list-id", homework.id)
         a.href = `/homeworks/${homework.id}`
         a.innerHTML = homework.name
-        a.target = "_blank"
         button.classList.add("btn", "btn-danger", "btn-sm", "me-3")
         button.type = "button"
         button.innerHTML = '<i class="bi bi-x-lg"></i>'

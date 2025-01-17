@@ -20,7 +20,6 @@ function chatShowMessagesGetAttachmentsElement(attachments = [], mobile=false){
                 img.classList.add("img-fluid")
                 const a = document.createElement("a")
                 a.href = mobile ? "#" : file.path
-                a.target = "_blank"
                 a.insertAdjacentElement("beforeend", img)
                 if (mobile){
                     cardImg.addEventListener("click", function (e){
@@ -48,7 +47,6 @@ function chatShowMessagesGetAttachmentsElement(attachments = [], mobile=false){
                 cardBodyAnim.classList.add("card-body")
                 const aAnim = document.createElement("a")
                 aAnim.href = mobile ? "#" : file.path
-                aAnim.target = "_blank"
                 if (mobile){
                     cardAnim.addEventListener("click", function (e){
                         e.preventDefault()
@@ -127,7 +125,6 @@ function chatShowMessagesGetAttachmentsElement(attachments = [], mobile=false){
                 const downloadButton = document.createElement("button")
                 const downloadButtonA = document.createElement("a")
                 downloadButtonA.href = file.path
-                downloadButtonA.target = "_blank"
                 downloadButton.type = "button"
                 downloadButton.classList.add("btn", "btn-primary", "me-3")
                 downloadButton.innerHTML = '<i class="bi bi-download"></i> Скачать'

@@ -9,7 +9,6 @@
                 </h1>
             </div>
             <div class="col-auto">
-                <button type="button" class="btn btn-primary mt-1" data-bs-toggle="collapse" data-bs-target="#UsersCollapseSearch"><i class="bi bi-search"></i></button>
                 {% if "auth.register_users" in perms %}
                     <button id="usersAdminRegisterButton" type="button" class="btn btn-primary mt-1" role="button"><i class="bi bi-plus-lg"></i></button>
                     {% include 'users/offcanvas_register.html' %}

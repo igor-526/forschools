@@ -69,7 +69,6 @@ function userLogsShowPlanInfo(info){
         a.href = `/learning_plans/${plan_id}`
         a.innerHTML = "План обучения"
         a.classList.add("btn", "btn-outline-primary", "btn-sm", "ms-2")
-        a.target = "_blank"
         return a
     }
 
@@ -184,7 +183,6 @@ function userLogsShowActions(actions, clear=true){
         li.insertAdjacentElement("beforeend", content)
 
         const user = document.createElement("a")
-        user.target = "_blank"
         user.innerHTML = `${action.user.first_name} ${action.user.last_name}`
         user.style = "color: grey; font-size: 12px;"
         user.href = `/profile/${action.user.id}/`
@@ -196,9 +194,8 @@ function userLogsShowActions(actions, clear=true){
             action.buttons.forEach(button => {
                 const btn = document.createElement("btn")
                 const btnA = document.createElement("a")
-                btnA.target = "_blank"
                 btnA.href = button.href
-                btn.classList.add("btn-primary", "btn", "btn-sm", "mx-1")
+                btn.classList.add("btn-primary", "btn", "btn-sm", "mx-1", "my-1")
                 btn.innerHTML = button.inner
                 btnA.insertAdjacentElement("beforeend", btn)
                 buttons.insertAdjacentElement("beforeend", btnA)

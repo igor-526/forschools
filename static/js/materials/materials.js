@@ -144,10 +144,10 @@ function materialsMainCollapseAction(materialID, action="show"){
                             element.innerHTML = `<audio controls src="${request.response.file}"></audio>`
                             break
                         case "Изображение":
-                            element.innerHTML = `<a href="${request.response.file}" target="_blank"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
+                            element.innerHTML = `<a href="${request.response.file}"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
                             break
                         case "Анимация":
-                            element.innerHTML = `<a href="${request.response.file}" target="_blank"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
+                            element.innerHTML = `<a href="${request.response.file}"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
                             break
                         default:
                             element.innerHTML = "<div>Формат пока не поддерживается</div>"
@@ -256,7 +256,6 @@ function materialsMainShowTable(list = [], action="clear"){
         tdNameA.href = `/materials/${material.id}`
         tdNameA.style = "color: #003366; text-decoration: none;"
         tdNameA.innerHTML = material.name
-        tdNameA.target = "_blank"
         tdName.insertAdjacentElement('beforeend', tdNameA)
         tdType.innerHTML = materialsGetType(material.file)
         tr.setAttribute("data-material-id", material.id)

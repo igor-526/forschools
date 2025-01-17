@@ -139,7 +139,7 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
             ).exclude(id=self.request.user.id)
         else:
             queryset = None
-        return queryset
+        return queryset.distinct() if queryset else None
 
     def get_queryset(self):
         setting = self.request.query_params.get("setting")

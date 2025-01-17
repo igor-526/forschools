@@ -50,7 +50,7 @@ function lessonsGet(more=false){
 function lessonsShow(list, clear=true){
     function getListeners(listeners){
         const listenersArray = listeners.map(listener => {
-            return `<a target="_blank" href="/profile/${listener.id}">${listener.first_name} ${listener.last_name}</a>`
+            return ` href="/profile/${listener.id}">${listener.first_name} ${listener.last_name}</a>`
         })
         return listenersArray.join("<br>")
     }
@@ -86,14 +86,11 @@ function lessonsShow(list, clear=true){
         switch (lesson.hw_data.count){
             case 0:
                 tdHomeworksA.href = "#"
-                // tdHomeworksButton.disabled = true
                 break
             default:
-                tdHomeworksA.target = "_blank"
                 tdHomeworksA.href = `/homeworks/#lesson=${lesson.id}`
                 break
         }
-        tdActionsGoA.target = "_blank"
         tdActionsGoA.href = `/lessons/${lesson.id}`
         tdActionsGoButton.type = "button"
         tdActionsGoButton.classList.add("btn", "btn-primary")
@@ -108,7 +105,7 @@ function lessonsShow(list, clear=true){
         tdActions.insertAdjacentElement("beforeend", tdActionsGoA)
         tdName.innerHTML = lesson.name
         tdDate.innerHTML = getLessonDateTimeRangeString(lesson)
-        tdTeacher.innerHTML = `<a target="_blank" href="/profile/${lesson.teacher.id}">${lesson.teacher.first_name} ${lesson.teacher.last_name}</a>`
+        tdTeacher.innerHTML = `<a href="/profile/${lesson.teacher.id}">${lesson.teacher.first_name} ${lesson.teacher.last_name}</a>`
         tdListeners.innerHTML = getListeners(lesson.listeners)
         return tr
     }

@@ -42,7 +42,7 @@ function plansItemFromProgramSetPrograms(programs){
                     `
                 if (request.response.owner){
                     pFromProgramModalProgInfoList.insertAdjacentHTML('beforeend', `
-                    <li class="list-group-item">Владелец: <a href="/profile/${request.response.owner.id}" target="_blank">${request.response.owner.first_name} ${request.response.owner.last_name}</a> </li>`)
+                    <li class="list-group-item">Владелец: <a href="/profile/${request.response.owner.id}">${request.response.owner.first_name} ${request.response.owner.last_name}</a> </li>`)
                 }
                 pFromProgramModalSetButton.classList.add("btn-primary")
                 pFromProgramModalSetButton.classList.remove("btn-warning")

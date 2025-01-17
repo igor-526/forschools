@@ -15,7 +15,7 @@ function tgJournalStatusSetModal(noteID){
                 tgJournalStatusModalInfo.innerHTML = `
                     <b>Тип события:</b> ${tgJournalGetEventStr(request.response.event)}<br>
                     <b>Дата и время:</b> ${timeUtilsDateTimeToStr(request.response.dt)}<br>
-                    <b>Получатель:</b> <a href="/profile/${request.response.recipient.id}" target="_blank">
+                    <b>Получатель:</b> <a href="/profile/${request.response.recipient.id}">
                     ${request.response.recipient.first_name} ${request.response.recipient.last_name}</a><br>
                 `
                 if (request.response.data.text){

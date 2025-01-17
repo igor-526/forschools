@@ -104,14 +104,14 @@ function homeworkItemSetLessonInfo(lesson_info){
     if (lesson_info.id && lesson_info.name){
         hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
             "Занятие",
-            `<a target="_blank" href="/lessons/${lesson_info.id}"><button class="btn btn-sm btn-primary">${lesson_info.name}</button></a>`)
+            `<a href="/lessons/${lesson_info.id}"><button class="btn btn-sm btn-primary">${lesson_info.name}</button></a>`)
         )
     }
     if (lesson_info.plan){
         hwItemPlanInfoHeader.innerHTML = `
             <div class="btn-group" role="group">
-                <a target="_blank" href="/user_logs/#plan_id=${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button"><i class="bi bi-card-list"></i> логи</a>
-                <a target="_blank" href="/learning_plans/${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button">План обучения</a>
+                <a href="/user_logs/#plan_id=${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button"><i class="bi bi-card-list"></i> логи</a>
+                <a href="/learning_plans/${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button">План обучения</a>
             </div>`
 
         if (lesson_info.plan.teacher) {
@@ -172,7 +172,6 @@ function homeworkItemSetMaterials(materials){
         }
         li.classList.add("list-group-item")
         a.href = `/materials/${mat.id}`
-        a.target = "_blank"
         a.innerHTML = mat.name
         li.insertAdjacentElement("beforeend", a)
         return li

@@ -263,7 +263,6 @@ function materialsEmbedShow(list, action="clear"){
         tdNameA.href = `/materials/${material.id}`
         tdNameA.style = "color: #003366; text-decoration: none;"
         tdNameA.innerHTML = material.name
-        tdNameA.target = "_blank"
         tdName.insertAdjacentElement('beforeend', tdNameA)
         tdType.innerHTML = materialsGetType(material.file)
         tr.setAttribute("data-material-id", material.id)
@@ -723,7 +722,6 @@ async function materialEmbedChange(){
         elem.classList.add("list-group-item")
         const elemA = document.createElement("a")
         elemA.href = `/materials/${matID}`
-        elemA.target = "_blank"
         elemA.innerHTML = matName
         elem.insertAdjacentElement("beforeend", elemA)
         const elemDesc = document.createElement("div")

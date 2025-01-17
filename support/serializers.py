@@ -1,7 +1,6 @@
-from pprint import pprint
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from rest_framework import serializers
-from .models import WSGIErrorsLog, SupportTicketAnswers, SupportTicket
+from .models import WSGIErrorsLog, SupportTicketAnswers, SupportTicket, TelegramErrorsLog
 from material.serializers import FileSerializer
 from dls.settings import MATERIAL_FORMATS
 from material.models import File
@@ -16,12 +15,36 @@ class WSGIErrorsLogListSerializer(serializers.ModelSerializer):
                   "status_code", "handling_status"]
 
 
+class TelegramErrorsLogListSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TelegramErrorsLog
+        fields = ["id", "action_type", "error", "dt", "handling_status", "user"]
+
+    def get_user(self, obj):
+        if obj.tg_note:
+            return NewUserNameOnlyListSerializer(obj.tg_note.user, many=False).data
+
+
 class WSGIErrorsLogSerializer(serializers.ModelSerializer):
     user = NewUserNameOnlyListSerializer(required=False, many=False)
 
     class Meta:
         model = WSGIErrorsLog
         fields = "__all__"
+
+
+class TelegramErrorsLogSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TelegramErrorsLog
+        fields = "__all__"
+
+    def get_user(self, obj):
+        if obj.tg_note:
+            return NewUserNameOnlyListSerializer(obj.tg_note.user, many=False).data
 
 
 class SupportTicketAnswersSerializer(serializers.ModelSerializer):

@@ -30,7 +30,7 @@
             <table class="table table-hover">
                 <thead>
                 <tr>
-                    <th scope="col">
+                    <th scope="col" {% if not can_change %}class="d-none"{% endif %}>
                         <input class="form-check-input" type="checkbox" id="supportWSGIErrorsTableSelect">
                         <label class="form-check-label" for="supportWSGIErrorsTableSelect" id="supportWSGIErrorsTableSelectLabel">
                             (0)
@@ -102,8 +102,10 @@
     {% include 'support_wsgilogs_modal.html' %}
 {% endblock %}
 {% block static_js %}
+    <script>
+        const supportWSGIErrorsCanChange = {% if can_change %} true {% else %} false {% endif %}
+    </script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/support/support_api.js' %}"></script>
     <script src="{% static 'js/support/wsgilogs/wsgilogs.js' %}"></script>
-    <script src="{% static 'js/support/wsgilogs/wsgilogs_filters.js' %}"></script>
 {% endblock %}

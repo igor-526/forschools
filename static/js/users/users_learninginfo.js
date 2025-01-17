@@ -32,7 +32,7 @@ function usersLearnInfoSetModal(userID, role){
 function getUsersHTML(users = []){
     let usersHTML = []
     users.forEach(user => {
-        usersHTML.push(`<a target="_blank" href="/profile/${user.id}">${user.first_name} ${user.last_name}</a>`)
+        usersHTML.push(`<a href="/profile/${user.id}">${user.first_name} ${user.last_name}</a>`)
     })
     return usersHTML.join("<br>")
 }
@@ -65,7 +65,7 @@ function usersLearnInfoSetPlans(){
         const tdName = document.createElement("td")
         const tdTeacher = document.createElement("td")
         const tdListeners = document.createElement("td")
-        tdName.innerHTML = `<a target="_blank" href="/learning_plans/${plan.id}">${plan.name}</a>`
+        tdName.innerHTML = `<a href="/learning_plans/${plan.id}">${plan.name}</a>`
         tdTeacher.innerHTML = getUsersHTML([plan.teacher])
         tdListeners.innerHTML = getUsersHTML(plan.listeners)
         tr.insertAdjacentElement("beforeend", tdName)
@@ -142,7 +142,7 @@ function usersLearnInfoSetLessons(){
                 break
         }
         const tdName = document.createElement("td")
-        tdName.innerHTML = `<a href="/lessons/${lesson.id}" target="_blank">${lesson.name}</a>`
+        tdName.innerHTML = `<a href="/lessons/${lesson.id}">${lesson.name}</a>`
         const tdDateTime = document.createElement("td")
         tdDateTime.innerHTML = getLessonDateTimeRangeString(lesson)
         const tdTeacher = document.createElement("td")
@@ -216,7 +216,7 @@ function usersLearnInfoSetHomeworks(){
     function getElement(hw){
         const tr = document.createElement("tr")
         const tdName = document.createElement("td")
-        tdName.innerHTML = `<a href="/homeworks/${hw.id}" target="_blank">${hw.name}</a>`
+        tdName.innerHTML = `<a href="/homeworks/${hw.id}">${hw.name}</a>`
         const tdTeacher = document.createElement("td")
         tdTeacher.innerHTML = getUsersHTML([hw.teacher])
         const tdListener = document.createElement("td")

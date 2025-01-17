@@ -301,14 +301,14 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
                 next_lesson_st = datetime.combine(next_lesson.date, lesson.start_time)
                 if lesson_et > next_lesson_st:
                     warns += (f'<li>Вы устанавливаете дату и время занятия во время либо после '
-                              f'<a href="/lessons/{next_lesson.id}" target="_blank">следующего занятия</a></li>')
+                              f'<a href="/lessons/{next_lesson.id}">следующего занятия</a></li>')
             place = request.data.get("place")
             if place != "None":
                 place = Place.objects.get(pk=place)
                 has_lessons = place.has_lessons(req_date, req_start, req_end)
                 if has_lessons:
                     warns += (f'<li>Данное место проведения будет занято '
-                              f'<a href="/lessons/{has_lessons.id}" target="_blank">следующим занятием</a></li>')
+                              f'<a href="/lessons/{has_lessons.id}">следующим занятием</a></li>')
 
         return {"status": "ok" if not warns and not errors else "error", "warnings": warns, "errors": errors}
 

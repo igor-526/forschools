@@ -64,10 +64,10 @@ async function materialsSetCollapsePreview(matID, element){
                         element.innerHTML = `<audio controls src="${request.response.file}"></audio>`
                         break
                     case "Изображение":
-                        element.innerHTML = `<a href="${request.response.file}" target="_blank"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
+                        element.innerHTML = `<a href="${request.response.file}"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
                         break
                     case "Анимация":
-                        element.innerHTML = `<a href="${request.response.file}" target="_blank"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
+                        element.innerHTML = `<a href="${request.response.file}"><img src="${request.response.file}" class="img-fluid" alt="Изображение" style="max-height: 150px;"></a>`
                         break
                     default:
                         element.innerHTML = "<div>Формат пока не поддерживается</div>"

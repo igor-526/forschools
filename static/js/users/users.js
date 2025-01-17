@@ -83,9 +83,7 @@ function usersAdminShow(users = [], updateTD=null){
         tdActionsChatA.insertAdjacentElement("beforeend", tdActionsChat)
         tdActionsProfileA.insertAdjacentElement("beforeend", tdActionsProfile)
         tdActionsChatA.href = `/messages/#user=${user.id}`
-        tdActionsChatA.target = "_blank"
         tdActionsProfileA.href = `/profile/${user.id}`
-        tdActionsProfileA.target = "_blank"
 
         tdActionsChat.type = "button"
         tdActionsChat.classList.add("btn", "btn-primary", "mx-1")

@@ -1,18 +1,21 @@
 function supportWSGIErrorsMain(){
     supportWSGIErrorsGet()
-    supportWSGIErrorsLogModalSetHandlingStatusButton.addEventListener("click", supportWSGIErrorInfoModalNewStatus)
     supportWSGIErrorsTableSelect.addEventListener("change", supportWSGIErrorsSelectAllListener)
     supportWSGIErrorsSetTabs()
     supportWSGIErrorsFilteringSetFields()
     supportWSGIErrorsFilteringSetListeners()
     supportWSGIErrorsFilteringSetEraseListeners()
-
-    supportWSGIErrorsSelectedSetStatusProcessing.addEventListener("click", function () {
-        supportWSGIErrorsSetStatus(1)
-    })
-    supportWSGIErrorsSelectedSetStatusReady.addEventListener("click", function () {
-        supportWSGIErrorsSetStatus(2)
-    })
+    if (supportWSGIErrorsCanChange){
+        supportWSGIErrorsSelectedSetStatusProcessing.addEventListener("click", function () {
+            supportWSGIErrorsSetStatus(1)
+        })
+        supportWSGIErrorsSelectedSetStatusReady.addEventListener("click", function () {
+            supportWSGIErrorsSetStatus(2)
+        })
+    } else {
+        supportWSGIErrorsSelectedSetStatusProcessing.classList.add("d-none")
+        supportWSGIErrorsSelectedSetStatusReady.classList.add("d-none")
+    }
 }
 
 function supportWSGIErrorsSetTabs(){
@@ -118,13 +121,16 @@ function supportWSGIErrorsShow(logs = []){
                 break
         }
 
-        tdSelectCheckbox.classList.add("form-check-input")
-        tdSelectCheckbox.type = "checkbox"
-        tdSelectCheckbox.setAttribute("data-log-id", log.id)
-        tdSelectCheckbox.addEventListener("click", function () {
-            getSelectListener(log.id, tdSelectCheckbox.checked)
-        })
-
+        if (supportWSGIErrorsCanChange){
+            tdSelectCheckbox.classList.add("form-check-input")
+            tdSelectCheckbox.type = "checkbox"
+            tdSelectCheckbox.setAttribute("data-log-id", log.id)
+            tdSelectCheckbox.addEventListener("click", function () {
+                getSelectListener(log.id, tdSelectCheckbox.checked)
+            })
+            tr.insertAdjacentElement("beforeend", tdSelect)
+            tdSelect.insertAdjacentElement("beforeend", tdSelectCheckbox)
+        }
         tdDateTime.innerHTML = timeUtilsDateTimeToStr(log.dt)
         tdUser.innerHTML = log.user?getUsersString([log.user]):"Неавторизованный"
         tdMethod.innerHTML = log.method
@@ -136,8 +142,6 @@ function supportWSGIErrorsShow(logs = []){
         tdActionsButton.addEventListener("click", function (){
             supportWSGIErrorInfoModalSet(log.id)
         })
-        tr.insertAdjacentElement("beforeend", tdSelect)
-        tdSelect.insertAdjacentElement("beforeend", tdSelectCheckbox)
         tr.insertAdjacentElement("beforeend", tdDateTime)
         tr.insertAdjacentElement("beforeend", tdUser)
         tr.insertAdjacentElement("beforeend", tdMethod)
@@ -167,43 +171,12 @@ function supportWSGIErrorInfoModalSet(logID){
                 supportWSGIErrorsLogModalMethod.innerHTML = `<b>Метод: </b>${request.response.method}`
                 supportWSGIErrorsLogModalStatusCode.innerHTML = `<b>Код возврата: </b>${request.response.status_code}`
                 supportWSGIErrorsLogModalParametersTraceback.innerHTML = request.response.traceback_log.join("<br>")
-                switch (request.response.handling_status){
-                    case 0:
-                        supportWSGIErrorsLogModalSetHandlingStatusButton.innerHTML = "Взять в работу"
-                        supportWSGIErrorsLogModalSetHandlingStatusButton.classList.remove("d-none")
-                        supportWSGIErrorsLogModalSetNewStatus = 1
-                        break
-                    case 1:
-                        supportWSGIErrorsLogModalSetHandlingStatusButton.innerHTML = "Завершить"
-                        supportWSGIErrorsLogModalSetHandlingStatusButton.classList.remove("d-none")
-                        supportWSGIErrorsLogModalSetNewStatus = 2
-                        break
-                    case 2:
-                        supportWSGIErrorsLogModalSetHandlingStatusButton.classList.add("d-none")
-                        break
-                }
                 supportWSGIErrorsLogModalParametersList.innerHTML = ""
                 for (let key in request.response.params) {
                     supportWSGIErrorsLogModalParametersList.innerHTML += `${key} : ${request.response.params[key]}<br>`
                 }
                 supportWSGIErrorsLogModalServerResponse.innerHTML = request.response.response ? request.response.response : ""
                 bsSupportWSGIErrorsLogModal.show()
-                break
-            default:
-                showErrorToast()
-                break
-        }
-    })
-}
-
-function supportWSGIErrorInfoModalNewStatus(){
-    supportWSGILogsAPIUpdate(supportWSGIErrorsLogModalSelectedID,
-        supportWSGIErrorsLogModalSetNewStatus).then(request => {
-        bsSupportWSGIErrorsLogModal.hide()
-        switch (request.status){
-            case 200:
-                showSuccessToast("Статус ошибки успешно изменён")
-                supportWSGIErrorsGet()
                 break
             default:
                 showErrorToast()
@@ -286,8 +259,6 @@ function supportWSGIErrorsFilteringSetFields(){
         return a
     }
 
-    // supportWSGIErrorsFilteringUserList.insertAdjacentElement("beforeend", getLI(
-    //                     "Неавторизованный", supportWSGIErrorsFilteringUsers, "unauth"))
     usersAPIGetAll().then(request => {
         switch (request.status){
             case 200:
@@ -383,7 +354,7 @@ function supportWSGIErrorsFilteringSetEraseListeners(){
             }
         })
         if (selected){
-            supportWSGIErrorsFilteringUsers = []
+            supportWSGIErrorsFilteringUsers.length = 0
         }
     }
 
@@ -391,14 +362,14 @@ function supportWSGIErrorsFilteringSetEraseListeners(){
         supportWSGIErrorsFilteringMethodList.querySelectorAll("a").forEach(elem => {
             elem.classList.remove("active")
         })
-        supportWSGIErrorsFilteringMethods = []
+        supportWSGIErrorsFilteringMethods.length = 0
     }
 
     function eraseCode(){
         supportWSGIErrorsFilteringCodeList.querySelectorAll("a").forEach(elem => {
             elem.classList.remove("active")
         })
-        supportWSGIErrorsFilteringStatusCode = []
+        supportWSGIErrorsFilteringStatusCode.length = 0
     }
 
     supportWSGIErrorsFilteringDateStartErase.addEventListener("click", function () {
@@ -505,6 +476,5 @@ const supportWSGIErrorsLogModalStatusCode = supportWSGIErrorsLogModal.querySelec
 const supportWSGIErrorsLogModalParametersList = supportWSGIErrorsLogModal.querySelector("#supportWSGIErrorsLogModalParametersList")
 const supportWSGIErrorsLogModalServerResponse = supportWSGIErrorsLogModal.querySelector("#supportWSGIErrorsLogModalServerResponse")
 const supportWSGIErrorsLogModalParametersTraceback = supportWSGIErrorsLogModal.querySelector("#supportWSGIErrorsLogModalParametersTraceback")
-const supportWSGIErrorsLogModalSetHandlingStatusButton = supportWSGIErrorsLogModal.querySelector("#supportWSGIErrorsLogModalSetHandlingStatusButton")
 
 supportWSGIErrorsMain()

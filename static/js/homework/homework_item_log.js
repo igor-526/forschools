@@ -26,7 +26,6 @@ function homeworkItemLogGetBody(log){
                 const imageElementA = document.createElement("a")
                 const imageElementIMG = document.createElement("img")
                 imageElementA.href = file.path
-                imageElementA.target = "_blank"
                 imageElementIMG.alt = "Изображение к ДЗ"
                 imageElementIMG.src = file.path
                 imageElementIMG.classList.add("col-5", "mb-3")

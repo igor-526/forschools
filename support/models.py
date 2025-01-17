@@ -1,11 +1,16 @@
 from django.db import models
-from profile_management.models import NewUser
+from profile_management.models import NewUser, Telegram
 from material.models import File
 
 HANDLING_STATUS_CHOICES = (
     (0, 'Новая ошибка'),
     (1, 'В работе'),
     (2, 'Ошибка исправлена')
+)
+
+ACTION_TYPE_CHOICES = (
+    (0, 'Сообщение'),
+    (1, 'Callback')
 )
 
 TICKETS_STATUS_CHOICES = (
@@ -44,6 +49,34 @@ class WSGIErrorsLog(models.Model):
                                           choices=HANDLING_STATUS_CHOICES)
     response = models.JSONField(verbose_name="Ответ сервера",
                                 null=True)
+
+
+class TelegramErrorsLog(models.Model):
+    action_type = models.IntegerField(verbose_name="Тип события",
+                                      null=False,
+                                      default=0,
+                                      choices=ACTION_TYPE_CHOICES)
+    tg_id = models.BigIntegerField(verbose_name="Telegram ID",
+                                   null=False)
+    tg_note = models.ForeignKey(Telegram,
+                                on_delete=models.SET_NULL,
+                                null=True,
+                                verbose_name="Запись Telegram")
+    error = models.TextField(verbose_name="Ошибка",
+                             null=True)
+    traceback_log = models.JSONField(verbose_name="Трейсбэк",
+                                     null=False,
+                                     default=list)
+    params = models.JSONField(verbose_name="Параметры запроса",
+                              null=False,
+                              default=dict)
+    dt = models.DateTimeField(auto_now_add=True,
+                              verbose_name="Дата и время ошибки",
+                              null=False)
+    handling_status = models.IntegerField(verbose_name="Статус обработки",
+                                          null=False,
+                                          default=0,
+                                          choices=HANDLING_STATUS_CHOICES)
 
 
 class SupportTicketAnswers(models.Model):

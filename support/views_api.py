@@ -1,12 +1,14 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, ListCreateAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from support.permissions import CanSeeSystemLogsMixin
-from .models import WSGIErrorsLog, SupportTicket
-from .serializers import WSGIErrorsLogListSerializer, WSGIErrorsLogSerializer, SupportTicketListSerializer
+from support.permissions import CanSeeSystemLogsMixin, CanChangeSystemLogsMixin
+from .models import WSGIErrorsLog, SupportTicket, TelegramErrorsLog
+from .serializers import (WSGIErrorsLogListSerializer, WSGIErrorsLogSerializer,
+                          SupportTicketListSerializer, TelegramErrorsLogListSerializer,
+                          TelegramErrorsLogSerializer)
 import datetime
 
 
@@ -51,14 +53,59 @@ class WSGIErrorsListAPIView(CanSeeSystemLogsMixin, ListAPIView):
         return queryset.distinct()[:50] if queryset else None
 
 
-class WSGIErrorsRetrieveUpdateAPIView(CanSeeSystemLogsMixin, RetrieveUpdateAPIView):
+class WSGIErrorsRetrieveAPIView(CanSeeSystemLogsMixin, RetrieveAPIView):
     queryset = WSGIErrorsLog.objects.all()
     serializer_class = WSGIErrorsLogSerializer
 
 
-class WSGIErrorsSetStatusAPIView(CanSeeSystemLogsMixin, APIView):
+class WSGIErrorsSetStatusAPIView(CanChangeSystemLogsMixin, APIView):
     def post(self, request, *args, **kwargs):
         queryset = WSGIErrorsLog.objects.filter(id__in=request.POST.getlist("log_id"))
+        for log in queryset:
+            log.handling_status = request.POST.get("handling_status")
+            log.save()
+        return Response(data={"status": "ok"}, status=status.HTTP_200_OK)
+
+
+class TelegramErrorsListAPIView(CanSeeSystemLogsMixin, ListAPIView):
+    model = TelegramErrorsLog
+    serializer_class = TelegramErrorsLogListSerializer
+
+    def filter_queryset_all(self, queryset):
+        handling_status = self.request.query_params.get("handling_status")
+        action_type = self.request.query_params.get("action_type")
+        dt_start = self.request.query_params.get("dt_start")
+        dt_end = self.request.query_params.get("dt_end")
+        users = self.request.query_params.getlist("user")
+        q_dict = {}
+        if handling_status:
+            q_dict["handling_status"] = int(handling_status)
+        if action_type:
+            q_dict["action_type"] = int(action_type)
+        if dt_start:
+            dt_start = datetime.datetime.strptime(dt_start, "%Y-%m-%d")
+            q_dict["dt__date__gte"] = dt_start
+        if dt_end:
+            dt_end = datetime.datetime.strptime(dt_end, "%Y-%m-%d")
+            q_dict["dt__date__lte"] = dt_end
+        if users:
+            q_dict["tg_note__user__id__in"] = users
+        return queryset if len(q_dict) == 0 else queryset.filter(**q_dict)
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = TelegramErrorsLog.objects.order_by("-dt").all()
+        queryset = self.filter_queryset_all(queryset)
+        return queryset.distinct()[:50] if queryset else None
+
+
+class TelegramErrorsRetrieveAPIView(CanSeeSystemLogsMixin, RetrieveAPIView):
+    queryset = TelegramErrorsLog.objects.all()
+    serializer_class = TelegramErrorsLogSerializer
+
+
+class TelegramErrorsSetStatusAPIView(CanChangeSystemLogsMixin, APIView):
+    def post(self, request, *args, **kwargs):
+        queryset = TelegramErrorsLog.objects.filter(id__in=request.POST.getlist("log_id"))
         for log in queryset:
             log.handling_status = request.POST.get("handling_status")
             log.save()

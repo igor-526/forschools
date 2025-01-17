@@ -32,7 +32,7 @@ def get_menu(user):
             {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
             {'name': 'Логи пользователей', 'url': reverse('user_logs')},
             {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},
-            {'name': 'Ошибки Telegram', 'url': "#"},
+            {'name': 'Ошибки Telegram', 'url': reverse('telegramerrors')},
         ]},
         {'name': 'Техподдержка', 'type': 'dropdown', 'menu': [
             {'name': 'Тикеты', 'url': reverse('supporttickets')},

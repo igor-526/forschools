@@ -59,14 +59,12 @@ function learningPlansShow(plans){
         tdActionsBtnGroup.insertAdjacentElement("beforeend", tdActionsEdit)
 
         const tdActionsLogs = document.createElement("a")
-        tdActionsLogs.target = "_blank"
         tdActionsLogs.href = `/user_logs/#plan_id=${plan.id}`
         tdActionsLogs.classList.add("btn", "btn-primary")
         tdActionsLogs.innerHTML = '<i class="bi bi-card-list"></i>'
         tdActionsBtnGroup.insertAdjacentElement("beforeend", tdActionsLogs)
 
         const tdActionsGo = document.createElement("a")
-        tdActionsGo.target = "_blank"
         tdActionsGo.href = `/learning_plans/${plan.id}`
         tdActionsGo.classList.add("btn", "btn-primary")
         tdActionsGo.innerHTML = '<i class="bi bi-chevron-right"></i>'

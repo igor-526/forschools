@@ -107,7 +107,6 @@ function homeworksShow(homeworks, clear=true){
             const tdNameLessonButtonA = document.createElement("a")
             const tdNameLessonButtonButton = document.createElement("button")
             tdNameLessonButtonA.insertAdjacentElement("beforeend", tdNameLessonButtonButton)
-            tdNameLessonButtonA.target = "_blank"
             tdNameLessonButtonA.href = `/lessons/${hw.lesson_info.id}`
             tdNameLessonButtonButton.classList.add("btn", "btn-sm", "btn-primary", "me-2")
             tdNameLessonButtonButton.innerHTML = '<i class="bi bi-file-earmark-text"></i>'
@@ -117,9 +116,9 @@ function homeworksShow(homeworks, clear=true){
             tdName.insertAdjacentElement("beforeend", tdNameLessonButtonA)
             new bootstrap.Tooltip(tdName)
         }
-        tdName.innerHTML += `<a target="_blank" href="/homeworks/${hw.id}">${hw.name}</a>`
-        tdTeacher.innerHTML = `<a target="_blank" href="/profile/${hw.teacher.id}">${hw.teacher.first_name} ${hw.teacher.last_name}</a>`
-        tdListener.innerHTML = `<a target="_blank" href="/profile/${hw.listener.id}">${hw.listener.first_name} ${hw.listener.last_name}</a>`
+        tdName.innerHTML += `<a href="/homeworks/${hw.id}">${hw.name}</a>`
+        tdTeacher.innerHTML = `<a href="/profile/${hw.teacher.id}">${hw.teacher.first_name} ${hw.teacher.last_name}</a>`
+        tdListener.innerHTML = `<a href="/profile/${hw.listener.id}">${hw.listener.first_name} ${hw.listener.last_name}</a>`
         if (hw.assigned){
             tdAssigned.innerHTML = new Date(hw.assigned).toLocaleDateString()
         }
