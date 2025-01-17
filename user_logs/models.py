@@ -1,5 +1,4 @@
 from django.db import models
-
 from learning_plan.models import LearningPlan
 from profile_management.models import NewUser
 
@@ -7,7 +6,8 @@ LOG_TYPE_CHOICES = (
     (0, 'Другое'),
     (1, 'Работа методиста'),
     (2, 'Занятие'),
-    (3, 'Учебный план')
+    (3, 'Учебный план'),
+    (4, 'Домашнее задание')
 )
 
 
@@ -40,6 +40,10 @@ class UserLog(models.Model):
                                null=False,
                                blank=False,
                                default=list)
+    files = models.JSONField(verbose_name="Файлы",
+                             null=False,
+                             blank=False,
+                             default=list)
     user = models.ForeignKey(NewUser,
                              on_delete=models.SET_NULL,
                              null=True,

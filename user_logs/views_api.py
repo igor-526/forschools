@@ -55,7 +55,7 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
 
     def get_hw_logs(self, plan_id: int):
         query_hw_logs = {}
-        query_user_logs = {"log_type": 1,
+        query_user_logs = {"log_type__in": [1, 4],
                            "learning_plan__id": plan_id}
         if plan_id:
             query_hw_logs['homework__lesson__learningphases__learningplan__id'] = plan_id

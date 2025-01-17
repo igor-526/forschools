@@ -230,7 +230,6 @@ class UserLogsLessonReviewSerializer(serializers.ModelSerializer):
 
 
 class UserLogsSerializer(serializers.ModelSerializer):
-    files = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     user = NewUserNameOnlyListSerializer(many=False)
 
@@ -240,9 +239,6 @@ class UserLogsSerializer(serializers.ModelSerializer):
 
     def get_date(self, obj):
         return obj.date
-
-    def get_files(self, obj):
-        return []
 
 
 def get_role_ru(role: str, case: str = 'n', lc: bool = False):

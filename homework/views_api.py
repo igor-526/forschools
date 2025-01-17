@@ -2,6 +2,7 @@ import datetime
 from django.db.models import Q
 from chat.models import Message
 from lesson.permissions import CanReplaceTeacherMixin
+from material.utils.get_type import get_type
 from .permissions import get_delete_log_permission, get_can_accept_log_permission, get_can_edit_hw_permission
 from .serializers import HomeworkListSerializer, HomeworkLogListSerializer, HomeworkLogSerializer, HomeworkSerializer
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 from .models import Homework, HomeworkLog
 from rest_framework.views import APIView
 from rest_framework import status
-from material.models import File
+from material.models import File, Material
 from user_logs.models import UserLog
 
 
@@ -377,6 +378,36 @@ class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
             return Response({"error": "Нет прав для редактирования ДЗ"}, status=status.HTTP_403_FORBIDDEN)
         try:
             hw.materials.set(hw.materials.exclude(pk=kwargs.get('mat_id')))
+            lesson = hw.get_lesson()
+            plan = lesson.get_learning_plan() if lesson else None
+            if plan:
+                mat = Material.objects.get(pk=kwargs.get('mat_id'))
+                UserLog.objects.create(log_type=4,
+                                       learning_plan=plan,
+                                       title=f"Из домашнего задания удалён материал",
+                                       content={
+                                           "list": [{
+                                               "name": "Наименование занятия",
+                                               "val": lesson.name
+                                           },
+                                           {
+                                               "name": "Дата занятия",
+                                               "val": lesson.date.strftime("%d.%m.%Y")
+                                           }
+                                           ],
+                                           "text": []
+                                       },
+                                       files=[{
+                                           "type": get_type(mat.file.name.split('.')[-1]),
+                                           "href": mat.file.url
+                                       }],
+                                       buttons=[{"inner": "ДЗ",
+                                                 "href": f"/homeworks/{hw.id}"},
+                                                {"inner": "Занятие",
+                                                 "href": f"/lessons/{lesson.id}"}],
+                                       user=request.user,
+                                       color="danger")
+
             return Response({'status': 'ok'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -25,8 +25,7 @@ def notification_listeners_lessons():
                        f"<b>Сегодня</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
                        f"преподавателем <b>{lesson.get_teacher()}</b>\n\n")
                 if lesson.place:
-                    msg += (f'<a href="{lesson.place.url}">Ссылка на занятие</a>\n'
-                            f'<b>Просьба не подключаться заранее</b>')
+                    msg += (f'<a href="{lesson.place.url}">Ссылка на занятие</a>')
                 result = tg.send_tg_message_sync(
                     tg_id=telegram.get("tg_id"),
                     message=msg
@@ -95,8 +94,7 @@ def notification_listeners_tomorrow_lessons():
                        f"<b>Завтра</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
                        f"преподавателем <b>{lesson.get_teacher()}</b>\n\n")
                 if lesson.place:
-                    msg += (f'<a href="{lesson.place.url}">Ссылка на занятие</a>\n'
-                            f'<b>Просьба не подключаться заранее</b>')
+                    msg += (f'<a href="{lesson.place.url}">Ссылка на занятие</a>')
                 result = tg.send_tg_message_sync(
                     tg_id=telegram.get("tg_id"),
                     message=msg

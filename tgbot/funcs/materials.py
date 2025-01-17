@@ -24,6 +24,7 @@ from tgbot.keyboards.materials import (get_keyboard_materials,
                                        get_show_key)
 from tgbot.finite_states.materials import MaterialFSM
 from material.utils.get_type import get_type
+from user_logs.models import UserLog
 
 
 async def send_material_item(tg_id: int, state: FSMContext, material: Material, protect=False, meta=True) -> None:
@@ -239,6 +240,36 @@ async def delete_material_from_hw(callback: CallbackQuery, callback_data: Materi
             if hw:
                 await hw.materials.aset([hw.id async for hw in hw.materials.all().exclude(id=callback_data.mat_id)])
                 await callback.answer("Материала больше нет в ДЗ")
+                lesson = await hw.aget_lesson()
+                plan = await lesson.aget_learning_plan() if lesson else None
+                if plan:
+                    user = await get_user(callback.from_user.id)
+                    mat = await Material.objects.filter(id=callback_data.mat_id).afirst()
+                    await UserLog.objects.acreate(log_type=4,
+                                                  color="danger",
+                                                  learning_plan=plan,
+                                                  title=f"Из домашнего задания удалён материал",
+                                                  content={
+                                                      "list": [{
+                                                          "name": "Наименование занятия",
+                                                          "val": lesson.name
+                                                      },
+                                                          {
+                                                              "name": "Дата занятия",
+                                                              "val": lesson.date.strftime("%d.%m.%Y")
+                                                          }
+                                                      ],
+                                                      "text": []
+                                                  },
+                                                  files=[{
+                                                      "type": get_type(mat.file.name.split('.')[-1]),
+                                                      "href": mat.file.url
+                                                  }],
+                                                  buttons=[{"inner": "ДЗ",
+                                                            "href": f"/homeworks/{hw.id}"},
+                                                           {"inner": "Занятие",
+                                                            "href": f"/lessons/{lesson.id}"}],
+                                                  user=user)
             else:
                 await callback.answer("Ошибка. Домашнее задание не найдено")
         else:
@@ -249,6 +280,7 @@ async def delete_material_from_hw(callback: CallbackQuery, callback_data: Materi
                 await callback.answer("Материала больше нет в ДЗ")
             else:
                 await callback.answer("Ошибка. Домашнее задание не найдено")
+
     else:
         await callback.answer("Превышен таймаут. Вызовите материал ещё раз и повторите попытку")
     await callback.message.delete()
