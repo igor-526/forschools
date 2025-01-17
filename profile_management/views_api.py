@@ -16,6 +16,17 @@ from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
 
 
 class DeactivateUserAPIView(LoginRequiredMixin, APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            user = NewUser.objects.get(pk=kwargs.get('pk'))
+            if get_secretinfo_perm(request.user, user):
+                result = user.get_info_deactivate()
+                return Response(result, status=status.HTTP_200_OK)
+            else:
+                raise PermissionDenied
+        except Exception as ex:
+            return Response({'status': 'error', 'errors': ex}, status=status.HTTP_400_BAD_REQUEST)
+
     def patch(self, request, *args, **kwargs):
         try:
             user = NewUser.objects.get(pk=kwargs.get('pk'))
@@ -160,11 +171,11 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
                 )
             elif "Teacher" in user_groups:
                 queryset = NewUser.objects.filter(
-                    Q(plan_listeners__curator=self,
+                    Q(plan_listeners__curators=self,
                       is_active=True) |
-                    Q(plan_teacher__curator=self,
+                    Q(plan_teacher__curators=self,
                       is_active=True) |
-                    Q(plan_metodist__curator=self,
+                    Q(plan_metodist__curators=self,
                       is_active=True)
                 )
             elif "Curator" in user_groups:

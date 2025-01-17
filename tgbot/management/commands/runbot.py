@@ -8,8 +8,8 @@ from tgbot.middlewares import LastMessageMiddleware, LastMessageCallbackMiddlewa
 
 async def start() -> None:
     dp.include_routers(main_router)
-    dp.message.middleware.register(LastMessageMiddleware())
-    dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
+    # dp.message.middleware.register(LastMessageMiddleware())
+    # dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
     await dp.start_polling(bot)
 
 

@@ -133,22 +133,99 @@ function usersEditFunctionsSetActivationStatus(){
 }
 
 function usersEditFunctionsActivationSetModal(){
+    function getInfoList(infoText=null, itemList=[], href=null){
+        const mainDiv = document.createElement("div")
+        if (infoText){
+            const pText = document.createElement("p")
+            pText.innerHTML = infoText
+            mainDiv.insertAdjacentElement("beforeend", pText)
+        }
+        const ul = document.createElement("ul")
+        ul.classList.add("list_group")
+        itemList.forEach(item => {
+            const li = document.createElement("li")
+            li.classList.add("list-group-item")
+            li.innerHTML = href ? `<a href="/${href}/${item.id}">${item.name}</a>` : item.name
+            mainDiv.insertAdjacentElement("beforeend", li)
+        })
+
+        return mainDiv
+    }
+
+    function setDeactivationErrorBody(info){
+        usersEditActivationModalBody.innerHTML = ""
+        const pInfo = document.createElement("p")
+        pInfo.innerHTML = "Пользователь не может быть деактивирован из за следующих ошибок:"
+        usersEditActivationModalBody.insertAdjacentElement("beforeend", pInfo)
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+        if (info.group_chats){
+            getInfoList("Пользователь состоит в следующих групповых чатах. Необходимо удалить пользователя")
+        }
+    }
+
     const action = this.attributes.getNamedItem("data-action").value
     usersEditActivationModalButton.setAttribute("data-action", action)
     switch (action){
         case "activate":
             usersEditActivationTitle.innerHTML = "Активация"
-            usersEditActivationModalBody.innerHTML = "После активации пользователя он будет показываться в списках для выбора.<br>Пользователь сможет войти на платформу и использовать бот Telegram"
+            usersEditActivationModalBody.innerHTML = "После активации пользователя он будет показываться в списках " +
+                "для выбора.<br>Пользователь сможет войти на платформу и использовать бот Telegram"
             usersEditActivationModalButton.innerHTML = "Активировать"
             usersEditActivationModalButton.classList.remove("btn-danger")
             usersEditActivationModalButton.classList.add("btn-primary")
+            usersEditActivationModalButton.disabled = false
             break
         case "deactivate":
-            usersEditActivationTitle.innerHTML = "Дективация"
-            usersEditActivationModalBody.innerHTML = "После деактивации пользователя он не будет показываться в списках для выбора.<br>Пользователь не сможет войти на платформу и использовать бот Telegram.<br>Рассылка продолжит поступать на Telegram и e-mail"
-            usersEditActivationModalButton.innerHTML = "Дективировать"
+            usersEditActivationTitle.innerHTML = "Деактивация"
+            usersEditActivationModalButton.innerHTML = "Деактивировать"
             usersEditActivationModalButton.classList.add("btn-danger")
             usersEditActivationModalButton.classList.remove("btn-primary")
+            usersAPIDeactivateInfo(selectedUserID).then(request => {
+                switch (request.status){
+                    case 200:
+                        if (request.response.can_deactivate){
+                            usersEditActivationModalBody.innerHTML = "После деактивации пользователя он не будет " +
+                                "показываться в списках для выбора.<br>Пользователь не сможет войти на платформу и " +
+                                "использовать бот Telegram.<br>Рассылка продолжит поступать на Telegram и e-mail"
+                            usersEditActivationModalButton.disabled = false
+                        } else {
+                            usersEditActivationModalButton.disabled = true
+                            setDeactivationErrorBody(request.response)
+                        }
+                        break
+                    default:
+                        break
+                }
+            })
             break
     }
     bsUsersEditActivationModal.show()

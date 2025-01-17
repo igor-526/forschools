@@ -202,6 +202,52 @@ class NewUser(AbstractUser):
         self.photo = 'profile_pictures/base_avatar.png'
         self.save()
 
+    def get_info_deactivate(self):
+        result = {
+            "can_deactivate": True
+        }
+        group_chats = self.group_chats.all()
+        if group_chats:
+            result["can_deactivate"] = False
+            result["group_chats"] = [{"id": item.id, "name": item.name} for item in group_chats]
+        group_chats_admin = self.group_chats_admin.all()
+        if group_chats_admin:
+            result["can_deactivate"] = False
+            result["group_chats_admin"] = [{"id": item.id, "name": item.name} for item in group_chats_admin]
+        homework_teacher = self.homeworks.exclude(log_set__status__in=[4, 6, 7])
+        if homework_teacher:
+            result["can_deactivate"] = False
+            result["homework_teacher"] = [{"id": item.id, "name": item.name} for item in homework_teacher]
+        homework_listener = self.homework_set.exclude(log_set__status__in=[4, 6, 7])
+        if homework_listener:
+            result["can_deactivate"] = False
+            result["homework_listener"] = [{"id": item.id, "name": item.name} for item in homework_listener]
+        plan_curator = self.plan_curator.all()
+        if plan_curator:
+            result["can_deactivate"] = False
+            result["plan_curator"] = [{"id": item.id, "name": item.name} for item in plan_curator]
+        plan_listeners = self.plan_listeners.all()
+        if plan_listeners:
+            result["can_deactivate"] = False
+            result["plan_listeners"] = [{"id": item.id, "name": item.name} for item in plan_listeners]
+        plan_methodist = self.plan_metodist.all()
+        if plan_methodist:
+            result["can_deactivate"] = False
+            result["plan_methodist"] = [{"id": item.id, "name": item.name} for item in plan_methodist]
+        plan_teacher = self.plan_teacher.all()
+        if plan_teacher:
+            result["can_deactivate"] = False
+            result["plan_teacher"] = [{"id": item.id, "name": item.name} for item in plan_teacher]
+        plan_hw_teacher = self.hw_teacher.all()
+        if plan_hw_teacher:
+            result["can_deactivate"] = False
+            result["plan_hw_teacher"] = [{"id": item.id, "name": item.name} for item in plan_hw_teacher]
+        lesson_replace_teacher = self.replace_teacher.filter(status=0)
+        if lesson_replace_teacher:
+            result["can_deactivate"] = False
+            result["lesson_replace_teacher"] = [{"id": item.id, "name": item.name} for item in lesson_replace_teacher]
+        return result
+
     def _remove_duplicates(self, lst):
         result = []
         for item in lst:
@@ -297,11 +343,11 @@ class NewUser(AbstractUser):
                   is_active=True)).exclude(pk=self.id).distinct()])
         if "Curator" in roles:
             users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
-                Q(plan_listeners__curator=self,
+                Q(plan_listeners__curators=self,
                   is_active=True) |
-                Q(plan_teacher__curator=self,
+                Q(plan_teacher__curators=self,
                   is_active=True) |
-                Q(plan_metodist__curator=self,
+                Q(plan_metodist__curators=self,
                   is_active=True)).exclude(pk=self.id).distinct()])
         if "Listener" in roles:
             users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
@@ -399,11 +445,11 @@ class NewUser(AbstractUser):
                   is_active=True)).exclude(pk=self.id).distinct()])
         if "Curator" in roles:
             users_profiles.extend([await get_user_chat_info(u) async for u in NewUser.objects.filter(
-                Q(plan_listeners__curator=self,
+                Q(plan_listeners__curators=self,
                   is_active=True) |
-                Q(plan_teacher__curator=self,
+                Q(plan_teacher__curators=self,
                   is_active=True) |
-                Q(plan_metodist__curator=self,
+                Q(plan_metodist__curators=self,
                   is_active=True)).exclude(pk=self.id).distinct()])
         if "Listener" in roles:
             users_profiles.extend([await get_user_chat_info(u) async for u in NewUser.objects.filter(

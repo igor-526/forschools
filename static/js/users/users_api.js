@@ -143,6 +143,11 @@ async function usersAPIDeactivate(userID, action){
     return await APIPostPatchToObject(request)
 }
 
+async function usersAPIDeactivateInfo(userID){
+    const request = await fetch(`/api/v1/users/${userID}/deactivate/`)
+    return await APIGetToObject(request)
+}
+
 async function usersAPIAdminLogin(userID){
     const request = await fetch(`/api/v1/users/${userID}/login/`)
     return APIGetToObject(request)

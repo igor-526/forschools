@@ -115,3 +115,6 @@ class LearningPlan(models.Model):
         if not lesson:
             return None
         return lesson
+
+    def get_is_closed(self):
+        pass
