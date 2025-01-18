@@ -48,13 +48,6 @@ function lessonsGet(more=false){
 }
 
 function lessonsShow(list, clear=true){
-    function getListeners(listeners){
-        const listenersArray = listeners.map(listener => {
-            return ` href="/profile/${listener.id}">${listener.first_name} ${listener.last_name}</a>`
-        })
-        return listenersArray.join("<br>")
-    }
-
     function getLessonElement(lesson){
         const tr = document.createElement("tr")
         const tdName = document.createElement("td")
@@ -106,7 +99,7 @@ function lessonsShow(list, clear=true){
         tdName.innerHTML = lesson.name
         tdDate.innerHTML = getLessonDateTimeRangeString(lesson)
         tdTeacher.innerHTML = `<a href="/profile/${lesson.teacher.id}">${lesson.teacher.first_name} ${lesson.teacher.last_name}</a>`
-        tdListeners.innerHTML = getListeners(lesson.listeners)
+        tdListeners.innerHTML = getUsersString(lesson.listeners)
         return tr
     }
 
