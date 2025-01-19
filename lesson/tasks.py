@@ -159,14 +159,15 @@ def notification_tomorrow_schedule():
         telegram_t_ids = get_tg_id_sync(teacher.id)
         for telegram_t in telegram_t_ids:
             listeners_str = ', '.join([str(listener) for listener in listeners])
+            placestr = f'<a href="{lesson.place.url}"> (cсылка)</a>' if lesson.place else ''
             if notifications_t.get(telegram_t.get("tg_id")):
                 notifications_t[telegram_t.get("tg_id")]["msg"] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                             f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}")
+                                                                    f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}{placestr}")
             else:
                 notifications_t[telegram_t.get("tg_id")] = {"msg": (f"<b>Ваше расписание на завтра:</b>\n"
-                                                             f"<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                             f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}"),
-                                                     "usr_id": teacher.id}
+                                                                    f"<b>{lesson.start_time.strftime('%H:%M')}-"
+                                                                    f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}{placestr}"),
+                                                            "usr_id": teacher.id}
         if not telegram_t_ids:
             TgBotJournal.objects.create(
                 recipient=teacher,
