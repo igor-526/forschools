@@ -214,6 +214,40 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
 
 
 class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
+    def get_review_form_list_data(self, rf):
+        list_data = []
+        if rf and rf.materials:
+            list_data.append({
+                "name": "Используемые материалы",
+                "val": rf.materials
+            })
+        if rf and rf.lexis:
+            list_data.append({
+                "name": "Лексика",
+                "val": rf.lexis
+            })
+        if rf and rf.grammar:
+            list_data.append({
+                "name": "Грамматика",
+                "val": rf.grammar
+            })
+        if rf and rf.note:
+            list_data.append({
+                "name": "Примечание",
+                "val": rf.note
+            })
+        if rf and rf.org:
+            list_data.append({
+                "name": "Орг. моменты и поведение ученика",
+                "val": rf.org
+            })
+        if rf and rf.org:
+            list_data.append({
+                "name": "Дата и время заоплнения формы",
+                "val": rf.dt.strftime('%d.%m.%Y %H:%M')
+            })
+        return list_data
+
     def post(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
@@ -222,9 +256,6 @@ class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
         if lesson.status != 0:
             if can_set_not_held(request, lesson):
                 lesson.status = 0
-                if lesson.lesson_teacher_review:
-                    lesson.lesson_teacher_review.delete()
-                    lesson.lesson_teacher_review = None
                 lesson.save()
                 serialized_lesson = LessonSerializer(lesson, context={'request': request})
                 UserLog.objects.create(log_type=2,
@@ -233,7 +264,7 @@ class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
                                        title=f"Занятие '{lesson.name}' от {lesson.date.strftime('%d.%m.%Y')} "
                                              f"помечено непроведённым",
                                        content={
-                                           "list": [],
+                                           "list": self.get_review_form_list_data(lesson.lesson_teacher_review),
                                            "text": ["Занятие было помечено непроведённым"]
                                        },
                                        buttons=[{
@@ -241,10 +272,13 @@ class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
                                            "inner": "Занятие"
                                        }],
                                        user=request.user)
+                if lesson.lesson_teacher_review:
+                    lesson.lesson_teacher_review.delete()
+                    lesson.lesson_teacher_review = None
                 return Response(serialized_lesson.data, status=status.HTTP_201_CREATED)
             else:
                 return Response({'error': "Недостаточно прав для изменения статуса занятия"},
-                                    status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error': "Занятие в статусе непроведённого"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -349,7 +383,7 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         except Lesson.DoesNotExist:
             return Response({'errors': "Занятие не найдено<br>Обновите страницу и повторите попытку"},
-                                status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST)
         validation = self.validate_item_rescheduling(request, lesson, *args, **kwargs)
         if validation['status'] == "error":
             return Response(validation, status=status.HTTP_400_BAD_REQUEST)

@@ -45,7 +45,7 @@ def get_lesson_place_button(url: str, place_id: int = None) -> InlineKeyboardMar
     )
     if place_id:
         builder.button(
-            text="Данные для доступа",
+            text="Код доступа",
             callback_data=LessonPlaceCallback(place_id=place_id)
         )
     builder.adjust(1)

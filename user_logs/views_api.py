@@ -74,6 +74,8 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
         user_logs_queryset = UserLog.objects.filter(**query_user_logs)
         hw_logs_ser = UserLogsHWLogsSerializer(hw_logs_queryset, many=True).data
         user_logs_ser = UserLogsSerializer(user_logs_queryset, many=True).data
+        print(query_user_logs)
+        print(user_logs_queryset)
         return [*hw_logs_ser, *user_logs_ser]
 
     def get_tg_journal_notes(self):

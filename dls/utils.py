@@ -20,7 +20,7 @@ def get_menu(user):
     superuser_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
+        {'name': f'Cообщения ({user.get_unread_messages_count()})', 'url': reverse('chats'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},

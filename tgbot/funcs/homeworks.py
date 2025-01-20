@@ -26,6 +26,9 @@ from homework.utils import status_code_to_string
 from material.utils.get_type import get_type
 from aiogram.utils.media_group import MediaGroupBuilder
 
+from user_logs.models import UserLog
+from user_logs.serializers import get_role_ru
+
 
 async def homeworks_send_menu(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
@@ -252,6 +255,47 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                      f"Преподаватель: {hw.teacher.first_name} {hw.teacher.last_name}\n"
                                      f"Ученик: {hw.listener.first_name} {hw.listener.last_name}")
 
+    async def log_add_materials(old_mat=None, new_mat=None):
+        if new_mat is None:
+            new_mat = []
+        if old_mat is None:
+            old_mat = []
+        added_materials = list(filter(lambda mat_id: mat_id not in old_mat, new_mat))
+        if added_materials:
+            plan = await lesson.aget_learning_plan() if lesson else None
+            files = [{
+                "type": get_type(f.file.name.split('.')[-1]),
+                "href": f.file.url
+            } async for f in Material.objects.filter(id__in=added_materials)]
+            user_role_ru = get_role_ru((await user.groups.afirst()).name)
+            await UserLog.objects.acreate(log_type=4,
+                                          learning_plan=plan,
+                                          title=f'{user_role_ru} добавил в ДЗ новые материалы',
+                                          content={
+                                              "list": [
+                                                  {
+                                                      "name": "Наименование ДЗ",
+                                                      "val": hw.name
+                                                  },
+                                                  {
+                                                      "name": "Наименование занятия",
+                                                      "val": lesson.name
+                                                  },
+                                                  {
+                                                      "name": "Дата занятия",
+                                                      "val": lesson.date.strftime("%d.%m.%Y")
+                                                  },
+                                              ],
+                                              "text": [],
+                                          },
+                                          buttons=[{"inner": "Занятие",
+                                                    "href": f"/lessons/{lesson.id}"},
+                                                   {"inner": "ДЗ",
+                                                    "href": f"/homeworks/{hw.id}"}
+                                                   ],
+                                          files=files,
+                                          user=user)
+
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")
     current_deadline = statedata.get("new_hw").get("deadline")
@@ -267,12 +311,13 @@ async def add_homework_set_homework_ready(state: FSMContext,
             else "-"
         hw.deadline = current_deadline_dt
         await hw.asave()
+        old_materials = [mat.id async for mat in hw.materials.all()]
         await hw.materials.aset(statedata.get("new_hw").get("materials"))
         await hw.asave()
         lesson = await hw.aget_lesson()
-        plan = await lesson.aget_learning_plan() if lesson else None
         await message.answer(text="ДЗ успешно изменено",
                              reply_markup=None)
+        await log_add_materials(old_materials, statedata.get("new_hw").get("materials"))
         await notify_hw_changed()
         await send_menu(message.from_user.id, state)
     else:

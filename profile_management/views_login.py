@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .forms import SignUpForm
 from .models import NewUser
+from rest_framework.decorators import api_view
 
 
 def user_login(request):
@@ -31,6 +32,7 @@ def user_logout(request):
 
 
 @permission_required(perm='auth.register_users', raise_exception=True)
+@api_view(('POST',))
 def register_view(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)

@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from material.models import File, Material
 from user_logs.models import UserLog
+from .utils import status_code_to_string
 
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -207,6 +208,46 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
         instance = self.get_object()
         if instance:
             if get_delete_log_permission(instance, request):
+                lesson = instance.homework.lesson_set.first()
+                plan = lesson.get_learning_plan() if lesson else None
+                if plan:
+                    q = {
+                        "log_type": 4,
+                        "learning_plan": plan,
+                        "title": f"Из ДЗ '{instance.homework.name}' удалён статус",
+                        "content": {
+                            "list": [
+                                {
+                                    "name": "Наименование занятия",
+                                    "val": lesson.name
+                                },
+                                {
+                                    "name": "Дата занятия",
+                                    "val": lesson.date.strftime("%d.%m.%Y")
+                                },
+                                {
+                                    "name": "Статус",
+                                    "val": status_code_to_string(instance.status)
+                                },
+                                {
+                                    "name": "Дата присвоения статуса",
+                                    "val": instance.dt.strftime("%d.%m.%Y")
+                                }
+                            ],
+                            "text": [instance.comment] if instance.comment else [],
+                        },
+                        "files": [{
+                            "type": get_type(file.path.name.split('.')[-1]),
+                            "href": file.path.url
+                        } for file in instance.files.all()],
+                        "buttons": [{"inner": "ДЗ",
+                                     "href": f"/homeworks/{instance.homework.id}"},
+                                    {"inner": "Занятие",
+                                     "href": f"/lessons/{lesson.id}"}],
+                        "user": request.user,
+                        "color": "danger"
+                    }
+                    UserLog.objects.create(**q)
                 instance.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             else:
@@ -390,10 +431,10 @@ class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
                                                "name": "Наименование занятия",
                                                "val": lesson.name
                                            },
-                                           {
-                                               "name": "Дата занятия",
-                                               "val": lesson.date.strftime("%d.%m.%Y")
-                                           }
+                                               {
+                                                   "name": "Дата занятия",
+                                                   "val": lesson.date.strftime("%d.%m.%Y")
+                                               }
                                            ],
                                            "text": []
                                        },

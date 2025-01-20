@@ -31,7 +31,7 @@ class ErrorLogsMiddleware:
                 params = None
             try:
                 if request.method in ["POST", "PATCH"]:
-                    data = request.data
+                    data = response.data
                 else:
                     data = None
             except Exception as e:
