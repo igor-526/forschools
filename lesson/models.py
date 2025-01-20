@@ -22,6 +22,10 @@ class Place(models.Model):
                           null=False,
                           blank=False,
                           unique=True)
+    access_code = models.CharField(verbose_name='Код доступа',
+                                   max_length=200,
+                                   null=True,
+                                   blank=True)
 
     class Meta:
         verbose_name = 'Место проведения занятия'
