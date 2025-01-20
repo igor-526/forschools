@@ -55,7 +55,8 @@ const modalEditPlaceNameError = modalEditPlace.querySelector("#ModalCollectionEd
 const modalEditPlaceURLField = modalEditPlace.querySelector("#ModalCollectionEditPlaceURLField")
 const modalEditPlaceURLHelp = modalEditPlace.querySelector("#ModalCollectionEditPlaceURLHelp")
 const modalEditPlaceURLError = modalEditPlace.querySelector("#ModalCollectionEditPlaceURLError")
-const ModalEditPlaceCodeField = modalEditPlace.querySelector("#ModalCollectionEditPlaceCodeField")
+const modalEditPlaceCodeField = modalEditPlace.querySelector("#ModalCollectionEditPlaceCodeField")
+const modalEditPlaceConfIDField = modalEditPlace.querySelector("#ModalCollectionEditPlaceConfIDField")
 const modalEditPlaceSaveButton = modalEditPlace.querySelector("#ModalCollectionEditPlaceSaveButton")
 
 //Modal Delete

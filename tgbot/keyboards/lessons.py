@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from tgbot.keyboards.callbacks.lessons import LessonScheduleListCallback
+from tgbot.keyboards.callbacks.lessons import LessonScheduleListCallback, LessonPlaceCallback
 from tgbot.keyboards.utils import keyboard_anti_cache_url
 
 
@@ -33,5 +33,20 @@ def get_schedule_ma_button(self=True) -> InlineKeyboardMarkup:
         text="Открыть расписание",
         web_app=WebAppInfo(url=keyboard_anti_cache_url(url))
     )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_lesson_place_button(url: str, place_id: int = None) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Открыть ссылку",
+        url=url
+    )
+    if place_id:
+        builder.button(
+            text="Данные для доступа",
+            callback_data=LessonPlaceCallback(place_id=place_id)
+        )
     builder.adjust(1)
     return builder.as_markup()

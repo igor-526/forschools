@@ -1,12 +1,8 @@
-from aiogram import types, Router, F
-from aiogram.enums import ContentType
+from aiogram import types, Router
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
-import json
 from profile_management.models import NewUser, Telegram
 from tgbot.funcs.menu import send_menu
-from tgbot.keyboards.ma import get_miniapp_button
-from tgbot.create_bot import dp
 
 router = Router(name=__name__)
 
@@ -50,9 +46,3 @@ async def command_start_handler(message: types.Message, state: FSMContext):
 @router.message(Command('reset'))
 async def command_reset_handler(message: types.Message, state: FSMContext):
     await send_menu(message.from_user.id, state)
-
-
-@router.message(Command('ma'))
-async def command_ma_handler(message: types.Message):
-    await message.reply(text="Лови",
-                        reply_markup=get_miniapp_button())

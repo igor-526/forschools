@@ -2,7 +2,7 @@ import datetime
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from django.db.models import Q
-from lesson.models import Lesson
+from lesson.models import Lesson, Place
 from profile_management.models import NewUser
 from tgbot.create_bot import bot
 from tgbot.finite_states.lessons import LessonsFSM
@@ -96,47 +96,6 @@ async def lessons_get_schedule(message: types.Message):
                          reply_markup=rm)
 
 
-async def lessons_get_schedule_old(tg_id: int, state: FSMContext, user: NewUser = None):
-    if not user:
-        user = await get_user(tg_id)
-    perms = await get_group_and_perms(user.id)
-    current_date = datetime.date.today()
-    monday = current_date - datetime.timedelta(days=current_date.weekday())
-    if "Admin" in perms.get("groups") or "Metodist" in perms.get("groups"):
-        users = [{
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "user_id": user.id,
-        } async for user in NewUser.objects.filter(groups__name__in=["Teacher", "Listener"],
-                                                   is_active=True)[:15]]
-        await bot.send_message(chat_id=tg_id,
-                               text="Выберите пользователя, чьё расписание необходимо показать:",
-                               reply_markup=lessons_get_users_buttons(users))
-        await bot.send_message(chat_id=tg_id,
-                               text="Если пользователя в списке нет, введите фразу для поиска (фамилия или имя) или "
-                                    "<b>нажмите кноку 'Отмена'</b>",
-                               reply_markup=cancel_keyboard)
-        await state.set_state(LessonsFSM.user_search)
-    if "Teacher" in perms.get("groups"):
-        lessons = [lesson async for lesson in Lesson.objects.filter(Q(learningphases__learningplan__teacher=user,
-                                                                      date__gte=monday,
-                                                                      date__lte=monday + datetime.timedelta(days=6)) |
-                                                                    Q(replace_teacher=user,
-                                                                      date__gte=monday,
-                                                                      date__lte=monday + datetime.timedelta(days=6))
-                                                                    )]
-        msg = await lessons_generate_schedule_message(lessons, monday, "teacher", user)
-        await bot.send_message(chat_id=tg_id, text=msg)
-        await send_menu(tg_id, state)
-    if "Listener" in perms.get("groups"):
-        lessons = [lesson async for lesson in Lesson.objects.filter(learningphases__learningplan__listeners=user,
-                                                                    date__gte=monday,
-                                                                    date__lte=monday + datetime.timedelta(days=6))]
-        msg = await lessons_generate_schedule_message(lessons, monday, "listener", user)
-        await bot.send_message(chat_id=tg_id, text=msg)
-        await send_menu(tg_id, state)
-
-
 async def lessons_search_users(message: types.Message, state: FSMContext):
     userlist = []
     for query in message.text.split(" "):
@@ -168,3 +127,19 @@ def get_lesson_can_be_passed(lesson: Lesson):
         if lesson.end_time > today.time():
             return False
     return True
+
+
+async def f_lessons_show_place_access_info(place_id, tg_id):
+    try:
+        place = await Place.objects.aget(id=place_id)
+    except Place.DoesNotExist:
+        await bot.send_message(chat_id=tg_id, text="Произошла ошибка. Место проведения не найдено")
+        return
+    msg = "Данные для подключения к занятию:\n"
+    if place.url:
+        msg += f'<b>Ссылка: </b>{place.url}\n'
+    if place.conf_id:
+        msg += f'<b>Идентификатор конференции: </b>{place.conf_id}\n'
+    if place.access_code:
+        msg += f'<b>Код для подключения: </b>{place.access_code}\n'
+    await bot.send_message(chat_id=tg_id, text=msg)

@@ -7,6 +7,7 @@ from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks import homeworks_send_menu
 from tgbot.funcs.chats import chats_show, chats_type_message
 from tgbot.funcs.settings import generate_settings_message
+from tgbot.keyboards.lessons import get_lesson_place_button
 
 router = Router(name=__name__)
 
@@ -58,4 +59,3 @@ async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
         })
     await state.set_state(ChatsFSM.send_message)
     await chats_type_message(message, state)
-

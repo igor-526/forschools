@@ -22,6 +22,10 @@ class Place(models.Model):
                           null=False,
                           blank=False,
                           unique=True)
+    conf_id = models.CharField(verbose_name='Идентификатор конференции',
+                               max_length=200,
+                               null=True,
+                               blank=True)
     access_code = models.CharField(verbose_name='Код доступа',
                                    max_length=200,
                                    null=True,
