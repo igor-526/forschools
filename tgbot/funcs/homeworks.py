@@ -25,7 +25,6 @@ from tgbot.utils import get_group_and_perms, get_user
 from homework.utils import status_code_to_string
 from material.utils.get_type import get_type
 from aiogram.utils.media_group import MediaGroupBuilder
-
 from user_logs.models import UserLog
 from user_logs.serializers import get_role_ru
 
@@ -73,7 +72,7 @@ async def add_homework_select_lesson(user_tg_id: int, message: types.Message = N
         groups = [g.name async for g in user.groups.all()]
         l = []
         if "Teacher" in groups:
-            l = [{
+            l += [{
                 "lesson_id": lesson.id,
                 "start_time": lesson.start_time.strftime("%H:%M"),
                 "end_time": lesson.end_time.strftime("%H:%M"),
@@ -89,7 +88,7 @@ async def add_homework_select_lesson(user_tg_id: int, message: types.Message = N
                   status__in=[0, 1])
             )]
         elif "Metodist" in groups:
-            l = [{
+            l += [{
                 "lesson_id": lesson.id,
                 "start_time": lesson.start_time.strftime("%H:%M"),
                 "end_time": lesson.end_time.strftime("%H:%M"),
@@ -157,7 +156,9 @@ async def add_homework_set_homework_ready(state: FSMContext,
         lesson_can_be_passed = get_lesson_can_be_passed(lesson) if lesson else False
         rm = None
         msg_text = "!"
-        if is_teacher:
+        if lesson.status == 3:
+            msg_text = "Вы не можете задать ДЗ к этому занятию, так как оно отменено"
+        elif is_teacher:
             if lesson.status == 1 and methodist:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} отправлено на согласование"
                 await hw.aset_assigned()
@@ -226,6 +227,28 @@ async def add_homework_set_homework_ready(state: FSMContext,
                     f"ДЗ для {listener.first_name} {listener.last_name} не может быть задано, так как занятие не"
                     f" проведено. ДЗ удалено")
                 await hw.adelete()
+        elif is_methodist:
+            if lesson.status == 1:
+                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
+                await hw.aset_assigned()
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
+                await homework_tg_notify(user,
+                                         listener.id,
+                                         [hw],
+                                         "У вас новое домашнее задание!")
+                for cur_id in curators_ids:
+                    await homework_tg_notify(user,
+                                             cur_id,
+                                             [hw],
+                                             "Методист задал новое ДЗ")
+            elif lesson.status == 0:
+                msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} создано и будет задано после "
+                            f"проведения занятия")
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
         else:
             msg_text = "Вы не можете задать ДЗ к этому занятию"
         if message:
