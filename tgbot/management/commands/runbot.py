@@ -11,16 +11,16 @@ from aiohttp import web
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 
-async def start() -> None:
+async def start_polling() -> None:
     dp.include_routers(main_router)
     if not DEBUG:
         dp.message.middleware.register(LastMessageMiddleware())
         dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
-    if TG_WEBHOOKS_MODE:
-        await bot.set_webhook(f"{os.environ.get('DJANGO_ALLOWED_HOST')}{TG_WEBHOOK_PATH}",
-                              secret_token=TG_WEBHOOK_SECRET)
-    else:
-        await dp.start_polling(bot)
+    await dp.start_polling(bot)
+
+
+async def on_startup(bot) -> None:
+    await bot.set_webhook(f"{os.environ.get('DJANGO_ALLOWED_HOST')}{TG_WEBHOOK_PATH}", secret_token=TG_WEBHOOK_SECRET)
 
 
 class Command(BaseCommand):
@@ -29,7 +29,25 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         try:
             logging.getLogger().setLevel(logging.DEBUG)
-            asyncio.run(start())
+            if TG_WEBHOOKS_MODE:
+                dp.include_routers(main_router)
+                if not DEBUG:
+                    dp.message.middleware.register(LastMessageMiddleware())
+                    dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
+                dp.startup.register(on_startup)
+                app = web.Application()
+                webhook_requests_handler = SimpleRequestHandler(
+                    dispatcher=dp,
+                    bot=bot,
+                    secret_token=TG_WEBHOOK_SECRET,
+                )
+                webhook_requests_handler.register(app, path=TG_WEBHOOK_PATH)
+                setup_application(app, dp, bot=bot)
+                web.run_app(app, host=TG_WEB_SERVER_HOST, port=8080)
+            else:
+                asyncio.run(start_polling())
+
+
             if TG_WEBHOOKS_MODE:
                 app = web.Application()
                 webhook_requests_handler = SimpleRequestHandler(
@@ -42,5 +60,6 @@ class Command(BaseCommand):
                 print("WH STARTING")
                 web.run_app(app, host=TG_WEB_SERVER_HOST, port=8080)
                 print("WH STARTED")
+
         except Exception as ex:
             raise CommandError(ex)
