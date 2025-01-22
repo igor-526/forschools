@@ -125,7 +125,18 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static_utils")
+    os.path.join(BASE_DIR, "static_utils"),
+    os.path.join(BASE_DIR, "learning_plan/static/"),
+    os.path.join(BASE_DIR, "learning_program/static/"),
+    os.path.join(BASE_DIR, "support/static/"),
+    os.path.join(BASE_DIR, "user_logs/static/"),
+    os.path.join(BASE_DIR, "tgbot/static/"),
+    os.path.join(BASE_DIR, "profile_management/static/"),
+    os.path.join(BASE_DIR, "material/static/"),
+    os.path.join(BASE_DIR, "lesson/static/"),
+    os.path.join(BASE_DIR, "homework/static/"),
+    os.path.join(BASE_DIR, "data_collections/static/"),
+    os.path.join(BASE_DIR, "chat/static/")
 ]
 if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")

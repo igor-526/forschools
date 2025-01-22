@@ -1,0 +1,23 @@
+volumes:
+  forschools_dev_pgdata:
+  forschools_dev_redisdata:
+
+services:
+  forschools_dev_database:
+    image: postgres:latest
+    ports:
+      - "${DB_PORT_FORWARD}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DB}
+      POSTGRES_HOST: localhost
+    volumes:
+      - forschools_dev_pgdata:/var/lib/postgresql/data
+    restart: always
+
+  forschools_dev_redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - forschools_dev_redisdata:/data

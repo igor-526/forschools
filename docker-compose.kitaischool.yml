@@ -28,7 +28,7 @@ services:
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: kitaischool_database
+      DB_HOST: ${DB_HOST}
       REDIS_HOST: ${REDIS_HOST}
       DB_PORT: ${DB_PORT}
       TGPARSER_SESSION_NAME: ${TGPARSER_SESSION_NAME}
@@ -36,11 +36,12 @@ services:
       TGPARSER_API_HASH: ${TGPARSER_API_HASH}
       TGPARSER_CHANNEL_NAME: ${TGPARSER_CHANNEL_NAME}
       PYTHONUNBUFFERED: 1
-    entrypoint: bash -c  "python manage.py migrate && gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
+    entrypoint: bash -c  "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
     depends_on:
       - kitaischool_database
     volumes:
       - /home/sdo/kitaischool/media:/src/media
+      - /home/sdo/forschools_static:/src/static
     restart: always
 
   kitaischool_redis:
@@ -62,7 +63,7 @@ services:
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: kitaischool_database
+      DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       REDIS_HOST: ${REDIS_HOST}
       PYTHONUNBUFFERED: 1
@@ -81,7 +82,7 @@ services:
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: kitaischool_database
+      DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       REDIS_HOST: ${REDIS_HOST}
       PYTHONUNBUFFERED: 1
@@ -97,7 +98,7 @@ services:
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: kitaischool_database
+      DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       REDIS_HOST: ${REDIS_HOST}
       PYTHONUNBUFFERED: 1
