@@ -17,18 +17,8 @@ async def start() -> None:
         dp.message.middleware.register(LastMessageMiddleware())
         dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
     if TG_WEBHOOKS_MODE:
-        print("STARTING WEBHOOKS MODE")
         await bot.set_webhook(f"{os.environ.get('DJANGO_ALLOWED_HOST')}{TG_WEBHOOK_PATH}",
                               secret_token=TG_WEBHOOK_SECRET)
-        app = web.Application()
-        webhook_requests_handler = SimpleRequestHandler(
-            dispatcher=dp,
-            bot=bot,
-            secret_token=TG_WEBHOOK_SECRET,
-        )
-        webhook_requests_handler.register(app, path=TG_WEBHOOK_PATH)
-        setup_application(app, dp, bot=bot)
-        web.run_app(app, host=TG_WEB_SERVER_HOST, port=8080)
     else:
         await dp.start_polling(bot)
 
@@ -40,5 +30,15 @@ class Command(BaseCommand):
         try:
             logging.getLogger().setLevel(logging.DEBUG)
             asyncio.run(start())
+            if TG_WEBHOOKS_MODE:
+                app = web.Application()
+                webhook_requests_handler = SimpleRequestHandler(
+                    dispatcher=dp,
+                    bot=bot,
+                    secret_token=TG_WEBHOOK_SECRET,
+                )
+                webhook_requests_handler.register(app, path=TG_WEBHOOK_PATH)
+                setup_application(app, dp, bot=bot)
+                web.run_app(app, host=TG_WEB_SERVER_HOST, port=8080)
         except Exception as ex:
             raise CommandError(ex)
