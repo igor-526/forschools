@@ -1,6 +1,5 @@
 from django.db import models
 from lesson.models import Lesson
-from profile_management.models import NewUser
 from learning_program.models import LearningProgram
 
 
@@ -20,10 +19,12 @@ PHASE_STATUS_CHOICES = (
 class LearningPhases(models.Model):
     name = models.CharField(verbose_name="Наименование",
                             null=False,
-                            blank=False)
+                            blank=False,
+                            max_length=200)
     purpose = models.CharField(verbose_name="Цель",
                                blank=True,
-                               null=True)
+                               null=True,
+                               max_length=1000)
     lessons = models.ManyToManyField(Lesson,
                                      verbose_name="Занятия",
                                      blank=True)
@@ -38,6 +39,9 @@ class LearningPhases(models.Model):
         verbose_name_plural = 'Этапы плана обучения'
         ordering = ['pk']
 
+    def __str__(self):
+        return self.name
+
 
 class LearningPlan(models.Model):
     name = models.CharField(verbose_name="Наименование",
@@ -51,15 +55,25 @@ class LearningPlan(models.Model):
     schedule = models.JSONField(verbose_name="Расписание",
                                 null=True,
                                 blank=True)
-    listeners = models.ManyToManyField(NewUser,
+    listeners = models.ManyToManyField("profile_management.NewUser",
                                        verbose_name="Ученики",
                                        related_name="plan_listeners",
                                        blank=False)
-    teacher = models.ForeignKey(NewUser,
+    teacher = models.ForeignKey("profile_management.NewUser",
                                 verbose_name="Преподаватель",
                                 blank=False,
                                 null=True,
+                                related_name="plan_teacher",
                                 on_delete=models.SET_NULL)
+    metodist = models.ForeignKey("profile_management.NewUser",
+                                 verbose_name="Методист",
+                                 blank=False,
+                                 null=True,
+                                 related_name="plan_metodist",
+                                 on_delete=models.SET_NULL)
+    curators = models.ManyToManyField("profile_management.NewUser",
+                                      verbose_name="Кураторы",
+                                      related_name="plan_curator")
     purpose = models.CharField(verbose_name="Цель",
                                blank=True,
                                null=True)
@@ -70,7 +84,7 @@ class LearningPlan(models.Model):
     show_materials = models.IntegerField(verbose_name="Видимость материалов",
                                          blank=True,
                                          null=True)
-    default_hw_teacher = models.ForeignKey(NewUser,
+    default_hw_teacher = models.ForeignKey("profile_management.NewUser",
                                            blank=True,
                                            null=True,
                                            on_delete=models.SET_NULL,
@@ -101,3 +115,7 @@ class LearningPlan(models.Model):
         if not lesson:
             return None
         return lesson
+
+    def get_is_closed(self):
+        return not Lesson.objects.filter(learningphases__learningplan=self,
+                                         status=0).exists()

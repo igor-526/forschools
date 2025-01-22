@@ -1,15 +1,13 @@
 from django.urls import path
-from .views import (
-    LearningProgramsPageView,
-    LearningProgramHomeworkListAPIView,
-    LearningProgramLessonListAPIView,
-    LearningProgramPhaseListAPIView,
-    LearningProgramListAPIView,
-    LearningProgramHomeworkDetailAPIView,
-    LearningProgramLessonDetailAPIView,
-    LearningProgramPhaseDetailAPIView,
-    LearningProgramDetailAPIView,
-)
+from .views import LearningProgramsPageView
+from .views_api import (LearningProgramHomeworkListAPIView,
+                        LearningProgramLessonListAPIView,
+                        LearningProgramPhaseListAPIView,
+                        LearningProgramListAPIView,
+                        LearningProgramHomeworkDetailAPIView,
+                        LearningProgramLessonDetailAPIView,
+                        LearningProgramPhaseDetailAPIView,
+                        LearningProgramDetailAPIView)
 
 urlpatterns = [
     path('', LearningProgramsPageView.as_view(), name='learning_programs'),

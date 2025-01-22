@@ -1,8 +1,8 @@
 from django.db import models
 from profile_management.models import NewUser
 from material.models import Material, File
-from datetime import datetime, timedelta
 from django.db.models.signals import post_save
+from learning_program.models import LearningProgramHomework
 
 
 HOMEWORK_STATUS_CHOISES = (
@@ -12,6 +12,7 @@ HOMEWORK_STATUS_CHOISES = (
     (4, 'Принято'),
     (5, 'На доработке'),
     (6, 'Отменено'),
+    (7, 'Задано'),
 )
 
 
@@ -31,6 +32,10 @@ class Homework(models.Model):
                                  on_delete=models.CASCADE,
                                  null=False,
                                  blank=False)
+    for_curator = models.BooleanField(verbose_name="Куратор работает с ДЗ",
+                                      null=False,
+                                      blank=True,
+                                      default=True)
     materials = models.ManyToManyField(Material,
                                        verbose_name='Материалы',
                                        related_name='homework',
@@ -43,21 +48,36 @@ class Homework(models.Model):
     deadline = models.DateField(verbose_name='Срок',
                                 null=True,
                                 blank=True)
+    from_programs_hw = models.ForeignKey(LearningProgramHomework,
+                                         verbose_name="Шаблон домашнего задания",
+                                         null=True,
+                                         blank=True,
+                                         on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'Домашнее задание'
-        verbose_name_plural = 'Домишние задания'
+        verbose_name_plural = 'Домашние задания'
         ordering = ['-id']
 
     def __str__(self):
         return f'{self.name}'
 
-    def get_status(self):
-        return HomeworkLog.objects.filter(homework=self).first()
+    def get_status(self, assigned=False):
+        if not assigned:
+            return HomeworkLog.objects.filter(homework=self).first()
+        else:
+            return HomeworkLog.objects.filter(homework=self,
+                                              status=7).first()
 
     async def aget_status(self):
         status = await HomeworkLog.objects.filter(homework=self).select_related("user").afirst()
         return status
+
+    def open(self):
+        HomeworkLog.objects.create(homework=self,
+                                   user=self.listener,
+                                   status=2,
+                                   comment="Домашнее задание открыто")
 
     async def aopen(self):
         await HomeworkLog.objects.acreate(homework=self,
@@ -65,11 +85,66 @@ class Homework(models.Model):
                                           status=2,
                                           comment="Домашнее задание открыто")
 
-    def open(self):
-        HomeworkLog.objects.create(homework=self,
-                                   user=self.listener,
-                                   status=2,
-                                   comment="Домашнее задание открыто")
+    def get_lesson(self):
+        return self.lesson_set.first()
+
+    async def aget_lesson(self):
+        return await self.lesson_set.afirst()
+
+    def set_assigned(self):
+        if self.get_status().status != 6:
+            lesson = self.get_lesson()
+            lp = None
+            if lesson:
+                lp = lesson.get_learning_plan()
+            if lp and lp.metodist:
+                HomeworkLog.objects.create(homework=self,
+                                           user=self.teacher,
+                                           comment="Домашнее задание задано",
+                                           status=7,
+                                           agreement={
+                                               "accepted_dt": None,
+                                               "accepted": False
+                                           })
+                return {"agreement": True}
+            else:
+                HomeworkLog.objects.create(homework=self,
+                                           user=self.teacher,
+                                           comment="Домашнее задание задано",
+                                           status=7)
+                return {"agreement": False}
+
+    async def aset_assigned(self, check_methodist=True):
+        status = (await self.aget_status()).status
+        if status != 6:
+            if check_methodist:
+                lesson = await self.aget_lesson()
+                lp = None
+                if lesson:
+                    lp = await lesson.aget_learning_plan()
+                if lp and lp.metodist:
+                    await HomeworkLog.objects.acreate(homework=self,
+                                                      user=self.teacher,
+                                                      comment="Домашнее задание задано",
+                                                      status=7,
+                                                      agreement={
+                                                          "accepted_dt": None,
+                                                          "accepted": False
+                                                      })
+
+                    return {"agreement": True}
+                else:
+                    await HomeworkLog.objects.acreate(homework=self,
+                                                      user=self.teacher,
+                                                      comment="Домашнее задание задано",
+                                                      status=7)
+                    return {"agreement": False}
+            else:
+                await HomeworkLog.objects.acreate(homework=self,
+                                                  user=self.teacher,
+                                                  comment="Домашнее задание задано",
+                                                  status=7)
+                return {"agreement": False}
 
 
 class HomeworkLog(models.Model):
@@ -104,6 +179,10 @@ class HomeworkLog(models.Model):
                                  default=1,
                                  null=False,
                                  blank=False)
+    agreement = models.JSONField(verbose_name="Согласование",
+                                 null=True,
+                                 blank=True,
+                                 default=dict)
 
     class Meta:
         verbose_name = 'Лог ДЗ'
@@ -112,6 +191,16 @@ class HomeworkLog(models.Model):
 
     def __str__(self):
         return f'{self.user} - {self.status}'
+
+
+class HomeworkGroups(models.Model):
+    homeworks = models.ManyToManyField(Homework,
+                                       verbose_name="Домашние заания")
+
+    class Meta:
+        verbose_name = 'Группа домашних заданий'
+        verbose_name_plural = 'Группы домашних заданий'
+        ordering = ['id']
 
 
 def homework_new_log(sender, instance, created, **kwargs):

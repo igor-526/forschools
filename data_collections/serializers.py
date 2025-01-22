@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from profile_management.models import Level, Programs, EngagementChannel
+from profile_management.models import Level, EngagementChannel
 from material.models import MaterialCategory, MaterialLevel
 from lesson.models import Place
 
@@ -7,12 +7,6 @@ from lesson.models import Place
 class LevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Level
-        fields = '__all__'
-
-
-class ProgramSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Programs
         fields = '__all__'
 
 

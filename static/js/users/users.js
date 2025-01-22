@@ -1,115 +1,146 @@
-async function usersAdminMain(){
-    await usersAdminGetAll()
-    await usersAdminSetEngagementChannels()
-    await usersAdminSetLevels()
-    await usersAdminSetPrograms()
+function usersAdminMain(){
+    usersAdminGetAll()
 }
 
 
-async function usersAdminGetAll(){
-    await usersAPIGetAll().then(response => {
-        if (response.status === 200){
-            usersAdminArray = response.response
-            usersAdminShow()
-        } else {
-            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
+function usersAdminGetAll(){
+    usersAPIGetAll(
+        null, usersAdminFilteringID, usersAdminFilteringTG, usersAdminFilteringUsername,
+        usersAdminFilteringFullName, usersAdminFilteringRole, usersAdminFilteringUsernameSort,
+        usersAdminFilteringFullNameSort,
+    ).then(request => {
+        switch (request.status){
+            case 200:
+                usersAdminShow(request.response)
+                break
+            default:
+                showErrorToast()
+                break
         }
     })
 }
 
-function usersAdminGetGroupsHTML(groups){
-    let groupsHTML = ''
-    groups.map(group => {
-        groupsHTML += `${group.name}<br>`
-    })
-    return groupsHTML
-}
-
-function usersAdminGetRowClasses(user){
-    let classList = []
-    if (user.is_active === false){
-        classList.push("table-danger")
-    }
-    if (user.editable){
-        classList.push("users-admin-table-row")
-    } else {
-        classList.push("table-secondary")
-    }
-    return classList.join(" ")
-}
-
-function usersAdminGetUsersHTML(users){
-    let usersHTML = ''
-    users.map(function (user){
-        const groupsHTML = usersAdminGetGroupsHTML(user.groups)
-        const rowclasses = usersAdminGetRowClasses(user)
-        usersHTML += `
-        <tr data-user-id=${user.id} class="${rowclasses}">
-          <th scope="row">${user.id}</th>
-          <td><a href="/profile/${user.id}">${user.username}</a></td>
-          <td>${user.last_name} ${user.first_name}</td>
-          <td>${groupsHTML}</td>
-        </tr>`
-
-    })
-    return usersHTML
-}
-
-function usersAdminShow(arr = usersAdminArray){
-    usersAdminTableBody.innerHTML =  usersAdminGetUsersHTML(arr)
-    usersAdminTableBody.querySelectorAll(".users-admin-table-row")
-        .forEach(row => {
-            row.addEventListener('click', usersAdminShowUser)
+function usersAdminShow(users = [], updateTD=null){
+    function getRoles(roles){
+        let ruRoles = []
+        let learninginfo = null
+        roles.forEach(role => {
+            switch (role.name){
+                case "Listener":
+                    ruRoles.push("Ученик")
+                    learninginfo = "Listener"
+                    break
+                case "Teacher":
+                    ruRoles.push("Преподаватель")
+                    learninginfo = "Teacher"
+                    break
+                case "Metodist":
+                    ruRoles.push("Методист")
+                    break
+                case "Curator":
+                    ruRoles.push("Куратор")
+                    break
+                case "Admin":
+                    ruRoles.push("Администратор")
+                    break
+            }
         })
-}
-
-async function usersAdminSetEngagementChannels(){
-    formUserEditEngagementChannelSelect.innerHTML = '<option value="none" selected> Выберите </option>'
-    await collectionsAPIGetEngChannels().then(response => {
-        if (response.status === 200){
-            response.response.map(channel => {
-                formUserEditEngagementChannelSelect.innerHTML += `
-            <option value="${channel.name}">${channel.name}</option>`
-            })
+        return {
+            "str": ruRoles.join("<br>"),
+            "learninginfo": learninginfo
         }
-    })
-    if (canSetNewEngChLvlPrg){
-        formUserEditEngagementChannelSelect.innerHTML += `<option value="new">Новый</option>`
+    }
+
+    function getUserElement(user){
+        const tr = document.createElement("tr")
+        if (!user.is_active){
+            tr.classList.add("table-danger")
+        }
+        const tdId = document.createElement("td")
+        const tdIdA = document.createElement("a")
+        tdId.insertAdjacentElement("beforeend", tdIdA)
+        tdIdA.innerHTML = user.id
+        tdIdA.innerHTML += user.tg?' <i class="bi bi-telegram" style="color: #1A01CC"></i>':' <i class="bi bi-telegram" style="color: grey"></i>'
+        tdIdA.href = "#"
+        tdIdA.addEventListener("click", function (){
+            usersAdminTelegramSet(user.id)
+        })
+        const tdUsername = document.createElement("td")
+        tdUsername.innerHTML = user.username
+        const tdName = document.createElement("td")
+        tdName.innerHTML = `<a href="/profile/${user.id}">${user.last_name} ${user.first_name}${user.patronymic?" "+user.patronymic:""}</a>`
+        const tdRole = document.createElement("td")
+        const roles = getRoles(user.groups)
+        tdRole.innerHTML = roles.str
+        const tdActions = document.createElement("td")
+
+        const tdActionsInfo = document.createElement("button")
+        const tdActionsChat = document.createElement("button")
+        const tdActionsChatA = document.createElement("a")
+        const tdActionsProfile = document.createElement("button")
+        const tdActionsProfileA = document.createElement("a")
+        const tdActionsLearnInfo = document.createElement("button")
+        tdActionsChatA.insertAdjacentElement("beforeend", tdActionsChat)
+        tdActionsProfileA.insertAdjacentElement("beforeend", tdActionsProfile)
+        tdActionsChatA.href = `/messages/#user=${user.id}`
+        tdActionsProfileA.href = `/profile/${user.id}`
+
+        tdActionsChat.type = "button"
+        tdActionsChat.classList.add("btn", "btn-primary", "mx-1")
+        tdActionsChat.role = "button"
+        tdActionsChat.innerHTML = '<i class="bi bi-chat-dots"></i>'
+        tdActions.insertAdjacentElement("beforeend", tdActionsChatA)
+        if (roles.learninginfo){
+            tdActionsLearnInfo.type = "button"
+            tdActionsLearnInfo.classList.add("btn", "btn-primary", "mx-1")
+            tdActionsLearnInfo.role = "button"
+            tdActionsLearnInfo.innerHTML = '<i class="bi bi-card-list"></i>'
+            tdActionsLearnInfo.addEventListener("click", function () {
+                usersLearnInfoSetModal(user.id, roles.learninginfo)
+            })
+            tdActions.insertAdjacentElement("beforeend", tdActionsLearnInfo)
+        }
+        if (!user.can_edit){
+            tr.classList.add("table-secondary")
+        } else {
+            tdActionsInfo.type = "button"
+            tdActionsInfo.classList.add("btn", "btn-warning", "mx-1")
+            tdActionsInfo.role = "button"
+            tdActionsInfo.innerHTML = '<i class="bi bi-pencil-fill"></i>'
+            tdActionsInfo.addEventListener("click", function (){
+                usersEditSetOffcanvas(user.id, tr)
+            })
+            tdActions.insertAdjacentElement("beforeend", tdActionsInfo)
+        }
+
+
+        tr.insertAdjacentElement("beforeend", tdId)
+        tr.insertAdjacentElement("beforeend", tdUsername)
+        tr.insertAdjacentElement("beforeend", tdName)
+        tr.insertAdjacentElement("beforeend", tdRole)
+        tr.insertAdjacentElement("beforeend", tdActions)
+        return tr
+    }
+
+    if (updateTD){
+        updateTD.replaceWith(getUserElement(users))
+    } else {
+        usersAdminTableBody.innerHTML = ""
+        users.forEach(user => {
+            usersAdminTableBody.insertAdjacentElement("beforeend", getUserElement(user))
+        })
     }
 }
 
-async function usersAdminSetLevels(){
-    formUserEditLevelSelect.innerHTML = '<option value="none" selected> Выберите </option>'
-    await collectionsAPIGetLevels().then(response => {
-        if (response.status === 200){
-            response.response.map(level => {
-                formUserEditLevelSelect.innerHTML += `
-            <option value="${level.name}">${level.name}</option>`
-            })
-            if (canSetNewEngChLvlPrg){
-                formUserEditLevelSelect.innerHTML += '<option value="new">Новый</option>'
-            }
-        }
-    })
-}
-
-async function usersAdminSetPrograms(){
-    formUserEditProgramSelect.innerHTML = ''
-    await collectionsAPIGetPrograms().then(response => {
-        if (response.status === 200){
-            response.response.map(program => {
-                formUserEditProgramSelect.innerHTML += `
-            <option value="${program.name}">${program.name}</option>`
-            })
-            if (canSetNewEngChLvlPrg){
-                formUserEditProgramSelect.innerHTML += '<option value="new">Новая</option>'
-            }
-        }
-    })
-}
-
-
-let usersAdminArray
 const usersAdminTableBody = document.querySelector('#UsersTableBody')
+
+//Filtering
+let usersAdminFilteringID = null
+let usersAdminFilteringTG = null
+let usersAdminFilteringUsername = null
+let usersAdminFilteringFullName = null
+const usersAdminFilteringRole = []
+let usersAdminFilteringUsernameSort = null
+let usersAdminFilteringFullNameSort = null
 
 usersAdminMain()

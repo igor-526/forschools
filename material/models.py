@@ -1,6 +1,5 @@
 from django.db import models
 from datetime import datetime
-from profile_management.models import NewUser
 
 
 MATERIAL_TYPE_CHOISES = (
@@ -27,7 +26,7 @@ class MaterialLevel(models.Model):
 
 
 class Material(models.Model):
-    owner = models.ForeignKey(NewUser,
+    owner = models.ForeignKey("profile_management.NewUser",
                               verbose_name='Владелец',
                               on_delete=models.CASCADE,
                               related_name='material_owner',
@@ -44,7 +43,8 @@ class Material(models.Model):
     file = models.FileField(verbose_name='Файл',
                             upload_to='materials/',
                             null=False,
-                            blank=False)
+                            blank=False,
+                            max_length=500)
     uploaded_at = models.DateTimeField(verbose_name='Дата и время загрузки',
                                        auto_now_add=True,
                                        null=False,
@@ -73,7 +73,7 @@ class Material(models.Model):
                                   default=True,
                                   null=False,
                                   blank=True)
-    access = models.ManyToManyField(NewUser,
+    access = models.ManyToManyField("profile_management.NewUser",
                                     related_name='material_access',
                                     verbose_name='Доступ',
                                     blank=True)
@@ -117,12 +117,17 @@ class File(models.Model):
                             null=False,
                             blank=False,
                             unique=False)
+    caption = models.CharField(verbose_name='Подпись',
+                               max_length=1000,
+                               null=True,
+                               blank=True,
+                               unique=False)
     path = models.FileField(verbose_name='Путь',
                             upload_to='files/',
                             null=False,
                             blank=False,
                             unique=True)
-    owner = models.ForeignKey(NewUser,
+    owner = models.ForeignKey("profile_management.NewUser",
                               verbose_name='Владелец',
                               on_delete=models.CASCADE,
                               null=True,

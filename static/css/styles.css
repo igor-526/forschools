@@ -33,6 +33,13 @@ body {
     border-radius: 125px;
 }
 
+.chats-profile_photo{
+    object-fit: cover;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+}
+
 .base-name{
     color: #fff;
     font-size: 24px;

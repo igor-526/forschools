@@ -3,13 +3,13 @@
 {% block content %}
     <div class="container-xxl mt-4 mb-3">
         <h1>{{ material.name }}</h1>
-        <div class="row row justify-content-between">
+        <div class="row justify-content-between">
             <div class="col-8">
                 {% if material_type == 'image_formats' or material_type == 'animation_formats' %}
                     <img src="{{ material.file.url }}" class="img-fluid" alt="Изображение">
                 {% endif %}
                 {% if material_type == 'pdf_formats' %}
-                    <div class="row row justify-content-between">
+                    <div class="row justify-content-between">
                         <embed src="{{ material.file.url }}" type="application/pdf" width="100%" height="1200px">
                     </div>
                 {% endif %}
@@ -18,7 +18,7 @@
                         <h5 class="card-header">Аудиозапись</h5>
                         <div class="card-body">
                             <figure>
-                                <audio controls src="{{ material.file.url }}"></audio>
+                                <audio controls controlsList="nodownload" src="{{ material.file.url }}"></audio>
                             </figure>
                         </div>
                     </div>
@@ -37,7 +37,7 @@
                     <div class="card">
                         <h5 class="card-header">Видео</h5>
                         <div class="card-body">
-                            <video controls src="{{ material.file.url }}" type="video/webm"></video>
+                            <video controls controlsList="nodownload" src="{{ material.file.url }}" type="video/webm" style="max-width: 100%;"></video>
                         </div>
                     </div>
                 {% endif %}
@@ -70,7 +70,6 @@
                                 {% endfor %}
                             </li>
                             <li class="list-group-item">
-                                <a href="{{ material.file.url }}" download=""><button type="button" class="btn btn-primary mb-1">Скачать</button></a>
                                 {% if perms.materials.send_telegram %}
                                     <button id="MaterialsItemTelegramButton" type="button" class="btn btn-primary mb-1">Отправить в TG</button>
                                     {% include 'materials_modal_telegram.html' %}
@@ -89,11 +88,10 @@
             </div>
         </div>
     </div>
-    {% include 'toast.html' %}
+    {% include 'protect_alert.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const material_id = {{ material.id }}
         const materialAction = 'edit'
         const user_id = {{ request.user.id }}
@@ -110,8 +108,7 @@
             presentationFormats: {{ material_formats.presentation_formats | safe }}
         }
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/protect_content.js' %}"></script>
     <script src="{% static 'js/collections/collections_api.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
     {% if perms.materials.send_telegram %}

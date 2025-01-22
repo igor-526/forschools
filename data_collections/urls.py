@@ -1,21 +1,19 @@
 from django.urls import path
-from .views import (CollectionPageView,
-                    LevelListAPIView,
-                    LevelAPIView,
-                    MaterialCategoryListAPIView,
-                    MaterialCategoryAPIView,
-                    ProgramListAPIView,
-                    ProgramAPIView,
-                    EngagementChannelListAPIView,
-                    EngagementChannelAPIView,
-                    PlaceListAPIView,
-                    PlaceAPIView,
-                    MaterialLevelListAPIView,
-                    MaterialLevelAPIView)
+from .views import CollectionPageView
+from .views_api import (LevelListAPIView,
+                        LevelAPIView,
+                        MaterialCategoryListAPIView,
+                        MaterialCategoryAPIView,
+                        EngagementChannelListAPIView,
+                        EngagementChannelAPIView,
+                        PlaceListAPIView,
+                        PlaceAPIView,
+                        MaterialLevelListAPIView,
+                        MaterialLevelAPIView)
 
 urlpatterns = [
     path('administration/collections', CollectionPageView.as_view(),
-         name='admin_collections'),     # коллекция данных (администрирование)
+         name='admin_collections'),
 ]
 
 apiv1patterns = [
@@ -23,8 +21,6 @@ apiv1patterns = [
     path("collections/levels/<int:pk>", LevelAPIView.as_view()),
     path("collections/mat_cats/", MaterialCategoryListAPIView.as_view()),
     path("collections/mat_cats/<int:pk>", MaterialCategoryAPIView.as_view()),
-    path("collections/learn_progs/", ProgramListAPIView.as_view()),
-    path("collections/learn_progs/<int:pk>", ProgramAPIView.as_view()),
     path("collections/eng_channels/", EngagementChannelListAPIView.as_view()),
     path("collections/eng_channels/<int:pk>", EngagementChannelAPIView.as_view()),
     path("collections/lesson_places/", PlaceListAPIView.as_view()),

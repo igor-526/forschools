@@ -1,0 +1,24 @@
+.logs-information-files {
+    background: rgba(13, 109, 251, 0.18);
+    border: 1px solid grey;
+    border-radius: 10px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.logs-information-file {
+    height: 50px;
+    width: 50px;
+    border: 1px solid grey;
+    border-radius: 7px;
+    margin: 5px;
+    background: white;
+    cursor: pointer;
+    align-content: center;
+    text-align: center;
+    color: #0d6dfb;
+}
+
+.logs-information-file i {
+    font-size: 30px;
+}

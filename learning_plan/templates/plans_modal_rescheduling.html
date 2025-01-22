@@ -1,0 +1,121 @@
+<div class="modal fade" id="plansItemReschedulingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Новое расписание</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                        <form id="plansItemReschedulingModalForm">
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <span class="input-group-text" id="addon-wrapping">Начальная дата</span>
+                                <input name="date_start" type="date" class="form-control" id="plansItemReschedulingModalDate">
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="monday" type="checkbox" class="btn-check" id="plansItemReschedulingModalMondayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemReschedulingModalMondayCheck">ПН</label>
+                                <input name="monday_start" type="time" class="form-control" id="plansItemReschedulingModalMondayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="monday_end" type="time" class="form-control" id="plansItemReschedulingModalMondayTimeEnd" aria-label="" disabled>
+                                <select name="monday_place" id="plansItemReschedulingModalMondayPlace" class="form-select place-select" disabled>
+                                    <option selected value="None">Место</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="tuesday" type="checkbox" class="btn-check" id="plansItemReschedulingModalTuesdayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemReschedulingModalTuesdayCheck">ВТ</label>
+                                <input name="tuesday_start" type="time" class="form-control" id="plansItemReschedulingModalTuesdayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="tuesday_end" type="time" class="form-control" id="plansItemReschedulingModalTuesdayTimeEnd" aria-label="" disabled>
+                                <select name="tuesday_place" id="plansItemReschedulingModalTuesdayPlace" class="form-select place-select" disabled>
+                                    <option selected value="None">Место</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="wednesday" type="checkbox" class="btn-check" id="plansItemReschedulingModalWednesdayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemReschedulingModalWednesdayCheck">СР</label>
+                                <input name="wednesday_start" type="time" class="form-control" id="plansItemReschedulingModalWednesdayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="wednesday_end" type="time" class="form-control" id="plansItemReschedulingModalWednesdayTimeEnd" aria-label="" disabled>
+                                <select name="wednesday_place" id="plansItemReschedulingModalWednesdayPlace" class="form-select place-select" disabled>
+                                    <option selected value="None">Место</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="thursday" type="checkbox" class="btn-check" id="plansItemReschedulingModalThursdayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemReschedulingModalThursdayCheck">ЧТ</label>
+                                <input name="thursday_start" type="time" class="form-control" id="plansItemReschedulingModalThursdayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="thursday_end" type="time" class="form-control" id="plansItemReschedulingModalThursdayTimeEnd" aria-label="" disabled>
+                                <select name="thursday_place" id="plansItemReschedulingModalThursdayPlace" class="form-select place-select" disabled>
+                                    <option selected value="None">Место</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="friday" type="checkbox" class="btn-check" id="plansItemReschedulingModalFridayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemReschedulingModalFridayCheck">ПТ</label>
+                                <input name="friday_start" type="time" class="form-control" id="plansItemReschedulingModalFridayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="friday_end" type="time" class="form-control" id="plansItemReschedulingModalFridayTimeEnd" aria-label="" disabled>
+                                <select name="friday_place" id="plansItemReschedulingModalFridayPlace" class="form-select place-select" disabled>
+                                    <option selected value="None">Место</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="saturday" type="checkbox" class="btn-check" id="plansItemReschedulingModalSaturdayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemReschedulingModalSaturdayCheck">СБ</label>
+                                <input name="saturday_start" type="time" class="form-control" id="plansItemReschedulingModalSaturdayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="saturday_end" type="time" class="form-control" id="plansItemReschedulingModalSaturdayTimeEnd" aria-label="" disabled>
+                                <select name="saturday_place" id="plansItemReschedulingModalSaturdayPlace" class="form-select place-select" disabled>
+                                    <option selected value="None">Место</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group flex-nowrap mb-2">
+                                <input name="sunday" type="checkbox" class="btn-check" id="plansItemReschedulingModalSundayCheck" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="plansItemReschedulingModalSundayCheck">ВС</label>
+                                <input name="sunday_start" type="time" class="form-control" id="plansItemReschedulingModalSundayTimeStart" aria-label="" disabled>
+                                <span class="input-group-text" id="addon-wrapping">-</span>
+                                <input name="sunday_end" type="time" class="form-control" id="plansItemReschedulingModalSundayTimeEnd" aria-label="" disabled>
+                                <select name="sunday_place" id="plansItemReschedulingModalSundayPlace" class="form-select place-select" disabled>
+                                    <option selected value="None">Место</option>
+                                </select>
+                            </div>
+                        </form>
+
+
+                </div>
+                <div class="row mb-3 mx-3">
+                    <div class="alert alert-danger d-flex align-items-center d-none mb-3" role="alert" id="plansItemFromProgramModalErrorsAlert">
+                        <div id="plansItemFromProgramModalErrors"></div>
+                    </div>
+
+                    <div class="alert alert-danger d-flex align-items-center d-none mb-3" role="alert" id="plansItemFromProgramModalWarningsAlert">
+                        <div id="plansItemFromProgramModalWarnings"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" id="plansItemFromProgramModalProgInfoTitle"></div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush"  id="plansItemReschedulingModalProgInfoList"></ul>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="plansItemReschedulingModalSetButton" data-action="calculate">Рассчитать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

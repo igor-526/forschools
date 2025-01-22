@@ -1,0 +1,63 @@
+<div class="modal" id="lessonEditModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lessonEditModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="lessonEditModalForm" class="mb-3">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="lessonEditModalNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="lessonEditModalNameField">
+                        <div class="form-text">Наименование для занятия<br>Обязательно к заполнению</div>
+                        <div id="lessonEditModalNameError" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonEditModalDescriptionField" class="form-label">Описание</label>
+                        <textarea name="description" type="text" class="form-control" id="lessonEditModalDescriptionField" rows="3"></textarea>
+                        <div class="form-text">Краткое описание занятия<br>Необязательно к заполнению</div>
+                        <div id="lessonEditModalDescriptionError" class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="lessonEditModalStartField" class="form-label">Начало</label>
+                            <input name="start_time" type="time" class="form-control" id="lessonEditModalStartField">
+                        </div>
+
+                        <div class="col">
+                            <label for="lessonEditModalEndField" class="form-label">Окончание</label>
+                            <input name="end_time" type="time" class="form-control" id="lessonEditModalEndField">
+                        </div>
+
+                        <div class="col">
+                            <label for="lessonEditModalDateField" class="form-label">Дата</label>
+                            <input name="date" type="date" class="form-control" id="lessonEditModalDateField">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonEditModalPlaceField" class="form-label">Место проведения</label>
+                        <select name="place" type="text" class="form-control" id="lessonEditModalPlaceField"></select>
+                        <div class="form-text">Место проведения занятия<br>Необязательно к заполнению</div>
+                        <div id="lessonEditModalPlaceError" class="invalid-feedback"></div>
+                    </div>
+                </form>
+
+                <div class="alert alert-primary d-flex align-items-center" role="alert">
+                    <div>
+                        Добавить материалы, поставить замену и задать домашнее задание Вы сможете на странице занятия
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="lessonEditModalSaveButton">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>

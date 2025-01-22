@@ -1,0 +1,71 @@
+{% extends 'ma_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="accordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="maLessonItemMainHeader">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#maLessonItemMainCollapse" aria-expanded="true" aria-controls="maLessonItemMainCollapse">
+                    Основные данные
+                </button>
+            </h2>
+            <div id="maLessonItemMainCollapse" class="accordion-collapse collapse show" aria-labelledby="maLessonItemMainHeader">
+                <div class="accordion-body">
+                    <ul class="list-group list-group-flush" id="maLessonItemMainList"></ul>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item" id="maLessonItemParticipants">
+            <h2 class="accordion-header" id="maLessonItemParticipantsHeader">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#maLessonItemParticipantsCollapse" aria-expanded="true" aria-controls="maLessonItemParticipantsCollapse">
+                    Участники
+                </button>
+            </h2>
+            <div id="maLessonItemParticipantsCollapse" class="accordion-collapse collapse show" aria-labelledby="maLessonItemParticipantsHeader">
+                <div class="accordion-body">
+                    <ul class="list-group list-group-flush" id="maLessonItemParticipantsList"></ul>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item d-none" id="maLessonItemMaterials">
+            <h2 class="accordion-header" id="maLessonItemMaterialsHeader">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#maLessonItemMaterialsCollapse" aria-expanded="false" aria-controls="maLessonItemMaterialsCollapse">
+                    Материалы
+                </button>
+            </h2>
+            <div id="maLessonItemMaterialsCollapse" class="accordion-collapse collapse" aria-labelledby="maLessonItemMaterialsHeader">
+                <div class="accordion-body" id="maLessonItemMaterialsBody"></div>
+            </div>
+        </div>
+        <div class="accordion-item d-none" id="maLessonItemHomeworks">
+            <h2 class="accordion-header" id="maLessonItemHomeworksHeader">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#maLessonItemHomeworksCollapse" aria-expanded="false" aria-controls="maLessonItemHomeworksCollapse">
+                    Домашние задания
+                </button>
+            </h2>
+            <div id="maLessonItemHomeworksCollapse" class="accordion-collapse collapse" aria-labelledby="maLessonItemHomeworksHeader">
+                <div class="accordion-body">
+                    <div class="list-group" id="maLessonItemHomeworksList"></div>
+                </div>
+            </div>
+        </div>
+    <div class="accordion-item d-none" id="maLessonItemReview">
+            <h2 class="accordion-header" id="maLessonItemReviewHeader">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#maLessonItemReviewCollapse" aria-expanded="false" aria-controls="maLessonItemReviewCollapse">
+                    Ревью
+                </button>
+            </h2>
+            <div id="maLessonItemReviewCollapse" class="accordion-collapse collapse" aria-labelledby="maLessonItemReviewHeader">
+                <div class="accordion-body">
+                    <div class="list-group" id="maLessonItemReviewList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block static_js %}
+    <script>
+        const lessonID = {{ lesson_id }}
+    </script>
+    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+    <script src="{% static 'js/lessons/ma/lesson_item.js' %}"></script>
+{% endblock %}

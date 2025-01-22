@@ -13,7 +13,7 @@ if (userSelf){
         bsOffcanvasEdit.show()
     })
     profileTelegramButton.addEventListener("click", async function(){
-        usersAdminTelegramOpen(this.attributes.getNamedItem('data-user-id').value)
+        usersAdminTelegramSet(this.attributes.getNamedItem('data-user-id').value)
     })
 } else {
     profileMessageButton = document.querySelector("#ProfileMessageButton")

@@ -1,7 +1,10 @@
 from django.urls import path
-from .views import (LessonPage, LessonItemPage,
-                    LessonListAPIView, LessonAddMaterials,
-                    LessonReplaceTeacher, LessonAPIView)
+from .views import LessonPage, LessonItemPage
+from .views_api import (LessonListAPIView, LessonSetMaterialsAPIView,
+                        LessonReplaceTeacherAPIView, LessonAPIView,
+                        LessonSetPassedAPIView, PlansItemRescheduling,
+                        LessonSetNotHeldAPIView, LessonRestoreAPIView, ScheduleAPIView)
+from .views_ma import LessonMAReviewFormPage, LessonItemMAPage, ScheduleSelectMAPage, ScheduleMAPage
 
 urlpatterns = [
     path('', LessonPage.as_view(), name='lessons'),
@@ -11,6 +14,18 @@ urlpatterns = [
 apiv1patterns = [
     path('', LessonListAPIView.as_view()),
     path('<int:pk>/', LessonAPIView.as_view()),
-    path('<int:pk>/materials/', LessonAddMaterials.as_view()),
-    path('<int:pk>/rt/', LessonReplaceTeacher.as_view()),
+    path('<int:pk>/rescheduling/', PlansItemRescheduling.as_view()),
+    path('<int:pk>/materials/', LessonSetMaterialsAPIView.as_view()),
+    path('<int:pk>/rt/', LessonReplaceTeacherAPIView.as_view()),
+    path('<int:pk>/set_passed/', LessonSetPassedAPIView.as_view()),
+    path('<int:pk>/set_not_held/', LessonSetNotHeldAPIView.as_view()),
+    path('<int:pk>/restore/', LessonRestoreAPIView.as_view()),
+    path('schedule/<int:pk>/', ScheduleAPIView.as_view()),
+]
+
+ma_patterns = [
+    path('<int:pk>/form/', LessonMAReviewFormPage.as_view()),
+    path('<int:pk>/', LessonItemMAPage.as_view()),
+    path('schedule/', ScheduleSelectMAPage.as_view()),
+    path('schedule/<int:pk>/', ScheduleMAPage.as_view()),
 ]

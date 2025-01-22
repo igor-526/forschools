@@ -1,8 +1,6 @@
 from django.utils import timezone
-
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-
 from .models import LearningPlan, LearningPhases
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
@@ -13,6 +11,8 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
     teacher = NewUserNameOnlyListSerializer(read_only=True)
     default_hw_teacher = NewUserNameOnlyListSerializer(read_only=True)
     listeners = NewUserNameOnlyListSerializer(many=True, read_only=True)
+    curators = NewUserNameOnlyListSerializer(many=True, read_only=True)
+    metodist = NewUserNameOnlyListSerializer(many=False, read_only=True)
     deletable = serializers.SerializerMethodField(read_only=False)
 
     class Meta:
@@ -20,7 +20,8 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'listeners',
                   'teacher', 'purpose', 'deadline',
                   'show_lessons', 'show_materials',
-                  'default_hw_teacher', 'deletable']
+                  'default_hw_teacher', 'deletable',
+                  'metodist', 'curators']
 
     def get_deletable(self, obj):
         return obj.phases.count() == 0
@@ -46,6 +47,22 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         if "Listener" in usergroups:
             raise PermissionDenied("Вы не можете добалять планы обучения")
 
+    def validate_metodist(self, request, usergroups):
+        metodist = request.POST.get('metodist')
+        if not metodist:
+            return None
+        if ("Admin" in usergroups) or ("Metodist" in usergroups):
+            try:
+                metodist = NewUser.objects.get(groups__name="Metodist",
+                                              pk=metodist)
+                return metodist
+            except Exception:
+                raise serializers.ValidationError({"metodist": "Методист не найден"})
+        if "Teacher" in usergroups:
+            return None
+        if "Listener" in usergroups:
+            raise PermissionDenied("Вы не можете добалять планы обучения")
+
     def validate_default_hw_teacher(self, request, usergroups):
         req_teacher_hw = request.POST.get('default_hw_teacher')
         if ("Admin" in usergroups) or ("Metodist" in usergroups):
@@ -67,18 +84,26 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         usergroups = [group.name for group in request.user.groups.all()]
         validated_data['teacher'] = self.validate_teacher(request, usergroups)
         validated_data['default_hw_teacher'] = self.validate_default_hw_teacher(request, usergroups)
+        metodist = self.validate_metodist(request, usergroups)
+        if metodist:
+            validated_data['metodist'] = metodist
         listeners = request.POST.getlist('listeners')
+        curators = request.POST.getlist('curators')
         plan_obj = LearningPlan.objects.create(**validated_data)
         plan_obj.listeners.set(listeners)
+        plan_obj.curators.set(curators)
         return plan_obj
 
     def update(self, instance, validated_data):
         request = self.context.get('request')
         usergroups = [group.name for group in request.user.groups.all()]
         validated_data['teacher'] = self.validate_teacher(request, usergroups)
+        validated_data['metodist'] = self.validate_metodist(request, usergroups)
         validated_data['default_hw_teacher'] = self.validate_default_hw_teacher(request, usergroups)
         listeners = request.POST.getlist('listeners')
+        curators = request.POST.getlist('curators')
         instance.listeners.set(listeners)
+        instance.curators.set(curators)
         instance.save()
         return super(LearningPlanListSerializer, self).update(instance, validated_data)
 
@@ -88,6 +113,20 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
             return True
         else:
             raise PermissionDenied()
+
+
+class LearningPlanParticipantsOnlyListSerializer(serializers.ModelSerializer):
+    teacher = NewUserNameOnlyListSerializer(read_only=True)
+    default_hw_teacher = NewUserNameOnlyListSerializer(read_only=True)
+    listeners = NewUserNameOnlyListSerializer(many=True, read_only=True)
+    curators = NewUserNameOnlyListSerializer(many=True, read_only=True)
+    metodist = NewUserNameOnlyListSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = LearningPlan
+        fields = ['id', 'name', 'listeners',
+                  'teacher', 'default_hw_teacher',
+                  'metodist', 'curators']
 
 
 class LearningPhasesListSerializer(serializers.ModelSerializer):

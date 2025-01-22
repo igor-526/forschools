@@ -16,6 +16,21 @@ class MaterialTypeCallback(CallbackData, prefix="mat_type"):
 class MaterialItemCallback(CallbackData, prefix="mat_item"):
     mat_id: int
     action: str
+    obj_id: int | None
+
+
+class MaterialListUserNavigationCallback(CallbackData, prefix="mat_list_user"):
+    page: int
+    user_id: int
+
+
+class MaterialListHomeworkNavigationCallback(CallbackData, prefix="mat_list_homework"):
+    page: int
+    hw_id: int
+
+
+class MaterialListActionCallback(CallbackData, prefix="mat_list_delete"):
+    action: str
 
 
 class MaterialItemSendTgCallback(CallbackData, prefix="mat_item_send"):

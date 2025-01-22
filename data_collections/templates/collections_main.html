@@ -13,27 +13,20 @@
                 <button class="nav-link active" id="CollectionsTabLevels" data-bs-toggle="pill"  type="button" role="tab" aria-selected="true">Уровни</button>
                 <button class="nav-link" id="CollectionsTabMaterialCategories" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Категории материалов</button>
                 <button class="nav-link" id="CollectionsTabMaterialLevels" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Уровни материалов</button>
-                <button class="nav-link" id="CollectionsTabLearningPrograms" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Программы обучения</button>
                 <button class="nav-link" id="CollectionsTabEngagementChannels" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Каналы привлечения</button>
                 <button class="nav-link" id="CollectionsTabPlaces" data-bs-toggle="pill"  type="button" role="tab"  aria-selected="false">Места проведения занятий</button>
             </div>
             <div class="tab-content collections-content" id="v-pills-tabContent">
                 <table class="table table-hover">
-                    <thead id="CollectionsTableHead">
-                    </thead>
-                    <tbody id="CollectionsTableBody">
-                    </tbody>
+                    <thead id="CollectionsTableHead"></thead>
+                    <tbody id="CollectionsTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
-    {% include 'toast.html' %}
     {% include 'collections_modals.html' %}
 {% endblock %}
 {% block static_js %}
-    <script>
-        var csrftoken = '{{ csrf_token }}';
-    </script>
     <script src="{% static 'js/collections/collection_level.js' %}"></script>
     <script src="{% static 'js/collections/collection_material_category.js' %}"></script>
     <script src="{% static 'js/collections/collection_material_level.js' %}"></script>
@@ -42,5 +35,4 @@
     <script src="{% static 'js/collections/collection_lesson_place.js' %}"></script>
     <script src="{% static 'js/collections/collections.js' %}"></script>
     <script src="{% static 'js/collections/collection_actions.js' %}"></script>
-    <script src="{% static 'js/toasts.js' %}"></script>
 {% endblock %}

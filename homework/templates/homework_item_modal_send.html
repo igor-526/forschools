@@ -1,4 +1,4 @@
-<div class="modal modal-lg" tabindex="-1" id="HWItemSendModal">
+<div class="modal modal-lg" tabindex="-1" id="hwItemSendModal">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -6,26 +6,28 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="HWItemSendModalForm">
+                <form id="hwItemSendModalForm">
                     <div class="mb-3">
-                        <label for="HWItemSendModalFormCommentField" class="form-label">Комментарий</label>
-                        <textarea name="comment" type="text" rows="5" class="form-control" id="HWItemSendModalFormCommentField"></textarea>
+                        <label for="hwItemSendModalFormCommentField" class="form-label">Комментарий</label>
+                        <textarea name="comment" type="text" rows="5" class="form-control" id="hwItemSendModalFormCommentField"></textarea>
                         <div class="form-text">Опишите, что вы сделали. При необходимости приложите изображения</div>
+                        <div id="hwItemSendModalFormCommentError" class="invalid-feedback"></div>
                     </div>
                     <div class="mb-3">
-                        <label for="HWItemSendModalFormFileField" class="form-label">Файлы</label>
-                        <input multiple name="files" type="file" class="form-control" id="HWItemSendModalFormFileField">
+                        <label for="hwItemSendModalFormFileField" class="form-label">Файлы</label>
+                        <input multiple name="files" type="file" class="form-control" id="hwItemSendModalFormFileField">
                         <div class="form-text">Вы можете прикрепить несколько файлов<br>Для этого на компьютере при выборе файла зажмите клавишу CTRL</div>
+                        <div id="hwItemSendModalFormFileError" class="invalid-feedback"></div>
                     </div>
                 </form>
-                <div class="card d-none" id="HWItemSendModalAnswer">
-                    <h5 class="card-header">Ответ преподавателя</h5>
-                    <div class="card-body" id="HWItemSendModalAnswerBody"></div>
+                <div class="card d-none" id="hwItemSendModalAnswer">
+                    <h5 class="card-header">Последний ответ</h5>
+                    <div class="card-body" id="hwItemSendModalAnswerBody"></div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                <button id="HWItemSendModalSendButton" type="button" class="btn btn-primary">Отправить решение</button>
+                <button id="hwItemSendModalSendButton" type="button" class="btn btn-primary">Отправить решение</button>
             </div>
         </div>
     </div>

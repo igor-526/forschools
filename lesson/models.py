@@ -1,13 +1,14 @@
 from django.db import models
 from django.utils import timezone
-from profile_management.models import NewUser
 from material.models import Material
 from homework.models import Homework
+from learning_program.models import LearningProgramLesson
 
 
 LESSON_STATUS_CHOICES = (
     (0, 'Не проведён'),
-    (1, 'Проведён')
+    (1, 'Проведён'),
+    (2, 'Отменён')
 )
 
 
@@ -21,6 +22,62 @@ class Place(models.Model):
                           null=False,
                           blank=False,
                           unique=True)
+    conf_id = models.CharField(verbose_name='Идентификатор конференции',
+                               max_length=200,
+                               null=True,
+                               blank=True)
+    access_code = models.CharField(verbose_name='Код доступа',
+                                   max_length=200,
+                                   null=True,
+                                   blank=True)
+
+    class Meta:
+        verbose_name = 'Место проведения занятия'
+        verbose_name_plural = 'Места проведения занятий'
+        ordering = ['name']
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def has_lessons(self, date, ts, te):
+        lessons = self.lesson_set.filter(date=date).all()
+        for lesson in lessons:
+            latest_start = max(ts, lesson.start_time)
+            earliest_end = min(te, lesson.end_time)
+            if latest_start < earliest_end:
+                return lesson
+        return None
+
+
+class LessonTeacherReview(models.Model):
+    materials = models.CharField(verbose_name='Используемые материалы',
+                                 max_length=2000,
+                                 null=False,
+                                 blank=False)
+    lexis = models.CharField(verbose_name='Лексика',
+                             max_length=300,
+                             null=False,
+                             blank=False)
+    grammar = models.CharField(verbose_name='Грамматика',
+                               max_length=300,
+                               null=False,
+                               blank=False)
+    note = models.CharField(verbose_name='Примечание',
+                            max_length=2000,
+                            null=False,
+                            blank=False)
+    org = models.CharField(verbose_name='Орг. моменты и поведение ученика',
+                           max_length=2000,
+                           null=False,
+                           blank=False)
+    dt = models.DateTimeField(verbose_name='Дата и время заполнения',
+                              auto_now_add=True,
+                              null=True,
+                              blank=True)
+
+    class Meta:
+        verbose_name = 'Отзыв преподавателя о занятии'
+        verbose_name_plural = 'Отзывы преподавателей о занятиях'
 
 
 class Lesson(models.Model):
@@ -41,12 +98,12 @@ class Lesson(models.Model):
     description = models.TextField(verbose_name='Описание занятия',
                                    null=True,
                                    blank=True)
-    replace_teacher = models.ForeignKey(NewUser,
+    replace_teacher = models.ForeignKey("profile_management.NewUser",
                                         verbose_name='Замещающий преподаватель',
                                         on_delete=models.SET_NULL,
                                         null=True,
                                         blank=True,
-                                        related_name='lessons')
+                                        related_name='replace_teacher')
     materials = models.ManyToManyField(Material,
                                        verbose_name='Материалы',
                                        related_name='lesson',
@@ -64,22 +121,21 @@ class Lesson(models.Model):
                               null=True,
                               blank=True,
                               on_delete=models.DO_NOTHING)
-    evaluation = models.IntegerField(verbose_name='Оценка занятия',
-                                     null=True,
-                                     blank=True)
-    note_teacher = models.CharField(verbose_name='Заметка преподавателя',
-                                    max_length=2000,
-                                    null=True,
-                                    blank=True)
-    note_listener = models.CharField(verbose_name='Заметка ученика',
-                                     max_length=2000,
-                                     null=True,
-                                     blank=True)
     status = models.IntegerField(verbose_name='Статус',
                                  default=0,
                                  null=False,
                                  blank=True,
                                  choices=LESSON_STATUS_CHOICES)
+    from_program_lesson = models.ForeignKey(LearningProgramLesson,
+                                            verbose_name="Шаблон урока программы",
+                                            null=True,
+                                            blank=True,
+                                            on_delete=models.DO_NOTHING)
+    lesson_teacher_review = models.ForeignKey(LessonTeacherReview,
+                                              verbose_name="Отзыв преподавателя",
+                                              null=True,
+                                              blank=True,
+                                              on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'Занятие'
@@ -95,8 +151,20 @@ class Lesson(models.Model):
         else:
             return self.get_learning_plan().teacher
 
+    async def aget_teacher(self):
+        if self.replace_teacher:
+            return self.replace_teacher
+        else:
+            lp = await self.aget_learning_plan()
+            return lp.teacher
+
     def get_listeners(self):
         return self.get_learning_plan().listeners.all()
+
+    async def aget_listeners(self):
+        learning_phase = await self.learningphases_set.afirst()
+        learning_plan = await learning_phase.learningplan_set.afirst()
+        return [listener async for listener in learning_plan.listeners.all()]
 
     def get_hw_teacher(self):
         default_hw_teacher = self.get_learning_plan().default_hw_teacher
@@ -108,10 +176,18 @@ class Lesson(models.Model):
     def get_learning_plan(self):
         return self.learningphases_set.first().learningplan_set.first()
 
+    async def aget_learning_plan(self):
+        learning_phase = await self.learningphases_set.afirst()
+        learning_plan = await (learning_phase.learningplan_set.select_related("teacher")
+                               .select_related("metodist").select_related("default_hw_teacher").afirst())
+        return learning_plan
+
     def get_hw_deadline(self):
         nl = self.get_learning_plan().get_next_lesson(self)
         if not nl or not nl.date:
             return None
         return nl.date
 
-
+    async def aset_passed(self):
+        self.status = 1
+        await self.asave()

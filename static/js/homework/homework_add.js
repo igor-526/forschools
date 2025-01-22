@@ -1,39 +1,69 @@
-async function HWAddMain(){
-    HWAddButton.addEventListener('click', HWAddReset)
+function HWAddMain(){
+    HWAddButton.addEventListener('click', function () {
+        HWAddReset()
+        bsHomeworksAddOffcanvas.show()
+    })
     HWAddListenersSearchField.addEventListener('input', HWAddSearchListeners)
-    await HWAddSetTeachersListeners()
+    HWAddSetTeachersListeners()
     HWAddSaveAndGoButton.addEventListener('click', async function(){
         await HWAddSave(true)
     })
     HWAddSaveButton.addEventListener('click', async function(){
         await HWAddSave(false)
     })
+    HWAddOffcanvasMaterialsAddButton.addEventListener("click", function (){
+        materialsEmbedSet(HWAddMaterialsSet)
+    })
+    if (getHashValue("new")){
+        HWAddSetModal()
+    }
 }
 
-async function HWAddSetTeachersListeners(){
-    if (isAdminOrMetodist){
-        await usersAPIGetTeachers().then(request => {
-            HWAddTeacherField.innerHTML = "<option value='none'>Выберите из списка:</option>"
-            if (request.status === 200){
-                request.response.map(teacher => {
-                    HWAddTeacherField.insertAdjacentHTML('beforeend', `
-                    <option value="${teacher.id}">${teacher.first_name} ${teacher.last_name}</option>`)
-                })
-                dselect(HWAddTeacherField)
-            }
-        })
-    }
-    else if (isTeacher){
-        HWAddTeacherField.innerHTML = `
-        <option value="${userObj.id}" selected>${userObj.first_name} ${userObj.last_name}</option>`
+function HWAddSetModal(){
+    bsHomeworksAddOffcanvas.show()
+}
+
+function HWAddSetTeachersListeners(){
+    function getElement(user, selectedID=null) {
+        const option = document.createElement("option")
+        option.value = user.id
+        option.innerHTML = `${user.first_name} ${user.last_name}`
+        if (user.id === selectedID){
+            option.selected = true
+        }
+        return option
     }
 
-    await usersAPIGetListeners().then(request => {
-        if (request.status === 200){
-            request.response.map(listener => {
-                HWAddListenersSelect.insertAdjacentHTML('beforeend', `
-                <option value="${listener.id}">${listener.first_name} ${listener.last_name}</option>`)
-            })
+
+    const selectedListener = getHashValue("listener")?Number(getHashValue("listener")):null
+    const selectedTeacher = getHashValue("teacher")?Number(getHashValue("teacher")):null
+    if (isAdminOrMetodist){
+        usersAPIGetTeachers().then(request => {
+            switch (request.status){
+                case 200:
+                    HWAddTeacherField.innerHTML = "<option value='none'>Выберите из списка:</option>"
+                    request.response.forEach(teacher => {
+                        HWAddTeacherField.insertAdjacentElement('beforeend', getElement(teacher, selectedTeacher))
+                    })
+                    break
+                default:
+                    showErrorToast("Не удалось загрузить список преподавателей")
+                    break
+            }
+        })
+    } else if (isTeacher){
+        HWAddTeacherField.innerHTML = `<option value="${userObj.id}" selected>${userObj.first_name} ${userObj.last_name}</option>`
+    }
+    usersAPIGetListeners().then(request => {
+        switch (request.status){
+            case 200:
+                request.response.forEach(listener => {
+                    HWAddListenersSelect.insertAdjacentElement('beforeend', getElement(listener, selectedListener))
+                })
+                break
+            default:
+                showErrorToast("Не удалось загрузить список учеников")
+                break
         }
     })
 }
@@ -113,7 +143,7 @@ function HWAddClientValidation(){
 }
 
 function HWAddServerValidation(errors){
-    console.log(errors)
+
 }
 
 function HWAddSearchListeners(){
@@ -155,8 +185,6 @@ async function HWAddSave(go=false){
     }
 }
 
-
-
 let HWAddMaterialsSet = []
 
 //Bootstrap elements
@@ -180,6 +208,9 @@ const HWAddMaterialsList = HWAddForm.querySelector("#HomeworksAddOffcanvasMateri
 const HWAddMaterialsAddButton = HWAddForm.querySelector("#HomeworksAddOffcanvasMaterialsAddButton")
 const HWAddSaveAndGoButton = HWAddForm.querySelector("#HomeworksAddOffcanvasSaveAndGoButton")
 const HWAddSaveButton = HWAddForm.querySelector("#HomeworksAddOffcanvasSaveButton")
-const HWAddButton = document.querySelector("#HomeworksAddOffcanvasButton")
+const HWAddButton = document.querySelector("#homeworksAddOffcanvasButton")
+
+//Buttons
+const HWAddOffcanvasMaterialsAddButton = document.querySelector("#homeworksAddOffcanvasMaterialsAddButton")
 
 HWAddMain()

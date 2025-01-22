@@ -2,41 +2,36 @@
 {% load static %}
 {% block content %}
     <div class="container-xxl mt-4 mb-3">
-        <div class="row row justify-content-between">
+        <div class="row justify-content-between">
             <div class="col-auto">
                 <h1>Домашние задания</h1>
             </div>
             <div class="col-auto">
                 {% if is_admin_or_metodist or is_teacher %}
-                    <button id="HomeworksAddOffcanvasButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" data-bs-target="#HomeworksAddOffcanvas"><i class="bi bi-plus-lg"></i></button>
+                    <button id="homeworksAddOffcanvasButton" type="button" class="btn btn-primary mt-1"><i class="bi bi-plus-lg"></i></button>
                     {% include "homework_add_offcanvas.html" %}
                     {% include "materials_embed_modal.html" %}
                 {% endif %}
-                <button id="HomeworksCollapseSearchButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="collapse" data-bs-target="#HomeworksCollapseSearch"><i class="bi bi-search"></i></button>
             </div>
-        </div>
-    </div>
-
-    <div class="collapse mb-3" id="HomeworksCollapseSearch">
-        <div class="card card-body">
-            <form id="HomeworksCollapseSearchForm">
-                <div class="row">
-
-                </div>
-            </form>
         </div>
     </div>
 
     <div class="container-xxl">
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
-                <a class="nav-link" href="#" id="HomeworksTabDoing">Ожидают выполнения</a>
+                <a class="nav-link" href="#" id="homeworksTabAll">Все</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" id="HomeworksTabChecking">Ожидают проверки</a>
+                <a class="nav-link" href="#" id="homeworksTabDoing">Ожидают выполнения</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" id="HomeworksTabClosed">Завершены</a>
+                <a class="nav-link" href="#" id="homeworksTabChecking">Ожидают проверки</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="homeworksTabClosed">Завершены</a>
+            </li>
+            <li class="nav-item">
+                <button id="homeworksTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i>Сбросить</button>
             </li>
         </ul>
 
@@ -45,20 +40,78 @@
                 <thead>
                 <tr>
                     <th scope="col">Наименование</th>
-                    <th scope="col">Преподаватель</th>
-                    <th scope="col">Ученик</th>
-                    <th scope="col">Срок</th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Преподаватель</b></button>
+                            <ul id="homeworksTableFilterTeacherList" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <button id="homeworksTableFilterTeacherSearchFieldReset" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                    <input id="homeworksTableFilterTeacherSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                    <button id="homeworksTableFilterTeacherSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Ученик</b></button>
+                            <ul id="homeworksTableFilterListenerList" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <button id="homeworksTableFilterListenerSearchFieldReset" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                    <input id="homeworksTableFilterListenerSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                    <button id="homeworksTableFilterListenerSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Задано</b></button>
+                            <ul class="dropdown-menu" style="min-width: 320px;">
+                                <li class="input-group px-1 mb-1">
+                                    <span class="input-group-text">Начало</span>
+                                    <input id="homeworksTableFilterDateStartField" type="date" class="form-control form-control-sm" aria-label="date start">
+                                    <button id="homeworksTableFilterDateStartFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                                <li class="input-group px-1">
+                                    <span class="input-group-text">Конец</span>
+                                    <input id="homeworksTableFilterDateEndField" type="date" class="form-control form-control-sm" aria-label="date end">
+                                    <button id="homeworksTableFilterDateEndFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Послед. изменение</b></button>
+                            <ul class="dropdown-menu" style="min-width: 320px;">
+                                <li class="input-group px-1 mb-1">
+                                    <span class="input-group-text">Начало</span>
+                                    <input id="homeworksTableFilterLastChangeDateStartField" type="date" class="form-control form-control-sm" aria-label="date start">
+                                    <button id="homeworksTableFilterLastChangeDateStartFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                                <li class="input-group px-1">
+                                    <span class="input-group-text">Конец</span>
+                                    <input id="homeworksTableFilterLastChangeDateEndField" type="date" class="form-control form-control-sm" aria-label="date end">
+                                    <button id="homeworksTableFilterLastChangeDateEndFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
                 </tr>
                 </thead>
-                <tbody id="HomeworksTableBody"></tbody>
+                <tbody id="homeworksTableBody"></tbody>
             </table>
+            <button id="homeworksTableShowMoreButton" class="btn btn-primary d-none">Показать ещё</button>
         </div>
     </div>
-    {% include 'toast.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const isAdminOrMetodist = {% if is_admin_or_metodist %}true{% else %}false{% endif %}
         const isTeacher = {% if is_teacher %}true{% else %}false{% endif %}
         const isListener = {% if is_listener %}true{% else %}false{% endif %}
@@ -68,18 +121,33 @@
             last_name: "{{ request.user.last_name }}"
         }
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/homework/homeworks.js' %}"></script>
+    <script src="{% static 'js/homework/homeworks_filter.js' %}"></script>
     {% if is_admin_or_metodist or is_teacher %}
         <script>
             const materialEmbedAction = "addToHW_"
+            const see_general = {% if perms.material.see_all_general %}true{% else %}false{% endif %}
+            const mediaFormats = {
+                imageFormats: {{ material_formats.image_formats | safe }},
+                videoFormats: {{ material_formats.video_formats | safe }},
+                animationFormats: {{ material_formats.animation_formats | safe }},
+                archiveFormats: {{ material_formats.archive_formats | safe }},
+                pdfFormats: {{ material_formats.pdf_formats | safe }},
+                voiceFormats: {{ material_formats.voice_formats | safe }},
+                audioFormats: {{ material_formats.audio_formats | safe }},
+                textFormats: {{ material_formats.text_formats | safe }},
+                presentationFormats: {{ material_formats.presentation_formats | safe }}
+            }
         </script>
         <script src="{% static 'js/automaticAPI.js' %}"></script>
+        <script src="{% static 'js/homework/homework_utils.js' %}"></script>
         <script src="{% static 'js/materials/materials_api.js' %}"></script>
         <script src="{% static 'js/homework/homework_add.js' %}"></script>
+        <script src="{% static 'js/collections/collections_api.js' %}"></script>
+        <script src="{% static 'js/programs/programsAPI.js' %}"></script>
+        <script src="{% static 'js/materials/materials_utils.js' %}"></script>
         <script src="{% static 'js/materials/materials_embed.js' %}"></script>
     {% endif %}
 {% endblock %}

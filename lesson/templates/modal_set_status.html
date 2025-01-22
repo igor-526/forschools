@@ -1,0 +1,119 @@
+<div class="modal fade" tabindex="-1" id="lessonItemStatusPassedModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Занятие проведено</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="lessonItemStatusPassedModalForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormNameField" class="form-label">Наименование занятия (УМК)</label>
+                        <input name="name" type="text" class="form-control" id="lessonItemStatusPassedModalFormNameField">
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormNameError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormMaterialsField" class="form-label">Используемые материалы</label>
+                        <textarea name="materials" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalFormMaterialsField"></textarea>
+                        <div class="form-text">Обязательно к заполнению. Может быть заполнено автоматически из прикрепленных к занятию материалов. Дополните, если были использованы другие материалы</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormMaterialsError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormLexisField" class="form-label">Лексика</label>
+                        <input name="lexis" type="text" class="form-control" id="lessonItemStatusPassedModalFormLexisField">
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormLexisError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormGrammarField" class="form-label">Грамматика</label>
+                        <input name="grammar" type="text" class="form-control" id="lessonItemStatusPassedModalFormGrammarField">
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormGrammarError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormNoteField" class="form-label">Примечание</label>
+                        <textarea name="note" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalFormNoteField"></textarea>
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormNoteError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lessonItemStatusPassedModalFormOrgField" class="form-label">Орг. моменты и поведение ученика</label>
+                        <textarea name="org" type="text" class="form-control" rows="3" id="lessonItemStatusPassedModalFormOrgField"></textarea>
+                        <div class="form-text">Обязательно к заполнению</div>
+                        <div class="invalid-feedback" id="lessonItemStatusPassedModalFormOrgError"></div>
+                    </div>
+                </form>
+                <div class="alert alert-danger d-flex align-items-center d-none mb-3" role="alert" id="lessonItemStatusPassedModalErrorsAlert">
+                    <div id="lessonItemStatusPassedModalErrors"></div>
+                </div>
+                <div>
+                    Внимание! Действие обратимо только администратором.<br>После изменения статуса занятия его корректировка невозможна (в том числе материалов)<br>
+                    После нажатия кнопки "Урок проведён" ученик(-и) увидят приложенные ДЗ и материалы, а также получат уведомление
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="lessonItemStatusPassedModalButton" type="button" class="btn btn-success">Занятие проведено</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="lessonItemStatusCancelledModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Занятие не проведено</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="lessonItemStatusCancelledModalForm">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="radio" class="btn-check" name="action" value="reschedule" id="lessonItemStatusCancelledModalFormRescheduling" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="lessonItemStatusCancelledModalFormRescheduling">Перенести занятие</label>
+                        <input type="radio" class="btn-check" name="action" value="cancel" id="lessonItemStatusCancelledModalFormCancel" autocomplete="off">
+                        <label class="btn btn-outline-danger" for="lessonItemStatusCancelledModalFormCancel">Отменить и продублировать</label>
+                    </div>
+                    <div class="form-text mb-3">Перенос занятия изменит его дату и время на новые<br>Отмена и дублирование пометит данное занятие как отмененное. Будет создан дубль данного занятия с другим датой и временем</div>
+                    <div class="input-group mb-1">
+                        <input type="checkbox" class="btn-check" id="lessonItemStatusCancelledModalFormManual" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="lessonItemStatusCancelledModalFormManual">Выбрать вручную</label>
+                        <input name="date" type="date" class="form-control" id="lessonItemStatusCancelledModalFormDate" aria-label="" disabled>
+                    </div>
+                    <div class="input-group">
+                        <input name="start" type="time" class="form-control" id="lessonItemStatusCancelledModalFormStart" aria-label="" disabled>
+                        <span class="input-group-text" id="addon-wrapping">-</span>
+                        <input name="end" type="time" class="form-control" id="lessonItemStatusCancelledModalFormEnd" aria-label="" disabled>
+                        <select name="place" id="lessonItemStatusCancelledModalFormPlace" class="form-select" disabled>
+                            <option selected value="None">Место</option>
+                        </select>
+
+                    </div>
+                    <div class="form-text mb-4">Не выбирайте "Выбрать вручную" для автоматического переноса занятия на место следующего занятия по расписанию</div>
+
+                </form>
+                <div class="alert alert-danger d-flex align-items-center d-none mb-3" role="alert" id="lessonItemStatusCancelledModalErrorsAlert">
+                    <div id="lessonItemStatusCancelledModalErrors"></div>
+                </div>
+                <div class="alert alert-warning d-flex align-items-center d-none mb-3" role="alert" id="lessonItemStatusCancelledModalWarningsAlert">
+                    <div id="lessonItemStatusCancelledModalWarnings"></div>
+                </div>
+                <div>
+                    Внимание! Действие обратимо только администратором.<br>После изменения статуса занятия его корректировка невозможна (в том числе материалов)<br>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="lessonItemStatusCancelledModalButton" type="button" class="btn btn-danger">Занятие не проведено</button>
+            </div>
+        </div>
+    </div>
+</div>

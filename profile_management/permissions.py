@@ -28,7 +28,7 @@ def get_editable_perm(user, obj) -> bool:
     return False
 
 
-def get_deactivate_perm(user, obj) -> bool:
+def get_secretinfo_perm(user, obj) -> bool:
     objgroups = [group.name for group in obj.groups.all()]
     if user.is_superuser:
         return True
@@ -37,8 +37,6 @@ def get_deactivate_perm(user, obj) -> bool:
     if "Metodist" in objgroups and user.has_perm("auth.deactivate_metodist"):
         return True
     if "Teacher" in objgroups and user.has_perm("auth.deactivate_teacher"):
-        return True
-    if "Curator" in objgroups and user.has_perm("auth.deactivate_curator"):
         return True
     if "Listener" in objgroups and user.has_perm("auth.deactivate_listener"):
         return True

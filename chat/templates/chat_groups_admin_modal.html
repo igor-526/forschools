@@ -1,0 +1,29 @@
+<div class="modal" id="chatsGroupAdminModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chatsGroupAdminModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="chatsGroupAdminModalNameField" class="form-label">Наименование</label>
+                    <input type="text" class="form-control" id="chatsGroupAdminModalNameField">
+                    <div class="form-text">Наименование для чата<br>Может быть сгенерировано автоматически</div>
+                    <div id="chatsGroupAdminModalNameError" class="invalid-feedback"></div>
+                </div>
+
+                <label class="form-label" id="chatsGroupAdminModalUsersListLabel"></label>
+                <div class="input-group">
+                    <input id="chatsGroupAdminModalUsersSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                    <button id="chatsGroupAdminModalUsersSearchErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                </div>
+                <div class="list-group" id="chatsGroupAdminModalUsersList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="chatsGroupAdminModalSaveButton"></button>
+            </div>
+        </div>
+    </div>
+</div>

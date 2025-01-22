@@ -1,0 +1,71 @@
+<div class="modal fade" tabindex="-1" id="materialsModalEdit">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактирование</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="materialsModalEditForm">
+                    <div class="mb-3">
+                        <label for="materialsModalEditNameField" class="form-label">Наименование</label>
+                        <input name="name" type="text" class="form-control" id="materialsModalEditNameField">
+                        <div class="form-text">Под каким наименованием будет сохранён файл</div>
+                        <div class="invalid-feedback" id="materialsModalEditNameError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="materialsModalEditDescriptionField" class="form-label">Описание</label>
+                        <textarea name="description" class="form-control" id="materialsModalEditDescriptionField" rows="7"></textarea>
+                    </div>
+
+                    <div class="mb-1">
+                        <span class="mb-1">Категория</span>
+                        <input id="materialsModalEditCatSearch" type="text" class="form-control" placeholder="Поиск">
+                        <select name="cat" class="form-select" id="materialsModalEditCatSelect" multiple size="7">
+                        </select>
+                        <div class="form-text">Зажмите CTRL для выбора нескольких</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <input name="cat" type="text" class="form-control d-none" id="materialsModalEditCatNewInput" placeholder="Новая категория материалов">
+                    </div>
+
+                    <div class="mb-1">
+                        <span class="mb-1">Уровень</span>
+                        <input id="materialsModalEditLvlSearch" type="text" class="form-control" placeholder="Поиск">
+                        <select name="lvl" class="form-select" id="materialsModalEditLvlSelect" multiple size="7">
+                        </select>
+                        <div class="form-text">Зажмите CTRL для выбора нескольких</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <input name="lvl" type="text" class="form-control d-none" id="materialsModalEditLvlNewInput" placeholder="Новый уровень материалов">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="materialsModalEditSaveButton" type="button" class="btn btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="materialsModalDelete">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Удаление</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить материалы?<br>Действие обратимо только с помощью администратора</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="materialsModalDeleteButton" type="button" class="btn btn-danger">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>

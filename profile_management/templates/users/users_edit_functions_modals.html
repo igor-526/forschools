@@ -1,0 +1,68 @@
+<div class="modal fade" tabindex="-1" id="usersEditChangePasswordModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Смена пароля</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="usersEditChangePasswordModalForm">
+                    <div class="mb-3">
+                        <label for="usersEditChangePasswordModalField" class="form-label">Новый пароль</label>
+                        <input name="password" type="text" class="form-control" id="usersEditChangePasswordModalField">
+                        <div class="form-text">Пароль должен содержать буквы и цифры</div>
+                        <div class="invalid-feedback" id="usersEditChangePasswordModalFieldError"></div>
+                    </div>
+
+                    <div class="form-check form-switch">
+                        <input disabled name="send_email" class="form-check-input" type="checkbox" role="switch" id="usersEditChangePasswordModalSendEmail">
+                        <label class="form-check-label" for="usersEditChangePasswordModalSendEmail">Отправить новый пароль на e-mail</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input disabled name="send_tg" class="form-check-input" type="checkbox" role="switch" id="usersEditChangePasswordModalSendTG">
+                        <label class="form-check-label" for="usersEditChangePasswordModalSendTG">Отправить новый пароль в Telegram</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="usersEditChangePasswordModalChangeButton" type="button" class="btn btn-primary">Сменить пароль</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="usersEditLoginModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Авторизация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Авторизация под другим пользователем приведёт к выходу из текущего аккаунта</p>
+                <p>Для повторной авторизации под текущим пользователем понадобится Ваш логин и пароль</p>
+            </div>
+            <div class="modal-footer">
+                <button id="usersEditLoginModalButton" type="button" class="btn btn-danger">Залогиниться</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="usersEditActivationModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="usersEditActivationTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="usersEditActivationModalBody"></div>
+            <div class="modal-footer">
+                <button id="usersEditActivationModalButton" type="button" class="btn"></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>

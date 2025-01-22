@@ -1,14 +1,14 @@
-from datetime import timedelta
-
+import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from learning_plan.models import LearningPlan
 from lesson.models import Lesson
 
 
 class CanReplaceTeacherMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
-        if replace_teacher_button(request):
+        if hw_perm_can_set_replace(request):
             return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
 
@@ -28,6 +28,11 @@ class CanSeeLessonMixin(LoginRequiredMixin):
                     (timezone.now().timestamp() >= (
                             lessondt - timezone.timedelta(days=learning_plan.show_lessons)).timestamp())):
                 return super().dispatch(request, *args, **kwargs)
+        if "Curator" in usergroups:
+            lesson = Lesson.objects.get(pk=kwargs.get('pk'))
+            learning_plan = lesson.learningphases_set.first().learningplan_set.first()
+            if request.user in learning_plan.curators.all():
+                return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
 
 
@@ -35,31 +40,37 @@ def get_usergroups(user):
     return [group.name for group in user.groups.all()]
 
 
-def replace_teacher_button(request):
-    usergroups = get_usergroups(request.user)
-    return ("Admin" in usergroups) or ("Metodist" in usergroups)
+def hw_perm_can_set_replace(request):
+    return request.user.groups.filter(name="Admin").exists()
 
 
 def can_edit_lesson_materials(request, lesson: Lesson):
-    if lesson.status == 1:
+    if lesson.status == 3:
         return False
     return can_add_homework(request, lesson)
 
 
 def can_see_lesson_materials(request, lesson: Lesson):
-    if lesson.status == 1:
+    if request.user.groups.filter(name="Admin").exists():
         return True
-    usergroups = get_usergroups(request.user)
-    if ("Admin" in usergroups) or ("Metodist" in usergroups):
+    lp = lesson.get_learning_plan()
+    if not lp:
+        return False
+    if (lp.teacher == request.user or lp.metodist == request.user or
+            lesson.replace_teacher == request.user or lp.curators.filter(id=request.user.id).exists()):
         return True
-    if "Listener" in usergroups:
+    if LearningPlan.listeners.filter(id=request.user.id).exists():
         if not lesson.date:
             return False
-        learning_plan = lesson.learningphases_set.first().learningplan_set.first()
         lessondt = timezone.datetime(lesson.date.year, lesson.date.month, lesson.date.day)
-        if not learning_plan.show_materials:
-            return timezone.now().timestamp() >= lessondt.timestamp()
-        return timezone.now().timestamp() >= (lessondt - timedelta(days=learning_plan.show_materials)).timestamp()
+        if not lp.show_materials:
+            if lesson.status == 1:
+                return True
+            else:
+                return lesson.materials_access
+        return timezone.now().timestamp() >= (
+                lessondt - datetime.timedelta(days=lp.show_materials)).timestamp()
+    return False
 
 
 def can_add_homework(request, lesson: Lesson):
@@ -67,9 +78,34 @@ def can_add_homework(request, lesson: Lesson):
     if ("Admin" in usergroups) or ("Metodist" in usergroups):
         return True
     if "Teacher" in usergroups:
-        teacher = lesson.learningphases_set.filter(learningplan__teacher=request.user).exists()
-        replace_teacher = lesson.replace_teacher == request.user
-        return teacher or replace_teacher
+        return lesson.get_teacher() == request.user
+    if "Curator" in usergroups:
+        return lesson.get_learning_plan().curators.filter(id=request.user.id).exists()
     return False
 
 
+def can_set_passed(request, lesson: Lesson):
+    if lesson.status == 0:
+        if not request.user.groups.filter(name="Listener").exists():
+            if (request.user.groups.filter(name__in=["Metodist", "Admin"]).exists() or
+                    lesson.get_teacher() == request.user):
+                lesson_end = lesson.date
+                if lesson.end_time:
+                    lesson_end = datetime.datetime(
+                        year=lesson.date.year,
+                        month=lesson.date.month,
+                        day=lesson.date.day,
+                        hour=lesson.end_time.hour,
+                        minute=lesson.end_time.minute,
+                        second=0,
+                        microsecond=0)
+                    return lesson_end < datetime.datetime.now()
+                else:
+                    return lesson_end < datetime.date.today()
+    return False
+
+
+def can_set_not_held(request, lesson: Lesson):
+    if lesson.status == 0:
+        return False
+    return request.user.groups.filter(name="Admin").exists()

@@ -34,7 +34,7 @@ function clientEditValidation() {
 }
 
 function serverEditValidation(errors) {
-    console.log(errors)
+
 }
 
 async function saveEdit() {

@@ -1,0 +1,36 @@
+<div class="modal fade" tabindex="-1" id="supportNewTicketModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Лог</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form id="supportNewTicketModalForm">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="supportNewTicketModalDescription" class="form-label">Проблема</label>
+                        <textarea name="description" type="text" rows="10" class="form-control" id="supportNewTicketModalDescription"></textarea>
+                        <div class="form-text">Опишите, пожалуйста, что у Вас произошло или задайте вопрос. Максимально подробное описание проблемы поможет разобарться быстрее</div>
+                        <div class="invalid-feedback" id="supportNewTicketModalDescriptionError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="supportNewTicketModalAttachmentsField" class="form-label">Проблема</label>
+                        <input name="attachments" type="file" class="form-control" id="supportNewTicketModalAttachmentsField">
+                        <div class="form-text">При необходимости прикрепите фотографии или видео</div>
+                        <div class="invalid-feedback" id="supportNewTicketModalAttachmentsError"></div>
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button id="supportNewTicketModalSendButton" type="button" class="btn btn-warning">Отправить</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>

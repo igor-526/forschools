@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <h1>
+            {{ title }} <button id="supportTicketsFilteringEraseAll" type="button" class="btn btn-danger ms-1"><i class="bi bi-funnel-fill"></i> Сбросить</button>
+        </h1>
+    </div>
+    <div class="container-xxl">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col" id="supportTicketsTableUsersTH" class="d-none">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <b>Пользователь</b></button>
+                        <ul id="supportTicketsFilteringUsersList" class="dropdown-menu" style="min-width: 250px;">
+                            <li class="input-group px-1">
+                                <button id="supportTicketsFilteringUsersCancel" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                <input id="supportTicketsFilteringUsersField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                <button id="supportTicketsFilteringUsersErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                        </ul>
+                    </div>
+                </th>
+                <th scope="col">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <b>Дата</b></button>
+                        <ul class="dropdown-menu" style="min-width: 320px;">
+                            <li class="input-group px-1 mb-1">
+                                <span class="input-group-text">Начало</span>
+                                <input id="supportTicketsFilteringDateStartField" type="date" class="form-control form-control-sm" aria-label="date start">
+                                <button id="supportTicketsFilteringDateStartErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                            <li class="input-group px-1">
+                                <span class="input-group-text">Конец</span>
+                                <input id="supportTicketsFilteringDateEndField" type="date" class="form-control form-control-sm" aria-label="date end">
+                                <button id="supportTicketsFilteringDateEndErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                        </ul>
+                    </div>
+                </th>
+                <th scope="col">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <b>Обращение</b></button>
+                        <ul class="dropdown-menu" style="min-width: 250px;">
+                            <li class="input-group px-1">
+                                <input id="supportTicketsFilteringDescriptionField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                <button id="supportTicketsFilteringDescriptionErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                        </ul>
+                    </div>
+                </th>
+                <th scope="col">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <b>Статус</b></button>
+                        <ul id="supportTicketsFilteringStatusList" class="dropdown-menu" style="min-width: 250px;">
+                            <li class="input-group px-1">
+                        </ul>
+                    </div>
+                </th>
+                <th scope="col">Действие</th>
+            </tr>
+            </thead>
+            <tbody id="supportTicketsTableBody"></tbody>
+        </table>
+    </div>
+    {#    {% include 'support_wsgilogs_modal.html' %}#}
+{% endblock %}
+{% block static_js %}
+    {% if admin_mode %}
+        <script>
+            const supportTicketsAdminMode = true
+        </script>
+    {% else %}
+        <script>
+            const supportTicketsAdminMode = false
+        </script>
+    {% endif %}
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/support/support_api.js' %}"></script>
+    <script src="{% static 'js/support/tickets/tickets.js' %}"></script>
+    <script src="{% static 'js/support/tickets/tickets_filters.js' %}"></script>
+{% endblock %}

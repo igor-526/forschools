@@ -2,11 +2,13 @@
 {% load static %}
 {% block content %}
     <div class="container-xxl mt-4 mb-3">
-        <div class="row row justify-content-between">
+        <div class="row justify-content-between">
             <div class="col-auto">
                 <h1>{{ title }}</h1>
             </div>
             <div class="col-auto">
+                <button id="plansItemAddLessonsButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#plansItemAddLessonsModal">Добавить занятия</button>
+                {% include 'plans_item_modal_addlessons.html' %}
                 {% if can_generate_from_program %}
                     <button id="PlansItemGenerateButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#plansItemFromProgramModal">Сгенерировать из программы</button>
                     {% include 'modals_program.html' %}
@@ -33,6 +35,8 @@
                             {% else %}
                                 <li class="list-group-item">Срок: не установлен</li>
                             {% endif %}
+                            <li class="list-group-item"><button id="plansItemSetStatusButton" class="btn btn-danger d-none">Завершить обучение</button></li>
+                            {% include 'plans_item_modal_setstatus.html' %}
                         </ul>
                     </div>
                 </div>
@@ -42,9 +46,9 @@
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">Этапов всего: {{ plan.phases.count }}</li>
-                            <li class="list-group-item">Этапов пройдено:</li>
-                            <li class="list-group-item">Занятий всего:</li>
-                            <li class="list-group-item">Занятий пройдено:</li>
+                            <li class="list-group-item">Этапов пройдено: <span id="plansItemPhasesPassed"></span></li>
+                            <li class="list-group-item">Занятий всего: <span id="plansItemLessonsAll"></span></li>
+                            <li class="list-group-item">Занятий пройдено: <span id="plansItemLessonsPassed"></span></li>
                         </ul>
                     </div>
                 </div>
@@ -57,9 +61,25 @@
                             <li class="list-group-item"><b>Занятия: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
                         </ul>
                         {% if plan.default_hw_teacher %}
-                            <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.default_hw_teacher.id }}">{{ plan.default_hw_teacher }}</a></li>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.default_hw_teacher.id }}">{{ plan.default_hw_teacher }}</a></li>
+                            </ul>
                         {% else %}
-                            <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><b>ДЗ: </b><a href="/profile/{{ plan.teacher.id }}">{{ plan.teacher }}</a></li>
+                            </ul>
+                        {% endif %}
+                        {% if plan.metodist %}
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><b>Методист: </b><a href="/profile/{{ plan.metodist.id }}">{{ plan.metodist }}</a></li>
+                            </ul>
+                        {% endif %}
+                        {% if plan.curators %}
+                            <ul class="list-group list-group-flush">
+                                {% for curator in plan.curators.all %}
+                                    <li class="list-group-item">Куратор: <a href="/profile/{{ curator.id }}">{{ curator }}</a></li>
+                                {% endfor %}
+                            </ul>
                         {% endif %}
                     </div>
                 </div>
@@ -114,18 +134,16 @@
     {% if can_edit_plan %}
         {% include 'modal_phase.html' %}
         {% include 'phase_modal_delete.html' %}
-        {% include 'modal_lesson.html' %}
+        {% include 'lesson_edit_modal.html' %}
         {% include 'lesson_modal_delete.html' %}
-        {% include 'toast.html' %}
+        {% include 'plans_modal_rescheduling.html' %}
+        {% include 'plans_modal_notheld.html' %}
     {% endif %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         const planID = {{ plan.id }}
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
     <script src="{% static 'js/plans/plans_api.js' %}"></script>
     <script src="{% static 'js/plans/plans_item/plans_item_main.js' %}"></script>
     {% if can_edit_plan %}
@@ -134,9 +152,12 @@
         </script>
         <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script src="{% static 'js/collections/collections_api.js' %}"></script>
+        <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
         <script src="{% static 'js/plans/plans_item/plans_item_listeners.js' %}"></script>
-        <script src="{% static 'js/plans/plans_item/plans_item_phase.js' %}"></script>
-        <script src="{% static 'js/plans/plans_item/plans_item_lesson.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plan_item_modals.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_rescheduling.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_add_lessons.js' %}"></script>
+        <script src="{% static 'js/lessons/lessons_edit_modal.js' %}"></script>
 
         {% if can_generate_from_program %}
             <script src="{% static 'js/programs/programsAPI.js' %}"></script>

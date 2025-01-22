@@ -1,31 +1,26 @@
 from aiogram import Router, F
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from tgbot.funcs.homeworks import (show_homework, show_logs,
-                                   show_log_item, show_materials)
-from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkLogCallback
+from homework.models import Homework
+from tgbot.funcs.homeworks import show_homework, send_hw_materials
+from tgbot.keyboards.callbacks.homework import HomeworkCallback
 
 router = Router(name=__name__)
 
 
 @router.callback_query(HomeworkCallback.filter(F.action == 'show'))
 async def h_homework_show_hw(callback: CallbackQuery,
-                             callback_data: HomeworkCallback) -> None:
-    await show_homework(callback, callback_data)
-
-
-@router.callback_query(HomeworkCallback.filter(F.action == 'logs'))
-async def h_homework_show_hw_logs(callback: CallbackQuery,
-                                  callback_data: HomeworkCallback) -> None:
-    await show_logs(callback, callback_data)
-
-
-@router.callback_query(HomeworkLogCallback.filter())
-async def h_homework_show_hw_log_item(callback: CallbackQuery,
-                                      callback_data: HomeworkLogCallback) -> None:
-    await show_log_item(callback, callback_data.log_id)
+                             callback_data: HomeworkCallback,
+                             state: FSMContext) -> None:
+    await show_homework(callback, callback_data, state)
 
 
 @router.callback_query(HomeworkCallback.filter(F.action == 'materials'))
-async def h_homework_show_hw_materials(callback: CallbackQuery,
-                                       callback_data: HomeworkCallback) -> None:
-    await show_materials(callback, callback_data)
+async def h_homework_show_materials(callback: CallbackQuery,
+                                    callback_data: HomeworkCallback,
+                                    state: FSMContext) -> None:
+    hw = await (Homework.objects.select_related("listener")
+                .select_related("teacher")
+                .aget(pk=callback_data.hw_id))
+    await send_hw_materials([mat.id async for mat in hw.materials.all()], hw.id, callback.from_user.id,
+                            callback, state, True)

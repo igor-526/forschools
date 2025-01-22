@@ -1,0 +1,120 @@
+<div class="modal fade" id="plansItemAddLessonsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить занятия</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <form id="plansItemAddLessonsModalForm">
+                        <div class="input-group flex-nowrap mb-2">
+                            <span class="input-group-text" id="addon-wrapping">Начальная дата</span>
+                            <input name="date_start" type="date" class="form-control" id="plansItemAddLessonsModalDate" aria-label="">
+                        </div>
+                        <div class="btn-group mb-1" role="group">
+                            <input type="radio" class="btn-check" name="end_type" id="plansItemAddLessonsModalEndTypeDate" value="date" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalEndTypeDate">До даты</label>
+                            <input type="radio" class="btn-check" name="end_type" id="plansItemAddLessonsModalEndTypeCount" value="count" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalEndTypeCount">Кол-во</label>
+                        </div>
+                        <div class="mb-3 d-none" id="plansItemAddLessonsModalEndCount">
+                            <input name="end_count" type="number" min="1" max="200" class="form-control" id="plansItemAddLessonsModalEndCountField" aria-label="">
+                            <div class="form-text">В последний этап плана обучения будут добавлены занятия. Введите количество занятий, которые необходимо доабвить</div>
+                        </div>
+                        <div class="mb-3" id="plansItemAddLessonsModalEndDate">
+                            <input name="end_date" type="date" class="form-control" id="plansItemAddLessonsModalEndDateField" aria-label="">
+                            <div class="form-text">В последний этап плана обучения будут добавлены занятия. Введите дату последнего занятия</div>
+                        </div>
+
+                        <div class="input-group flex-nowrap mb-2">
+                            <input name="monday" type="checkbox" class="btn-check" id="plansItemAddLessonsModalMondayCheck" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalMondayCheck">ПН</label>
+                            <input name="monday_start" type="time" class="form-control" id="plansItemAddLessonsModalMondayTimeStart" aria-label="" disabled>
+                            <span class="input-group-text" id="addon-wrapping">-</span>
+                            <input name="monday_end" type="time" class="form-control" id="plansItemAddLessonsModalMondayTimeEnd" aria-label="" disabled>
+                            <select name="monday_place" id="plansItemAddLessonsModalMondayPlace" class="form-select place-select" aria-label="" disabled>
+                                <option selected value="None">Место</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group flex-nowrap mb-2">
+                            <input name="tuesday" type="checkbox" class="btn-check" id="plansItemAddLessonsModalTuesdayCheck" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalTuesdayCheck">ВТ</label>
+                            <input name="tuesday_start" type="time" class="form-control" id="plansItemAddLessonsModalTuesdayTimeStart" aria-label="" disabled>
+                            <span class="input-group-text" id="addon-wrapping">-</span>
+                            <input name="tuesday_end" type="time" class="form-control" id="plansItemAddLessonsModalTuesdayTimeEnd" aria-label="" disabled>
+                            <select name="tuesday_place" id="plansItemAddLessonsModalTuesdayPlace" class="form-select place-select" aria-label="" disabled>
+                                <option selected value="None">Место</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group flex-nowrap mb-2">
+                            <input name="wednesday" type="checkbox" class="btn-check" id="plansItemAddLessonsModalWednesdayCheck" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalWednesdayCheck">СР</label>
+                            <input name="wednesday_start" type="time" class="form-control" id="plansItemAddLessonsModalWednesdayTimeStart" aria-label="" disabled>
+                            <span class="input-group-text" id="addon-wrapping">-</span>
+                            <input name="wednesday_end" type="time" class="form-control" id="plansItemAddLessonsModalWednesdayTimeEnd" aria-label="" disabled>
+                            <select name="wednesday_place" id="plansItemAddLessonsModalWednesdayPlace" class="form-select place-select" aria-label="" disabled>
+                                <option selected value="None">Место</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group flex-nowrap mb-2">
+                            <input name="thursday" type="checkbox" class="btn-check" id="plansItemAddLessonsModalThursdayCheck" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalThursdayCheck">ЧТ</label>
+                            <input name="thursday_start" type="time" class="form-control" id="plansItemAddLessonsModalThursdayTimeStart" aria-label="" disabled>
+                            <span class="input-group-text" id="addon-wrapping">-</span>
+                            <input name="thursday_end" type="time" class="form-control" id="plansItemAddLessonsModalThursdayTimeEnd" aria-label="" disabled>
+                            <select name="thursday_place" id="plansItemAddLessonsModalThursdayPlace" class="form-select place-select" aria-label="" disabled>
+                                <option selected value="None">Место</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group flex-nowrap mb-2">
+                            <input name="friday" type="checkbox" class="btn-check" id="plansItemAddLessonsModalFridayCheck" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalFridayCheck">ПТ</label>
+                            <input name="friday_start" type="time" class="form-control" id="plansItemAddLessonsModalFridayTimeStart" aria-label="" disabled>
+                            <span class="input-group-text" id="addon-wrapping">-</span>
+                            <input name="friday_end" type="time" class="form-control" id="plansItemAddLessonsModalFridayTimeEnd" aria-label="" disabled>
+                            <select name="friday_place" id="plansItemAddLessonsModalFridayPlace" class="form-select place-select" aria-label="" disabled>
+                                <option selected value="None">Место</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group flex-nowrap mb-2">
+                            <input name="saturday" type="checkbox" class="btn-check" id="plansItemAddLessonsModalSaturdayCheck" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalSaturdayCheck">СБ</label>
+                            <input name="saturday_start" type="time" class="form-control" id="plansItemAddLessonsModalSaturdayTimeStart" aria-label="" disabled>
+                            <span class="input-group-text" id="addon-wrapping">-</span>
+                            <input name="saturday_end" type="time" class="form-control" id="plansItemAddLessonsModalSaturdayTimeEnd" aria-label="" disabled>
+                            <select name="saturday_place" id="plansItemAddLessonsModalSaturdayPlace" class="form-select place-select" aria-label="" disabled>
+                                <option selected value="None">Место</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group flex-nowrap mb-2">
+                            <input name="sunday" type="checkbox" class="btn-check" id="plansItemAddLessonsModalSundayCheck" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="plansItemAddLessonsModalSundayCheck">ВС</label>
+                            <input name="sunday_start" type="time" class="form-control" id="plansItemAddLessonsModalSundayTimeStart" aria-label="" disabled>
+                            <span class="input-group-text" id="addon-wrapping">-</span>
+                            <input name="sunday_end" type="time" class="form-control" id="plansItemAddLessonsModalSundayTimeEnd" aria-label="" disabled>
+                            <select name="sunday_place" id="plansItemAddLessonsModalSundayPlace" class="form-select place-select" aria-label="" disabled>
+                                <option selected value="None">Место</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="alert alert-danger" role="alert" id="plansItemAddLessonsModalErrorsAlert">
+                    <ul id="plansItemAddLessonsModalErrorsList"></ul>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="plansItemAddLessonsModalAddButton">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -4,6 +4,7 @@ networks:
 
 volumes:
   kitaischool_pgdata:
+  kitaischool_redisdata:
 
 services:
   kitaischool_database:
@@ -53,6 +54,8 @@ services:
     restart: always
     networks:
       - kitaischool_network
+    volumes:
+      - kitaischool_redisdata:/data
 
   kitaischool_celery:
     build: .
@@ -61,10 +64,37 @@ services:
       - kitaischool_django
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      SECRET_KEY: ${SECRET_KEY}
+      DB_DB: ${DB_DB}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: kitaischool_database
+      PORT: 5432
       REDIS_HOST: ${REDIS_HOST}
+      PYTHONUNBUFFERED: 1
     command: celery -A dls worker -l info
     networks:
       - kitaischool_network
+
+  kitaischool_celerybeat:
+    build: .
+    depends_on:
+      - kitaischool_redis
+      - kitaischool_django
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      SECRET_KEY: ${SECRET_KEY}
+      DB_DB: ${DB_DB}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: kitaischool_database
+      PORT: 5432
+      REDIS_HOST: ${REDIS_HOST}
+      PYTHONUNBUFFERED: 1
+    command: celery -A dls beat -l info
+    networks:
+      - kitaischool_network
+
   kitaischool_bot:
     build: .
     environment:
@@ -82,6 +112,7 @@ services:
       - /home/sdo/kitaischool/media:/src/media
     depends_on:
       - kitaischool_celery
+      - kitaischool_redis
     networks:
       - kitaischool_network
     restart: always

@@ -8,12 +8,16 @@ function setLessonPlaces(){
     tableHead.innerHTML = `<tr>
                         <th scope="col">Название</th>
                         <th scope="col">Ссылка</th>
+                        <th scope="col">ID конференции</th>
+                        <th scope="col">Код доступа</th>
                         <th scope="col">Действие</th></tr>`
-    tableBody.innerHTML = '<td>Добавить место проведения занятия</td><td></td><td><button type="button" class="btn btn-primary" id="TableButtonLessonPlaceAdd" data-col-id="0"><i class="bi bi-plus-lg"></i></button></td>'
-    lessonPlacesSet.map(function (item) {
+    tableBody.innerHTML = '<td>Добавить место проведения занятия</td><td></td><td></td><td></td><td><button type="button" class="btn btn-primary" id="TableButtonLessonPlaceAdd" data-col-id="0"><i class="bi bi-plus-lg"></i></button></td>'
+    lessonPlacesSet.forEach(item => {
         tableBody.insertAdjacentHTML("beforeend", `
                                 <td>${item.name}</td>
                                 <td>${item.url}</td>
+                                <td>${item.conf_id ? item.conf_id : ""}</td>
+                                <td>${item.access_code ? item.access_code : ""}</td>
                                 <td>
                                 <button type="button" class="btn btn-danger" id="TableButtonLessonPlaceDelete" data-col-id="${item.id}">
                                 <i class="bi bi-trash3"></i></button>
@@ -40,6 +44,8 @@ function editLessonPlaceModal(){
     const colObj = lessonPlacesSet.find(i => i.id === Number(colID))
     modalEditPlaceNameField.value = colObj.name
     modalEditPlaceURLField.value = colObj.url
+    modalEditPlaceCodeField.value = colObj.access_code ? colObj.access_code : ""
+    modalEditPlaceConfIDField.value = colObj.conf_id ? colObj.conf_id : ""
     bsModalEditPlace.show()
     modalEditPlaceSaveButton.attributes.getNamedItem("data-col-id").value = this
         .attributes.getNamedItem("data-col-id").value
@@ -65,6 +71,8 @@ function addLessonPlaceModal(){
     modalEditPlaceURLHelp.innerHTML = "Ссылка на занятие. У учеников и преподавателей есть доступ к ссылке на платформе и по напоминанию в Telegram. Должна быть уникальной"
     modalEditPlaceNameField.value = ""
     modalEditPlaceURLField.value = ""
+    modalEditPlaceCodeField.value = ""
+    modalEditPlaceConfIDField.value = ""
     bsModalEditPlace.show()
     modalEditPlaceSaveButton.attributes.getNamedItem("data-col-id").value = "0"
     modalEditPlaceSaveButton.attributes.getNamedItem("data-col-name").value = "lessonPlace"

@@ -1,20 +1,82 @@
 async function usersAPIGetTeachers(){
-    const request = await fetch("/api/v1/users?group=teachers")
+    const request = await fetch("/api/v1/users/?role=Teacher")
     return await APIGetToObject(request)
 }
 
 async function usersAPIGetListeners(){
-    const request = await fetch("/api/v1/users?group=listeners")
+    const request = await fetch("/api/v1/users/?role=Listener")
     return await APIGetToObject(request)
 }
 
-async function usersAPIGetAll(){
-    const request = await fetch("/api/v1/users")
+async function usersAPIGetCurators(){
+    const request = await fetch("/api/v1/users/?role=Curator")
     return await APIGetToObject(request)
 }
 
-async function usersAPIGetItem(userID){
-    const request = await fetch(`/api/v1/users/${userID}`)
+async function usersAPIGetMetodists(){
+    const request = await fetch("/api/v1/users/?role=Metodist")
+    return await APIGetToObject(request)
+}
+
+async function usersAPIGetForSchedule(name=null, role=null){
+    let url = "/api/v1/users/schedule/"
+    const query = []
+
+    if (name){
+        query.push(`name=${name}`)
+    }
+    if (role){
+        query.push(`role=${role}`)
+    }
+
+    if (query.length > 0){
+        url += "?" + query.join("&")
+    }
+    const request = await fetch(url)
+    return await APIGetToObject(request)
+}
+
+async function usersAPIGetAll(setting=null, id=null, tg=null, username=null,
+                              fullName=null, roles=[], sortUsername=null,
+                              sortFullName=null, excludeMe=false){
+    let url = "/api/v1/users/"
+    const query = []
+    if (id){
+        query.push(`id=${id}`)
+    }
+    if (setting){
+        query.push(`setting=${setting}`)
+    }
+    if (tg){
+        query.push(`tg_status=${tg}`)
+    }
+    if (username){
+        query.push(`username=${username}`)
+    }
+    if (fullName){
+        query.push(`full_name=${fullName}`)
+    }
+    if (sortUsername){
+        query.push(`sort_username=${sortUsername}`)
+    }
+    if (sortFullName){
+        query.push(`sort_full_name=${sortFullName}`)
+    }
+    if (excludeMe){
+        query.push(`exclude_me=True}`)
+    }
+    roles.forEach(role => {
+        query.push(`role=${role}`)
+    })
+    if (query.length > 0){
+        url += "?" + query.join("&")
+    }
+    const request = await fetch(url)
+    return await APIGetToObject(request)
+}
+
+async function usersAPIGetUser(userID){
+    const request = await fetch(`/api/v1/users/${userID}/`)
     return await APIGetToObject(request)
 }
 
@@ -81,8 +143,18 @@ async function usersAPIDeactivate(userID, action){
     return await APIPostPatchToObject(request)
 }
 
+async function usersAPIDeactivateInfo(userID){
+    const request = await fetch(`/api/v1/users/${userID}/deactivate/`)
+    return await APIGetToObject(request)
+}
+
+async function usersAPIAdminLogin(userID){
+    const request = await fetch(`/api/v1/users/${userID}/login/`)
+    return APIGetToObject(request)
+}
+
 async function usersAPIRegistration(fd){
-    const request = await fetch("/register", {
+    const request = await fetch("/register/", {
         method: 'post',
         credentials: 'same-origin',
         headers:{
@@ -94,11 +166,21 @@ async function usersAPIRegistration(fd){
 }
 
 async function usersAPIGetLessons(userID){
-    const request = await fetch(`/api/v1/users/${userID}/lessons`)
+    const request = await fetch(`/api/v1/users/${userID}/lessons/`)
     return await APIGetToObject(request)
 }
 
 async function usersAPIGetHW(userID){
-    const request = await fetch(`/api/v1/users/${userID}/hw`)
+    const request = await fetch(`/api/v1/users/${userID}/hw/`)
+    return await APIGetToObject(request)
+}
+
+async function usersAPIGetTeachersListeners(type){
+    const request = await fetch(`/api/v1/users/teacherslisteners/?group=${type}`)
+    return await APIGetToObject(request)
+}
+
+async function usersAPIGetUsersForJournal(){
+    const request = await fetch(`/api/v1/users/forjournals/`)
     return await APIGetToObject(request)
 }

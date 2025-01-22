@@ -1,11 +1,51 @@
-from aiogram import types
 from aiogram.fsm.context import FSMContext
-from tgbot.finite_states.menu import MenuFSM
-from tgbot.keyboards import menu_keyboard
+
+from profile_management.models import aget_unread_messages_count, Telegram
+from tgbot.create_bot import bot
+from tgbot.keyboards import get_menu_keyboard
+from tgbot.utils import get_user, get_group_and_perms
 
 
-async def send_menu(message: types.Message, state: FSMContext) -> None:
+async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выберите действие: ") -> None:
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
+    perms = await get_group_and_perms(tg_note.user.id)
+    materials = False
+    homeworks = False
+    lessons = False
+    messages = False
+    settings = False
+    if 'Listener' in perms.get('groups'):
+        materials = False
+        homeworks = True
+        lessons = True
+        messages = True
+        settings = True
+    elif 'Curator' in perms.get('groups'):
+        materials = False
+        homeworks = True
+        messages = True
+        settings = True
+    elif 'Teacher' in perms.get('groups'):
+        materials = True
+        homeworks = True
+        lessons = True
+        messages = True
+        settings = True
+    elif 'Metodist' in perms.get('groups'):
+        materials = True
+        homeworks = True
+        lessons = "select"
+        messages = True
+        settings = True
+    elif 'Admin' in perms.get('groups'):
+        materials = True
+        homeworks = False
+        lessons = True
+        messages = True
+        settings = True
     await state.clear()
-    await message.delete()
-    await message.answer(text="Выберите действие: ", reply_markup=menu_keyboard)
-    await state.set_state(MenuFSM.main_menu)
+    await bot.send_message(chat_id=user_tg_id,
+                           text=custom_text,
+                           reply_markup=get_menu_keyboard(await aget_unread_messages_count(tg_note),
+                                                          materials, homeworks,
+                                                          lessons, messages, settings))

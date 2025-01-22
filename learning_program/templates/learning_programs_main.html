@@ -34,17 +34,27 @@
 
     {% include 'materials_embed_program_modal.html' %}
     {% include 'learning_programs_modals.html' %}
-    {% include 'toast.html' %}
 {% endblock %}
 {% block static_js %}
     <script>
-        const csrftoken = '{{ csrf_token }}'
         let materialEmbedAction
+        const see_general = {% if perms.material.see_all_general %}true{% else %}false{% endif %}
+        const mediaFormats = {
+            imageFormats: {{ material_formats.image_formats | safe }},
+            videoFormats: {{ material_formats.video_formats | safe }},
+            animationFormats: {{ material_formats.animation_formats | safe }},
+            archiveFormats: {{ material_formats.archive_formats | safe }},
+            pdfFormats: {{ material_formats.pdf_formats | safe }},
+            voiceFormats: {{ material_formats.voice_formats | safe }},
+            audioFormats: {{ material_formats.audio_formats | safe }},
+            textFormats: {{ material_formats.text_formats | safe }},
+            presentationFormats: {{ material_formats.presentation_formats | safe }}
+        }
     </script>
-    <script src="{% static 'js/toasts.js' %}"></script>
-    <script src="{% static 'js/apitostr.js' %}"></script>
+    <script src="{% static 'js/collections/collections_api.js' %}"></script>
     <script src="{% static 'js/programs/programsAPI.js' %}"></script>
     <script src="{% static 'js/materials/materials_api.js' %}"></script>
+    <script src="{% static 'js/materials/materials_utils.js' %}"></script>
     <script src="{% static 'js/materials/materials_embed.js' %}"></script>
     <script src="{% static 'js/programs/programs_hw.js' %}"></script>
     <script src="{% static 'js/programs/programs_lesson.js' %}"></script>
@@ -61,7 +71,7 @@
                 Этапы обучения</button>
         </h2>
         <div id="accordionCollapsePhases${phase.id}Lessons" class="accordion-collapse collapse">
-            <div class="accordion-body">dsdsdssd</div>
+            <div class="accordion-body"></div>
         </div>
     </div>
 </div>

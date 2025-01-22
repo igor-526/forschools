@@ -1,233 +1,236 @@
-async function homeworkItemMain(){
-    const request = await homeworkAPIGetLogs(hwID)
-    if (request.status === 200){
-        homeworkItemLogSet = request.response
-        homeworkItemShowLogs(homeworkItemLogSet)
-    }
-    const lastLog = homeworkItemLogSet[0]
-    if (HWItemSendButton !== null){
-        HWItemSendButton.addEventListener("click", function () {
-            HWItemSendModalForm.reset()
-        })
-        HWItemSendModalSendButton.addEventListener("click", async function () {
-            if (homeworkItemSendClientValidation("send")){
-                await homeworkAPISend(hwID, new FormData(HWItemSendModalForm), 3)
-                    .then(async request => {
-                        if (request.status === 500){
-                            bsHWItemSendModal.hide()
-                            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-                        } else if (request.status === 201){
-                            bsHWItemSendModal.hide()
-                            showToast("Успешно", "Решение отправлено")
-                            await homeworkAPIGetLogs(hwID)
-                            homeworkItemShowLogs(homeworkItemLogSet)
-                            HWItemSendButton.remove()
-                        } else {
-                            bsHWItemSendModal.hide()
-                            showToast("Ошибка", request.response)
-                        }
-                    })
-            }
-        })
-        if (lastLog.status === 5){
-            HWItemSendModalAnswer.classList.remove("d-none")
-            HWItemSendModalAnswerBody.innerHTML = homeworkItemLogHTML(lastLog)
-        }
-    }
-    if (HWItemCheckButton !== null){
-        HWItemCheckButton.addEventListener("click", function () {
-            HWItemCheckModalForm.reset()
-        })
-        HWItemCheckModalAcceptButton.addEventListener("click", async function () {
-            if(homeworkItemSendClientValidation("check")){
-                await homeworkAPISend(hwID, new FormData(HWItemCheckModalForm), 4)
-                    .then(async request => {
-                        if (request.status === 500){
-                            bsHWItemCheckModal.hide()
-                            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-                        } else if (request.status === 201){
-                            bsHWItemCheckModal.hide()
-                            showToast("Успешно", "ДЗ принято")
-                            await homeworkAPIGetLogs(hwID)
-                            homeworkItemShowLogs(homeworkItemLogSet)
-                            HWItemCheckButton.remove()
-                        } else {
-                            bsHWItemCheckModal.hide()
-                            showToast("Ошибка", request.response)
-                        }
-                    })
-            }
-        })
-        HWItemCheckModalDeclineButton.addEventListener("click", async function () {
-            if(homeworkItemSendClientValidation("check")){
-                await homeworkAPISend(hwID, new FormData(HWItemCheckModalForm), 5)
-                    .then(async request => {
-                        if (request.status === 500){
-                            bsHWItemCheckModal.hide()
-                            showToast("Ошибка", "На сервере произошла ошибка. Попробуйте обновить страницу или позже")
-                        } else if (request.status === 201){
-                            bsHWItemCheckModal.hide()
-                            showToast("Успешно", "ДЗ отправлено на доработку")
-                            await homeworkAPIGetLogs(hwID)
-                            homeworkItemShowLogs(homeworkItemLogSet)
-                            HWItemCheckButton.remove()
-                        } else {
-                            bsHWItemCheckModal.hide()
-                            showToast("Ошибка", request.response)
-                        }
-                    })
-            }
-        })
-        if (lastLog.status === 3){
-            HWItemCheckModalAnswer.classList.remove("d-none")
-            HWItemCheckModalAnswerBody.innerHTML = homeworkItemLogHTML(lastLog)
-        }
-    }
-}
-
-function homeworkItemShowLogsStrStatus(status){
-    switch (status){
-        case 1:
-            return  "Создано"
-        case 2:
-            return  "Открыто"
-        case 3:
-            return  "На проверке"
-        case 4:
-            return  "Принято"
-        case 5:
-            return  "На доработке"
-        case 6:
-            return  "Отменено"
-        default:
-            return ""
-    }
-}
-
-function homeworkItemShowLogs(list = homeworkItemLogSet){
-    homeworkItemLogList.innerHTML = ''
-    list.forEach(log => {
-        const status = homeworkItemShowLogsStrStatus(log.status)
-        const datetime = new Date(log.dt).toLocaleString()
-        homeworkItemLogList.insertAdjacentHTML("beforeend", `
-        <a href="#" class="list-group-item list-group-item-action" data-log-id="${log.id}">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">${status}</h5>
-                <small class="text-muted">${datetime}</small>
-            </div>
-                <p class="mb-1">${log.comment}</p>
-                <small class="text-muted">${log.user.first_name} ${log.user.last_name}</small>
-        </a>
-        `)
-    })
-    homeworkItemLogList.querySelectorAll(".list-group-item").forEach(log => {
-        log.addEventListener("click", function () {
-            homeworkItemLogShowModal(log.attributes.getNamedItem("data-log-id").value)
-        })
-    })
-}
-
-function homeworkItemLogHTML(log){
-    let logHTMLComment = ""
-    let logHTMLImageVideos = "<div>"
-    let logHTMLAudio = "<div>"
-    if (log.comment !== null){
-        logHTMLComment = `<p>${log.comment}</p>`
-    }
-    log.files.map(file => {
-        if (file.type === "image_formats"){
-            logHTMLImageVideos += `
-                <a href="${file.path}" target="_blank">
-                <img alt="file" src="${file.path}" class="col-5 mb-3" style="object-fit: contain;"></a>
-            `
-        } else if (file.type === "voice_formats"){
-            logHTMLAudio += `
-                <figure>
-                    <figcaption>Голосовое сообщение:</figcaption>
-                    <audio controls src="${file.path}"></audio>
-                </figure>
-            `
-        } else if (file.type === "audio_formats"){
-            logHTMLAudio += `
-                <figure>
-                    <figcaption>Аудио:</figcaption>
-                    <audio controls src="${file.path}"></audio>
-                </figure>
-            `
-        }  else if (file.type === "video_formats"){
-            logHTMLImageVideos += `
-                <video controls class="col-5 mb-3" src="${file.path}"></video>
-            `
+function homeworkItemMain(){
+    homeworkAPIGetItem(hwID).then(request => {
+        switch (request.status){
+            case 200:
+                homeworkItemSetMainInfo(request.response)
+                if (request.response.materials.length > 0){
+                    homeworkItemSetMaterials(request.response.materials)
+                }
+                break
+            default:
+                showErrorToast("Не удалось загрузить основную информацию")
+                break
         }
     })
-    logHTMLImageVideos += "</div>"
-    logHTMLAudio += "</div>"
-    return logHTMLComment + logHTMLImageVideos + logHTMLAudio
+    homeworkAPIGetLogs(hwID).then(request => {
+        switch (request.status){
+            case 200:
+                homeworkItemShowLogs(request.response)
+                break
+            default:
+                showErrorToast("Не удалось загрузить историю ДЗ")
+                break
+        }
+    })
+    homeworkAPIGetInfo(hwID).then(request => {
+        switch (request.status){
+            case 200:
+                hwCanAcceptLogs = request.response.can_answer_logs
+                if (request.response.can_add_materials_tg){
+                    hwItemAddMaterialsTG.classList.remove("d-none")
+                    hwItemAddMaterialsTG.addEventListener("click", function () {
+                        homeworkAPIEditTelegram(hwID).then(request => {
+                            switch (request.status){
+                                case 200:
+                                    showSuccessToast("Сообщение отправлено Вам в Telegram")
+                                    break
+                                default:
+                                    showErrorToast()
+                                    break
+                            }
+                        })
+                    })
+                }
+                homeworkItemSetMainInfo({hw_status: homeworkItemShowLogsStrStatus(request.response.status)})
+                break
+            default:
+                showErrorToast()
+                break
+        }
+    })
 }
 
-function homeworkItemLogShowModal(logID) {
-    const log = homeworkItemLogSet.find(log => log.id === Number(logID))
-    HWItemLogModalTitle.innerHTML = `${log.user.first_name} ${log.user.last_name}`
-    HWItemLogModalBody.innerHTML = homeworkItemLogHTML(log)
-    bsHWItemLogModal.show()
+function homeworkItemSetMainInfo(hw){
+    function getReplaceButton(){
+        const btn = document.createElement("button")
+        btn.type = "button"
+        btn.innerHTML = '<i class="bi bi-person-gear"></i>'
+        btn.classList.add("btn", "btn-primary", "btn-sm", "ms-2")
+        btn.addEventListener("click", function () {
+            usersReplaceTeacherSetModal("hw", hwID)
+        })
+        return btn
+    }
+
+    if (hw.description && hw.description !== "-"){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Описание", hw.description
+        ))
+    }
+    if (hw.teacher){
+        const elem = getListElement("Проверяющий", getUsersString([hw.teacher]))
+        if (hwItemCanSetReplace){
+            elem.insertAdjacentElement("beforeend", getReplaceButton())
+        }
+        hwItemMainInfoList.insertAdjacentElement("beforeend", elem)
+    }
+    if (hw.listener){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Ученик", getUsersString([hw.listener])
+        ))
+    }
+    if (hw.deadline){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Выполнить до", new Date(hw.deadline).toLocaleDateString())
+        )
+    }
+    if (hw.for_curator === true || hw.for_curator === false){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "С ДЗ работает куратор", hw.for_curator === true ? "Да" : "Нет")
+        )
+    }
+    if (hw.hw_status){
+        hwItemMainInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Статус", hw.hw_status)
+        )
+    }
+    if (hw.lesson_info){
+        homeworkItemSetLessonInfo(hw.lesson_info)
+    }
 }
 
-function homeworkItemSendClientValidation(form){
-    // console.log(HWItemSendModalFormFileField.value === "")
-    return true
+function homeworkItemSetLessonInfo(lesson_info){
+    hwItemPlanInfo.classList.remove("d-none")
+    if (lesson_info.id && lesson_info.name){
+        hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+            "Занятие",
+            `<a href="/lessons/${lesson_info.id}"><button class="btn btn-sm btn-primary">${lesson_info.name}</button></a>`)
+        )
+    }
+    if (lesson_info.plan){
+        hwItemPlanInfoHeader.innerHTML = `
+            <div class="btn-group" role="group">
+                <a href="/user_logs/#plan_id=${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button"><i class="bi bi-card-list"></i> логи</a>
+                <a href="/learning_plans/${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button">План обучения</a>
+            </div>`
+
+        if (lesson_info.plan.teacher) {
+            hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+                "Преподаватель", getUsersString([lesson_info.plan.teacher])
+            ))
+        }
+
+        lesson_info.plan.listeners.forEach(listener => {
+            hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+                "Ученик", getUsersString([listener])
+            ))
+        })
+
+        if (lesson_info.plan.methodist) {
+            hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+                "Методист", getUsersString([lesson_info.plan.methodist])
+            ))
+        }
+
+        lesson_info.plan.curators.forEach(curator => {
+            hwItemPlanInfoList.insertAdjacentElement("beforeend", getListElement(
+                "Куратор", getUsersString([curator])
+            ))
+        })
+    }
 }
 
+function homeworkItemSetMaterials(materials){
+    function getShowButton(matID){
+        const btn = document.createElement("button")
+        btn.type = "button"
+        btn.innerHTML = '<i class="bi bi bi-eye"></i>'
+        btn.classList.add("btn", "btn-primary", "btn-sm", "mx-1")
+        btn.addEventListener("click", function () {
+            materialsUtilsPreview(matID)
+        })
+        return btn
+    }
 
+    function getDeleteButton(matID){
+        const btn = document.createElement("button")
+        btn.type = "button"
+        btn.innerHTML = '<i class="bi bi-trash3"></i>'
+        btn.classList.add("btn", "btn-danger", "btn-sm", "mx-1")
+        btn.addEventListener("click", function () {
+            hwItemMaterialDeleteSetModal(matID, btn)
+        })
+        return btn
+    }
 
-const homeworkItemLogList = document.querySelector("#HomeworkItemLogList")
+    function getMatElement(mat){
+        const li = document.createElement("li")
+        const a = document.createElement("a")
+        li.insertAdjacentElement("beforeend", getShowButton(mat.id))
+        if (hwItemCanEdit){
+            li.insertAdjacentElement("beforeend", getDeleteButton(mat.id))
+        }
+        li.classList.add("list-group-item")
+        a.href = `/materials/${mat.id}`
+        a.innerHTML = mat.name
+        li.insertAdjacentElement("beforeend", a)
+        return li
+    }
 
-//Sets
-let homeworkItemLogSet = []
-
-//Buttons
-const HWItemSendButton = document.querySelector("#HWItemSendButton")
-const HWItemCheckButton = document.querySelector("#HWItemCheckButton")
-
-//Bootstrap Elements
-const HWItemSendModal = document.querySelector("#HWItemSendModal")
-let bsHWItemSendModal
-let HWItemSendModalForm
-let HWItemSendModalFormCommentField
-let HWItemSendModalFormFileField
-let HWItemSendModalSendButton
-if (HWItemSendModal !== null){
-    bsHWItemSendModal = new bootstrap.Modal(HWItemSendModal)
-    HWItemSendModalForm = HWItemSendModal.querySelector("#HWItemSendModalForm")
-    HWItemSendModalFormCommentField = HWItemSendModalForm.querySelector("#HWItemSendModalFormCommentField")
-    HWItemSendModalFormFileField = HWItemSendModalForm.querySelector("#HWItemSendModalFormFileField")
-    HWItemSendModalSendButton = HWItemSendModal.querySelector("#HWItemSendModalSendButton")
-    HWItemSendModalAnswer = HWItemSendModal.querySelector("#HWItemSendModalAnswer")
-    HWItemSendModalAnswerBody = HWItemSendModal.querySelector("#HWItemSendModalAnswerBody")
+    materials.forEach(mat => {
+        hwItemMaterialsList.insertAdjacentElement("beforeend", getMatElement(mat))
+    })
 }
 
-const HWItemCheckModal = document.querySelector("#HWItemCheckModal")
-let bsHWItemCheckModal
-let HWItemCheckModalForm
-let HWItemCheckModalFormCommentField
-let HWItemCheckModalFormFileField
-let HWItemCheckModalAcceptButton
-let HWItemCheckModalDeclineButton
-let HWItemCheckModalAnswer
-let HWItemCheckModalAnswerBody
-if (HWItemCheckModal !== null){
-    bsHWItemCheckModal = new bootstrap.Modal(HWItemCheckModal)
-    HWItemCheckModalForm = HWItemCheckModal.querySelector("#HWItemCheckModalForm")
-    HWItemCheckModalFormCommentField = HWItemCheckModalForm.querySelector("#HWItemCheckModalFormCommentField")
-    HWItemCheckModalFormFileField = HWItemCheckModalForm.querySelector("#HWItemCheckModalFormFileField")
-    HWItemCheckModalAcceptButton = HWItemCheckModal.querySelector("#HWItemCheckModalAcceptButton")
-    HWItemCheckModalDeclineButton = HWItemCheckModal.querySelector("#HWItemCheckModalDeclineButton")
-    HWItemCheckModalAnswer = HWItemCheckModal.querySelector("#HWItemCheckModalAnswer")
-    HWItemCheckModalAnswerBody = HWItemCheckModal.querySelector("#HWItemCheckModalAnswerBody")
+function homeworkItemShowLogs(logs=[], clear=true){
+    function getElement(log){
+        const a = document.createElement("a")
+        a.href = "#"
+        a.classList.add("list-group-item", "list-group-item-action")
+        if (log.agreement.hasOwnProperty("accepted")){
+            a.classList.add(log.agreement.accepted?"list-group-item-info":"list-group-item-warning")
+        }
+        const statusAndDTBlock = document.createElement("div")
+        statusAndDTBlock.classList.add("d-flex", "w-100", "justify-content-between")
+        const statusAndDTStatus = document.createElement("h5")
+        statusAndDTStatus.classList.add("mb-1")
+        statusAndDTStatus.innerHTML = homeworkItemShowLogsStrStatus(log.status)
+        const statusAndDTDateTime = document.createElement("small")
+        statusAndDTDateTime.classList.add("text-muted")
+        statusAndDTDateTime.innerHTML = new Date(log.dt).toLocaleString()
+        const comment = document.createElement("p")
+        comment.classList.add("mb-1")
+        comment.innerHTML = log.comment
+        const logUser = document.createElement("small")
+        logUser.classList.add("text-muted")
+        logUser.innerHTML = `${log.user.first_name} ${log.user.last_name}`
+        a.insertAdjacentElement("beforeend", statusAndDTBlock)
+        a.insertAdjacentElement("beforeend", comment)
+        a.insertAdjacentElement("beforeend", logUser)
+        statusAndDTBlock.insertAdjacentElement("beforeend", statusAndDTStatus)
+        statusAndDTBlock.insertAdjacentElement("beforeend", statusAndDTDateTime)
+        a.addEventListener("click", function () {
+            homeworkItemLogShowModal(log.id)
+        })
+        return a
+    }
+
+    if (clear){
+        hwItemLogList.innerHTML = ''
+    }
+    const elementPosition = clear ? "beforeend" : "afterbegin"
+    logs.forEach(log => {
+        hwItemLogList.insertAdjacentElement(elementPosition, getElement(log))
+    })
 }
 
-const HWItemLogModal = document.querySelector("#HWItemLogModal")
-const bsHWItemLogModal = new bootstrap.Modal(HWItemLogModal)
-const HWItemLogModalTitle = HWItemLogModal.querySelector("#HWItemLogModalTitle")
-const HWItemLogModalBody = HWItemLogModal.querySelector("#HWItemLogModalBody")
+let hwCanAcceptLogs
+const hwItemLogList = document.querySelector("#hwItemLogList")
+const hwItemAddMaterialsTG = document.querySelector("#hwItemAddMaterialsTG")
+const hwItemMaterialsList = document.querySelector("#hwItemMaterialsList")
+const hwItemMainInfoList = document.querySelector("#hwItemMainInfoList")
+const hwItemPlanInfo = document.querySelector("#hwItemPlanInfo")
+const hwItemPlanInfoList = document.querySelector("#hwItemPlanInfoList")
+const hwItemPlanInfoHeader = document.querySelector("#hwItemPlanInfoHeader")
 
 homeworkItemMain()

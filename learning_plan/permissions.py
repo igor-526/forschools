@@ -1,6 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 
+from learning_plan.models import LearningPlan
+from lesson.models import Lesson
+
 
 class CanSeePlansPageMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
@@ -30,3 +33,10 @@ def can_generate_from_program(request, plan):
         return False
     else:
         return can_edit_plan(request, plan)
+
+
+def get_can_see_plan(request, plan: LearningPlan, lesson: Lesson = None):
+    return (request.user.groups.filter(name="Admin").exists() or
+            plan.metodist == request.user or plan.teacher == request.user or
+            plan.curators.filter(pk=request.user.pk).exists() or
+            (lesson and lesson.replace_teacher == request.user))

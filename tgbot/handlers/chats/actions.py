@@ -1,0 +1,50 @@
+from aiogram import Router, F, types
+from aiogram.filters import StateFilter
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery
+from chat.models import Message
+from tgbot.funcs.chats import chats_send_ask, chats_type_message, chats_notify
+from tgbot.funcs.menu import send_menu
+from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatShowMessageCallback
+from tgbot.finite_states.chats import ChatsFSM
+from tgbot.keyboards.chats import chats_get_users_buttons
+from tgbot.utils import get_user
+
+router = Router(name=__name__)
+
+
+@router.callback_query(ChatListCallback.filter())
+async def h_chats_send_ask(callback: CallbackQuery,
+                           callback_data: ChatListCallback,
+                           state: FSMContext) -> None:
+    await callback.message.delete()
+    await chats_send_ask(callback, callback_data, state)
+
+
+@router.callback_query(ChatShowMessageCallback.filter())
+async def h_chats_show(callback: CallbackQuery,
+                       callback_data: ChatShowMessageCallback,
+                       state: FSMContext) -> None:
+    chat_message = await (Message.objects.select_related("receiver").select_related("sender")
+                          .aget(pk=callback_data.chat_message_id))
+    await chats_notify(chat_message.id)
+
+
+@router.message(StateFilter(ChatsFSM.send_message),
+                F.text == "Отмена")
+async def h_chats_cancel(message: types.Message, state: FSMContext) -> None:
+    await send_menu(message.from_user.id, state)
+
+
+@router.message(StateFilter(ChatsFSM.send_message),
+                F.text == "Отправить")
+async def h_chats_send(message: types.Message, state: FSMContext) -> None:
+    user = await get_user(message.from_user.id)
+    chats = await user.aget_users_for_chat(message.from_user.id)
+    await message.answer(text="Выберите пользователя для отправки сообщения:",
+                         reply_markup=chats_get_users_buttons(chats))
+
+
+@router.message(StateFilter(ChatsFSM.send_message))
+async def h_chats_type(message: types.Message, state: FSMContext) -> None:
+    await chats_type_message(message, state)

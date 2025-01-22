@@ -6,6 +6,9 @@ function programsHWMain(){
         const hwID = lProgramHWSaveButton.attributes.getNamedItem("data-hw-id").value
         await programsHWEditSave(hwID)
     })
+    lProgramHWMaterialsAddButton.addEventListener("click", function () {
+        materialsEmbedSet(modalLProgramHWMaterialsSet)
+    })
 }
 
 function programsHWReset(){
@@ -35,13 +38,8 @@ async function programsHWSetModal(hwID=0){
                     lProgramHWMaterialsList.innerHTML = ''
                     modalLProgramHWMaterialsSet = request.response.materials.map(mat => {
                         lProgramHWMaterialsList.insertAdjacentHTML("beforeend", `
-                            <li class="list-group-item"><button type="button" class="btn btn-danger material-embed-delete" data-mat-id="${mat.id}">
-                            <i class="bi bi-trash3"></i></button>
-                            <a href="/materials/${mat.id}">${mat.name}</a></li>`)
+                            <li class="list-group-item"><a href="/materials/${mat.id}">${mat.name}</a></li>`)
                         return mat.id
-                    })
-                    lProgramHWMaterialsList.querySelectorAll(".material-embed-delete").forEach(matDelButton => {
-                        matDelButton.addEventListener("click", materialsEmbedDelete)
                     })
                 }
             }
@@ -83,9 +81,20 @@ function programsHWServerValidation(errors){
 async function programsHWEditSave(hwID=0){
     if (programsHWClientValidation()){
         const formData = new FormData(lProgramHWForm)
-        modalLProgramHWMaterialsSet.map(matID => {
+        modalLProgramHWMaterialsSet.forEach(matID => {
             formData.append("materials", matID)
         })
+        const descriptions = modalLProgramHW.querySelectorAll(".material-embed-description")
+        const descriptionsObj = {}
+        descriptions.forEach(desc => {
+            if (desc.value.trim() !== ""){
+                const matID = Number(desc.attributes.getNamedItem("data-desc-id").value)
+                descriptionsObj[matID] = desc.value
+            }
+        })
+        if (Object.keys(descriptionsObj).length !== 0){
+            formData.append("materials_comment", JSON.stringify(descriptionsObj))
+        }
         if (hwID === "0"){
             programsAPIHWCreate(formData).then(request => {
                 switch (request.status){

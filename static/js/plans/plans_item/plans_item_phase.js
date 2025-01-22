@@ -82,7 +82,7 @@ async function planItemEditPhase(phaseID) {
         if (response.status === 201){
             bsPlansItemPhaseModal.hide()
             showToast("Успешно", "Этап успешно отредактирован")
-            await planItemGetPhases()
+            await planItemAPIGetPhases()
             planItemShowPhases()
         } else if (response.status === 400){
             planItemServerValidation(await response.json())

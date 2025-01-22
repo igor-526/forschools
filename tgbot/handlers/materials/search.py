@@ -3,6 +3,7 @@ from aiogram.types import CallbackQuery
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from tgbot.finite_states.materials import MaterialFSM
+from tgbot.funcs.materials_add import add_material_message
 from tgbot.keyboards.callbacks.material import (MaterialCategoryCallback,
                                                 MaterialTypeCallback,
                                                 MaterialLevelCallback,
@@ -11,21 +12,20 @@ from tgbot.funcs.materials import (send_types,
                                    send_material_query,
                                    show_material_item,
                                    send_levels,
-                                   add_material_message,
-                                   search_materials)
+                                   search_materials, delete_material_from_hw)
 from tgbot.funcs.menu import send_menu
 
 router = Router(name=__name__)
 
 
-@router.message(StateFilter(MaterialFSM.material_search), F.text == "Добавить")
+@router.message(StateFilter(MaterialFSM.material_search), F.text == "Добавить материал")
 async def h_material_add(message: types.Message, state: FSMContext) -> None:
     await add_material_message(message, state)
 
 
 @router.message(StateFilter(MaterialFSM.material_search), F.text == "Меню")
-async def h_material_menu(message: types, state: FSMContext) -> None:
-    await send_menu(message, state)
+async def h_material_menu(message: types.Message, state: FSMContext) -> None:
+    await send_menu(message.from_user.id, state)
 
 
 @router.message(StateFilter(MaterialFSM.material_search))
@@ -59,5 +59,13 @@ async def h_material_type_callback(callback: CallbackQuery,
 
 @router.callback_query(MaterialItemCallback.filter(F.action == 'show'))
 async def h_material_show_callback(callback: CallbackQuery,
-                                   callback_data: MaterialItemCallback) -> None:
-    await show_material_item(callback, callback_data)
+                                   callback_data: MaterialItemCallback,
+                                   state: FSMContext) -> None:
+    await show_material_item(callback, state, callback_data.mat_id)
+
+
+@router.callback_query(MaterialItemCallback.filter(F.action == 'hw_delete'))
+async def h_material_hw_delete_callback(callback: CallbackQuery,
+                                        callback_data: MaterialItemCallback,
+                                        state: FSMContext) -> None:
+    await delete_material_from_hw(callback, callback_data, state)

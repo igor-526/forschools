@@ -51,17 +51,3 @@ function plansItemListenersLessonsAddEdit(){
             })
         })
 }
-
-function plansItemListenersLessonModalSave(){
-    plansItemPhaseLessonModalSaveButton.addEventListener("click", async function () {
-        if (this.attributes.getNamedItem("data-lesson-id").value === "0"){
-            await phaseItemLessonAdd(this.attributes.getNamedItem("data-phase-id").value)
-        } else {
-            await phaseItemLessonEdit(this.attributes.getNamedItem("data-phase-id").value,
-                this.attributes.getNamedItem("data-lesson-id").value)
-        }
-    })
-    lessonDeleteModalButton.addEventListener("click", async function(){
-        await phaseItemLessonDestroy(this.attributes.getNamedItem('data-lesson-id').value)
-    })
-}
