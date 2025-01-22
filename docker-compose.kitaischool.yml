@@ -1,7 +1,3 @@
-networks:
-  kitaischool_network:
-    driver: bridge
-
 volumes:
   kitaischool_pgdata:
   kitaischool_redisdata:
@@ -10,14 +6,12 @@ services:
   kitaischool_database:
     image: postgres:latest
     ports:
-      - "${PORT}:5432"
+      - "${DB_PORT_FORWARD}:5432"
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DB}
       POSTGRES_HOST: localhost
-    networks:
-      - kitaischool_network
     volumes:
       - kitaischool_pgdata:/var/lib/postgresql/data
     restart: always
@@ -28,23 +22,23 @@ services:
       - "${GUNICORN_PORT}:5000"
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      SECRET_KEY: ${SECRET_KEY}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DJANGO_ALLOWED_HOST: ${DJANGO_ALLOWED_HOST}
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: kitaischool_database
       REDIS_HOST: ${REDIS_HOST}
-      PORT: 5432
+      DB_PORT: ${DB_PORT}
       TGPARSER_SESSION_NAME: ${TGPARSER_SESSION_NAME}
       TGPARSER_API_ID: ${TGPARSER_API_ID}
       TGPARSER_API_HASH: ${TGPARSER_API_HASH}
       TGPARSER_CHANNEL_NAME: ${TGPARSER_CHANNEL_NAME}
       PYTHONUNBUFFERED: 1
-    entrypoint: bash -c  "python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
+    entrypoint: bash -c  "python manage.py migrate && gunicorn --bind 0.0.0.0:5000 dls.wsgi:application";
     depends_on:
       - kitaischool_database
-    networks:
-      - kitaischool_network
     volumes:
       - /home/sdo/kitaischool/media:/src/media
     restart: always
@@ -52,8 +46,6 @@ services:
   kitaischool_redis:
     image: redis:latest
     restart: always
-    networks:
-      - kitaischool_network
     volumes:
       - kitaischool_redisdata:/data
 
@@ -64,17 +56,17 @@ services:
       - kitaischool_django
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      SECRET_KEY: ${SECRET_KEY}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DJANGO_ALLOWED_HOST: ${DJANGO_ALLOWED_HOST}
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: kitaischool_database
-      PORT: 5432
+      DB_PORT: ${DB_PORT}
       REDIS_HOST: ${REDIS_HOST}
       PYTHONUNBUFFERED: 1
     command: celery -A dls worker -l info
-    networks:
-      - kitaischool_network
 
   kitaischool_celerybeat:
     build: .
@@ -83,28 +75,30 @@ services:
       - kitaischool_django
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      SECRET_KEY: ${SECRET_KEY}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DJANGO_ALLOWED_HOST: ${DJANGO_ALLOWED_HOST}
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: kitaischool_database
-      PORT: 5432
+      DB_PORT: ${DB_PORT}
       REDIS_HOST: ${REDIS_HOST}
       PYTHONUNBUFFERED: 1
     command: celery -A dls beat -l info
-    networks:
-      - kitaischool_network
 
   kitaischool_bot:
     build: .
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      SECRET_KEY: ${SECRET_KEY}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DJANGO_ALLOWED_HOST: ${DJANGO_ALLOWED_HOST}
       DB_DB: ${DB_DB}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: kitaischool_database
-      PORT: 5432
+      DB_PORT: ${DB_PORT}
       REDIS_HOST: ${REDIS_HOST}
       PYTHONUNBUFFERED: 1
     entrypoint: bash -c  "python manage.py runbot";
@@ -113,6 +107,4 @@ services:
     depends_on:
       - kitaischool_celery
       - kitaischool_redis
-    networks:
-      - kitaischool_network
     restart: always
