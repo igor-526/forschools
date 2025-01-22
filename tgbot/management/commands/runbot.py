@@ -39,6 +39,8 @@ class Command(BaseCommand):
                 )
                 webhook_requests_handler.register(app, path=TG_WEBHOOK_PATH)
                 setup_application(app, dp, bot=bot)
+                print("WH STARTING")
                 web.run_app(app, host=TG_WEB_SERVER_HOST, port=8080)
+                print("WH STARTED")
         except Exception as ex:
             raise CommandError(ex)
