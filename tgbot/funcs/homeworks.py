@@ -1,5 +1,6 @@
 import datetime
 from aiogram import types
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
@@ -12,7 +13,8 @@ from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCurator
 from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
                                       get_homework_menu_buttons, get_homework_lessons_buttons,
                                       get_homework_editing_buttons, get_homework_curator_button,
-                                      get_homework_add_ready_buttons)
+                                      get_homework_add_ready_buttons, get_hw_log_edit_button,
+                                      get_hw_log_delete_file_button)
 from tgbot.keyboards.default import cancel_keyboard, message_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
@@ -263,7 +265,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
 
     async def notify_hw_changed():
         st = await hw.aget_status()
-        if st.status in [2, 3, 5]:
+        if st.status in [2, 3, 5] and st.agreement.get("accepted"):
             await homework_tg_notify(user,
                                      hw.listener.id,
                                      [hw],
@@ -590,7 +592,7 @@ async def show_homework(callback: CallbackQuery,
         else:
             return False
 
-    async def get_edit_button() -> bool:
+    async def get_edit_hw_button() -> bool:
         if hw_status.status not in [1, 2, 3, 5, 7]:
             return False
         if 'Teacher' in gp['groups'] and hw.teacher == user:
@@ -603,9 +605,9 @@ async def show_homework(callback: CallbackQuery,
         send_button = 'Listener' in gp['groups'] and hw_status.status in [2, 3, 5, 7] and hw.listener == user
         agreement_buttons = await get_agreement_buttons()
         check_button = False if agreement_buttons else (await get_check_button())
-        edit_button = await get_edit_button()
-        return get_homework_item_buttons(hw.id, mat_button, send_button,
-                                         check_button, agreement_buttons, edit_button)
+        edit_hw_button = await get_edit_hw_button()
+        return get_homework_item_buttons(hw.id, mat_button, send_button, check_button,
+                                         agreement_buttons, edit_hw_button)
 
     tg_note = await get_tg_note(callback.from_user.id)
     hw = await (Homework.objects.select_related("listener")
@@ -663,54 +665,90 @@ async def send_hw_materials(mat_ids: list, hw_id: int | None, user_id: int, call
 
 
 async def show_log_item(chat_id: int, log_id: int):
+    async def get_edit_perm() -> bool:
+        if log.status not in [4, 5]:
+            return False
+        user = await get_user(chat_id)
+        if log.user == user:
+            return True
+        hw_lesson = await log.homework.aget_lesson()
+        lp = await hw_lesson.aget_learning_plan() if hw_lesson else None
+        return True if lp and lp.metodist == user else False
+
+    async def send_files():
+        files = [_ async for _ in log.files.all()]
+        if len(files) > 0:
+            for file in files:
+                rm = get_hw_log_delete_file_button(log.id, file.id) if edit_perm else None
+                file_type = get_type(file.path.path.split(".")[-1])
+                if file_type == "image_formats":
+                    try:
+                        if file.tg_url:
+                            await bot.send_photo(chat_id=chat_id,
+                                                 photo=file.tg_url,
+                                                 caption=file.caption,
+                                                 reply_markup=rm)
+                        else:
+                            await bot.send_photo(chat_id=chat_id,
+                                                 photo=types.FSInputFile(file.path.path),
+                                                 caption=file.caption,
+                                                 reply_markup=rm)
+                    except TelegramBadRequest:
+                        if file.tg_url:
+                            await bot.send_document(chat_id=chat_id,
+                                                    document=file.tg_url,
+                                                    caption=file.caption,
+                                                    reply_markup=rm)
+                        else:
+                            await bot.send_document(chat_id=chat_id,
+                                                    document=types.FSInputFile(file.path.path),
+                                                    caption=file.caption,
+                                                    reply_markup=rm)
+                if file_type == "video_formats":
+                    if file.tg_url:
+                        await bot.send_video(chat_id=chat_id,
+                                             video=file.tg_url,
+                                             caption=file.caption,
+                                             reply_markup=rm)
+                    else:
+                        await bot.send_video(chat_id=chat_id,
+                                             video=types.FSInputFile(file.path.path),
+                                             caption=file.caption,
+                                             reply_markup=rm)
+                elif file_type == "audio_formats":
+                    if file.tg_url:
+                        await bot.send_audio(chat_id=chat_id,
+                                             audio=file.tg_url,
+                                             caption=file.caption,
+                                             reply_markup=rm)
+                    else:
+                        await bot.send_audio(chat_id=chat_id,
+                                             audio=types.FSInputFile(file.path.path),
+                                             caption=file.caption,
+                                             reply_markup=rm)
+                elif file_type == "voice_formats":
+                    if file.tg_url:
+                        await bot.send_voice(chat_id=chat_id,
+                                             voice=file.tg_url,
+                                             caption=file.caption,
+                                             reply_markup=rm)
+                    else:
+                        await bot.send_voice(chat_id=chat_id,
+                                             voice=types.FSInputFile(file.path.path),
+                                             caption=file.caption,
+                                             reply_markup=rm)
+
     log = await HomeworkLog.objects.select_related("user").select_related("homework").aget(pk=log_id)
-    files = [_ async for _ in log.files.all()]
     comment = log.comment.replace('<br>', '\n') if log.comment else '-'
+    edit_perm = await get_edit_perm()
+    rm_text = get_hw_log_edit_button(log.id) if edit_perm else None
     msg = (
         f"<b>{log.user}: {status_code_to_string(log.status)}</b> - {log.dt.astimezone().strftime('%d.%m %H:%M')}\n\n"
         f"{comment}\n")
     await bot.send_message(chat_id=chat_id,
-                           text=msg)
-    if len(files) > 0:
-        album_builder = MediaGroupBuilder()
-        for file in files:
-            file_type = get_type(file.path.path.split(".")[-1])
-            if file_type == "image_formats":
-                if file.tg_url:
-                    album_builder.add_photo(media=file.tg_url,
-                                            caption=file.caption)
-                else:
-                    album_builder.add_photo(media=types.FSInputFile(file.path.path),
-                                            caption=file.caption)
-            if file_type == "video_formats":
-                if file.tg_url:
-                    album_builder.add_video(media=file.tg_url,
-                                            caption=file.caption)
-                else:
-                    album_builder.add_video(media=types.FSInputFile(file.path.path),
-                                            caption=file.caption)
-            elif file_type == "audio_formats":
-                if file.tg_url:
-                    await bot.send_audio(chat_id=chat_id,
-                                         audio=file.tg_url,
-                                         caption=file.caption)
-                else:
-                    await bot.send_audio(chat_id=chat_id,
-                                         audio=types.FSInputFile(file.path.path),
-                                         caption=file.caption)
-            elif file_type == "voice_formats":
-                if file.tg_url:
-                    await bot.send_voice(chat_id=chat_id,
-                                         voice=file.tg_url,
-                                         caption=file.caption)
-                else:
-                    await bot.send_voice(chat_id=chat_id,
-                                         voice=types.FSInputFile(file.path.path),
-                                         caption=file.caption)
-        photos = album_builder.build()
-        if photos:
-            await bot.send_media_group(chat_id=chat_id,
-                                       media=photos)
+                           text=msg,
+                           reply_markup=rm_text)
+    await send_files()
 
 
 async def send_hw_answer(callback: CallbackQuery,

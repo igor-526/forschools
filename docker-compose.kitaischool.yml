@@ -46,7 +46,7 @@ services:
       - kitaischool_database
     volumes:
       - /home/sdo/kitaischool/media:/src/media
-      - /home/sdo/forschools_static:/src/static
+      - /home/sdo/static:/src/static
     restart: always
 
   kitaischool_redis:

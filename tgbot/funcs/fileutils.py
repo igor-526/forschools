@@ -1,6 +1,4 @@
 import os
-from pprint import pprint
-
 import cv2
 from aiogram import types
 from aiogram.exceptions import TelegramBadRequest
@@ -75,6 +73,7 @@ async def add_files_to_state(message: types.Message, state: FSMContext) -> str:
         }
     if message.reply_to_message:
         msgstr += "\n" + await get_materials_from_message(message.reply_to_message)
+    print(data.get("files"))
     return msgstr
 
 

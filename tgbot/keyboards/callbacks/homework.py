@@ -28,3 +28,9 @@ class HomeworkNewSelectDateFakeCallback(CallbackData, prefix="hwnew_currentdate"
 
 class HomeworkNewSettingCallback(CallbackData, prefix="hwnewset"):
     action: str
+
+
+class HomeworkLogEditingCallback(CallbackData, prefix="hwlog"):
+    action: str
+    hw_log_id: int
+    file_id: int

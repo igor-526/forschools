@@ -2,7 +2,8 @@ from aiogram.types import InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMar
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkMenuCallback,
                                                 HomeworkNewCallback, HomeworkNewSelectDateCallback,
-                                                HomeworkCuratorCallback, HomeworkNewSelectDateFakeCallback)
+                                                HomeworkCuratorCallback, HomeworkNewSelectDateFakeCallback,
+                                                HomeworkLogEditingCallback)
 from tgbot.keyboards.utils import keyboard_anti_cache_url
 
 
@@ -95,12 +96,12 @@ def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_homework_item_buttons(hw_id,
-                              mat_button,
-                              send_button,
-                              check_button,
-                              agreement_buttons,
-                              edit_button) -> InlineKeyboardMarkup:
+def get_homework_item_buttons(hw_id: int,
+                              mat_button: bool,
+                              send_button: bool,
+                              check_button: bool,
+                              agreement_buttons: bool,
+                              edit_hw_button: bool) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
         text="ПРОСМОТР",
@@ -152,9 +153,9 @@ def get_homework_item_buttons(hw_id,
                 action="agreement_decline"
             )
         )
-    if edit_button:
+    if edit_hw_button:
         builder.button(
-            text="Редактировать",
+            text="Редактировать ДЗ",
             callback_data=HomeworkCallback(
                 hw_id=hw_id,
                 action="edit"
@@ -222,5 +223,29 @@ def get_homework_add_ready_buttons(hw_id: int = None,
             text=btn_curator_text,
             callback_data=HomeworkCuratorCallback(hw_id=hw_id)
         )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_hw_log_edit_button(hw_log_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Удалить ОС",
+        callback_data=HomeworkLogEditingCallback(action="feedback_delete",
+                                                 hw_log_id=hw_log_id,
+                                                 file_id=0)
+    )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_hw_log_delete_file_button(hw_log_id: int, file_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Удалить файл из ОС",
+        callback_data=HomeworkLogEditingCallback(action="feedback_delete_file",
+                                                 hw_log_id=hw_log_id,
+                                                 file_id=file_id)
+    )
     builder.adjust(1)
     return builder.as_markup()
