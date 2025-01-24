@@ -49,18 +49,17 @@ async def h_mainmenu_settings(message: types.Message) -> None:
 
 @router.message(StateFilter(None))
 async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
-    print([][1])
-    # data = await state.get_data()
-    # if not data.get("files"):
-    #     await state.set_data({'files': {
-    #         'text': [],
-    #         'photo': [],
-    #         'voice': [],
-    #         'audio': [],
-    #         'video': [],
-    #         'animation': [],
-    #         'document': [],
-    #     }
-    #     })
-    # await state.set_state(ChatsFSM.send_message)
-    # await chats_type_message(message, state)
+    data = await state.get_data()
+    if not data.get("files"):
+        await state.set_data({'files': {
+            'text': [],
+            'photo': [],
+            'voice': [],
+            'audio': [],
+            'video': [],
+            'animation': [],
+            'document': [],
+        }
+        })
+    await state.set_state(ChatsFSM.send_message)
+    await chats_type_message(message, state)
