@@ -10,6 +10,7 @@ from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks import homeworks_send_menu
 from tgbot.funcs.chats import chats_show, chats_type_message
 from tgbot.funcs.settings import generate_settings_message
+from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.lessons import get_lesson_place_button
 
 router = Router(name=__name__)
@@ -48,17 +49,18 @@ async def h_mainmenu_settings(message: types.Message) -> None:
 
 @router.message(StateFilter(None))
 async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
-    data = await state.get_data()
-    if not data.get("files"):
-        await state.set_data({'files': {
-            'text': [],
-            'photo': [],
-            'voice': [],
-            'audio': [],
-            'video': [],
-            'animation': [],
-            'document': [],
-        }
-        })
-    await state.set_state(ChatsFSM.send_message)
-    await chats_type_message(message, state)
+    print([][1])
+    # data = await state.get_data()
+    # if not data.get("files"):
+    #     await state.set_data({'files': {
+    #         'text': [],
+    #         'photo': [],
+    #         'voice': [],
+    #         'audio': [],
+    #         'video': [],
+    #         'animation': [],
+    #         'document': [],
+    #     }
+    #     })
+    # await state.set_state(ChatsFSM.send_message)
+    # await chats_type_message(message, state)

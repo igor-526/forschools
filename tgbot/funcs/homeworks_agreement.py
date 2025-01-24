@@ -95,6 +95,7 @@ async def f_homework_agr_send(tg_id: int,
         msg_teacher = ""
         msg_curator = ""
         msg_listener = ""
+        msg_chat_teacher_send = False
         for log_ in logs:
             if action == "agreement_accept":
                 if log_.status == 7:
@@ -130,12 +131,14 @@ async def f_homework_agr_send(tg_id: int,
                     msg_teacher = "Принятие ДЗ НЕ согласовано методистом"
                 elif log_.status == 5:
                     msg_teacher = "Отправка ДЗ на доработку НЕ согласовано методистом"
-                msg = await Message.objects.acreate(
-                    receiver=log_.homework.teacher,
-                    sender=await get_user(tg_id),
-                    message=stdata.get("comment"),
-                )
-                await chats_notify(chat_message_id=msg.id, show=False)
+                if not msg_chat_teacher_send:
+                    msg = await Message.objects.acreate(
+                        receiver=log_.homework.teacher,
+                        sender=await get_user(tg_id),
+                        message=stdata.get("comment"),
+                    )
+                    await chats_notify(chat_message_id=msg.id, show=False)
+                    msg_chat_teacher_send = True
                 await homework_tg_notify(logs_info.get("plan").metodist,
                                          log_.homework.teacher.id,
                                          [log_.homework],

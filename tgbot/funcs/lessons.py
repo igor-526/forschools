@@ -121,12 +121,7 @@ async def lessons_search_users(message: types.Message, state: FSMContext):
 
 def get_lesson_can_be_passed(lesson: Lesson):
     today = datetime.datetime.now()
-    if lesson.date > today.date():
-        return False
-    elif lesson.date == today.date():
-        if lesson.end_time > today.time():
-            return False
-    return True
+    return lesson.date <= today.date()
 
 
 async def f_lessons_show_place_access_info(place_id, tg_id):

@@ -1,5 +1,8 @@
 from pprint import pprint
 from typing import Callable, Dict, Any, Awaitable
+
+from aiogram.exceptions import TelegramBadRequest
+
 from profile_management.models import Telegram
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
@@ -75,6 +78,16 @@ async def log_error(at: int = 0, tg_note: Telegram = None,
     )
 
 
+def get_error_message(exception: Exception) -> str:
+    if "VOICE_MESSAGES_FORBIDDEN" in str(exception):
+        error_message = ("Не получилось отправить Вам голосовое сообщение. Пожалуйста, проверьте настройки "
+                         "Telegram Premium")
+    else:
+        error_message = ("На сервере произошла ошибка. Не беспокойтесь, тех. отдел уже уведомлён и скоро "
+                         "всё исправит :)")
+    return error_message
+
+
 class LastMessageMiddleware(BaseMiddleware):
     async def __call__(
             self,
@@ -82,18 +95,18 @@ class LastMessageMiddleware(BaseMiddleware):
             event: Message,
             data: Dict[str, Any]
     ) -> Any:
-        tguser_note = await middleware_authorization(event.from_user.id, event.message_id, event.text)
-        if tguser_note:
+        tg_user_note = await middleware_authorization(event.from_user.id, event.message_id, event.text)
+        self.event = event
+        if tg_user_note:
             try:
                 return await handler(event, data)
             except Exception as e:
-                await bot.send_message(chat_id=event.from_user.id,
-                                       text="На сервере произошла ошибка. Не беспокойтесь, тех. отдел уже уведомлён и "
-                                            "скоро всё исправит :)")
                 await log_error(at=0,
-                                tg_note=tguser_note if type(tguser_note) == Telegram else None,
+                                tg_note=tg_user_note if isinstance(tg_user_note, Telegram) else None,
                                 event=event,
                                 exception=e)
+                await bot.send_message(chat_id=event.from_user.id,
+                                       text=get_error_message(e))
 
 
 class LastMessageCallbackMiddleware(BaseMiddleware):
@@ -103,15 +116,14 @@ class LastMessageCallbackMiddleware(BaseMiddleware):
             event: CallbackQuery,
             data: Dict[str, Any]
     ) -> Any:
-        tguser_note = await middleware_authorization(event.from_user.id, event.message.message_id)
-        if tguser_note:
+        tg_user_note = await middleware_authorization(event.from_user.id, event.message.message_id)
+        if tg_user_note:
             try:
                 return await handler(event, data)
             except Exception as e:
                 await bot.send_message(chat_id=event.from_user.id,
-                                       text="На сервере произошла ошибка. Не беспокойтесь, тех. отдел уже уведомлён и "
-                                            "скоро всё исправит :)")
+                                       text=get_error_message(e))
                 await log_error(at=1,
-                                tg_note=tguser_note if type(tguser_note) == Telegram else None,
+                                tg_note=tg_user_note if isinstance(tg_user_note, Telegram) else None,
                                 event=event,
                                 exception=e)

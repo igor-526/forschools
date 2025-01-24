@@ -11,6 +11,9 @@
             <div id="maLessonItemMainCollapse" class="accordion-collapse collapse show" aria-labelledby="maLessonItemMainHeader">
                 <div class="accordion-body">
                     <ul class="list-group list-group-flush" id="maLessonItemMainList"></ul>
+                    {% if can_set_passed %}
+                        <a href="/ma/lessons/{{ lesson_id }}/form/" type="button" class="btn btn-success btn-sm">Провести занятие</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -48,7 +51,7 @@
                 </div>
             </div>
         </div>
-    <div class="accordion-item d-none" id="maLessonItemReview">
+        <div class="accordion-item d-none" id="maLessonItemReview">
             <h2 class="accordion-header" id="maLessonItemReviewHeader">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#maLessonItemReviewCollapse" aria-expanded="false" aria-controls="maLessonItemReviewCollapse">
                     Ревью

@@ -3,6 +3,9 @@ from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
+from lesson.models import Lesson
+from lesson.permissions import can_set_passed
+
 decorators = [never_cache]
 
 
@@ -24,10 +27,12 @@ class LessonItemMAPage(TemplateView):
     template_name = "ma/lesson_item.html"
 
     def get(self, request, *args, **kwargs):
+        lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         context = {
             "title": "Занятие",
             "lesson_id": kwargs.get("pk"),
             "is_authenticated": request.user.is_authenticated,
+            'can_set_passed': can_set_passed(request, lesson),
         }
         return render(request, self.template_name, context)
 
