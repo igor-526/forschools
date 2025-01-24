@@ -26,7 +26,6 @@ from tgbot.create_bot import bot
 from tgbot.utils import get_group_and_perms, get_user
 from homework.utils import status_code_to_string
 from material.utils.get_type import get_type
-from aiogram.utils.media_group import MediaGroupBuilder
 from user_logs.models import UserLog
 from user_logs.serializers import get_role_ru
 
@@ -443,18 +442,10 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
                 'status': False,
                 'id': hw.get("obj").id
             } for hw in homeworks]
-            if len(homeworks) == 0:
-                await bot.send_message(chat_id=tg_id,
-                                       text="Нет домашних заданий для проверки")
-                await send_menu(tg_id, state)
-            else:
-                await bot.send_message(chat_id=tg_id,
-                                       text="Вот домашние задания, действия преподавателей которых ждут Вашей проверки:",
-                                       reply_markup=get_homeworks_buttons(methodist_homeworks, sb=True))
-        elif 'Teacher' in groups:
+        if 'Teacher' in groups:
             homeworks = list(filter(lambda hw: hw['hw_status'].status in [3, 5] and
                                                (hw['hw_status'].agreement.get("accepted") is None or
-                                                hw['hw_status'].agreement.get("accepted") == True),
+                                                hw['hw_status'].agreement.get("accepted")),
                                     [{
                                         'obj': hw,
                                         'hw_status': await hw.aget_status()
@@ -476,7 +467,6 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
                 'status': hw.get("hw_status") == 5,
                 'id': hw.get("obj").id
             } for hw in homeworks]
-            Homework.objects.filter(lesson__learningphases__learningplan__curators=user)
         if len([*methodist_homeworks, *teacher_homeworks, *curator_homeworks]) == 0:
             await bot.send_message(chat_id=tg_id,
                                    text="Нет домашних заданий для проверки")
@@ -488,7 +478,7 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
                                        [*methodist_homeworks, *teacher_homeworks, *curator_homeworks],
                                        sb=True))
     elif func == "sended":
-        homeworks = list(filter(lambda hw: hw['hw_status'] in [1, 2, 7],
+        homeworks = list(filter(lambda hw: hw['hw_status'] in [1, 2, 5, 7],
                                 [{
                                     'obj': hw,
                                     'hw_status': (await hw.aget_status()).status

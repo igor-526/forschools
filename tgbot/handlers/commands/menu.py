@@ -1,6 +1,7 @@
 from aiogram import types, Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from tgbot.create_bot import bot
 from tgbot.finite_states.chats import ChatsFSM
