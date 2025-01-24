@@ -1,6 +1,8 @@
 from aiogram import types, Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
+
+from tgbot.create_bot import bot
 from tgbot.finite_states.chats import ChatsFSM
 from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials

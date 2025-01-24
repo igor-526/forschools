@@ -44,24 +44,27 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
     send_tg = 'material.send_telegram' in perms.get('permissions')
     file_id = None
     sd = await state.get_data()
+    all_text = generate_material_message()
+    caption = all_text[:1024]
+    other_text = all_text[1024:5120]
     if mat_type == "image_formats":
         try:
             message = await bot.send_photo(chat_id=tg_id,
                                            photo=file,
-                                           caption=generate_material_message(),
+                                           caption=caption,
                                            reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                            protect_content=protect)
             file_id = message.photo[-1].file_id
         except TelegramBadRequest:
             message = await bot.send_document(chat_id=tg_id,
                                               document=file,
-                                              caption=generate_material_message(),
+                                              caption=caption,
                                               reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                               protect_content=protect)
             file_id = message.document.file_id
     elif mat_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
-                                           caption=generate_material_message(),
+                                           caption=caption,
                                            animation=file,
                                            reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                            protect_content=protect)
@@ -74,37 +77,40 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
           mat_type == "presentation_formats"):
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
-                                          caption=generate_material_message(),
+                                          caption=caption,
                                           reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                           protect_content=protect)
         file_id = message.document.file_id
     elif mat_type == "video_formats":
         message = await bot.send_video(chat_id=tg_id,
                                        video=file,
-                                       caption=generate_material_message(),
+                                       caption=caption,
                                        reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                        protect_content=protect)
         file_id = message.video.file_id
     elif mat_type == "audio_formats":
         message = await bot.send_audio(chat_id=tg_id,
                                        audio=file,
-                                       caption=generate_material_message(),
+                                       caption=caption,
                                        reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                        protect_content=protect)
         file_id = message.audio.file_id
     elif mat_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,
                                        voice=file,
-                                       caption=generate_material_message(),
+                                       caption=caption,
                                        reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                        protect_content=protect)
         file_id = message.voice.file_id
     elif mat_type == "text_formats":
         with open(material.file.path, "r") as textfile:
             await bot.send_message(chat_id=tg_id,
-                                   text=textfile.read(),
+                                   text=textfile.read()[:4096],
                                    reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                    protect_content=protect)
+    if other_text:
+        await bot.send_message(chat_id=tg_id,
+                               text=other_text)
     if not material.tg_url and file_id:
         material.tg_url = file_id
         await material.asave()
