@@ -77,8 +77,6 @@ async def h_homework_sethw_materials(message: types.Message, state: FSMContext) 
     else:
         await message.answer("Не прикреплено ни одного материала.\n"
                              "Для прикрепления просто отправьте или перешлите их мне")
-        # async def send_hw_materials(mat_ids: list, hw_id: int | None, callback: CallbackQuery,
-        #                             state: FSMContext, meta: bool, del_hw_msg=True):
     await message.delete()
 
 
@@ -92,6 +90,11 @@ async def h_homework_add(callback: CallbackQuery,
                          callback_data: HomeworkNewCallback,
                          state: FSMContext) -> None:
     state_data = await state.get_data()
+    if state_data.get('new_hw') is None:
+        await callback.answer("Похоже, нет сформированного ДЗ для отправки. Создайте, пожалуйста, "
+                              "ДЗ через главное меню")
+        await callback.message.delete()
+        return
     state_data['new_hw']['lesson_id'] = callback_data.lesson_id
     await state.update_data(state_data)
     await add_homework_set_homework_ready(state=state,

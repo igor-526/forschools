@@ -370,6 +370,8 @@ async def add_homework_set_homework_ready(state: FSMContext,
         if len(homeworks) > 1:
             hw_group = await HomeworkGroups.objects.acreate()
             await hw_group.homeworks.aset(homeworks)
+    if callback:
+        await callback.message.delete()
 
 
 async def add_homework_set_homework_message(tg_id: int,
