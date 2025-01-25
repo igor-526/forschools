@@ -28,6 +28,7 @@ from homework.utils import status_code_to_string
 from material.utils.get_type import get_type
 from user_logs.models import UserLog
 from user_logs.serializers import get_role_ru
+from user_logs.utils import aget_role_from_plan
 
 
 async def homeworks_send_menu(message: types.Message, state: FSMContext):
@@ -291,7 +292,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 "type": get_type(f.file.name.split('.')[-1]),
                 "href": f.file.url
             } async for f in Material.objects.filter(id__in=added_materials)]
-            user_role_ru = get_role_ru((await user.groups.afirst()).name)
+            user_role_ru = get_role_ru(await aget_role_from_plan(plan, user))
             await UserLog.objects.acreate(log_type=4,
                                           learning_plan=plan,
                                           title=f'{user_role_ru} добавил в ДЗ новые материалы',

@@ -18,33 +18,34 @@ from .serializers import UserLogsHWLogsSerializer, UserLogsTGBotJournalSerialize
 class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
     all_users_id = None
     plan_info = {}
+    lp = None
 
     def set_plan_info_and_all_users_ids(self, plan_id: int):
-        lp = LearningPlan.objects.get(id=plan_id)
-        self.plan_info["name"] = lp.name
-        self.plan_info["id"] = lp.id
-        if lp.teacher:
-            self.plan_info["teacher"] = NewUserNameOnlyListSerializer(lp.teacher, many=False).data
-            teacher_id = lp.teacher.id
+        self.lp = LearningPlan.objects.get(id=plan_id)
+        self.plan_info["name"] = self.lp.name
+        self.plan_info["id"] = self.lp.id
+        if self.lp.teacher:
+            self.plan_info["teacher"] = NewUserNameOnlyListSerializer(self.lp.teacher, many=False).data
+            teacher_id = self.lp.teacher.id
         else:
             teacher_id = None
 
-        if lp.default_hw_teacher:
-            self.plan_info["default_hw_teacher"] = NewUserNameOnlyListSerializer(lp.default_hw_teacher, many=False).data
-            hw_teacher_id = lp.default_hw_teacher.id
+        if self.lp.default_hw_teacher:
+            self.plan_info["default_hw_teacher"] = NewUserNameOnlyListSerializer(self.lp.default_hw_teacher, many=False).data
+            hw_teacher_id = self.lp.default_hw_teacher.id
         else:
             hw_teacher_id = None
 
-        if lp.metodist:
-            self.plan_info["methodist"] = NewUserNameOnlyListSerializer(lp.metodist, many=False).data
-            methodist_id = lp.metodist.id
+        if self.lp.metodist:
+            self.plan_info["methodist"] = NewUserNameOnlyListSerializer(self.lp.metodist, many=False).data
+            methodist_id = self.lp.metodist.id
         else:
             methodist_id = None
-        listeners = lp.listeners.all()
+        listeners = self.lp.listeners.all()
         if listeners:
             self.plan_info["listeners"] = NewUserNameOnlyListSerializer(listeners, many=True).data
         listeners = [l.id for l in listeners] if listeners else []
-        curators = lp.curators.all()
+        curators = self.lp.curators.all()
         if curators:
             self.plan_info["curators"] = NewUserNameOnlyListSerializer(curators, many=True).data
         curators = [c.id for c in curators] if curators else []
@@ -72,7 +73,10 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
             query_user_logs['date__date__lte'] = date_to
         hw_logs_queryset = HomeworkLog.objects.filter(**query_hw_logs)
         user_logs_queryset = UserLog.objects.filter(**query_user_logs)
-        hw_logs_ser = UserLogsHWLogsSerializer(hw_logs_queryset, many=True).data
+        hw_logs_ser = UserLogsHWLogsSerializer(hw_logs_queryset,
+                                               many=True,
+                                               context={"request": self.request,
+                                                        "plan": self.lp}).data
         user_logs_ser = UserLogsSerializer(user_logs_queryset, many=True).data
         print(query_user_logs)
         print(user_logs_queryset)
@@ -90,7 +94,10 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
             date_to = datetime.strptime(date_to.split("T")[0], '%Y-%m-%d')
             query['dt__date__lte'] = date_to
         notes = TgBotJournal.objects.filter(**query)
-        return UserLogsTGBotJournalSerializer(notes, many=True).data
+        return UserLogsTGBotJournalSerializer(notes,
+                                              many=True,
+                                              context={"request": self.request,
+                                                       "plan": self.lp}).data
 
     def get_messages(self):
         query = {"sender__id__in": self.all_users_id,
@@ -104,7 +111,10 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
             date_to = datetime.strptime(date_to.split("T")[0], '%Y-%m-%d')
             query['date__date__lte'] = date_to
         messages = Message.objects.filter(**query)
-        return UserLogsMessageSerializer(messages, many=True).data
+        return UserLogsMessageSerializer(messages,
+                                         many=True,
+                                         context={"request": self.request,
+                                                  "plan": self.lp}).data
 
     def get_lessons(self, plan_id: int):
         query_reviews = {"lesson__learningphases__learningplan__id": plan_id}

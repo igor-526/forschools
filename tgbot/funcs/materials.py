@@ -1,10 +1,7 @@
 from datetime import timedelta, datetime, timezone
-from pprint import pprint
-
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery, FSInputFile
 from django.db.models import Q
-
 from homework.models import Homework
 from material.utils.get_for_listener import aget_materials_for_listener, aget_materials_for_listener_next
 from material.models import Material, MaterialCategory, MaterialLevel

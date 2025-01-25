@@ -155,23 +155,12 @@ def get_homework_item_buttons(hw_id: int,
         )
     if edit_hw_button:
         builder.button(
-            text="Редактировать ДЗ",
+            text="Добавить материалы",
             callback_data=HomeworkCallback(
                 hw_id=hw_id,
                 action="edit"
             )
         )
-    builder.adjust(1)
-    return builder.as_markup()
-
-
-def get_homework_edit_button(hw_id) -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(
-        text=f"Редактировать",
-        callback_data=HomeworkCallback(hw_id=hw_id,
-                                       action="edit")
-    )
     builder.adjust(1)
     return builder.as_markup()
 

@@ -1,5 +1,4 @@
-from django.db.models import Count, Q
-
+from django.db.models import Q
 from chat.models import Message
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
@@ -7,10 +6,9 @@ from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot
 import async_to_sync as sync
 from tgbot.funcs.fileutils import send_file
-from tgbot.keyboards.chats import chats_get_show_message_button
 from tgbot.keyboards.lessons import get_lesson_ma_button
 from tgbot.keyboards.materials import get_materials_keyboard_query
-from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_edit_button
+from tgbot.keyboards.homework import get_homeworks_buttons
 from dls.utils import get_tg_id_sync
 from tgbot.models import TgBotJournal
 
@@ -346,12 +344,6 @@ def notify_chat_message(message: Message):
                 "attachments": []
             }
         )
-
-
-def send_homework_edit(hw: Homework, user: NewUser):
-    sync_funcs.send_tg_message_sync(tg_id=user.telegram.filter(usertype="main").first().tg_id,
-                                    message=f"Действие по ДЗ '{hw.name}' не согласовано",
-                                    reply_markup=get_homework_edit_button(hw.id))
 
 
 def notify_lesson_passed(tg_id: int,

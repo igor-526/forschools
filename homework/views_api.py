@@ -6,7 +6,7 @@ from material.utils.get_type import get_type
 from .permissions import get_delete_log_permission, get_can_accept_log_permission, get_can_edit_hw_permission
 from .serializers import HomeworkListSerializer, HomeworkLogListSerializer, HomeworkLogSerializer, HomeworkSerializer
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
-from tgbot.utils import send_homework_tg, send_homework_edit, notify_chat_message, send_homework_answer_tg
+from tgbot.utils import send_homework_tg, notify_chat_message, send_homework_answer_tg
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.response import Response
 from .models import Homework, HomeworkLog
@@ -136,7 +136,7 @@ class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
 class HomeworkItemPageEditAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
         hw = Homework.objects.get(pk=kwargs.get('pk'))
-        send_homework_edit(hw, request.user)
+        send_homework_tg(request.user, request.user, [hw], "Вы направили себе ДЗ")
         return Response({})
 
 
@@ -319,8 +319,7 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
             elif request.POST.get('action') == 'decline':
                 user_log["title"] = "Действие преподавателя НЕ согласовано"
                 user_log["color"] = "warning"
-                for hw in hws:
-                    send_homework_edit(hw, instance.homework.teacher)
+                send_homework_tg(request.user, instance.homework.teacher, hws, "Действие по ДЗ не согласовано")
             if request.POST.get('message'):
                 agreement['message'] = request.POST.get('message')
                 message = Message.objects.create(sender=request.user,

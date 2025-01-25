@@ -8,6 +8,7 @@ from chat.models import Message
 from lesson.models import LessonTeacherReview
 from .models import UserLog
 from profile_management.serializers import NewUserNameOnlyListSerializer
+from .utils import get_role_from_plan
 
 
 class UserLogsHWLogsSerializer(serializers.ModelSerializer):
@@ -23,8 +24,8 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
         fields = ["title", "content", "user", "date", "buttons", "files"]
 
     def get_title(self, obj):
-        role = get_role_ru(obj.user.groups.first().name)
-        action = get_action_str_from_hwlog_status(obj.status)
+        role = get_role_ru(get_role_from_plan(self.context['plan'], obj.user))
+        action = get_action_str_from_hw_log_status(obj.status)
         totalstr = f'{role} {action}'
         lesson = obj.homework.lesson_set.first()
         if lesson:
@@ -79,7 +80,7 @@ class UserLogsTGBotJournalSerializer(serializers.ModelSerializer):
         return "не доставлено"
 
     def get_title(self, obj):
-        role = get_role_ru(obj.recipient.groups.first().name, "g", True)
+        role = get_role_ru(get_role_from_plan(self.context['plan'], obj.recipient), "g", True)
         return f"Уведомление для {role}"
 
     def get_content(self, obj):
@@ -133,8 +134,8 @@ class UserLogsMessageSerializer(serializers.ModelSerializer):
         fields = ["title", "content", "user", "date", "buttons", "files"]
 
     def get_title(self, obj):
-        role_sender = get_role_ru(obj.sender.groups.first().name)
-        role_receiver = get_role_ru(obj.receiver.groups.first().name, "d", True)
+        role_sender = get_role_ru(get_role_from_plan(self.context['plan'], obj.sender))
+        role_receiver = get_role_ru(get_role_from_plan(self.context['plan'], obj.receiver), "d", True)
         return f"{role_sender} отправил сообщение {role_receiver}"
 
     def get_content(self, obj):
@@ -287,7 +288,7 @@ def get_role_ru(role: str, case: str = 'n', lc: bool = False):
     return roles[role][case].lower() if lc else roles[role][case]
 
 
-def get_action_str_from_hwlog_status(st: int):
+def get_action_str_from_hw_log_status(st: int):
     if st == 1:
         return "создал ДЗ"
     elif st == 2:
