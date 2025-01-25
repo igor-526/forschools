@@ -94,7 +94,7 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
                                        caption=caption,
                                        reply_markup=get_keyboard_material_item(material, send_tg, sd),
                                        protect_content=protect)
-        file_id = message.audio.file_id
+        file_id = message.audio.file_id if message.audio else message.document.file_id
     elif mat_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,
                                        voice=file,
