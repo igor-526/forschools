@@ -4,7 +4,7 @@ from tgbot.create_bot import dp, bot
 import asyncio
 import logging
 import os
-from tgbot.middlewares import LastMessageMiddleware, LastMessageCallbackMiddleware
+from tgbot.middlewares import LastMessageMiddleware, LastMessageCallbackMiddleware, MediaMiddleware
 from dls.settings import (DEBUG, TG_WEBHOOKS_MODE, TG_WEB_SERVER_HOST,
                           TG_WEBHOOK_SECRET, TG_WEBHOOK_PATH)
 from aiohttp import web
@@ -16,6 +16,7 @@ async def start_polling() -> None:
     if not DEBUG:
         dp.message.middleware.register(LastMessageMiddleware())
         dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
+    dp.message.middleware.register(MediaMiddleware())
     await dp.start_polling(bot)
 
 

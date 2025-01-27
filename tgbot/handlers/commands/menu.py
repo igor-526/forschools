@@ -47,19 +47,24 @@ async def h_mainmenu_settings(message: types.Message) -> None:
     await generate_settings_message(message)
 
 
+@router.message(StateFilter(None),
+                F.media_group_id != None)
+async def h_mainmenu_message_media_group(message: types.Message, state: FSMContext, media_events=None):
+    data = await state.get_data()
+    if not data.get("files") and not data.get("text"):
+        await state.set_data({'files': [],
+                              'comment': []})
+    await chats_type_message(media_events, state)
+
+
 @router.message(StateFilter(None))
 async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
     data = await state.get_data()
-    if not data.get("files"):
-        await state.set_data({'files': {
-            'text': [],
-            'photo': [],
-            'voice': [],
-            'audio': [],
-            'video': [],
-            'animation': [],
-            'document': [],
-        }
-        })
+    if not data.get("files") and not data.get("text"):
+        await state.set_data({'files': [],
+                              'comment': []})
+    messages = [message]
+    if message.reply_to_message:
+        messages.append(message.reply_to_message)
     await state.set_state(ChatsFSM.send_message)
-    await chats_type_message(message, state)
+    await chats_type_message(messages, state)

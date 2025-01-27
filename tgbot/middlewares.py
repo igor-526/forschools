@@ -1,14 +1,12 @@
-from pprint import pprint
 from typing import Callable, Dict, Any, Awaitable
-
-from aiogram.exceptions import TelegramBadRequest
-
+from typing import Union
 from profile_management.models import Telegram
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 import traceback
 from support.models import TelegramErrorsLog
 from tgbot.create_bot import bot
+import asyncio
 
 
 async def middleware_authorization(tg_id, message_id, msg_text=None):
@@ -127,3 +125,27 @@ class LastMessageCallbackMiddleware(BaseMiddleware):
                                 tg_note=tg_user_note if isinstance(tg_user_note, Telegram) else None,
                                 event=event,
                                 exception=e)
+
+
+class MediaMiddleware(BaseMiddleware):
+    def __init__(self, latency: Union[int, float] = 0.1):
+        self.medias = {}
+        self.latency = latency
+        super(MediaMiddleware, self).__init__()
+
+    async def __call__(
+        self,
+        handler: Callable[[Union[Message, CallbackQuery], Dict[str, Any]], Awaitable[Any]],
+        event: Union[Message, CallbackQuery],
+        data: Dict[str, Any]
+    ) -> Any:
+
+        if isinstance(event, Message) and event.media_group_id:
+            try:
+                self.medias[event.media_group_id].append(event)
+                return
+            except KeyError:
+                self.medias[event.media_group_id] = [event]
+                await asyncio.sleep(self.latency)
+                data["media_events"] = self.medias.pop(event.media_group_id)
+        return await handler(event, data)

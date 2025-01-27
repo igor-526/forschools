@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from chat.models import Message
 from tgbot.funcs.homeworks import homework_tg_notify
+from tgbot.funcs.materials_add import FileParser
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import get_homework_agreement_buttons
 from tgbot.finite_states.homework import HomeworkAgreementFSM
@@ -20,16 +21,18 @@ async def f_homework_agr_message(callback: CallbackQuery,
                                  state: FSMContext):
     await state.set_data({
         "action": callback_data.action,
-        "hw_id": callback_data.hw_id
+        "hw_id": callback_data.hw_id,
+        "files": [],
+        "comment": []
     })
     msg = ""
     rm = None
     if callback_data.action == "agreement_accept":
-        msg = ("При необходимости отправьте мне текстовый комментарий на действие преподавателя.\n"
+        msg = ("При необходимости отправьте мне комментарий на действие преподавателя.\n"
                "После чего нажмите кнопку 'Согласовать'")
         rm = get_homework_agreement_buttons("accept")
     elif callback_data.action == "agreement_decline":
-        msg = ("Отправьте мне хотя бы один текстовый комментарий на действие преподавателя.\n"
+        msg = ("Отправьте мне хотя бы один комментарий на действие преподавателя.\n"
                "После чего нажмите кнопку 'Отправить на корректировку'")
         rm = get_homework_agreement_buttons("decline")
     await bot.send_message(chat_id=callback.from_user.id,
@@ -38,39 +41,45 @@ async def f_homework_agr_message(callback: CallbackQuery,
     await state.set_state(HomeworkAgreementFSM.message)
 
 
-async def f_homework_agr_add_comment(message: types.Message,
+async def f_homework_agr_add_comment(messages: list[types.Message],
                                      state: FSMContext):
-    if not message.text:
-        await message.reply("Возможно добавление только текстовых комментариев")
-        return
-    stdata = await state.get_data()
-    comment = stdata.get("comment")
-    if comment is None:
-        com = message.text
-    else:
-        com = f'{comment}\n___\n{message.text}'
-    if len(com) > 2000:
-        await message.reply("Общая длина комментариев не может превышать 2000 символов")
-    else:
-        await state.update_data(comment=com)
+    files_list = []
+    comments_list = []
+    st_data = await state.get_data()
     msg = ""
     rm = None
-    if stdata.get("action") == "agreement_accept":
+    if st_data.get("action") == "agreement_accept":
         msg = ("Принято! При необходимости отправьте мне ещё комментарий.\n"
                "После чего нажмите кнопку 'Согласовать'")
         rm = get_homework_agreement_buttons("accept")
-    elif stdata.get("action") == "agreement_decline":
+    elif st_data.get("action") == "agreement_decline":
         msg = ("Принято! При необходимости отправьте мне ещё комментарий.\n"
                "После чего нажмите кнопку 'Отправить на корректировку'")
         rm = get_homework_agreement_buttons("decline")
-    await message.reply(text=msg,
-                        reply_markup=rm)
+    for m in messages:
+        file = FileParser(
+            message=m,
+            mode="file",
+            success_text=msg,
+            reply_markup=rm,
+            add_time_stamp=False,
+            ignore_text=True
+        )
+        await file.download()
+        if file.ready_file:
+            files_list.append(file.ready_file.id)
+        if file.file_description:
+            comments_list.append(file.file_description)
+    state_data = await state.get_data()
+    state_data["files"].extend(files_list)
+    state_data["comment"].extend(comments_list)
+    await state.set_data(state_data)
 
 
 async def f_homework_agr_send(tg_id: int,
                               state: FSMContext):
     async def get_logs_info():
-        hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=stdata.get("hw_id"))
+        hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=st_data.get("hw_id"))
         last_log = await hw.aget_status()
         if last_log and last_log.status == 7:
             hw_group = await hw.homeworkgroups_set.afirst()
@@ -135,7 +144,7 @@ async def f_homework_agr_send(tg_id: int,
                     msg = await Message.objects.acreate(
                         receiver=log_.homework.teacher,
                         sender=await get_user(tg_id),
-                        message=stdata.get("comment"),
+                        message="\n".join(st_data.get("comment")),
                     )
                     await chats_notify(chat_message_id=msg.id, show=False)
                     msg_chat_teacher_send = True
@@ -145,9 +154,9 @@ async def f_homework_agr_send(tg_id: int,
                                          msg_teacher)
 
     async def journal_log():
-        title = "Действие преподавателя согласовано" if stdata.get("action") == "agreement_accept" else \
+        title = "Действие преподавателя согласовано" if st_data.get("action") == "agreement_accept" else \
             "Действие преподавателя НЕ согласовано"
-        color = "info" if stdata.get("action") == "agreement_accept" else "warning"
+        color = "info" if st_data.get("action") == "agreement_accept" else "warning"
         lesson = await logs_info.get("homeworks")[0].lesson_set.afirst()
         content = {"list": [],
                    "text": [f'Методист обработал действие преподавателя по ДЗ к занятию '
@@ -180,10 +189,10 @@ async def f_homework_agr_send(tg_id: int,
                             "href": f"/homeworks/{hw.id}"})
         buttons.append({"inner": "Занятие",
                         "href": f"/lessons/{lesson.id}"})
-        if stdata.get("comment"):
+        if st_data.get("comment"):
             content['list'].append({
                 "name": "Комментарий",
-                "val": stdata.get("comment")
+                "val": st_data.get("comment")
             })
         await UserLog.objects.acreate(
             log_type=1,
@@ -195,7 +204,7 @@ async def f_homework_agr_send(tg_id: int,
             color=color
         )
 
-    stdata = await state.get_data()
+    st_data = await state.get_data()
     logs_info = await get_logs_info()
     if not logs_info.get("logs"):
         await bot.send_message(chat_id=tg_id,
@@ -212,21 +221,21 @@ async def f_homework_agr_send(tg_id: int,
         }
     }
     answer_msg = "Отправлено успешно"
-    if stdata.get("action") == "agreement_accept":
+    if st_data.get("action") == "agreement_accept":
         agreement["accepted"] = True
         answer_msg = "Действия преподавателя согласованы. Уведомления отправлены"
         if logs_info.get("homeworks") and len(logs_info.get("homeworks")) > 1:
             answer_msg += "\nНет необходимости согласовывать другие ДЗ для группового занятия"
-    elif stdata.get("action") == "agreement_decline":
+    elif st_data.get("action") == "agreement_decline":
         agreement["accepted"] = False
-        agreement["comment"] = stdata.get("comment")
+        agreement["comment"] = "\n".join(st_data.get("comment"))
         answer_msg = "Действия преподавателя не согласованы. Уведомления отправлены"
         if logs_info.get("homeworks") and len(logs_info.get("homeworks")) > 1:
             answer_msg += "\nНет необходимости согласовывать другие ДЗ для группового занятия"
     for log in logs_info.get("logs"):
         log.agreement = agreement
         await log.asave()
-        await notify_users(logs_info.get("logs"), stdata.get("action"))
+        await notify_users(logs_info.get("logs"), st_data.get("action"))
     await journal_log()
     await bot.send_message(chat_id=tg_id,
                            text=answer_msg)

@@ -45,6 +45,15 @@ async def h_chats_send(message: types.Message, state: FSMContext) -> None:
                          reply_markup=chats_get_users_buttons(chats))
 
 
+@router.message(StateFilter(ChatsFSM.send_message),
+                F.media_group_id != None)
+async def h_chats_type_media_group(message: types.Message, state: FSMContext, media_events=None):
+    await chats_type_message(media_events, state)
+
+
 @router.message(StateFilter(ChatsFSM.send_message))
 async def h_chats_type(message: types.Message, state: FSMContext) -> None:
-    await chats_type_message(message, state)
+    messages = [message]
+    if message.reply_to_message:
+        messages.append(message.reply_to_message)
+    await chats_type_message(messages, state)

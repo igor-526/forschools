@@ -4,12 +4,13 @@ from aiogram.types import CallbackQuery
 from django.db.models import Q
 from profile_management.models import Telegram, aget_unread_messages_count
 from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
+from tgbot.funcs.materials_add import FileParser
 from tgbot.keyboards.callbacks.chats import ChatListCallback
 from tgbot.keyboards.chats import chats_get_show_message_page_button
-from tgbot.keyboards.default import message_typing_keyboard
+from tgbot.keyboards.default import homework_typing_keyboard, get_chat_typing_keyboard
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
-from tgbot.utils import get_tg_id
+from tgbot.utils import get_tg_id, get_user
 from tgbot.create_bot import bot
 from tgbot.finite_states.chats import ChatsFSM
 from chat.models import Message, GroupChats
@@ -54,60 +55,66 @@ async def chats_show(message: types.Message, state: FSMContext):
                     custom_text="Непрочитанных сообщений нет")
 
 
-async def chats_type_message(message: types.Message, state: FSMContext):
-    new_data_msg = await add_files_to_state(message, state)
-    new_data_msg += "\nДля отправки сообщения нажмите кнопку '<b>Отправить</b>' или добавьте ещё сообщение"
-    await message.reply(new_data_msg, reply_markup=message_typing_keyboard)
+async def chats_type_message(messages: list[types.Message], state: FSMContext):
+    user = await get_user(messages[0].from_user.id)
+    is_listener = await user.groups.filter(name="Listener").aexists()
+    files_list = []
+    comments_list = []
+    for m in messages:
+        file = FileParser(
+            message=m,
+            mode="file",
+            success_text="Для отправки сообщения нажмите кнопку '<b>Отправить</b>' или добавьте ещё сообщение",
+            reply_markup=get_chat_typing_keyboard(is_listener),
+            add_time_stamp=False,
+            ignore_text=True
+        )
+        await file.download()
+
+        if file.ready_file:
+            files_list.append(file.ready_file.id)
+        if file.file_description:
+            comments_list.append(file.file_description)
+    state_data = await state.get_data()
+    state_data["files"].extend(files_list)
+    state_data["comment"].extend(comments_list)
+    await state.set_data(state_data)
 
 
 async def chats_send(user_tg_id: int, state: FSMContext):
-    async def create_message(tg_note, statedata, ct, att_data):
-        obj = Message()
+    async def create_message(state_data, ct):
+        query_params = {
+            "message": "\n".join(state_data['comment'])
+        }
         if tg_note.usertype == "main":
             if ct == "NewUser":
-                obj = await Message.objects.acreate(
-                    receiver_id=statedata.get('message_for'),
-                    sender_id=tg_note.user.id,
-                    message=att_data.get("comment"),
-                )
+                query_params['receiver_id'] = state_data.get('message_for')
+                query_params['sender_id'] = tg_note.user.id
             elif ct == "Telegram":
-                obj = await Message.objects.acreate(
-                    receiver_tg_id=statedata.get('message_for'),
-                    sender_id=tg_note.user.id,
-                    message=att_data.get("comment"),
-                )
+                query_params['receiver_tg_id'] = state_data.get('message_for')
+                query_params['sender_id'] = tg_note.user.id
         else:
             if ct == "NewUser":
-                obj = await Message.objects.acreate(
-                    receiver_id=statedata.get('message_for'),
-                    sender_tg_id=tg_note.id,
-                    message=att_data.get("comment"),
-                )
+                query_params['receiver_id'] = state_data.get('message_for')
+                query_params['sender_tg_id'] = tg_note.id
             elif ct == "Telegram":
-                obj = await Message.objects.acreate(
-                    receiver_tg_id=statedata.get('message_for'),
-                    sender_tg_id=tg_note.id,
-                    message=att_data.get("comment"),
-                )
-        await obj.files.aset(att_data.get("files_db"))
+                query_params['receiver_tg_id'] = state_data.get('message_for')
+                query_params['sender_tg_id'] = tg_note.id
+        obj = await Message.objects.acreate(**query_params)
+        await obj.files.aset(state_data['files'])
         await obj.asave()
         return obj
 
-    tgnote = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
     data = await state.get_data()
-    if not filechecker(data):
-        await bot.send_message(chat_id=user_tg_id,
-                               text="Необходимо написать сообщение или отправить вложения, либо нажать кнопку 'Отмена'")
-        return
     message_status = await bot.send_message(chat_id=user_tg_id,
                                             text="Отправка...")
     chat_type = data.get("chat_type")
     try:
-        attdata = await filedownloader(data, owner=tgnote.user, t="Сообщение")
-        chat_message = await create_message(tgnote, data, chat_type, attdata)
+        chat_message = await create_message(data, chat_type)
         await chats_notify(chat_message.id)
         await message_status.edit_text("Сообщение отправлено")
-        await aget_unread_messages_count(tgnote, {
+        await aget_unread_messages_count(tg_note, {
             "id": data.get('message_for'),
             "usertype": chat_type
         }, True)
@@ -118,7 +125,7 @@ async def chats_send(user_tg_id: int, state: FSMContext):
 
 
 async def chats_group_send(user_tg_id: int, state: FSMContext):
-    async def notificate(tg_ids, message: Message, text_type="user"):
+    async def notify(tg_ids, message: Message, text_type="user"):
         msg_text = ""
         if text_type == "user":
             msg_text = f'<b>Новое сообщение из "{group.name}"</b>\n{message.message}'
@@ -132,68 +139,58 @@ async def chats_group_send(user_tg_id: int, state: FSMContext):
             for attachment in [att async for att in chat_message.files.all()]:
                 await send_file(tg_id, attachment)
 
-    async def get_notificate_ids(tgnote: Telegram, message: Message):
+    async def get_notify_ids(t_note):
         tg_ids = {}
-        if tgnote.usertype == "main":
-            tg_ids["users_tg_id"] = [tgnote.tg_id async for tgnote in group.users_tg.all()]
-            tg_ids["receiver_parents_tg_id"] = [tgnote.tg_id async for tgnote in
+        if t_note.usertype == "main":
+            tg_ids["users_tg_id"] = [t_note.tg_id async for t_note in group.users_tg.all()]
+            tg_ids["receiver_parents_tg_id"] = [t_note.tg_id async for t_note in
                                                 Telegram.objects.filter(user__in=group.users.exclude(
-                                                    id=message.sender.id))
+                                                    id=chat_message.sender.id))
                                                 .exclude(Q(usertype="main") | Q(tg_id__in=tg_ids["users_tg_id"]))]
-            tg_ids["sender_parents_tg_id"] = [tgnote.tg_id async for tgnote in message.sender.telegram.exclude(
+            tg_ids["sender_parents_tg_id"] = [t_note.tg_id async for t_note in chat_message.sender.telegram.exclude(
                 usertype="main")]
-            tg_ids["receivers_tg_id"] = [tgnote.tg_id async for tgnote in
-                                         Telegram.objects.filter(user__in=group.users.exclude(id=message.sender.id),
+            tg_ids["receivers_tg_id"] = [t_note.tg_id async for t_note in
+                                         Telegram.objects.filter(user__in=group.users.exclude(id=chat_message.sender.id),
                                                                  usertype="main")]
         else:
-            tg_ids["users_tg_id"] = [tgnote.tg_id async for tgnote in group.users_tg.exclude(id=tgnote.id)]
-            tg_ids["receiver_parents_tg_id"] = [tgnote.tg_id async for tgnote in
+            tg_ids["users_tg_id"] = [t_note.tg_id async for t_note in group.users_tg.exclude(id=t_note.id)]
+            tg_ids["receiver_parents_tg_id"] = [t_note.tg_id async for t_note in
                                                 Telegram.objects.filter(
                                                     user_id__in=[u.id async for u in group.users.all()])
                                                 .exclude(Q(usertype="main") | Q(tg_id__in=tg_ids["users_tg_id"]) |
-                                                         Q(id=tgnote.id))]
-            tg_ids["sender_parents_tg_id"] = [tgnote.tg_id async for tgnote in
-                                              Telegram.objects.filter(user_id=tgnote.id).exclude(usertype="main")]
-            tg_ids["receivers_tg_id"] = [tgnote.tg_id async for tgnote in
+                                                         Q(id=t_note.id))]
+            tg_ids["sender_parents_tg_id"] = [t_note.tg_id async for t_note in
+                                              Telegram.objects.filter(user_id=t_note.id).exclude(usertype="main")]
+            tg_ids["receivers_tg_id"] = [t_note.tg_id async for t_note in
                                          Telegram.objects.filter(user_id__in=[u.id async for u in group.users.all()],
                                                                  usertype="main")]
         return tg_ids
 
-    tgnote = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
     data = await state.get_data()
-    if not filechecker(data):
-        await bot.send_message(chat_id=user_tg_id,
-                               text="Необходимо написать сообщение или отправить вложения, либо нажать кнопку 'Отмена'")
-        return
     message_status = await bot.send_message(chat_id=user_tg_id,
                                             text="Отправка...")
     try:
-        hwdata = await filedownloader(data, owner=tgnote.user, t="Сообщение")
-        if tgnote.usertype == "main":
-            chat_message = await Message.objects.acreate(
-                receiver_id=data.get('message_for'),
-                sender_id=tgnote.user.id,
-                message=hwdata.get("comment"),
-            )
+        query_params = {
+            'message': "\n".join(data.get("comment")),
+            'receiver_id': data.get('message_for')
+        }
+        if tg_note.usertype == "main":
+            query_params['sender_id'] = tg_note.user.id
         else:
-            chat_message = await Message.objects.acreate(
-                receiver_id=data.get('message_for'),
-                sender_tg_id=tgnote.id,
-                message=hwdata.get("comment"),
-            )
-        await chat_message.files.aset(hwdata.get("files_db"))
-        await chat_message.asave()
-        await chat_message.files.aset(hwdata.get("files_db"))
+            query_params['sender_tg_id'] = tg_note.id
+        chat_message = await Message.objects.acreate(**query_params)
+        await chat_message.files.aset(data.get("files"))
         await chat_message.asave()
         group = await GroupChats.objects.aget(id=data.get('message_for'))
         await group.messages.aadd(chat_message)
         await group.asave()
         chat_message = await Message.objects.select_related("sender").aget(id=chat_message.id)
-        notificate_tg_ids = await get_notificate_ids(tgnote, chat_message)
-        await notificate(notificate_tg_ids.get('users_tg_id'), chat_message, 'user')
-        await notificate(notificate_tg_ids.get('receivers_tg_id'), chat_message, 'user')
-        await notificate(notificate_tg_ids.get('receiver_parents_tg_id'), chat_message, 'receiver_parent')
-        await notificate(notificate_tg_ids.get('sender_parents_tg_id'), chat_message, 'sender_parent')
+        notify_tg_ids = await get_notify_ids(tg_note)
+        await notify(notify_tg_ids.get('users_tg_id'), chat_message, 'user')
+        await notify(notify_tg_ids.get('receivers_tg_id'), chat_message, 'user')
+        await notify(notify_tg_ids.get('receiver_parents_tg_id'), chat_message, 'receiver_parent')
+        await notify(notify_tg_ids.get('sender_parents_tg_id'), chat_message, 'sender_parent')
         await message_status.edit_text("Сообщение отправлено")
     except Exception as e:
         await message_status.edit_text(f"Не удалось отправить сообщение\n"
@@ -205,29 +202,15 @@ async def chats_send_ask(callback: CallbackQuery,
                          callback_data: ChatListCallback,
                          state: FSMContext):
     data = await state.get_data()
-    if data.get("files"):
-        await state.update_data({"message_for": callback_data.user_id,
-                                 "chat_type": callback_data.usertype})
-        if callback_data.usertype == "Group":
-            await chats_group_send(callback.from_user.id, state)
-        else:
-            await chats_send(callback.from_user.id, state)
-        return
-    await bot.send_message(callback.message.chat.id,
-                           "Напишите сообщение, после чего нажмите кнопку 'Отправить'",
-                           reply_markup=message_typing_keyboard)
-    await state.set_state(ChatsFSM.send_message)
-    await state.set_data({"message_for": callback_data.user_id,
-                          'files': {
-                              'text': [],
-                              'photo': [],
-                              'voice': [],
-                              'audio': [],
-                              'video': [],
-                              'animation': [],
-                              'document': [],
-                          }
-                          })
+    if not data.get("files") and not data.get("comment"):
+        await send_menu(callback.from_user.id, state, "Вы не можете отправить пустое сообщение")
+    await state.update_data({"message_for": callback_data.user_id,
+                             "chat_type": callback_data.usertype})
+    if callback_data.usertype == "Group":
+        await chats_group_send(callback.from_user.id, state)
+    else:
+        await chats_send(callback.from_user.id, state)
+    return
 
 
 async def chats_notify(chat_message_id: int, show=False):

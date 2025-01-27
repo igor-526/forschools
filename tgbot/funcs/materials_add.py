@@ -3,15 +3,320 @@ from datetime import datetime
 from PIL import Image
 import cv2
 from dls.settings import MEDIA_ROOT
-from material.models import Material, MaterialCategory
+from material.models import Material, File
 from material.utils.get_type import get_type
+from profile_management.models import NewUser
 from tgbot.create_bot import bot
-from tgbot.keyboards.homework import get_homework_editing_buttons
 from tgbot.utils import get_group_and_perms, get_user
 from aiogram.fsm.context import FSMContext
 from aiogram import types
 from tgbot.keyboards.default import cancel_keyboard
 from tgbot.finite_states.materials import MaterialFSM
+
+
+class FileParser:
+    material_message: types.Message = None
+    status_message: types.Message = None
+    mode: str
+    ignore_text: bool
+    file_type: str = None
+    file_format: str = None
+    file_name: str = None
+    file_description: str = None
+    file_id_tg = None
+    file_owner: NewUser = None
+    file_path_db: str = None
+    file_path: str = None
+    file_path_non_ext: str = None
+    ready_file: File = None
+    ready_material: Material = None
+    success_text: str = None
+    reply_markup = None
+
+    def __init__(self,
+                 message: types.Message,
+                 mode: str = "material",
+                 success_text: str = "Материал успешно загружен!",
+                 reply_markup=None,
+                 add_time_stamp: bool = False,
+                 ignore_text: bool = False):
+        self.material_message = message
+        self.mode = mode
+        self.add_time_stamp = add_time_stamp
+        self.ignore_text = ignore_text
+        self.success_text = success_text
+        self.reply_markup = reply_markup
+        self.set_file_data()
+        if add_time_stamp:
+            self.add_timestamp()
+
+    async def update_status_message(self, text: str):
+        if self.status_message:
+            pass
+        else:
+            self.status_message = await self.material_message.reply(text)
+
+    def add_timestamp(self):
+        if self.file_description is not None:
+            self.file_description += f'\nИмпорт из Telegram {datetime.now().strftime("%d.%m.%Y %H:%M")}'
+
+    def set_file_data(self):
+        if self.material_message.text:
+            self.file_description = self.material_message.text
+        if self.material_message.caption:
+            if self.file_description is None:
+                self.file_description = self.material_message.caption
+            else:
+                self.file_description += f"\n{self.material_message.caption}"
+
+        if self.material_message.text:
+            self.file_type = "text"
+            self.file_description = self.material_message.text
+            self.file_name = " ".join(self.material_message.text.split(" ")[:10])
+            self.file_format = "txt"
+
+        if self.material_message.voice:
+            self.file_type = "voice"
+            self.file_name = f'Голосовое сообщение TG {self.material_message.message_id}'
+            self.file_id_tg = self.material_message.voice.file_id
+            self.file_format = "ogg"
+
+        if self.material_message.photo:
+            self.file_type = "photo"
+            self.file_name = f'Изображение TG {self.material_message.message_id}'
+            self.file_id_tg = self.material_message.photo[-1].file_id
+            self.file_format = "png"
+
+        if self.material_message.audio:
+            tg_file_name = self.material_message.audio.file_name
+            self.file_type = "audio"
+            self.file_name = tg_file_name.split(".")[0] if tg_file_name else (f'Аудиозапись TG '
+                                                                              f'{self.material_message.message_id}')
+            self.file_id_tg = self.material_message.audio.file_id
+            self.file_format = "m4a"
+
+        if self.material_message.animation:
+            tg_file_name = self.material_message.animation.file_name
+            self.file_type = "animation"
+            self.file_name = tg_file_name.split(".")[0] if tg_file_name else (f'Анимация TG '
+                                                                              f'{self.material_message.message_id}')
+            self.file_id_tg = self.material_message.animation.file_id
+            self.file_format = self.material_message.animation.file_name.split(".")[-1] \
+                if self.material_message.animation.file_name else "mp4"
+
+        if self.material_message.document:
+            if not self.material_message.animation:
+                file_type = get_type(self.material_message.document.file_name.split(".")[-1])
+                if file_type != "unsupported":
+                    file_name = self.material_message.document.file_name
+                    self.file_type = "document"
+                    self.file_name = file_name.split(".")[0] if file_name else (f'Документ TG '
+                                                                                f'{self.material_message.message_id}')
+                    self.file_id_tg = self.material_message.document.file_id
+                    self.file_format = file_name.split(".")[-1]
+                else:
+                    self.file_type = "unsupported"
+
+        if self.material_message.video:
+            file_name_tg = self.material_message.video.file_name
+            self.file_type = "video"
+            self.file_name = file_name_tg.split(".")[0] if file_name_tg else (f'Видео TG '
+                                                                            f'{self.material_message.message_id}')
+            self.file_id_tg = self.material_message.video.file_id
+            self.file_format = "webm"
+
+        if self.file_name:
+            validated_name = self.file_name
+            for symbol in ["<", ">", ":", '"', "/", "\\", "|", "?", "*", "\n"]:
+                if symbol in validated_name:
+                    validated_name = validated_name.replace(symbol, "")
+            self.file_name = validated_name[:75]
+
+    async def validate_exists(self):
+        if self.mode == "material":
+            model = Material
+        elif self.mode == "file":
+            model = File
+        else:
+            return
+        mat = await model.objects.filter(tg_url=self.file_id_tg).afirst() if self.file_id_tg else None
+        if not mat:
+            mat_name = await model.objects.filter(name=self.file_name).aexists()
+            if mat_name:
+                counter = 1
+                while True:
+                    new_name = f"{self.file_name}({counter})"
+                    mat_name_exists = await model.objects.filter(name=new_name).aexists()
+                    if mat_name_exists:
+                        counter += 1
+                    else:
+                        self.file_name = new_name
+                        break
+        else:
+            if self.mode == "material":
+                self.ready_material = mat
+            elif self.mode == "file":
+                self.ready_file = mat
+
+    def set_path(self):
+        if self.mode == "material":
+            folder_name = "materials"
+        elif self.mode == "file":
+            folder_name = "files"
+        else:
+            return
+        self.file_path_db = os.path.join(folder_name, f'{self.file_name}.{self.file_format}')
+        self.file_path = os.path.join(MEDIA_ROOT, folder_name, f'{self.file_name}.{self.file_format}')
+
+    def generate_success_message(self, meta=False) -> dict:
+        msg = {
+            "text": self.success_text,
+            "reply_markup": self.reply_markup
+        }
+        if meta:
+            msg["text"] += (f'\nНаименование: {self.file_name}\n'
+                            f'Описание: {self.file_description}\n')
+        return msg
+
+    async def animation_convert(self):
+        await self.update_status_message("Идёт конвертация")
+        if self.file_format != 'gif':
+            video = cv2.VideoCapture(self.file_path)
+            frames = []
+            while True:
+                ret, frame = video.read()
+                if not ret:
+                    break
+                frames.append(frame)
+            print(self.file_name)
+            for i in range(len(frames)):
+                cv2.imwrite(f"{self.file_name}{i}.png", frames[i])
+            frame_images = [Image.open(f"{self.file_name}{i}.png") for i in range(len(frames))]
+            self.file_format = "gif"
+            self.set_path()
+            frame_images[0].save(self.file_path,
+                                 format='GIF',
+                                 append_images=frame_images[1:],
+                                 save_all=True,
+                                 duration=100,
+                                 loop=0)
+            for i in range(len(frames)):
+                os.remove(f"{self.file_name}{i}.png")
+
+    async def download_file_from_tg(self):
+        await self.update_status_message(text="Начинаю загрузку..")
+        await bot.download(file=self.file_id_tg,
+                           destination=self.file_path)
+        if self.file_type == "animation":
+            await self.animation_convert()
+
+    async def add_material_db(self):
+        try:
+            query_params = {
+                "name": self.file_name[:200],
+                "file": self.file_path_db,
+                "type": 2,
+                "owner": self.file_owner,
+                "tg_url": self.file_id_tg,
+            }
+            if not self.ignore_text:
+                query_params["description"] = self.file_description
+            new_mat = await Material.objects.acreate(**query_params)
+            self.ready_material = new_mat
+            await self.status_message.delete()
+            await self.material_message.reply(**self.generate_success_message())
+        except Exception as e:
+            await self.update_status_message(f'Произошла ошибка при добавлении материала:\n{e}')
+
+    async def add_file_db(self):
+        try:
+            query_params = {
+                "name": self.file_name[:200],
+                "path": self.file_path_db,
+                "owner": self.file_owner,
+                "tg_url": self.file_id_tg,
+            }
+            if not self.ignore_text:
+                query_params["caption"] = self.file_description
+            new_mat = await File.objects.acreate(**query_params)
+            self.ready_file = new_mat
+            await self.status_message.delete()
+            await self.material_message.reply(**self.generate_success_message())
+        except Exception as e:
+            await self.update_status_message(f'Произошла ошибка при добавлении материала:\n{e}')
+
+    async def download(self):
+        await self.update_status_message("Начинаю загрузку..")
+        self.file_owner = await get_user(self.material_message.from_user.id)
+        await self.validate_exists()
+        if self.ready_file or self.ready_material:
+            await self.status_message.delete()
+            await self.material_message.reply(**self.generate_success_message())
+            return
+        self.set_path()
+        if self.file_type == "text":
+            await self.update_status_message("Определён текстовый материал")
+            if not self.ignore_text:
+                with open(self.file_path, "w", encoding="utf-16") as file:
+                    file.write(self.file_description)
+                if self.mode == "material":
+                    await self.add_material_db()
+                elif self.mode == "file":
+                    await self.add_file_db()
+            else:
+                await self.material_message.reply(**self.generate_success_message())
+                await self.status_message.delete()
+
+        elif self.file_type == "voice":
+            await self.update_status_message("Определён тип голосового сообщения")
+            await self.download_file_from_tg()
+            if self.mode == "material":
+                await self.add_material_db()
+            elif self.mode == "file":
+                await self.add_file_db()
+
+        elif self.file_type == "photo":
+            await self.update_status_message("Определён тип изображения")
+            await self.download_file_from_tg()
+            if self.mode == "material":
+                await self.add_material_db()
+            elif self.mode == "file":
+                await self.add_file_db()
+
+        elif self.file_type == "audio":
+            await self.update_status_message("Определён тип аудиозаписи")
+            await self.download_file_from_tg()
+            if self.mode == "material":
+                await self.add_material_db()
+            elif self.mode == "file":
+                await self.add_file_db()
+
+        elif self.file_type == "animation":
+            await self.update_status_message("Определён тип анимации")
+            await self.download_file_from_tg()
+            if self.mode == "material":
+                await self.add_material_db()
+            elif self.mode == "file":
+                await self.add_file_db()
+
+        elif self.file_type == "document":
+            await self.update_status_message("Определён тип документа")
+            await self.download_file_from_tg()
+            if self.mode == "material":
+                await self.add_material_db()
+            elif self.mode == "file":
+                await self.add_file_db()
+
+        elif self.file_type == "video":
+            await self.update_status_message("Определён тип видеозаписи")
+            await self.download_file_from_tg()
+            if self.mode == "material":
+                await self.add_material_db()
+            elif self.mode == "file":
+                await self.add_file_db()
+
+        elif self.file_type == "unsupported":
+            await self.update_status_message("Данный документ не может быть загружен, так как формат не поддерживается")
 
 
 async def add_material_message(message: types.Message, state: FSMContext) -> None:
@@ -31,299 +336,4 @@ async def add_material_message(message: types.Message, state: FSMContext) -> Non
         await message.answer(text="У вас нет прав на добавление материалов")
 
 
-def add_material_generate_success_message(material: Material, set_to) -> dict:
-    if set_to == "statehw":
-        msg = {
-            "text": f'Материал успешно прикреплён к ДЗ!\n',
-            "reply_markup": get_homework_editing_buttons()
-        }
-    else:
-        msg = {
-            "text": f'Материал успешно загружен!\n'
-                    f'Наименование: {material.name}\n'
-                    f'Описание: {material.description}\n'
-                    f'ID: {material.id}\n',
-            "reply_markup": get_homework_editing_buttons()
-        }
-    return msg
 
-
-async def add_material_add(message: types.Message, state: FSMContext,  set_to: str = None, obj_id: int = None) -> None:
-    async def set_to_obj(mat_id):
-        if set_to == "statehw":
-            statedata = await state.get_data()
-            if statedata.get("new_hw"):
-                statedata["new_hw"]["materials"].append(mat_id)
-                await state.update_data(statedata)
-
-    def get_path(file_format: str) -> dict:
-        file_path_db = os.path.join("materials", f'{msgdata.get("name")}.{file_format}')
-        file_path = os.path.join(MEDIA_ROOT, file_path_db)
-        return {
-            "file_path_db": file_path_db,
-            "file_path": file_path
-        }
-
-    async def material_exists_validator() -> dict:
-        mat = await Material.objects.filter(tg_url=msgdata.get('tg_url')).afirst() if msgdata.get('tg_url') else None
-        if not mat:
-            mat_name = await Material.objects.filter(name=msgdata.get('name')).afirst()
-            if not mat_name:
-                return {"status": True}
-            else:
-                counter = 1
-                while True:
-                    new_name = f"{msgdata.get('name')}({counter})"
-                    mat_name_check = await Material.objects.filter(name=new_name).afirst()
-                    if mat_name_check:
-                        counter += 1
-                    else:
-                        msgdata['name'] = new_name
-                        return {"status": True}
-
-        else:
-            if set_to == "statehw":
-                await statusmessage.edit_text(
-                    text=f"Материал успешно прикреплён к ДЗ!"
-                )
-            else:
-                await statusmessage.edit_text(
-                    text=f"Материал не добавлен, так как уже существует\n"
-                         f"Наименование: {mat.name}\n"
-                         f"ID: {mat.id}"
-                )
-            return {"status": False,
-                    "material": mat}
-
-    async def animation_convert():
-        await statusmessage.edit_text("Идёт конвертация")
-        file_format = msgdata.get('format')
-        path = os.path.join(MEDIA_ROOT, "materials", f"{msgdata.get('name')}.{file_format}")
-        await bot.download(file=msgdata.get('tg_url'),
-                           destination=path)
-        if file_format != 'gif':
-            video = cv2.VideoCapture(path)
-            frames = []
-            while True:
-                ret, frame = video.read()
-                if not ret:
-                    break
-                frames.append(frame)
-            for i in range(len(frames)):
-                cv2.imwrite(f"{msgdata.get('name')}{i}.png", frames[i])
-            frame_images = [Image.open(f"{msgdata.get('name')}{i}.png") for i in range(len(frames))]
-            frame_images[0].save(f"{MEDIA_ROOT}/materials/{msgdata.get('name')}.gif",
-                                 format='GIF',
-                                 append_images=frame_images[1:],
-                                 save_all=True,
-                                 duration=100,
-                                 loop=0)
-            for i in range(len(frames)):
-                os.remove(f"{msgdata.get('name')}{i}.png")
-            return get_path("gif")
-
-    async def download_and_add(paths, redownload=True):
-        await statusmessage.edit_text(text="Начинаю загрузку..")
-        if redownload:
-            await bot.download(file=msgdata.get('tg_url'),
-                               destination=paths.get("file_path"))
-        new_mat = await Material.objects.acreate(
-            name=msgdata.get("name")[:200],
-            description=msgdata.get("description"),
-            file=paths.get("file_path_db"),
-            owner=owner,
-            tg_url=msgdata.get('tg_url'),
-            type=2
-        )
-        cat = await MaterialCategory.objects.aget_or_create(name="Импорт из TG")
-        await new_mat.category.aset([cat[0]])
-        await new_mat.asave()
-        await message.reply(
-            **add_material_generate_success_message(new_mat, set_to)
-        )
-        await statusmessage.delete()
-        if set_to:
-            await set_to_obj(new_mat.id)
-
-    statusmessage = await message.reply("Начинаю загрузку материала..")
-    msgdata = add_material_validate(message)
-    owner = await get_user(message.from_user.id)
-    if msgdata.get("type") == "text":
-        paths = get_path("txt")
-        await statusmessage.edit_text("Определён текстовый материал")
-        exists_validation = await material_exists_validator()
-        if exists_validation.get("status"):
-            with open(paths.get("file_path"), "w", encoding="utf-8") as file:
-                file.write(msgdata.get("text"))
-            try:
-                new_mat = await Material.objects.acreate(
-                    name=msgdata.get("name")[:200],
-                    description=msgdata.get("description"),
-                    file=paths.get("file_path_db"),
-                    owner=owner,
-                    type=2
-                )
-                await statusmessage.delete()
-                await message.reply(
-                    **add_material_generate_success_message(new_mat, set_to)
-                )
-                if set_to:
-                    await set_to_obj(new_mat.id)
-            except Exception as e:
-                await statusmessage.edit_text(
-                    text=f'Произошла ошибка при добавлении материала:\n{e}'
-                )
-        else:
-            if set_to:
-                await set_to_obj(exists_validation.get("material").id)
-    elif msgdata.get("type") == "voice":
-        await statusmessage.edit_text("Определён тип голосового сообщения")
-        paths = get_path("ogg")
-        exists_validation = await material_exists_validator()
-        if exists_validation.get("status"):
-            try:
-                await download_and_add(paths)
-            except Exception as e:
-                await statusmessage.edit_text(
-                    text=f'Произошла ошибка при добавлении материала:\n{e}'
-                )
-        else:
-            if set_to:
-                await set_to_obj(exists_validation.get("material").id)
-    elif msgdata.get("type") == "photo":
-        await statusmessage.edit_text("Определён тип изображения")
-        paths = get_path("png")
-        exists_validation = await material_exists_validator()
-        if exists_validation.get("status"):
-            try:
-                await download_and_add(paths)
-            except Exception as e:
-                await statusmessage.edit_text(
-                    text=f'Произошла ошибка при добавлении материала:\n{e}'
-                )
-        else:
-            if set_to:
-                await set_to_obj(exists_validation.get("material").id)
-    elif msgdata.get("type") == "audio":
-        await statusmessage.edit_text("Определён тип аудиозаписи")
-        paths = get_path("m4a")
-        exists_validation = await material_exists_validator()
-        if exists_validation.get("status"):
-            try:
-                await download_and_add(paths)
-            except Exception as e:
-                await statusmessage.edit_text(
-                    text=f'Произошла ошибка при добавлении материала:\n{e}'
-                )
-        else:
-            if set_to:
-                await set_to_obj(exists_validation.get("material").id)
-    elif msgdata.get("type") == "animation":
-        await statusmessage.edit_text("Определён тип анимации")
-        exists_validation = await material_exists_validator()
-        if exists_validation.get("status"):
-            try:
-                paths = await animation_convert()
-                await download_and_add(paths, False)
-            except Exception as e:
-                await statusmessage.edit_text(
-                    text=f'Произошла ошибка при добавлении материала:\n{e}'
-                )
-        else:
-            if set_to:
-                await set_to_obj(exists_validation.get("material").id)
-    elif msgdata.get("type") == "document":
-        await statusmessage.edit_text("Определён тип документа")
-        paths = get_path(msgdata.get("format"))
-        exists_validation = await material_exists_validator()
-        if exists_validation.get("status"):
-            try:
-                await download_and_add(paths)
-            except Exception as e:
-                await statusmessage.edit_text(
-                    text=f'Произошла ошибка при добавлении материала:\n{e}'
-                )
-        else:
-            if set_to:
-                await set_to_obj(exists_validation.get("material").id)
-    elif msgdata.get("type") == "video":
-        await statusmessage.edit_text("Определён тип видеозаписи")
-        paths = get_path("webm")
-        exists_validation = await material_exists_validator()
-        if exists_validation.get("status"):
-            try:
-                await download_and_add(paths)
-            except Exception as e:
-                await statusmessage.edit_text(
-                    text=f'Произошла ошибка при добавлении материала:\n{e}'
-                )
-        else:
-            if set_to:
-                await set_to_obj(exists_validation.get("material").id)
-    elif msgdata.get("type") == "unsupported":
-        await statusmessage.edit_text("Данный документ не может быть загружен, так как формат не поддерживается")
-
-
-def add_material_validate(message: types.Message) -> dict:
-    dt = f'Импорт из Telegram {datetime.now().strftime("%d.%m.%Y %H:%M")}'
-    description = message.caption if message.caption else ''
-    data = {
-        "type": None,
-        "tg_url": None,
-        "name": None,
-        "description": None,
-        "text": None
-    }
-    if message.text:
-        data["type"] = "text"
-        data["text"] = message.text
-        data["name"] = " ".join(message.text.split(" ")[:10])
-        data["description"] = dt
-    if message.voice:
-        data["type"] = "voice"
-        data["name"] = f'Голосовое сообщение TG {message.message_id}'
-        data["description"] = dt
-        data["tg_url"] = message.voice.file_id
-    if message.photo:
-        data["type"] = "photo"
-        data["name"] = f'Изображение TG {message.message_id}'
-        data["description"] = f'{description}\n{dt}'
-        data["tg_url"] = message.photo[-1].file_id
-    if message.audio:
-        file_name = message.audio.file_name
-        data["type"] = "audio"
-        data["name"] = file_name.split(".")[0] if file_name else f'Аудиозапись TG {message.message_id}'
-        data["description"] = f'{description}\n{dt}'
-        data["tg_url"] = message.audio.file_id
-    if message.animation:
-        file_name = message.animation.file_name
-        data["type"] = "animation"
-        data["name"] = file_name.split(".")[0] if file_name else f'Анимация TG {message.message_id}'
-        data["description"] = f'{description}\n{dt}'
-        data["tg_url"] = message.animation.file_id
-        data["format"] = message.animation.file_name.split(".")[-1] if message.animation.file_name else "mp4"
-    if message.document:
-        if not message.animation:
-            file_type = get_type(message.document.file_name.split(".")[-1])
-            if file_type != "unsupported":
-                file_name = message.document.file_name
-                data["type"] = "document"
-                data["name"] = file_name.split(".")[0] if file_name else f'Документ TG {message.message_id}'
-                data["description"] = f'{description}\n{dt}'
-                data["tg_url"] = message.document.file_id
-                data["format"] = file_name.split(".")[-1]
-            else:
-                data["type"] = "unsupported"
-    if message.video:
-        file_name = message.video.file_name
-        data["type"] = "video"
-        data["name"] = file_name.split(".")[0] if file_name else f'Видео TG {message.message_id}'
-        data["description"] = f'{description}\n{dt}'
-        data["tg_url"] = message.video.file_id
-    if data.get("name"):
-        validated_name = data.get("name")
-        for symbol in ["<", ">", ":", '"', "/", "\\", "|", "?", "*", "\n"]:
-            if symbol in validated_name:
-                validated_name = validated_name.replace(symbol, "")
-        data['name'] = validated_name[:75]
-    return data

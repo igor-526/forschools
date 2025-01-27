@@ -100,7 +100,7 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
                                        protect_content=protect)
         file_id = message.voice.file_id
     elif mat_type == "text_formats":
-        with open(material.file.path, "r") as textfile:
+        with open(material.file.path, "r", encoding="utf-16") as textfile:
             await bot.send_message(chat_id=tg_id,
                                    text=textfile.read()[:4096],
                                    reply_markup=get_keyboard_material_item(material, send_tg, sd),

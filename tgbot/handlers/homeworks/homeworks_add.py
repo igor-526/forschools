@@ -6,11 +6,12 @@ from homework.models import Homework
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.homeworks import (add_homework_select_lesson, add_homework_set_homework_message,
                                    add_homework_set_homework_ready, send_hw_materials, hw_for_curator_set)
-from tgbot.funcs.materials_add import add_material_add
+from tgbot.funcs.materials_add import FileParser
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import (HomeworkMenuCallback, HomeworkNewCallback,
                                                 HomeworkCallback, HomeworkNewSelectDateCallback,
                                                 HomeworkCuratorCallback, HomeworkNewSelectDateFakeCallback)
+from tgbot.keyboards.homework import get_homework_editing_buttons
 
 router = Router(name=__name__)
 
@@ -64,7 +65,7 @@ async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> 
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
                 F.text == "Показать прик. материалы")
-async def h_homework_sethw_materials(message: types.Message, state: FSMContext) -> None:
+async def h_homework_set_hw_materials(message: types.Message, state: FSMContext) -> None:
     sd = await state.get_data()
     if sd.get("new_hw") and sd.get("new_hw").get("materials"):
         await send_hw_materials(mat_ids=sd.get("new_hw").get("materials"),
@@ -80,9 +81,46 @@ async def h_homework_sethw_materials(message: types.Message, state: FSMContext) 
     await message.delete()
 
 
+@router.message(StateFilter(HomeworkNewFSM.change_menu),
+                F.media_group_id != None)
+async def h_homework_set_hw_add_media_group(message: types.Message, state: FSMContext, media_events=None):
+    if media_events is None:
+        media_events = []
+    materials_list = []
+    for media_event in media_events:
+        material = FileParser(
+            message=media_event,
+            mode="material",
+            success_text="Материал успешно прикреплён к ДЗ!",
+            reply_markup=get_homework_editing_buttons(),
+            add_time_stamp=False,
+            ignore_text=False
+        )
+        await material.download()
+        materials_list.append(material.ready_material.id)
+    state_data = await state.get_data()
+    state_data["new_hw"]["materials"].extend(materials_list)
+    await state.set_data(state_data)
+
+
 @router.message(StateFilter(HomeworkNewFSM.change_menu))
-async def h_homework_sethw_addmat(message: types.Message, state: FSMContext) -> None:
-    await add_material_add(message, state, "statehw")
+async def h_homework_set_hw_add_material(message: types.Message, state: FSMContext) -> None:
+    messages = [message]
+    if message.reply_to_message:
+        messages.append(message.reply_to_message)
+    for m in messages:
+        material = FileParser(
+            message=m,
+            mode="material",
+            success_text="Материал успешно прикреплён к ДЗ!",
+            reply_markup=get_homework_editing_buttons(),
+            add_time_stamp=False,
+            ignore_text=False
+        )
+        await material.download()
+        state_data = await state.get_data()
+        state_data["new_hw"]["materials"].append(material.ready_material.id)
+        await state.set_data(state_data)
 
 
 @router.callback_query(HomeworkNewCallback.filter())

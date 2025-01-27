@@ -6,7 +6,6 @@ from aiogram.types import CallbackQuery
 from django.db.models import Q
 from lesson.models import Lesson
 from material.models import Material
-from tgbot.funcs.fileutils import filechecker, filedownloader
 from tgbot.funcs.lessons import get_lesson_can_be_passed
 from tgbot.funcs.materials import send_material_item
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCuratorCallback
@@ -15,7 +14,7 @@ from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_b
                                       get_homework_editing_buttons, get_homework_curator_button,
                                       get_homework_add_ready_buttons, get_hw_log_edit_button,
                                       get_hw_log_delete_file_button)
-from tgbot.keyboards.default import cancel_keyboard, message_typing_keyboard
+from tgbot.keyboards.default import cancel_keyboard, homework_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
@@ -757,20 +756,13 @@ async def send_hw_answer(callback: CallbackQuery,
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие решение домашнего задания, "
                                     "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, "
-                                    "аудио, "
-                                    "видео или голосовые сообщения",
-                               reply_markup=message_typing_keyboard)
+                                    "аудио, видео или голосовые сообщения",
+                               reply_markup=homework_typing_keyboard)
         await state.set_state(HomeworkFSM.send_hw_files)
-        await state.update_data({'files': {
-            'text': [],
-            'photo': [],
-            'voice': [],
-            'audio': [],
-            'video': [],
-            'animation': [],
-            'document': []
-        }, 'action': 'send',
-            'hw_id': callback_data.hw_id})
+        await state.update_data({'files': [],
+                                 'comment': [],
+                                 'action': 'send',
+                                 'hw_id': callback_data.hw_id})
     else:
         await bot.send_message(callback.from_user.id,
                                text="На данный момент Вы не можете отправить решение")
@@ -801,43 +793,34 @@ async def send_hw_check(callback: CallbackQuery,
     if await get_access():
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие проверку домашнего задания, "
-                                    "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, аудио, "
-                                    "видео или голосовые сообщения",
-                               reply_markup=message_typing_keyboard)
+                                    "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, "
+                                    "фотографии, аудио, видео или голосовые сообщения",
+                               reply_markup=homework_typing_keyboard)
         await state.set_state(HomeworkFSM.send_hw_files)
-        await state.update_data({'files': {
-            'text': [],
-            'photo': [],
-            'voice': [],
-            'audio': [],
-            'video': [],
-            'animation': [],
-            'document': []
-        }, 'action': callback_data.action,
-            'hw_id': callback_data.hw_id})
+        await state.update_data({'files': [],
+                                 'comment': [],
+                                 'action': callback_data.action,
+                                 'hw_id': callback_data.hw_id})
     else:
         await bot.send_message(callback.from_user.id,
                                text="На данный момент Вы не можете проверить ДЗ")
 
 
 async def hw_send(message: types.Message, state: FSMContext):
-    async def get_hwlog_object(agreement=False):
+    async def get_hw_log_object(agreement=False):
+        query_params = {
+            "homework": hw,
+            "user": user,
+            "status": hwlog_status,
+            "comment": "\n".join(state_data['comment'])
+        }
         if agreement:
-            hw_log = await HomeworkLog.objects.acreate(homework=hw,
-                                                       user=user,
-                                                       comment=hwdata.get("comment"),
-                                                       status=hwlog_status,
-                                                       agreement={
-                                                           "accepted_dt": None,
-                                                           "accepted": False
-                                                       })
-        else:
-            hw_log = await HomeworkLog.objects.acreate(homework=hw,
-                                                       user=user,
-                                                       comment=hwdata.get("comment"),
-                                                       status=hwlog_status
-                                                       )
-        await hw_log.files.aset(hwdata.get("files_db"))
+            query_params["agreement"] = {
+                "accepted_dt": None,
+                "accepted": False
+            }
+        hw_log = await HomeworkLog.objects.acreate(**query_params)
+        await hw_log.files.aset(state_data["files"])
         await hw_log.asave()
         return hw_log
 
@@ -1028,32 +1011,29 @@ async def hw_send(message: types.Message, state: FSMContext):
                     }
                 )
 
-    data = await state.get_data()
-    if not filechecker(data):
+    state_data = await state.get_data()
+    if not state_data['files'] and not state_data['comment']:
         await message.answer("Вы не можете отправить пустой ответ. Пожалуйста, пришлите мне текст, фотографии, "
                              "аудио или голосовые сообщения")
         return
     hw = await (Homework.objects.select_related("teacher")
-                .select_related("listener").aget(pk=data.get("hw_id")))
+                .select_related("listener").aget(pk=state_data.get("hw_id")))
     user = await get_user(message.from_user.id)
     lesson = await hw.aget_lesson()
     lp = None
     if lesson:
         lp = await lesson.aget_learning_plan()
-
     is_listener = hw.listener == user
     is_teacher = hw.teacher == user
     is_curator = await lp.curators.filter(pk=user.id).aexists()
-
-    hwdata = await filedownloader(data, owner=user, t="ДЗ", error_reply=message)
     hwlog_status = None
-    hw_action = data.get('action')
+    hw_action = state_data.get('action')
     if hw_action == 'send':
         if is_listener:
             hwlog_status = 3
             await message.answer("Решение успешно отправлено\n"
                                  "Ожидайте ответа преподавателя")
-            await get_hwlog_object(False)
+            await get_hw_log_object(False)
             await notify_teacher("Новый ответ на ДЗ от ученика")
             if hw.for_curator:
                 await notify_curators("Ученик отправил решение ДЗ")
@@ -1066,7 +1046,7 @@ async def hw_send(message: types.Message, state: FSMContext):
             hwlog_status = 5
 
         if is_curator:
-            await get_hwlog_object(False)
+            await get_hw_log_object(False)
             await message.answer("Ответ был отправлен ученику")
             if hw_action == 'check_accept':
                 await notify_listener("Домашнее задание принято!")
@@ -1078,14 +1058,14 @@ async def hw_send(message: types.Message, state: FSMContext):
                 await notify_methodist("Куратор отправил домашнее задание на доработку")
         elif is_teacher:
             if lp and lp.metodist:
-                await get_hwlog_object(True)
+                await get_hw_log_object(True)
                 await message.answer("Ответ отправлен на согласование методисту")
                 if hw_action == 'check_accept':
                     await notify_methodist("Преподаватель принимает ДЗ. Требуется согласование")
                 elif hw_action == 'check_revision':
                     await notify_methodist("Преподаватель отправляет ДЗ на доработку. Требуется согласование")
             else:
-                await get_hwlog_object(False)
+                await get_hw_log_object(False)
                 await message.answer("Ответ был отправлен ученику")
                 if hw_action == 'check_accept':
                     await notify_listener("Домашнее задание принято!")
