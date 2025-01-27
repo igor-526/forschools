@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from chat.models import Message
 from tgbot.funcs.chats import chats_send_ask, chats_type_message, chats_notify
+from tgbot.funcs.homeworks import show_homework_queryset
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatShowMessageCallback
 from tgbot.finite_states.chats import ChatsFSM
@@ -43,6 +44,13 @@ async def h_chats_send(message: types.Message, state: FSMContext) -> None:
     chats = await user.aget_users_for_chat(message.from_user.id)
     await message.answer(text="Выберите пользователя для отправки сообщения:",
                          reply_markup=chats_get_users_buttons(chats))
+
+
+@router.message(StateFilter(ChatsFSM.send_message),
+                F.text == "Отправить решение ДЗ")
+async def h_chats_send_hw(message: types.Message, state: FSMContext) -> None:
+    await state.update_data(materials_action="send_hw")
+    await show_homework_queryset(message.from_user.id, state, "complete")
 
 
 @router.message(StateFilter(ChatsFSM.send_message),

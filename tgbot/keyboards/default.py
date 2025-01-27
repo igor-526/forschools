@@ -16,6 +16,6 @@ homework_typing_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[
 
 def get_chat_typing_keyboard(send_hw_button=False):
     keys = [[cancel_button], [send_button]]
-    # if send_hw_button:
-    #     keys.append([send_homework_button])
+    if send_hw_button:
+        keys.append([send_homework_button])
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=keys)

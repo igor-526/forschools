@@ -806,7 +806,7 @@ async def send_hw_check(callback: CallbackQuery,
                                text="На данный момент Вы не можете проверить ДЗ")
 
 
-async def hw_send(message: types.Message, state: FSMContext):
+async def hw_send(tg_id: int, state: FSMContext):
     async def get_hw_log_object(agreement=False):
         query_params = {
             "homework": hw,
@@ -1013,12 +1013,13 @@ async def hw_send(message: types.Message, state: FSMContext):
 
     state_data = await state.get_data()
     if not state_data['files'] and not state_data['comment']:
-        await message.answer("Вы не можете отправить пустой ответ. Пожалуйста, пришлите мне текст, фотографии, "
-                             "аудио или голосовые сообщения")
+        await bot.send_message(chat_id=tg_id,
+                               text="Вы не можете отправить пустой ответ. Пожалуйста, пришлите мне текст, фотографии, "
+                                    "аудио или голосовые сообщения")
         return
     hw = await (Homework.objects.select_related("teacher")
                 .select_related("listener").aget(pk=state_data.get("hw_id")))
-    user = await get_user(message.from_user.id)
+    user = await get_user(tg_id)
     lesson = await hw.aget_lesson()
     lp = None
     if lesson:
@@ -1031,14 +1032,16 @@ async def hw_send(message: types.Message, state: FSMContext):
     if hw_action == 'send':
         if is_listener:
             hwlog_status = 3
-            await message.answer("Решение успешно отправлено\n"
-                                 "Ожидайте ответа преподавателя")
+            await bot.send_message(chat_id=tg_id,
+                                   text="Решение успешно отправлено\n"
+                                        "Ожидайте ответа преподавателя")
             await get_hw_log_object(False)
             await notify_teacher("Новый ответ на ДЗ от ученика")
             if hw.for_curator:
                 await notify_curators("Ученик отправил решение ДЗ")
         else:
-            await message.answer("Вы не можете отправить решение на это ДЗ")
+            await bot.send_message(chat_id=tg_id,
+                                   text="Вы не можете отправить решение на это ДЗ")
     if hw_action in ['check_accept', 'check_revision']:
         if hw_action == 'check_accept':
             hwlog_status = 4
@@ -1047,7 +1050,8 @@ async def hw_send(message: types.Message, state: FSMContext):
 
         if is_curator:
             await get_hw_log_object(False)
-            await message.answer("Ответ был отправлен ученику")
+            await bot.send_message(chat_id=tg_id,
+                                   text="Ответ был отправлен ученику")
             if hw_action == 'check_accept':
                 await notify_listener("Домашнее задание принято!")
                 await notify_teacher("Куратор принял домашнее задание")
@@ -1059,14 +1063,16 @@ async def hw_send(message: types.Message, state: FSMContext):
         elif is_teacher:
             if lp and lp.metodist:
                 await get_hw_log_object(True)
-                await message.answer("Ответ отправлен на согласование методисту")
+                await bot.send_message(chat_id=tg_id,
+                                       text="Ответ отправлен на согласование методисту")
                 if hw_action == 'check_accept':
                     await notify_methodist("Преподаватель принимает ДЗ. Требуется согласование")
                 elif hw_action == 'check_revision':
                     await notify_methodist("Преподаватель отправляет ДЗ на доработку. Требуется согласование")
             else:
                 await get_hw_log_object(False)
-                await message.answer("Ответ был отправлен ученику")
+                await bot.send_message(chat_id=tg_id,
+                                       text="Ответ был отправлен ученику")
                 if hw_action == 'check_accept':
                     await notify_listener("Домашнее задание принято!")
                     if hw.for_curator:
@@ -1076,8 +1082,9 @@ async def hw_send(message: types.Message, state: FSMContext):
                     if hw.for_curator:
                         await notify_curators("Преподаватель отправил на доработку домашнее задание")
         else:
-            await message.answer("Вы не можете отправить решение на это ДЗ")
-    await send_menu(message.from_user.id, state)
+            await bot.send_message(chat_id=tg_id,
+                                   text="Вы не можете отправить решение на это ДЗ")
+    await send_menu(tg_id, state)
 
 
 async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
