@@ -263,8 +263,8 @@ async def add_homework_set_homework_ready(state: FSMContext,
             await send_menu(callback.from_user.id, state)
 
     async def notify_hw_changed():
-        st = await hw.aget_status()
-        if st.status in [2, 3, 5] and st.agreement.get("accepted"):
+        st = await hw.aget_status(False)
+        if st.status in [2, 3, 5] and st.agreement.get("accepted") in [True, None]:
             await homework_tg_notify(user,
                                      hw.listener.id,
                                      [hw],
@@ -278,6 +278,10 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                      f"Домашнее задание было изменено\n"
                                      f"Преподаватель: {hw.teacher.first_name} {hw.teacher.last_name}\n"
                                      f"Ученик: {hw.listener.first_name} {hw.listener.last_name}")
+            await homework_tg_notify(user,
+                                     hw.teacher.id,
+                                     [hw],
+                                     f"Домашнее задание было изменено\n")
 
     async def log_add_materials(old_mat=None, new_mat=None):
         if new_mat is None:
@@ -411,7 +415,7 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
             homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 3, 5],
                                     [{
                                         'obj': hw,
-                                        'hw_status': (await hw.aget_status()).status
+                                        'hw_status': (await hw.aget_status(True)).status
                                     } async for hw in Homework.objects.filter(listener=user)]))
             homeworks = [{
                 'name': hw.get("obj").name,
@@ -605,9 +609,13 @@ async def show_homework(callback: CallbackQuery,
     hw = await (Homework.objects.select_related("listener")
                 .select_related("teacher")
                 .aget(pk=callback_data.hw_id))
-    hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
+    hw_status = await hw.aget_status(True) if "Listener" in gp.get('groups') else await hw.aget_status(False)
+    print(hw_status.status)
+    if "Listener" in gp.get('groups') and hw_status.status == 7:
+        print("OPEN")
+        await hw.aopen()
     lesson = await hw.aget_lesson()
     lp = None
     if lesson:

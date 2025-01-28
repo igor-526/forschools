@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+
 from profile_management.models import NewUser
 from material.models import Material, File
 from django.db.models.signals import post_save
@@ -62,16 +64,23 @@ class Homework(models.Model):
     def __str__(self):
         return f'{self.name}'
 
-    def get_status(self, assigned=False):
-        if not assigned:
-            return HomeworkLog.objects.filter(homework=self).first()
-        else:
-            return HomeworkLog.objects.filter(homework=self,
-                                              status=7).first()
+    def get_status(self, assigned=False, accepted_only=False):
+        filter_params = {
+            'homework': self
+        }
+        if assigned:
+            filter_params['status'] = 7
+        if accepted_only:
+            return HomeworkLog.objects.filter(Q(**filter_params, agreement__accepted=True) |
+                                              Q(**filter_params, agreement={})).order_by("-dt").first()
+        return HomeworkLog.objects.filter(**filter_params).order_by("-dt").first()
 
-    async def aget_status(self):
-        status = await HomeworkLog.objects.filter(homework=self).select_related("user").afirst()
-        return status
+    async def aget_status(self, accepted_only=False):
+        if accepted_only:
+            return await (HomeworkLog.objects.filter(Q(homework=self, agreement__accepted=True) |
+                                                     Q(homework=self, agreement={})).select_related("user")
+                          .order_by("-dt").afirst())
+        return await HomeworkLog.objects.filter(homework=self).select_related("user").order_by("-dt").afirst()
 
     def open(self):
         HomeworkLog.objects.create(homework=self,
