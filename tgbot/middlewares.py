@@ -1,11 +1,6 @@
-import sys
-from pprint import pprint
 from typing import Callable, Dict, Any, Awaitable
 from typing import Union
 import logging
-
-from aiogram.fsm.context import FSMContext
-
 from profile_management.models import Telegram
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
@@ -14,11 +9,13 @@ from support.models import TelegramErrorsLog
 from tgbot.create_bot import bot
 import asyncio
 
-logger = logging.getLogger('TGBOT')
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(stream=sys.stdout)
-logger.addHandler(handler)
-handler.setFormatter(logging.Formatter(fmt='[%(asctime)s ACTION] %(message)s'))
+logger = logging.getLogger('tg_bot')
+logger.setLevel(logging.DEBUG)
+log_format = logging.Formatter('[%(asctime)s TG_BOT] %(message)s', datefmt='%H:%M:%S')
+file_handler = logging.FileHandler('logs/telegram_platform.log', 'a')
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(log_format)
+logger.addHandler(file_handler)
 
 
 async def middleware_authorization(tg_id, message_id, msg_text=None):
@@ -189,7 +186,6 @@ class MediaMiddleware(BaseMiddleware):
     ) -> Any:
 
         if isinstance(event, Message) and event.media_group_id:
-            print("MG MIDDLEWARE")
             try:
                 self.medias[event.media_group_id].append(event)
                 return

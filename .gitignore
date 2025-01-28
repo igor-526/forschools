@@ -4,5 +4,6 @@ __pycache__/
 kitaischool.env
 devserver.env
 media/*
+logs/*
 tgparser/sessions/*
 tgparser/logs/*

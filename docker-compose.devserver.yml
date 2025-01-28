@@ -46,6 +46,7 @@ services:
       - devserver_database
     volumes:
       - /home/sdo/devserver/media:/src/media
+      - /home/sdo/devserver/logs:/src/logs
       - /home/sdo/static:/src/static
     restart: always
 
