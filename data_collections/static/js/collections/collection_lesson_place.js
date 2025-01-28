@@ -1,5 +1,5 @@
 async function getLessonPlaces(){
-    await fetch('/api/v1/collections/lesson_places')
+    await fetch('/api/v1/collections/lesson_places/')
         .then(async response => await response.json())
         .then(set => lessonPlacesSet = set)
 }
