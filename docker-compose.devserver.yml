@@ -46,7 +46,6 @@ services:
       - devserver_database
     volumes:
       - /home/sdo/devserver/media:/src/media
-      - /home/sdo/devserver/logs:/src/logs
       - /home/sdo/static:/src/static
     restart: always
 
@@ -127,6 +126,7 @@ services:
     entrypoint: bash -c  "python manage.py runbot";
     volumes:
       - /home/sdo/devserver/media:/src/media
+      - /home/sdo/devserver/logs:/src/logs
     depends_on:
       - devserver_celery
       - devserver_redis

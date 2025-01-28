@@ -46,7 +46,6 @@ services:
       - kitaischool_database
     volumes:
       - /home/sdo/kitaischool/media:/src/media
-      - /home/sdo/kitaischool/logs:/src/logs
       - /home/sdo/static:/src/static
     restart: always
 
@@ -127,6 +126,7 @@ services:
     entrypoint: bash -c  "python manage.py runbot";
     volumes:
       - /home/sdo/kitaischool/media:/src/media
+      - /home/sdo/kitaischool/logs:/src/logs
     depends_on:
       - kitaischool_celery
       - kitaischool_redis
