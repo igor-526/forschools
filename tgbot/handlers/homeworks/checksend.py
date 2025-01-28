@@ -41,7 +41,7 @@ async def h_homework_send_ready(message: types.Message, state: FSMContext) -> No
 
 @router.message(StateFilter(HomeworkFSM.send_hw_files),
                 F.media_group_id != None)
-async def h_homework_keep_media_group(message: types.Message, state: FSMContext, media_events=None):
+async def h_homework_keep_media_group(message: types.Message, state: FSMContext, media_events=[]):
     files_list = []
     comments_list = []
     for media_event in media_events:

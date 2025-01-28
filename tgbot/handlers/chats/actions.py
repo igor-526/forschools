@@ -55,7 +55,7 @@ async def h_chats_send_hw(message: types.Message, state: FSMContext) -> None:
 
 @router.message(StateFilter(ChatsFSM.send_message),
                 F.media_group_id != None)
-async def h_chats_type_media_group(message: types.Message, state: FSMContext, media_events=None):
+async def h_chats_type_media_group(message: types.Message, state: FSMContext, media_events=[]):
     await chats_type_message(media_events, state)
 
 

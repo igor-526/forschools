@@ -49,7 +49,7 @@ async def h_mainmenu_settings(message: types.Message) -> None:
 
 @router.message(StateFilter(None),
                 F.media_group_id != None)
-async def h_mainmenu_message_media_group(message: types.Message, state: FSMContext, media_events=None):
+async def h_mainmenu_message_media_group(message: types.Message, state: FSMContext, media_events=[]):
     data = await state.get_data()
     if not data.get("files") and not data.get("text"):
         await state.set_data({'files': [],

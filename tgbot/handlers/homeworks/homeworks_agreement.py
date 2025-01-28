@@ -44,8 +44,9 @@ async def h_homework_agr_decline_send(message: types.Message, state: FSMContext)
 
 @router.message(StateFilter(HomeworkAgreementFSM.message),
                 F.media_group_id != None)
-async def h_homework_agr_comment_media_group(message: types.Message, state: FSMContext, media_events=None):
+async def h_homework_agr_comment_media_group(message: types.Message, state: FSMContext, media_events=[]):
     await f_homework_agr_add_comment(media_events, state)
+
 
 @router.message(StateFilter(HomeworkAgreementFSM.message))
 async def h_homework_agr_comment(message: types.Message, state: FSMContext) -> None:

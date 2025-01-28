@@ -83,7 +83,7 @@ async def h_homework_set_hw_materials(message: types.Message, state: FSMContext)
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
                 F.media_group_id != None)
-async def h_homework_set_hw_add_media_group(message: types.Message, state: FSMContext, media_events=None):
+async def h_homework_set_hw_add_media_group(message: types.Message, state: FSMContext, media_events=[]):
     materials_list = []
     for media_event in media_events:
         material = FileParser(
