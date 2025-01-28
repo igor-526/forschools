@@ -35,6 +35,7 @@ class Command(BaseCommand):
                 if not DEBUG:
                     dp.message.middleware.register(LastMessageMiddleware())
                     dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
+                dp.message.middleware.register(MediaMiddleware())
                 dp.startup.register(on_startup)
                 app = web.Application()
                 webhook_requests_handler = SimpleRequestHandler(
