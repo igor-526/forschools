@@ -46,6 +46,11 @@ async def h_homework_keep_media_group(message: types.Message, state: FSMContext,
         media_events = []
     files_list = []
     comments_list = []
+
+    print(message)
+    print(media_events)
+    print("________")
+
     for media_event in media_events:
         file = FileParser(
             message=media_event,
