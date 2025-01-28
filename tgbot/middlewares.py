@@ -1,5 +1,11 @@
+import sys
+from pprint import pprint
 from typing import Callable, Dict, Any, Awaitable
 from typing import Union
+import logging
+
+from aiogram.fsm.context import FSMContext
+
 from profile_management.models import Telegram
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
@@ -7,6 +13,12 @@ import traceback
 from support.models import TelegramErrorsLog
 from tgbot.create_bot import bot
 import asyncio
+
+logger = logging.getLogger('TGBOT')
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(stream=sys.stdout)
+logger.addHandler(handler)
+handler.setFormatter(logging.Formatter(fmt='[%(asctime)s ACTION] %(message)s'))
 
 
 async def middleware_authorization(tg_id, message_id, msg_text=None):
@@ -76,6 +88,41 @@ async def log_error(at: int = 0, tg_note: Telegram = None,
     )
 
 
+async def log_action(tg_user_note: Telegram | bool, data: Dict[str, Any], event: Message | CallbackQuery):
+    def get_message_info():
+        result = dict()
+        if isinstance(event, Message):
+            text = f'{event.text}' if event.text else event.caption
+            media = event.animation or event.audio or event.document or event.photo or event.video or event.voice
+            result = {"text": f"{text if text else 'без текста'}",
+                      "media": "с медиа" if media else "без медиа"}
+        if isinstance(event, CallbackQuery):
+            text = f'{event.message.text}' if event.message.text else event.message.caption
+            media = (event.message.animation or event.message.audio or event.message.document or event.message.photo or
+                     event.message.video or event.message.voice)
+            result = {"text": f"{text if text else 'без текста'}",
+                      "media": "с медиа" if media else "без медиа"}
+        return result
+
+    if isinstance(tg_user_note, Telegram):
+        message = f'{tg_user_note.user.first_name} {tg_user_note.user.last_name} ({tg_user_note.usertype}): '
+    else:
+        message = f'{data["event_from_user"]}: '
+    if isinstance(event, Message):
+        message += "сообщение\n"
+    else:
+        message += "callback\n"
+    state = data['state']
+    state_name = data['raw_state']
+    state_data = await state.get_data()
+    a_handler = data.get("handler").callback.__name__
+    message += f'state_name: {state_name}\n'
+    message += f'state_data: {state_data}\n'
+    message += f'handler: {a_handler}\n'
+    message += f'msg: {get_message_info()}'
+    logger.info(f'{message}\n')
+
+
 def get_error_message(exception: Exception) -> str:
     if "VOICE_MESSAGES_FORBIDDEN" in str(exception):
         error_message = ("Не получилось отправить Вам голосовое сообщение. Пожалуйста, проверьте настройки "
@@ -94,7 +141,7 @@ class LastMessageMiddleware(BaseMiddleware):
             data: Dict[str, Any]
     ) -> Any:
         tg_user_note = await middleware_authorization(event.from_user.id, event.message_id, event.text)
-        self.event = event
+        await log_action(tg_user_note, data, event)
         if tg_user_note:
             try:
                 return await handler(event, data)
@@ -115,6 +162,7 @@ class LastMessageCallbackMiddleware(BaseMiddleware):
             data: Dict[str, Any]
     ) -> Any:
         tg_user_note = await middleware_authorization(event.from_user.id, event.message.message_id)
+        await log_action(tg_user_note, data, event)
         if tg_user_note:
             try:
                 return await handler(event, data)
