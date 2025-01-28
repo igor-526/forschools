@@ -176,7 +176,7 @@ class LastMessageCallbackMiddleware(BaseMiddleware):
 
 
 class MediaMiddleware(BaseMiddleware):
-    def __init__(self, latency: Union[int, float] = 0.1):
+    def __init__(self, latency: Union[int, float] = 0.05):
         self.medias = {}
         self.latency = latency
         super(MediaMiddleware, self).__init__()
@@ -189,6 +189,7 @@ class MediaMiddleware(BaseMiddleware):
     ) -> Any:
 
         if isinstance(event, Message) and event.media_group_id:
+            print("MG MIDDLEWARE")
             try:
                 self.medias[event.media_group_id].append(event)
                 return
