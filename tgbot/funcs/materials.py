@@ -246,40 +246,48 @@ async def search_materials(message: types.Message, state: FSMContext) -> None:
 async def delete_material_from_hw(callback: CallbackQuery, callback_data: MaterialItemCallback, state: FSMContext):
     if callback.message.date + timedelta(hours=1) > datetime.now(tz=timezone.utc):
         if callback_data.obj_id:
-            hw = await Homework.objects.filter(id=callback_data.obj_id).afirst()
-            if hw:
-                await hw.materials.aset([hw.id async for hw in hw.materials.all().exclude(id=callback_data.mat_id)])
-                await callback.answer("Материала больше нет в ДЗ")
-                lesson = await hw.aget_lesson()
-                plan = await lesson.aget_learning_plan() if lesson else None
-                if plan:
-                    user = await get_user(callback.from_user.id)
-                    mat = await Material.objects.filter(id=callback_data.mat_id).afirst()
-                    await UserLog.objects.acreate(log_type=4,
-                                                  color="danger",
-                                                  learning_plan=plan,
-                                                  title=f"Из домашнего задания удалён материал",
-                                                  content={
-                                                      "list": [{
-                                                          "name": "Наименование занятия",
-                                                          "val": lesson.name
+            homework = await Homework.objects.filter(id=callback_data.obj_id).afirst()
+            if homework:
+                hw_group = await homework.homeworkgroups_set.afirst()
+                if hw_group:
+                    hws = [_ async for _ in
+                           hw_group.homeworks.select_related("teacher").select_related("listener").all()]
+                else:
+                    hws = [homework]
+
+                for hw in hws:
+                    await hw.materials.aset([hw.id async for hw in hw.materials.all().exclude(id=callback_data.mat_id)])
+                    lesson = await hw.aget_lesson()
+                    plan = await lesson.aget_learning_plan() if lesson else None
+                    if plan:
+                        user = await get_user(callback.from_user.id)
+                        mat = await Material.objects.filter(id=callback_data.mat_id).afirst()
+                        await UserLog.objects.acreate(log_type=4,
+                                                      color="danger",
+                                                      learning_plan=plan,
+                                                      title=f"Из домашнего задания удалён материал",
+                                                      content={
+                                                          "list": [{
+                                                              "name": "Наименование занятия",
+                                                              "val": lesson.name
+                                                          },
+                                                              {
+                                                                  "name": "Дата занятия",
+                                                                  "val": lesson.date.strftime("%d.%m.%Y")
+                                                              }
+                                                          ],
+                                                          "text": []
                                                       },
-                                                          {
-                                                              "name": "Дата занятия",
-                                                              "val": lesson.date.strftime("%d.%m.%Y")
-                                                          }
-                                                      ],
-                                                      "text": []
-                                                  },
-                                                  files=[{
-                                                      "type": get_type(mat.file.name.split('.')[-1]),
-                                                      "href": mat.file.url
-                                                  }],
-                                                  buttons=[{"inner": "ДЗ",
-                                                            "href": f"/homeworks/{hw.id}"},
-                                                           {"inner": "Занятие",
-                                                            "href": f"/lessons/{lesson.id}"}],
-                                                  user=user)
+                                                      files=[{
+                                                          "type": get_type(mat.file.name.split('.')[-1]),
+                                                          "href": mat.file.url
+                                                      }],
+                                                      buttons=[{"inner": "ДЗ",
+                                                                "href": f"/homeworks/{hw.id}"},
+                                                               {"inner": "Занятие",
+                                                                "href": f"/lessons/{lesson.id}"}],
+                                                      user=user)
+                await callback.answer("Материала больше нет в ДЗ")
             else:
                 await callback.answer("Ошибка. Домашнее задание не найдено")
         else:

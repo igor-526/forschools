@@ -334,20 +334,28 @@ async def add_homework_set_homework_ready(state: FSMContext,
         current_deadline.get("month"),
         current_deadline.get("day")) if current_deadline else None
     if hw_id:
-        hw = await Homework.objects.select_related("teacher").select_related("listener").aget(id=hw_id)
-        hw.name = statedata.get("new_hw").get("name")
-        hw.description = statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description") \
-            else "-"
-        hw.deadline = current_deadline_dt
-        await hw.asave()
-        old_materials = [mat.id async for mat in hw.materials.all()]
-        await hw.materials.aset(statedata.get("new_hw").get("materials"))
-        await hw.asave()
-        lesson = await hw.aget_lesson()
+        homework = await Homework.objects.select_related("teacher").select_related("listener").aget(id=hw_id)
+
+        hw_group = await homework.homeworkgroups_set.afirst()
+        if hw_group:
+            hws = [_ async for _ in hw_group.homeworks.select_related("teacher").select_related("listener").all()]
+        else:
+            hws = [homework]
+
+        for hw in hws:
+            hw.name = statedata.get("new_hw").get("name")
+            hw.description = statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description") \
+                else "-"
+            hw.deadline = current_deadline_dt
+            await hw.asave()
+            old_materials = [mat.id async for mat in hw.materials.all()]
+            await hw.materials.aset(statedata.get("new_hw").get("materials"))
+            await hw.asave()
+            lesson = await hw.aget_lesson()
+            await log_add_materials(old_materials, statedata.get("new_hw").get("materials"))
+            await notify_hw_changed()
         await message.answer(text="ДЗ успешно изменено",
                              reply_markup=None)
-        await log_add_materials(old_materials, statedata.get("new_hw").get("materials"))
-        await notify_hw_changed()
         await send_menu(message.from_user.id, state)
     else:
         lesson = await Lesson.objects.aget(pk=statedata.get("new_hw").get("lesson_id"))
