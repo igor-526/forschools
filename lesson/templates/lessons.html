@@ -24,6 +24,7 @@
             </li>
             <li class="nav-item">
                 <button id="lessonsTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i>Сбросить</button>
+                <button id="lessonsTableOpenHomeworksButton" data-opened="false" type="button" class="btn btn-sm btn-outline-primary mx-1" role="button"><i class="bi bi-eye"></i> ДЗ</button>
             </li>
         </ul>
 
@@ -106,6 +107,8 @@
 {% block static_js %}
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+    <script src="{% static 'js/homework/homework_utils.js' %}"></script>
+    <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_main.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_main_filters.js' %}"></script>
 {% endblock %}

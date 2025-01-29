@@ -117,8 +117,8 @@ function homeworksShow(homeworks, clear=true){
             new bootstrap.Tooltip(tdName)
         }
         tdName.innerHTML += `<a href="/homeworks/${hw.id}">${hw.name}</a>`
-        tdTeacher.innerHTML = `<a href="/profile/${hw.teacher.id}">${hw.teacher.first_name} ${hw.teacher.last_name}</a>`
-        tdListener.innerHTML = `<a href="/profile/${hw.listener.id}">${hw.listener.first_name} ${hw.listener.last_name}</a>`
+        tdTeacher.innerHTML = getUsersString([hw.teacher])
+        tdListener.innerHTML = getUsersString([hw.listener])
         if (hw.assigned){
             tdAssigned.innerHTML = new Date(hw.assigned).toLocaleDateString()
         }
