@@ -55,7 +55,7 @@ function lessonsGet(more=false){
     }
     lessonsAPIGetAll(lessonsCurrentOffset, lessonsCurrentStatus, lessonsTableFilterTeachersSelected,
         lessonsTableFilterListenersSelected, lessonsTableFilterDateStart, lessonsTableFilterDateEnd,
-        lessonsTableFilterHW).then(request => {
+        lessonsTableFilterHW, lessonsTableFilterName, lessonsTableFilterComment).then(request => {
         switch (request.status){
             case 200:
                 lessonsShow(request.response, !more)
@@ -310,6 +310,8 @@ const lessonsTableShowMoreButton = document.querySelector("#lessonsTableShowMore
 const lessonsTableOpenHomeworksButton = document.querySelector("#lessonsTableOpenHomeworksButton")
 
 //Filters
+let lessonsTableFilterName = null
+let lessonsTableFilterComment = null
 let lessonsTableFilterTeachersSelected
 let lessonsTableFilterListenersSelected
 let lessonsTableFilterDateStart = null

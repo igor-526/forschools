@@ -32,7 +32,18 @@
             <table class="table table-hover">
                 <thead>
                 <tr>
-                    <th scope="col">Наименование</th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Наименование</b></button>
+                            <ul class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <input id="lessonsTableFilterNameField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                    <button id="lessonsTableFilterNameErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
                     <th scope="col">
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
@@ -81,7 +92,7 @@
                                 <b>ДЗ</b></button>
                             <ul class="dropdown-menu" style="min-width: 175px;">
                                 <li class="mx-1">
-                                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                                    <div class="btn-group" role="group" aria-label="">
                                         <input type="radio" class="btn-check" name="hw_filter" id="lessonsTableFilterHWAll" autocomplete="off" checked>
                                         <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterHWAll">Все</label>
 
@@ -95,7 +106,28 @@
                             </ul>
                         </div>
                     </th>
-                    {% if is_admin %}<th scope="col">Комментарий</th>{% endif %}
+                    {% if is_admin %}
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Комментарий</b></button>
+                            <ul class="dropdown-menu" style="min-width: 320px;">
+                                <li class="mx-1">
+                                    <div class="btn-group" role="group" aria-label="">
+                                        <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentAll" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentAll">Все</label>
+
+                                        <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentTrue" autocomplete="off">
+                                        <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentTrue">С комментарием</label>
+
+                                        <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentFalse" autocomplete="off">
+                                        <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentFalse">Без комментария</label>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    {% endif %}
                 </tr>
                 </thead>
                 <tbody id="LessonsTableBody"></tbody>

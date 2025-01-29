@@ -92,6 +92,11 @@ function homeworksFilterEraseListeners(){
         })
     }
 
+    function eraseNameField(){
+        homeworksTableFilterNameField.value = ""
+        homeworksFilterName = null
+    }
+
     function eraseDateStartField(){
         homeworksTableFilterDateStartField.value = ""
         homeworksFilterDateFrom = null
@@ -137,6 +142,7 @@ function homeworksFilterEraseListeners(){
         cancelListenersSearchField()
         eraseDateChangedStartField()
         eraseDateChangedEndField()
+        eraseNameField()
         homeworksFilterCurrentLesson = null
         homeworksGet()
     })
@@ -170,7 +176,10 @@ function homeworksFilterEraseListeners(){
         eraseDateChangedEndField()
         homeworksGet()
     })
-
+    homeworksTableFilterNameErase.addEventListener("click", function () {
+        eraseNameField()
+        homeworksGet()
+    })
 }
 
 function homeworksFilterSearchListeners(){
@@ -239,6 +248,10 @@ function homeworksFilterListeners(){
             homeworksGet()
         }
     })
+    homeworksTableFilterNameField.addEventListener("input", function () {
+        homeworksFilterName = homeworksTableFilterNameField.value.trim() === "" ? null : homeworksTableFilterNameField.value.trim()
+        homeworksGet()
+    })
 }
 
 //Reset Buttons
@@ -251,8 +264,10 @@ const homeworksTableFilterDateEndFieldErase = document.querySelector("#homeworks
 const homeworksTableFilterListenerSearchFieldReset = document.querySelector("#homeworksTableFilterListenerSearchFieldReset")
 const homeworksTableFilterLastChangeDateStartFieldErase = document.querySelector("#homeworksTableFilterLastChangeDateStartFieldErase")
 const homeworksTableFilterLastChangeDateEndFieldErase = document.querySelector("#homeworksTableFilterLastChangeDateEndFieldErase")
+const homeworksTableFilterNameErase = document.querySelector("#homeworksTableFilterNameErase")
 
 //Fields
+const homeworksTableFilterNameField = document.querySelector("#homeworksTableFilterNameField")
 const homeworksTableFilterTeacherSearchField = document.querySelector("#homeworksTableFilterTeacherSearchField")
 const homeworksTableFilterListenerSearchField = document.querySelector("#homeworksTableFilterListenerSearchField")
 const homeworksTableFilterDateStartField = document.querySelector("#homeworksTableFilterDateStartField")

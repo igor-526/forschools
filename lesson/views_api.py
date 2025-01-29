@@ -42,6 +42,8 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")
         has_hw = self.request.query_params.get("has_hw")
+        name = self.request.query_params.get("name")
+        has_comment = self.request.query_params.get("comment")
         if lesson_status:
             query['status'] = lesson_status
         if ds:
@@ -58,6 +60,13 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
             query['hw_count'] = 0
         elif has_hw == "true":
             query['hw_count__gt'] = 0
+        if name:
+            query['name__icontains'] = name
+        if has_comment == "false" and self.request.user.groups.filter(name="Admin").exists():
+            query['admin_comment__isnull'] = True
+        elif has_comment == "true" and self.request.user.groups.filter(name="Admin").exists():
+            query['admin_comment__isnull'] = False
+
         if query:
             queryset = queryset.filter(**query)
         if teachers:

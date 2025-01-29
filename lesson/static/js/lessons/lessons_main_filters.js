@@ -1,4 +1,7 @@
 function lessonsFiltersMain(){
+    if (isAdmin){
+        lessonsFilterSetCommentListeners()
+    }
     lessonsFilterResetListeners()
     lessonsFilterSearchListeners()
     lessonsFilterSetHWListeners()
@@ -22,7 +25,7 @@ function lessonsFiltersMain(){
                 break
         }
     })
-    lessonsFilterSetDateListeners()
+    lessonsFilterSetFieldsInputListeners()
 }
 
 function lessonsFilterSearchListeners(){
@@ -114,7 +117,7 @@ function lessonsFilterSetListeners(list = []){
     })
 }
 
-function lessonsFilterSetDateListeners(){
+function lessonsFilterSetFieldsInputListeners(){
     function validate(){
         if (lessonsTableFilterDateStartField.value !== "" || lessonsTableFilterDateEndField.value !== ""){
             const ds = new Date(lessonsTableFilterDateStartField.value)
@@ -147,8 +150,14 @@ function lessonsFilterSetDateListeners(){
         }
     }
 
+    function nameListener(){
+        lessonsTableFilterName = lessonsTableFilterNameField.value.trim() === "" ? null : lessonsTableFilterNameField.value.trim()
+        lessonsGet()
+    }
+
     lessonsTableFilterDateStartField.addEventListener("input", startListener)
     lessonsTableFilterDateEndField.addEventListener("input", endListener)
+    lessonsTableFilterNameField.addEventListener("input", nameListener)
 }
 
 function lessonsFilterSetHWListeners(){
@@ -162,6 +171,21 @@ function lessonsFilterSetHWListeners(){
     })
     lessonsTableFilterHWFalse.addEventListener("change", function () {
         lessonsTableFilterHW = "false"
+        lessonsGet()
+    })
+}
+
+function lessonsFilterSetCommentListeners(){
+    lessonsTableFilterCommentAll.addEventListener("change", function () {
+        lessonsTableFilterComment = null
+        lessonsGet()
+    })
+    lessonsTableFilterCommentTrue.addEventListener("change", function () {
+        lessonsTableFilterComment = "true"
+        lessonsGet()
+    })
+    lessonsTableFilterCommentFalse.addEventListener("change", function () {
+        lessonsTableFilterComment = "false"
         lessonsGet()
     })
 }
@@ -209,11 +233,23 @@ function lessonsFilterResetListeners(){
         lessonsTableFilterDateEnd = null
     }
 
+    function resetName(){
+        lessonsTableFilterNameField.value = ""
+        lessonsTableFilterName = null
+    }
+
     function resetHW(){
         lessonsTableFilterHW = null
         lessonsTableFilterHWAll.checked = true
         lessonsTableFilterHWTrue.checked = false
         lessonsTableFilterHWFalse.checked = false
+    }
+
+    function resetComment(){
+        lessonsTableFilterComment = null
+        lessonsTableFilterCommentAll.checked = true
+        lessonsTableFilterCommentTrue.checked = false
+        lessonsTableFilterCommentFalse.checked = false
     }
 
     lessonsTableFilterTeacherSearchFieldErase.addEventListener("click", function () {
@@ -230,16 +266,30 @@ function lessonsFilterResetListeners(){
         resetDateEnd()
         lessonsGet()
     })
+    lessonsTableFilterNameErase.addEventListener("click", function (){
+        resetName()
+        lessonsGet()
+    })
     lessonsTableFilterResetAll.addEventListener("click", function (){
         resetTeacherSearch(true)
         resetListenerSearch(true)
         resetDateStart()
         resetDateEnd()
+        resetName()
         resetHW()
+        if (isAdmin){
+            resetComment()
+        }
         lessonsGet()
     })
 }
 
+let lessonsTableFilterCommentAll = isAdmin ? document.querySelector("#lessonsTableFilterCommentAll") : null
+let lessonsTableFilterCommentTrue = isAdmin ? document.querySelector("#lessonsTableFilterCommentTrue") : null
+let lessonsTableFilterCommentFalse = isAdmin ? document.querySelector("#lessonsTableFilterCommentFalse") : null
+
+const lessonsTableFilterNameField = document.querySelector("#lessonsTableFilterNameField")
+const lessonsTableFilterNameErase = document.querySelector("#lessonsTableFilterNameErase")
 const lessonsTableFilterTeacherList = document.querySelector("#lessonsTableFilterTeacherList")
 const lessonsTableFilterTeacherSearchField = document.querySelector("#lessonsTableFilterTeacherSearchField")
 const lessonsTableFilterTeacherSearchFieldErase = document.querySelector("#lessonsTableFilterTeacherSearchFieldErase")

@@ -34,9 +34,11 @@ function homeworksGet(more=false){
     if (!more && homeworksCurrentOffset !== 0){
         userLogsCurrentOffset = 0
     }
-    homeworkAPIGet(homeworksCurrentOffset, homeworksFilterCurrentLesson, homeworksFilterCurrentStatus,
-        homeworksFilterSelectedTeachers, homeworksFilterSelectedListeners, homeworksFilterDateFrom,
-        homeworksFilterDateTo, homeworksFilterDateChangedFrom, homeworksFilterDateChangedTo).then(request => {
+    homeworkAPIGet(homeworksCurrentOffset, homeworksFilterCurrentLesson,
+        homeworksFilterCurrentStatus, homeworksFilterSelectedTeachers,
+        homeworksFilterSelectedListeners, homeworksFilterDateFrom,
+        homeworksFilterDateTo, homeworksFilterDateChangedFrom,
+        homeworksFilterDateChangedTo, homeworksFilterName).then(request => {
         switch (request.status){
             case 200:
                 homeworksShow(request.response, !more)
@@ -137,6 +139,7 @@ function homeworksShow(homeworks, clear=true){
 //Filtering
 let homeworksCurrentOffset = 0
 let homeworksFilterCurrentLesson
+let homeworksFilterName = null
 let homeworksFilterCurrentStatus = null
 let homeworksFilterSelectedTeachers = []
 let homeworksFilterSelectedListeners = []

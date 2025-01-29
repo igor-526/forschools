@@ -54,11 +54,17 @@ async function lessonsAPIReplaceTeacher(teacherID, lesson){
 }
 
 async function lessonsAPIGetAll(offset=0, status=null, teachers=[], listeners=[],
-                                ds= null, de= null, has_hw=null){
+                                ds= null, de= null, has_hw=null, name=null, comment=null){
     let url = '/api/v1/lessons/'
     const searchParams=[]
     if (offset){
         searchParams.push(`offset=${offset}`)
+    }
+    if (name){
+        searchParams.push(`name=${name}`)
+    }
+    if (comment){
+        searchParams.push(`comment=${comment}`)
     }
     if (status){
         searchParams.push(`status=${status}`)

@@ -26,12 +26,15 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")
         lesson = self.request.query_params.get("lesson")
+        name = self.request.query_params.get("name")
         if teachers:
             query['teacher__id__in'] = teachers
         if listeners:
             query['listener__id__in'] = listeners
         if lesson:
             query['lesson'] = lesson
+        if name:
+            query['name__icontains'] = name
         q |= Q(**query)
         queryset = Homework.objects.filter(q)
         if queryset:
