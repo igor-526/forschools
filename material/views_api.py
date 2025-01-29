@@ -1,7 +1,10 @@
+import os.path
+from dls.settings import BASE_DIR
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .models import Material
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .serializers import MaterialSerializer
@@ -77,3 +80,19 @@ class MaterialAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
         material.visible = False
         material.save()
         return Response({"status": 'success'}, status=status.HTTP_200_OK)
+
+
+class MaterialFileTextAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        folder = request.query_params.get('folder')
+        file = request.query_params.get('file')
+        path = os.path.join(BASE_DIR, "media", folder, file)
+        try:
+            with open(path, "r", encoding="utf-16") as textfile:
+                result = textfile.read()
+        except (UnicodeDecodeError, UnicodeError):
+            with open(path, "r", encoding="utf-8") as textfile:
+                result = textfile.read()
+        except FileNotFoundError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(result, status=status.HTTP_200_OK)

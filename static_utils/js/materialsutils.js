@@ -52,9 +52,13 @@ function materialToHTMLMobile(href=null, type=null) {
                 return getCard(video)
             case "text_formats":
                 const p = document.createElement("p")
+                const splittedHref = href.split("/")
+                const folder = splittedHref[splittedHref.length-2]
+                const file = splittedHref[splittedHref.length-1]
+                href = `/api/v1/materials/get_text/?folder=${folder}&file=${file}`
                 fetch(href).then(async request => {
                     if (request.status === 200) {
-                        p.innerHTML = await request.text()
+                        p.innerHTML = await request.json()
                     } else {
                         p.innerHTML = "Произошла ошибка при загрузке материала"
                     }
@@ -98,14 +102,26 @@ function materialsUtilsPreview(matID){
 
     function getText(href){
         const p = document.createElement("p")
+        const splittedHref = href.split("/")
+        const folder = splittedHref[splittedHref.length-2]
+        const file = splittedHref[splittedHref.length-1]
+        href = `/api/v1/materials/get_text/?folder=${folder}&file=${file}`
         fetch(href).then(async request => {
             if (request.status === 200) {
-                p.innerHTML = await request.text()
+                p.innerHTML = await request.json()
             } else {
                 p.innerHTML = "Произошла ошибка при загрузке материала"
             }
         })
         return p
+    }
+
+    function getPDF(href){
+        const pdf = document.createElement("embed")
+        pdf.type = "application/pdf"
+        pdf.src = href
+        pdf.style = "width: 100%; height: 700px;"
+        return pdf
     }
 
     function getUnsupported(){
@@ -134,6 +150,9 @@ function materialsUtilsPreview(matID){
             case "text_formats":
                 return {title: "Текст",
                     elem: getText(href)}
+            case "pdf_formats":
+                return {title: "PDF файл",
+                    elem: getPDF(href)}
             default:
                 return {title: "Не поддерживается",
                     elem: getUnsupported()}
@@ -182,14 +201,26 @@ function materialsUtilsFilePreviewByHref(type, href){
 
     function getText(href){
         const p = document.createElement("p")
+        const splittedHref = href.split("/")
+        const folder = splittedHref[splittedHref.length-2]
+        const file = splittedHref[splittedHref.length-1]
+        href = `/api/v1/materials/get_text/?folder=${folder}&file=${file}`
         fetch(href).then(async request => {
             if (request.status === 200) {
-                p.innerHTML = await request.text()
+                p.innerHTML = await request.json()
             } else {
                 p.innerHTML = "Произошла ошибка при загрузке материала"
             }
         })
         return p
+    }
+
+    function getPDF(href){
+        const pdf = document.createElement("embed")
+        pdf.type = "application/pdf"
+        pdf.src = href
+        pdf.style = "width: 100%; height: 700px;"
+        return pdf
     }
 
     function getUnsupported(){
@@ -215,6 +246,9 @@ function materialsUtilsFilePreviewByHref(type, href){
             case "video_formats":
                 return {title: "Видео",
                     elem: getVideo(href)}
+            case "pdf_formats":
+                return {title: "PDF файл",
+                    elem: getPDF(href)}
             case "text_formats":
                 return {title: "Текст",
                     elem: getText(href)}

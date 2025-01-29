@@ -31,8 +31,8 @@ async def h_homework_edit(callback: CallbackQuery,
             "deadline": {
                 'day': hw.deadline.day,
                 'month': hw.deadline.month,
-                'year': hw.deadline.year,
-            },
+                'year': hw.deadline.year
+            } if hw.deadline else None,
         },
         "messages_to_delete": []
     })
