@@ -58,13 +58,19 @@ async def chats_show(message: types.Message, state: FSMContext):
 async def chats_type_message(messages: list[types.Message], state: FSMContext):
     user = await get_user(messages[0].from_user.id)
     is_listener = await user.groups.filter(name="Listener").aexists()
+    if is_listener:
+        success_text = ("Если вы отправляете сообщение, связанное с выполнением домашнего задания, нажмите кнопку "
+                        "'<b>Отправить решение ДЗ</b>'. Если ваш вопрос или сообщение не связано с домашним заданием, "
+                        "выберите кнопку '<b>Отправить</b>'")
+    else:
+        success_text = "Для отправки сообщения нажмите кнопку '<b>Отправить</b>' или добавьте ещё сообщение"
     files_list = []
     comments_list = []
     for m in messages:
         file = FileParser(
             message=m,
             mode="file",
-            success_text="Для отправки сообщения нажмите кнопку '<b>Отправить</b>' или добавьте ещё сообщение",
+            success_text=success_text,
             reply_markup=get_chat_typing_keyboard(is_listener),
             add_time_stamp=False,
             ignore_text=True
