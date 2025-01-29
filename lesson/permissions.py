@@ -13,6 +13,13 @@ class CanReplaceTeacherMixin(LoginRequiredMixin):
         raise PermissionDenied('Permission denied')
 
 
+class CanEditLessonAdminComment(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Admin').exists():
+            return super().dispatch(request, *args, **kwargs)
+        raise PermissionDenied('Permission denied')
+
+
 class CanSeeLessonMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         usergroups = get_usergroups(request.user)

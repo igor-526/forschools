@@ -16,7 +16,8 @@ class LessonPage(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = {'title': 'Занятия',
                    'menu': get_menu(request.user),
-                   'plans_button': plans_button(request)}
+                   'plans_button': plans_button(request),
+                   'is_admin': request.user.groups.filter(name='Admin').exists()}
         return render(request, self.template_name, context)
 
 

@@ -118,8 +118,11 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
 
     def get_lessons(self, plan_id: int):
         query_reviews = {"lesson__learningphases__learningplan__id": plan_id}
-        query_user_logs = {"log_type": 2,
-                           "learning_plan__id": plan_id}
+        query_user_logs = {"learning_plan__id": plan_id}
+        if self.request.user.groups.filter(name="Admin").exists():
+            query_user_logs["log_type__in"] = [2, 5]
+        else:
+            query_user_logs["log_type"] = 2
         date_from = self.request.query_params.get('date_from')
         if date_from:
             date_from = datetime.strptime(date_from.split("T")[0], '%Y-%m-%d')

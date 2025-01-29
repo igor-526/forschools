@@ -69,7 +69,7 @@ function lessonsGet(more=false){
     })
 }
 
-function lessonsShow(list, clear=true){
+function lessonsShow(lessons, clear=true, replace_element=null){
     function getCollapseElement(lessonID){
         const tr = document.createElement("tr")
         const td = document.createElement("td")
@@ -101,16 +101,6 @@ function lessonsShow(list, clear=true){
 
     function getLessonElement(lesson, collapse){
         const tr = document.createElement("tr")
-        const tdName = document.createElement("td")
-        const tdDate = document.createElement("td")
-        const tdTeacher = document.createElement("td")
-        const tdListeners = document.createElement("td")
-        const tdHomeworks = document.createElement("td")
-        const tdHomeworksButton = document.createElement("button")
-        const tdActions = document.createElement("td")
-        const tdActionsGoA = document.createElement("a")
-        const tdActionsGoButton = document.createElement("button")
-
         switch (lesson.status){
             case 0:
                 if (lesson.awaiting_action){
@@ -124,50 +114,70 @@ function lessonsShow(list, clear=true){
                 tr.classList.add("table-danger")
                 break
         }
+
+        const tdName = document.createElement("td")
+        tdName.innerHTML = `<a href="/lessons/${lesson.id}">${lesson.name}</a>`
+        tr.insertAdjacentElement("beforeend", tdName)
+
+        const tdDate = document.createElement("td")
+        tdDate.innerHTML = getLessonDateTimeRangeString(lesson)
+        tr.insertAdjacentElement("beforeend", tdDate)
+
+        const tdTeacher = document.createElement("td")
+        tdTeacher.innerHTML = getUsersString([lesson.teacher])
+        tr.insertAdjacentElement("beforeend", tdTeacher)
+
+        const tdListeners = document.createElement("td")
+        tdListeners.innerHTML = getUsersString(lesson.listeners)
+        tr.insertAdjacentElement("beforeend", tdListeners)
+
+        const tdHomeworks = document.createElement("td")
+        const tdHomeworksButton = document.createElement("button")
         tdHomeworksButton.classList.add("btn", `btn-${lesson.hw_data.color}`)
         tdHomeworksButton.innerHTML = lesson.hw_data.count
         tdHomeworksButton.addEventListener("click", function (){
             lessonsShowHomeworkCollapse([collapse])
         })
         tdHomeworks.insertAdjacentElement("beforeend", tdHomeworksButton)
-
-
-
-        // switch (lesson.hw_data.count){
-        //     case 0:
-        //         tdHomeworksA.href = "#"
-        //         break
-        //     default:
-        //         tdHomeworksA.href = `/homeworks/#lesson=${lesson.id}`
-        //         break
-        // }
-        tdActionsGoA.href = `/lessons/${lesson.id}`
-        tdActionsGoButton.type = "button"
-        tdActionsGoButton.classList.add("btn", "btn-primary")
-        tdActionsGoButton.innerHTML = '<i class="bi bi-chevron-right"></i>'
-        tdActionsGoA.insertAdjacentElement("beforeend", tdActionsGoButton)
-        tr.insertAdjacentElement("beforeend", tdName)
-        tr.insertAdjacentElement("beforeend", tdDate)
-        tr.insertAdjacentElement("beforeend", tdTeacher)
-        tr.insertAdjacentElement("beforeend", tdListeners)
         tr.insertAdjacentElement("beforeend", tdHomeworks)
-        tr.insertAdjacentElement("beforeend", tdActions)
-        tdActions.insertAdjacentElement("beforeend", tdActionsGoA)
-        tdName.innerHTML = lesson.name
-        tdDate.innerHTML = getLessonDateTimeRangeString(lesson)
-        tdTeacher.innerHTML = `<a href="/profile/${lesson.teacher.id}">${lesson.teacher.first_name} ${lesson.teacher.last_name}</a>`
-        tdListeners.innerHTML = getUsersString(lesson.listeners)
+
+        if (isAdmin){
+            const tdActions = document.createElement("td")
+            const tdActionsComment = document.createElement("button")
+            tdActionsComment.classList.add("btn", lesson.admin_comment ? "btn-outline-primary" : "btn-primary")
+            let actionsCommentInnerText
+            if (lesson.admin_comment){
+                actionsCommentInnerText = lesson.admin_comment.length > 20 ? lesson.admin_comment.substring(0, 18) + "..." : lesson.admin_comment
+                tdActionsComment.setAttribute("data-bs-toggle", "tooltip")
+                tdActionsComment.setAttribute("data-bs-placement", "bottom")
+                tdActionsComment.setAttribute("title", lesson.admin_comment)
+                new bootstrap.Tooltip(tdActionsComment)
+            } else {
+                actionsCommentInnerText = '<i class="bi bi-chat-left-text-fill"></i>'
+            }
+            tdActionsComment.innerHTML = actionsCommentInnerText
+            tdActionsComment.addEventListener("click", function (){
+                lessonsAdminCommentSetModal(lesson.id, tr, lesson.admin_comment)
+            })
+            tdActions.insertAdjacentElement("beforeend", tdActionsComment)
+            tr.insertAdjacentElement("beforeend", tdActions)
+        }
         return tr
     }
 
     if (clear){
         lessonsTableBody.innerHTML = ""
     }
-    list.forEach(lesson => {
+    if (replace_element){
+        const collapse = lessonsTableBody.querySelector(`[data-lesson-id="${lessons.id}"]`)
+        replace_element.replaceWith(getLessonElement(lessons, collapse))
+    } else {
+        lessons.forEach(lesson => {
         const collapse = getCollapseElement(lesson.id)
         lessonsTableBody.insertAdjacentElement("beforeend", getLessonElement(lesson, collapse.collapse))
         lessonsTableBody.insertAdjacentElement("beforeend", collapse.tr)
     })
+    }
 }
 
 function lessonsShowHomeworkCollapse(collapses, action="toggle"){

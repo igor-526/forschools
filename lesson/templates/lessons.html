@@ -95,7 +95,7 @@
                             </ul>
                         </div>
                     </th>
-                    <th scope="col">Действие</th>
+                    {% if is_admin %}<th scope="col">Комментарий</th>{% endif %}
                 </tr>
                 </thead>
                 <tbody id="LessonsTableBody"></tbody>
@@ -103,8 +103,21 @@
             <button id="lessonsTableShowMoreButton" class="btn btn-primary d-none">Показать ещё</button>
         </div>
     </div>
+    {% if is_admin %}
+        {% include 'lessons_modal_comment.html' %}
+    {% endif %}
 {% endblock %}
 {% block static_js %}
+    {% if is_admin %}
+        <script>
+            const isAdmin = true
+        </script>
+        <script src="{% static 'js/lessons/lessons_admin_comment.js' %}"></script>
+    {% else %}
+        <script>
+            const isAdmin = false
+        </script>
+    {% endif %}
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_utils.js' %}"></script>

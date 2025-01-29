@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import Q, Count
@@ -11,7 +12,7 @@ from tgbot.utils import send_homework_tg, send_materials, notify_lesson_passed
 from user_logs.models import UserLog
 from .models import Lesson, Place, LessonTeacherReview
 from .serializers import LessonListSerializer, LessonSerializer
-from .permissions import CanReplaceTeacherMixin, can_set_passed, can_set_not_held
+from .permissions import CanReplaceTeacherMixin, can_set_passed, can_set_not_held, CanEditLessonAdminComment
 from datetime import datetime, timedelta, date
 from .validators import validate_lesson_review_form
 
@@ -92,6 +93,59 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
 class LessonAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+
+
+class LessonAdminCommentAPIView(CanEditLessonAdminComment, APIView):
+    def get_object(self, lesson_id) -> Lesson | None:
+        try:
+            return Lesson.objects.get(pk=lesson_id)
+        except Lesson.DoesNotExist:
+            return None
+
+    def post(self, request, *args, **kwargs):
+        lesson = self.get_object(self.kwargs.get('pk'))
+        if lesson is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        comment = request.POST.get('comment')
+        plan = lesson.get_learning_plan()
+        if not comment:
+            UserLog.objects.create(log_type=5,
+                                   learning_plan=plan,
+                                   title="Администратор удалил комментарий по занятию",
+                                   content={
+                                       "list": [],
+                                       "text": [lesson.admin_comment]
+                                   },
+                                   buttons=[{"inner": f'Занятие: {lesson.name}',
+                                             "href": f"/lessons/{lesson.id}"}],
+                                   color="danger",
+                                   user=request.user)
+            lesson.admin_comment = None
+            lesson.save()
+            return Response(data=LessonListSerializer(instance=lesson,
+                                                      many=False,
+                                                      context={'request': request}).data,
+                            status=status.HTTP_200_OK)
+        comment = comment.strip()
+        if len(comment) > 2000:
+            return Response(data={'comment': 'Длина комментария не может превышать 2000 символов'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        lesson.admin_comment = comment
+        lesson.save()
+        UserLog.objects.create(log_type=5,
+                               learning_plan=plan,
+                               title="Администратор прокомментировал занятие",
+                               content={
+                                   "list": [],
+                                   "text": [lesson.admin_comment]
+                               },
+                               buttons=[{"inner": f'Занятие: {lesson.name}',
+                                         "href": f"/lessons/{lesson.id}"}],
+                               user=request.user)
+        return Response(data=LessonListSerializer(instance=lesson,
+                                                  many=False,
+                                                  context={'request': request}).data,
+                        status=status.HTTP_201_CREATED)
 
 
 class LessonSetMaterialsAPIView(LoginRequiredMixin, APIView):

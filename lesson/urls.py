@@ -3,7 +3,8 @@ from .views import LessonPage, LessonItemPage
 from .views_api import (LessonListAPIView, LessonSetMaterialsAPIView,
                         LessonReplaceTeacherAPIView, LessonAPIView,
                         LessonSetPassedAPIView, PlansItemRescheduling,
-                        LessonSetNotHeldAPIView, LessonRestoreAPIView, ScheduleAPIView)
+                        LessonSetNotHeldAPIView, LessonRestoreAPIView,
+                        ScheduleAPIView, LessonAdminCommentAPIView)
 from .views_ma import LessonMAReviewFormPage, LessonItemMAPage, ScheduleSelectMAPage, ScheduleMAPage
 
 urlpatterns = [
@@ -21,6 +22,8 @@ apiv1patterns = [
     path('<int:pk>/set_not_held/', LessonSetNotHeldAPIView.as_view()),
     path('<int:pk>/restore/', LessonRestoreAPIView.as_view()),
     path('schedule/<int:pk>/', ScheduleAPIView.as_view()),
+    path('<int:pk>/set_admin_comment/', LessonAdminCommentAPIView.as_view()),
+
 ]
 
 ma_patterns = [

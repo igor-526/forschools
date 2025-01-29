@@ -80,6 +80,7 @@ class LessonListSerializer(serializers.ModelSerializer):
     listeners = serializers.SerializerMethodField(read_only=True)
     hw_data = serializers.SerializerMethodField(read_only=True)
     awaiting_action = serializers.SerializerMethodField(read_only=True)
+    admin_comment = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Lesson
@@ -117,6 +118,13 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     def get_can_set_not_held(self, obj):
         return can_set_not_held(self.context.get('request'), obj)
+
+    def get_admin_comment(self, obj):
+        request = self.context.get("request")
+        if request.user.groups.filter(name="Admin").exists():
+            return obj.admin_comment
+        else:
+            return None
 
     def create(self, validated_data):
         lesson = Lesson.objects.create(**validated_data)

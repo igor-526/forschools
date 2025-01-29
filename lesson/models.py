@@ -136,6 +136,9 @@ class Lesson(models.Model):
                                               null=True,
                                               blank=True,
                                               on_delete=models.SET_NULL)
+    admin_comment = models.TextField(verbose_name="комментарий администратора",
+                                     null=True,
+                                     blank=True)
 
     class Meta:
         verbose_name = 'Занятие'

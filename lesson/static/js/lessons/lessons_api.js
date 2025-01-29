@@ -179,3 +179,19 @@ async function lessonsAPIGetSchedule(userID=0, offset=0){
     const request = await fetch(url)
     return await APIGetToObject(request)
 }
+
+async function lessonsAPISetAdminComment(lessonID, fd){
+    const url = `/api/v1/lessons/${lessonID}/set_admin_comment/`
+    const init = {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+    }
+    if (fd){
+        init.body = fd
+    }
+    const request = await fetch(url, init)
+    return await APIPostPatchToObject(request)
+}
