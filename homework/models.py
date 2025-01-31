@@ -64,6 +64,14 @@ class Homework(models.Model):
     def __str__(self):
         return f'{self.name}'
 
+    async def aget_tg_name(self, groups: list):
+        lesson = await self.aget_lesson()
+        name_str = self.name
+        name_str += f" от {lesson.date.strftime('%d.%m')}"
+        if "Teacher" in groups or "Metodist" in groups or "Curator" in groups or "Admin" in groups:
+            name_str += f" ({self.listener})"
+        return name_str
+
     def get_status(self, assigned=False, accepted_only=False):
         filter_params = {
             'homework': self

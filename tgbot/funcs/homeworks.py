@@ -367,7 +367,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
         homeworks = []
         for listener in listeners:
             hw = await Homework.objects.acreate(
-                name=f'{statedata.get("new_hw").get("name")} ({listener.first_name} {listener.last_name})',
+                name=f'{statedata.get("new_hw").get("name")}',
                 description=statedata.get("new_hw").get("description") if statedata.get("new_hw").get("description")
                 else "-",
                 deadline=current_deadline_dt,
@@ -396,7 +396,7 @@ async def add_homework_set_homework_message(tg_id: int,
         await state.update_data({
             "new_hw": {
                 "hw_id": None,
-                "name": f'Домашнее задание {last_count + 1}',
+                "name": f'ДЗ {last_count + 1}',
                 "description": None,
                 "materials": [],
                 "deadline": {
@@ -424,10 +424,11 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
             homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 3, 5],
                                     [{
                                         'obj': hw,
-                                        'hw_status': (await hw.aget_status(True)).status
+                                        'hw_status': (await hw.aget_status(True)).status,
+                                        'name': await hw.aget_tg_name(groups)
                                     } async for hw in Homework.objects.filter(listener=user)]))
             homeworks = [{
-                'name': hw.get("obj").name,
+                'name': hw.get("name"),
                 'status': hw.get("hw_status") == 3,
                 'id': hw.get("obj").id
             } for hw in homeworks]
@@ -449,11 +450,12 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
             homeworks = list(filter(lambda hw: hw['hw_status'] is not None and not hw['hw_status'],
                                     [{
                                         'obj': hw,
-                                        'hw_status': (await hw.aget_status()).agreement.get("accepted")
-                                    } async for hw in Homework.objects.filter(
+                                        'hw_status': (await hw.aget_status()).agreement.get("accepted"),
+                                        'name': await hw.aget_tg_name(groups)
+                                    } async for hw in Homework.objects.select_related("listener").filter(
                                         lesson__learningphases__learningplan__metodist=user)]))
             methodist_homeworks = [{
-                'name': hw.get("obj").name,
+                'name': hw.get("name"),
                 'status': False,
                 'id': hw.get("obj").id
             } for hw in homeworks]
@@ -463,10 +465,12 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
                                                 hw['hw_status'].agreement.get("accepted")),
                                     [{
                                         'obj': hw,
-                                        'hw_status': await hw.aget_status()
-                                    } async for hw in Homework.objects.filter(teacher=user)]))
+                                        'hw_status': await hw.aget_status(),
+                                        'name': await hw.aget_tg_name(groups)
+                                    } async for hw in Homework.objects.select_related("listener")
+                                    .filter(teacher=user)]))
             teacher_homeworks = [{
-                'name': hw.get("obj").name,
+                'name': hw.get("name"),
                 'status': hw.get("hw_status") == 5,
                 'id': hw.get("obj").id
             } for hw in homeworks]
@@ -474,11 +478,12 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
             homeworks = list(filter(lambda hw: hw['hw_status'].status in [3, 5],
                                     [{
                                         'obj': hw,
-                                        'hw_status': await hw.aget_status()
-                                    } async for hw in Homework.objects.filter(
+                                        'hw_status': await hw.aget_status(),
+                                        'name': await hw.aget_tg_name(groups)
+                                    } async for hw in Homework.objects.select_related("listener").filter(
                                         lesson__learningphases__learningplan__curators=user)]))
             curator_homeworks = [{
-                'name': hw.get("obj").name,
+                'name': hw.get("name"),
                 'status': hw.get("hw_status") == 5,
                 'id': hw.get("obj").id
             } for hw in homeworks]
@@ -496,10 +501,11 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
         homeworks = list(filter(lambda hw: hw['hw_status'] in [1, 2, 5, 7],
                                 [{
                                     'obj': hw,
-                                    'hw_status': (await hw.aget_status()).status
-                                } async for hw in Homework.objects.filter(teacher=user)]))
+                                    'hw_status': (await hw.aget_status()).status,
+                                    'name': await hw.aget_tg_name(groups)
+                                } async for hw in Homework.objects.select_related("listener").filter(teacher=user)]))
         homeworks = [{
-            'name': hw.get("obj").name,
+            'name': hw.get("name"),
             'status': hw.get("hw_status") == 3,
             'id': hw.get("obj").id
         } for hw in homeworks]
