@@ -10,7 +10,8 @@ HANDLING_STATUS_CHOICES = (
 
 ACTION_TYPE_CHOICES = (
     (0, 'Сообщение'),
-    (1, 'Callback')
+    (1, 'Callback'),
+    (2, 'Добавление материала')
 )
 
 TICKETS_STATUS_CHOICES = (

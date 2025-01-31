@@ -93,6 +93,9 @@ function telegramLogsShow(logs, clear=true){
             case 1:
                 tdActionType.innerHTML = "Callback"
                 break
+            case 2:
+                tdActionType.innerHTML = "Доб. материала"
+                break
             default:
                 tdActionType.innerHTML = "Не определено"
                 break

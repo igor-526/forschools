@@ -75,13 +75,14 @@ async def log_error(at: int = 0, tg_note: Telegram = None,
     tb = exception.__traceback__
     traceback_log = traceback.format_exception(type(exception), exception, tb)
     traceback_log = list(filter(lambda s: len(s) != s.count("^") + s.count(" "), traceback_log))
+
     await TelegramErrorsLog.objects.acreate(
         action_type=at,
         tg_id=event.from_user.id,
         tg_note=tg_note,
         error=str(exception),
         traceback_log=traceback_log,
-        params=get_message_params() if at == 0 else get_callback_params(),
+        params=get_message_params() if at in [0, 2] else get_callback_params(),
     )
 
 

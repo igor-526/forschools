@@ -85,7 +85,7 @@ def get_homeworks_buttons(homeworks: list, sb=False) -> InlineKeyboardMarkup:
                                            hw_id=0)
         )
     for hw in homeworks[:50]:
-        hw_name = "(\u2714) " if hw.get('status') else ""
+        hw_name = "(\u2705) " if hw.get('status') else ""
         hw_name += f"{hw.get('name')}"
         builder.button(
             text=hw_name,

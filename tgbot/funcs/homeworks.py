@@ -676,7 +676,6 @@ async def send_hw_materials(mat_ids: list, hw_id: int | None, user_id: int, call
         hw_callback = HomeworkCallback
         hw_callback.hw_id = hw_id
         await show_homework(callback, hw_callback, state, False)
-        await callback.message.delete()
 
 
 async def show_log_item(chat_id: int, log_id: int):
