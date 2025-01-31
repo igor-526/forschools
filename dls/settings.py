@@ -162,7 +162,7 @@ CACHES = {
 }
 
 MATERIAL_FORMATS = {
-    'image_formats': ['bmp', 'jpg', 'jpeg', 'png'],
+    'image_formats': ['bmp', 'jpg', 'jpeg', 'png', 'heic', 'HEIC'],
     'video_formats': ['webm', 'mp4'],
     'animation_formats': ['gif'],
     'archive_formats': ['rar', 'zip', '7z'],
