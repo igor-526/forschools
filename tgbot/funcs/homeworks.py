@@ -853,7 +853,7 @@ async def hw_send(tg_id: int, state: FSMContext):
                 msg_object = await bot.send_message(chat_id=teacher_tg,
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([{
-                                                        'name': hw.name,
+                                                        'name': hw.aget_tg_name(["Teacher"]),
                                                         'id': hw.id
                                                     }]))
                 await TgBotJournal.objects.acreate(
@@ -903,7 +903,7 @@ async def hw_send(tg_id: int, state: FSMContext):
                 msg_object = await bot.send_message(chat_id=listener_tg.get("tg_id"),
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([{
-                                                        'name': hw.name,
+                                                        'name': hw.aget_tg_name(["Listener"]),
                                                         'id': hw.id
                                                     }]))
                 await TgBotJournal.objects.acreate(
@@ -939,7 +939,7 @@ async def hw_send(tg_id: int, state: FSMContext):
                 msg_object = await bot.send_message(chat_id=metodist_tg,
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([{
-                                                        'name': hw.name,
+                                                        'name': hw.aget_tg_name(["Metodist"]),
                                                         'id': hw.id
                                                     }]))
                 await TgBotJournal.objects.acreate(
@@ -992,7 +992,7 @@ async def hw_send(tg_id: int, state: FSMContext):
                                                         text=msg,
                                                         reply_markup=get_homeworks_buttons([{
                                                             'name': hw.name,
-                                                            'id': hw.id
+                                                            'id': hw.aget_tg_name(["Curator"])
                                                         }]))
                     await TgBotJournal.objects.acreate(
                         recipient=curator,
@@ -1049,6 +1049,7 @@ async def hw_send(tg_id: int, state: FSMContext):
     is_listener = hw.listener == user
     is_teacher = hw.teacher == user
     is_curator = await lp.curators.filter(pk=user.id).aexists()
+    is_methodist = await lp.metodist.filter(pk=user.id).aexists()
     hwlog_status = None
     hw_action = state_data.get('action')
     if hw_action == 'send':
@@ -1082,6 +1083,16 @@ async def hw_send(tg_id: int, state: FSMContext):
                 await notify_listener("Домашнее задание отправлено на доработку")
                 await notify_teacher("Куратор отправил домашнее задание на доработку")
                 await notify_methodist("Куратор отправил домашнее задание на доработку")
+        elif is_methodist:
+            await get_hw_log_object(False)
+            await bot.send_message(chat_id=tg_id,
+                                   text="Ответ был отправлен ученику")
+            if hw_action == 'check_accept':
+                await notify_listener("Домашнее задание принято!")
+                await notify_teacher("Методист принял домашнее задание")
+            elif hw_action == 'check_revision':
+                await notify_listener("Домашнее задание отправлено на доработку")
+                await notify_teacher("Методист отправил домашнее задание на доработку")
         elif is_teacher:
             if lp and lp.metodist:
                 await get_hw_log_object(True)
@@ -1112,13 +1123,14 @@ async def hw_send(tg_id: int, state: FSMContext):
 async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
                              homeworks: list[Homework], text="У вас новые домашние задания!"):
     recipients_tgs = await get_tg_id(recipient_user_id)
+    user_groups = [group.name async for group in await NewUser.objects.aget(pk=recipient_user_id).groups.all()]
     for user_tg_note in recipients_tgs:
         try:
             msg = await bot.send_message(chat_id=user_tg_note.get("tg_id"),
                                          text=text,
                                          reply_markup=get_homeworks_buttons([{
                                              "name": hw.name,
-                                             "id": hw.id
+                                             "id": hw.aget_tg_name(user_groups)
                                          } for hw in homeworks]))
             await TgBotJournal.objects.acreate(
                 recipient_id=recipient_user_id,

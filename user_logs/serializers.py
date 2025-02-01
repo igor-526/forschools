@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from rest_framework import serializers
 from homework.models import HomeworkLog
 from material.utils.get_type import get_type
@@ -29,7 +28,7 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
         totalstr = f'{role} {action}'
         lesson = obj.homework.lesson_set.first()
         if lesson:
-            totalstr += f' к занятию "{lesson.name}"'
+            totalstr += f' к занятию "{lesson.name}" от {lesson.date.strftime("%d.%m")}'
         return totalstr
 
     def get_content(self, obj):

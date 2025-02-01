@@ -91,9 +91,10 @@ async def f_homework_agr_send(tg_id: int,
         lp = (await lesson.aget_learning_plan()) if lesson else None
         to_agreement = [log async for log in
                         HomeworkLog.objects.select_related("homework").select_related("homework__listener")
-                        .select_related("homework__teacher").select_related("user").filter(status__in=[5, 4, 7],
-                                                                    homework__id__in=[hw.id for hw in hws],
-                                                                    agreement__accepted=False)]
+                        .select_related("homework__teacher").select_related("user")
+                        .filter(status__in=[5, 4, 7],
+                                homework__id__in=[hw.id for hw in hws],
+                                agreement__accepted=False)]
         return {
             "homeworks": hws,
             "logs": to_agreement,
@@ -235,7 +236,7 @@ async def f_homework_agr_send(tg_id: int,
     for log in logs_info.get("logs"):
         log.agreement = agreement
         await log.asave()
-        await notify_users(logs_info.get("logs"), st_data.get("action"))
+    await notify_users(logs_info.get("logs"), st_data.get("action"))
     await journal_log()
     await bot.send_message(chat_id=tg_id,
                            text=answer_msg)

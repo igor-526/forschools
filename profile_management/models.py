@@ -262,7 +262,7 @@ class NewUser(AbstractUser):
     def _sort_users_for_chat(self, users):
         filtered_users = users
         unread_list = list(filter(lambda u: u.get("unread"), filtered_users))
-        has_messages_list = list(filter(lambda u: u.get("last_message_text") and u not in unread_list, filtered_users))
+        has_messages_list = list(filter(lambda u: u.get("last_message_text") is not None and u not in unread_list, filtered_users))
         no_messages_list = list(filter(lambda u: u.get("last_message_text") is None, filtered_users))
         unread_list = sorted(unread_list, key=itemgetter("last_message_date"), reverse=True)
         has_messages_list = sorted(has_messages_list, key=itemgetter("last_message_date"), reverse=True)
@@ -325,6 +325,7 @@ class NewUser(AbstractUser):
         groups = [get_group_info(g) for g in self.group_chats.all()]
         roles = [g.name for g in self.groups.all()]
         users_profiles = []
+        print(roles)
 
         if "Admin" in roles:
             users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
@@ -355,16 +356,15 @@ class NewUser(AbstractUser):
                   is_active=True)).exclude(pk=self.id).distinct()])
         if "Listener" in roles:
             users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
-                Q(plan_teacher__listeners=self,
-                  is_active=True) |
-                Q(plan_curator__listeners=self,
-                  is_active=True)).exclude(pk=self.id).distinct()])
+                Q(plan_teacher__listeners=self, is_active=True) |
+                Q(plan_curator__listeners=self, is_active=True)).exclude(pk=self.id).distinct()])
 
         users_telegrams = [get_user_tg_info(u) for u in
                            Telegram.objects.select_related("user").filter(
                                user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
         users = [*users_profiles, *users_telegrams, *groups]
         users = self._remove_duplicates(users)
+        print(users)
         return self._sort_users_for_chat(users)
 
     async def aget_users_for_chat(self, tg_id):

@@ -116,12 +116,13 @@ def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype):
 def send_homework_tg(initiator: NewUser, listener: NewUser,
                      homeworks: list[Homework], text="У вас новые домашние задания!") -> dict:
     tg_ids = get_tg_id_sync(listener.id)
+    user_groups = [group.name for group in listener.groups.all()]
     for tg_id in tg_ids:
         msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id.get("tg_id"),
                                                      message=text,
                                                      reply_markup=get_homeworks_buttons(
                                                          [{'name': hw.name,
-                                                           'id': hw.id} for hw in homeworks]
+                                                           'id': hw.get_tg_name(user_groups)} for hw in homeworks]
                                                      ))
         if msg_result.get("status") == "success":
             TgBotJournal.objects.create(
@@ -180,10 +181,11 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
         initiator = homework.teacher
         recipient = homework.listener
     for user_tg_id in user_tg_ids:
+        user_groups = [group.name for group in recipient.groups.all()]
         msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id.get("tg_id"),
                                                      message=msg,
                                                      reply_markup=get_homeworks_buttons([{
-                                                         'name': homework.name,
+                                                         'name': homework.get_tg_name(user_groups),
                                                          'id': homework.id
                                                      }]))
         if msg_result.get("status") == "success":

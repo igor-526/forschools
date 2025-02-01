@@ -42,7 +42,10 @@ def get_homework_editing_buttons() -> ReplyKeyboardMarkup:
                                                                [cancel_button]])
 
 
-def get_homework_lessons_buttons(lessons: list, prev_date=None, current_date: str = None, next_date=None) -> InlineKeyboardMarkup:
+def get_homework_lessons_buttons(lessons: list,
+                                 prev_date=None,
+                                 current_date: str = None,
+                                 next_date=None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for lsn in lessons:
         btn_text = f'{("("+"X"+")") if lsn.get("status") == 0 else ""} {lsn.get("start_time")}-{lsn.get("end_time")}: {", ".join([l.first_name+" "+l.last_name for l in lsn.get("listeners")])}'
