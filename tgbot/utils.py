@@ -121,8 +121,8 @@ def send_homework_tg(initiator: NewUser, listener: NewUser,
         msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id.get("tg_id"),
                                                      message=text,
                                                      reply_markup=get_homeworks_buttons(
-                                                         [{'name': hw.name,
-                                                           'id': hw.get_tg_name(user_groups)} for hw in homeworks]
+                                                         [{'name': hw.get_tg_name(user_groups),
+                                                           'id': hw.id} for hw in homeworks]
                                                      ))
         if msg_result.get("status") == "success":
             TgBotJournal.objects.create(
