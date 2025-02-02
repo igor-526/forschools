@@ -1,10 +1,10 @@
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
-from .models import LearningPlan, LearningPhases
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
 from lesson.serializers import LessonListSerializer
+from .models import LearningPlan, LearningPhases
 
 
 class LearningPlanListSerializer(serializers.ModelSerializer):
@@ -46,6 +46,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
             return request.user
         if "Listener" in usergroups:
             raise PermissionDenied("Вы не можете добалять планы обучения")
+        return None
 
     def validate_metodist(self, request, usergroups):
         metodist = request.POST.get('metodist')
@@ -62,6 +63,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
             return None
         if "Listener" in usergroups:
             raise PermissionDenied("Вы не можете добалять планы обучения")
+        return None
 
     def validate_default_hw_teacher(self, request, usergroups):
         req_teacher_hw = request.POST.get('default_hw_teacher')
@@ -78,6 +80,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
             return request.user
         if "Listener" in usergroups:
             raise PermissionDenied("Вы не можете добалять планы обучения")
+        return None
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -111,8 +114,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         if self.get_deletable(instance):
             instance.delete()
             return True
-        else:
-            raise PermissionDenied()
+        raise PermissionDenied()
 
 
 class LearningPlanParticipantsOnlyListSerializer(serializers.ModelSerializer):

@@ -1,9 +1,8 @@
 from django.db import models
 from django.db.models import Q
-
+from django.db.models.signals import post_save
 from profile_management.models import NewUser
 from material.models import Material, File
-from django.db.models.signals import post_save
 from learning_program.models import LearningProgramHomework
 
 
@@ -87,16 +86,21 @@ class Homework(models.Model):
         if assigned:
             filter_params['status'] = 7
         if accepted_only:
-            return HomeworkLog.objects.filter(Q(**filter_params, agreement__accepted=True) |
-                                              Q(**filter_params, agreement={})).order_by("-dt").first()
+            return HomeworkLog.objects.filter(Q(**filter_params,
+                                                agreement__accepted=True) |
+                                              Q(**filter_params,
+                                                agreement={})).order_by("-dt").first()
         return HomeworkLog.objects.filter(**filter_params).order_by("-dt").first()
 
     async def aget_status(self, accepted_only=False):
         if accepted_only:
-            return await (HomeworkLog.objects.filter(Q(homework=self, agreement__accepted=True) |
-                                                     Q(homework=self, agreement={})).select_related("user")
+            return await (HomeworkLog.objects.filter(Q(homework=self,
+                                                       agreement__accepted=True) |
+                                                     Q(homework=self,
+                                                       agreement={})).select_related("user")
                           .order_by("-dt").afirst())
-        return await HomeworkLog.objects.filter(homework=self).select_related("user").order_by("-dt").afirst()
+        return await (HomeworkLog.objects.filter(homework=self).select_related("user")
+                      .order_by("-dt").afirst())
 
     def open(self):
         HomeworkLog.objects.create(homework=self,
@@ -117,6 +121,7 @@ class Homework(models.Model):
         return await self.lesson_set.afirst()
 
     def set_assigned(self):
+        agreement = None
         if self.get_status().status != 6:
             lesson = self.get_lesson()
             lp = None
@@ -131,16 +136,17 @@ class Homework(models.Model):
                                                "accepted_dt": None,
                                                "accepted": False
                                            })
-                return {"agreement": True}
-            else:
-                HomeworkLog.objects.create(homework=self,
-                                           user=self.teacher,
-                                           comment="Домашнее задание задано",
-                                           status=7)
-                return {"agreement": False}
+                agreement = {"agreement": True}
+            HomeworkLog.objects.create(homework=self,
+                                       user=self.teacher,
+                                       comment="Домашнее задание задано",
+                                       status=7)
+            agreement = {"agreement": False}
+        return agreement
 
     async def aset_assigned(self, check_methodist=True):
         status = (await self.aget_status()).status
+        agreement = None
         if status != 6:
             if check_methodist:
                 lesson = await self.aget_lesson()
@@ -157,19 +163,18 @@ class Homework(models.Model):
                                                           "accepted": False
                                                       })
 
-                    return {"agreement": True}
-                else:
-                    await HomeworkLog.objects.acreate(homework=self,
-                                                      user=self.teacher,
-                                                      comment="Домашнее задание задано",
-                                                      status=7)
-                    return {"agreement": False}
-            else:
+                    agreement = {"agreement": True}
                 await HomeworkLog.objects.acreate(homework=self,
                                                   user=self.teacher,
                                                   comment="Домашнее задание задано",
                                                   status=7)
-                return {"agreement": False}
+                agreement = {"agreement": False}
+            await HomeworkLog.objects.acreate(homework=self,
+                                              user=self.teacher,
+                                              comment="Домашнее задание задано",
+                                              status=7)
+            agreement = {"agreement": False}
+        return agreement
 
 
 class HomeworkLog(models.Model):
@@ -211,7 +216,7 @@ class HomeworkLog(models.Model):
 
     class Meta:
         verbose_name = 'Лог ДЗ'
-        verbose_name_plural = 'Логи ДЗ',
+        verbose_name_plural = 'Логи ДЗ'
         ordering = ['-dt']
 
     def __str__(self):

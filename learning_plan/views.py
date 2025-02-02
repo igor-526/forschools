@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from dls.utils import get_menu
 from .permissions import CanSeePlansPageMixin, can_edit_plan, can_generate_from_program
 from .models import LearningPlan
-from dls.utils import get_menu
 
 
 class PlansPageView(CanSeePlansPageMixin, TemplateView):

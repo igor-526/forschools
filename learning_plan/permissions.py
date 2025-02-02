@@ -26,13 +26,13 @@ def can_edit_plan(request, plan=None, phase=None):
             return request.user == plan.teacher
         if phase:
             return phase.learningplan_set.first().teacher == request.user
+    return False
 
 
 def can_generate_from_program(request, plan):
     if plan.phases.count() > 0:
         return False
-    else:
-        return can_edit_plan(request, plan)
+    return can_edit_plan(request, plan)
 
 
 def get_can_see_plan(request, plan: LearningPlan, lesson: Lesson = None):

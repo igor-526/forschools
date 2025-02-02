@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from learning_plan.permissions import get_can_see_plan
-from .models import Homework, HomeworkLog, HomeworkGroups
 from lesson.models import Lesson
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
@@ -8,6 +7,7 @@ from material.serializers import MaterialListSerializer
 from material.serializers import FileSerializer
 from tgbot.utils import send_homework_answer_tg, send_homework_tg
 from .permissions import get_delete_log_permission
+from .models import Homework, HomeworkLog, HomeworkGroups
 
 
 class HomeworkSerializer(serializers.ModelSerializer):
@@ -30,13 +30,16 @@ class HomeworkSerializer(serializers.ModelSerializer):
             }
             if get_can_see_plan(self.context.get('request'), plan, lesson):
                 result['plan'] = {"id": plan.id,
-                                  "teacher": NewUserNameOnlyListSerializer(plan.teacher, many=False).data,
-                                  "listeners": NewUserNameOnlyListSerializer(plan.listeners.all(), many=True).data,
-                                  "curators": NewUserNameOnlyListSerializer(plan.curators.all(), many=True).data,
-                                  "methodist": NewUserNameOnlyListSerializer(plan.metodist, many=False).data}
+                                  "teacher": NewUserNameOnlyListSerializer(plan.teacher,
+                                                                           many=False).data,
+                                  "listeners": NewUserNameOnlyListSerializer(plan.listeners.all(),
+                                                                             many=True).data,
+                                  "curators": NewUserNameOnlyListSerializer(plan.curators.all(),
+                                                                            many=True).data,
+                                  "methodist": NewUserNameOnlyListSerializer(plan.metodist,
+                                                                             many=False).data}
             return result
-        else:
-            return None
+        return None
 
 
 class HomeworkListSerializer(serializers.ModelSerializer):
@@ -57,8 +60,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         if status:
             return {"status": status.status,
                     "dt": status.dt}
-        else:
-            return None
+        return None
 
     def get_lesson_info(self, obj):
         lesson = obj.get_lesson()
@@ -68,37 +70,35 @@ class HomeworkListSerializer(serializers.ModelSerializer):
                 "date": lesson.date,
                 "name": lesson.name
             }
-        else:
-            return None
+        return None
 
     def get_assigned(self, obj):
         status = obj.get_status(True)
         if status:
             return status.dt
-        else:
-            return None
+        return None
 
     def get_color(self, obj):
+        color = None
         hw_status = obj.get_status()
         if hw_status.status == 6:
-            return "danger"
+            color = "danger"
         elif hw_status.status == 4:
-            return "success"
+            color = "success"
         user_groups = [g.name for g in self.context.get("request").user.groups.all()]
         if "Admin" in user_groups or "Metodist" in user_groups:
             status_agreement = hw_status.agreement
-            if status_agreement.get("accepted") is not None and not status_agreement.get("accepted"):
-                return "warning"
+            if (status_agreement.get("accepted") is not None and
+                    not status_agreement.get("accepted")):
+                color = "warning"
             elif status_agreement.get("accepted"):
-                return "info"
+                color = "info"
         if "Teacher" in user_groups or "Curator" in user_groups:
             if hw_status.status == 3:
-                return "warning"
-        if "Listener" in user_groups:
-            if hw_status.status in [1, 2, 5]:
-                return "warning"
-        else:
-            return None
+                color = "warning"
+        if "Listener" in user_groups and hw_status.status in [1, 2, 5]:
+            color = "warning"
+        return color
 
     def create(self, validated_data):
         request = self.context.get("request")
@@ -117,7 +117,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"msg": "Занятие отсутствует"})
         else:
             try:
-                lesson = None,
+                lesson = None
                 listeners = NewUser.objects.filter(groups__name="Listener",
                                                    id__in=request.POST.getlist("listeners"))
                 if not listeners:
@@ -140,7 +140,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
             homework.save()
             if set_assigned:
                 res = homework.set_assigned()
-                if res.get("agreement") is not None and res.get("agreement") == False:
+                if res.get("agreement") is not None and res.get("agreement") is False:
                     send_homework_tg(request.user, homework.listener, [homework])
                 else:
                     send_homework_tg(initiator=homework.teacher,
@@ -180,7 +180,8 @@ class HomeworkLogListSerializer(serializers.ModelSerializer):
         metodist = hw.get_lesson().get_learning_plan().metodist
         if metodist:
             if (self.context.get("request").user.groups.filter(name="Admin").exists() or
-                    hw.get_lesson().get_learning_plan().metodist == self.context.get("request").user):
+                    hw.get_lesson().get_learning_plan().metodist ==
+                    self.context.get("request").user):
                 hwl = cr_obj(accepting=False)
                 send_homework_answer_tg(hwl.homework.listener, hwl.homework, hwl.status)
             else:
@@ -206,7 +207,8 @@ class HomeworkLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HomeworkLog
-        fields = ["id", "user", "files", "comment", "status", "homework", "dt", "deletable", "agreement"]
+        fields = ["id", "user", "files", "comment", "status",
+                  "homework", "dt", "deletable", "agreement"]
 
     def get_deletable(self, obj):
         return get_delete_log_permission(obj, self.context.get("request"))

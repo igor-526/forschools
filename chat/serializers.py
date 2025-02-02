@@ -1,11 +1,11 @@
 from django.db.models import Q
 from rest_framework import serializers
 from material.serializers import FileSerializer
+from material.models import File
 from profile_management.models import NewUser, Telegram
-from profile_management.serializers import NewUserNameOnlyListSerializer, TelegramListSerializer
+from profile_management.serializers import (NewUserNameOnlyListSerializer, TelegramListSerializer)
 from tgbot.utils import notify_chat_message, notify_group_chat_message
 from .models import Message, GroupChats
-from material.models import File
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):
@@ -72,7 +72,8 @@ class ChatGroupInfoSerailizer(serializers.ModelSerializer):
         if name == "setauto":
             users = [
                 *[f"{user.first_name}" for user in
-                  NewUser.objects.filter(Q(pk__in=request.POST.getlist("users")) | Q(pk=request.user.id))],
+                  NewUser.objects.filter(Q(pk__in=request.POST.getlist("users")) |
+                                         Q(pk=request.user.id))],
                 *[f"{tgnote.user.first_name} [{tgnote.usertype}]" for tgnote in
                   Telegram.objects.filter(pk__in=request.POST.getlist("users_tg"))]
             ][:3]
@@ -80,19 +81,22 @@ class ChatGroupInfoSerailizer(serializers.ModelSerializer):
             counter = -1
             symbol_counter = len(name)
             for user in users:
-                if len(user)+symbol_counter+2 < 50:
+                if len(user) + symbol_counter + 2 < 50:
                     counter += 1
                     symbol_counter += len(user)+2
                 else:
                     name = name + (", ".join(users[:counter]) + "..")
+                    break
             else:
                 name = name + ", ".join(users[:counter])
             if GroupChats.objects.filter(name=name).exists():
-                raise serializers.ValidationError({"name": "Не удалось сгенерировать. Введите название вручную"})
+                raise serializers.ValidationError({"name": "Не удалось сгенерировать. "
+                                                           "Введите название вручную"})
             new_validated_data["name"] = name
         else:
             if GroupChats.objects.filter(name=name).exists():
-                raise serializers.ValidationError({"name": "Группа с таким наименованием уже существует"})
+                raise serializers.ValidationError({"name": "Группа с таким наименованием "
+                                                           "уже существует"})
             new_validated_data["name"] = name
         new_validated_data["owner"] = request.user
         return new_validated_data

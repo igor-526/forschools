@@ -1,7 +1,6 @@
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-from . import settings
 
 from profile_management.urls import (urlpatterns as profile_urlpatterns,
                                      apiv1patterns as profile_apiv1patterns)
@@ -32,6 +31,7 @@ from support.urls import (urlpatterns as support_urlpatterns,
 from user_logs.urls import (urlpatterns as user_logs_urlpatterns,
                             api_v1_patterns as user_logs_api_v1_patterns,
                             ma_patterns as user_logs_ma_patterns)
+from . import settings
 
 
 urlpatterns = [

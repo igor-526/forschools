@@ -1,20 +1,24 @@
 import datetime
 from django.db.models import Q
+from django.contrib.auth.mixins import LoginRequiredMixin
+from rest_framework.generics import (ListCreateAPIView, ListAPIView,
+                                     RetrieveDestroyAPIView)
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
 from chat.models import Message
 from lesson.permissions import CanReplaceTeacherMixin
 from material.utils.get_type import get_type
-from .permissions import get_delete_log_permission, get_can_accept_log_permission, get_can_edit_hw_permission
-from .serializers import HomeworkListSerializer, HomeworkLogListSerializer, HomeworkLogSerializer, HomeworkSerializer
-from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveDestroyAPIView
-from tgbot.utils import send_homework_tg, notify_chat_message, send_homework_answer_tg
-from django.contrib.auth.mixins import LoginRequiredMixin
-from rest_framework.response import Response
-from .models import Homework, HomeworkLog
-from rest_framework.views import APIView
-from rest_framework import status
 from material.models import File, Material
+from tgbot.utils import (send_homework_tg, notify_chat_message,
+                         send_homework_answer_tg)
 from user_logs.models import UserLog
+from .models import Homework, HomeworkLog
 from .utils import status_code_to_string
+from .permissions import (get_delete_log_permission, get_can_accept_log_permission,
+                          get_can_edit_hw_permission)
+from .serializers import (HomeworkListSerializer, HomeworkLogListSerializer,
+                          HomeworkLogSerializer, HomeworkSerializer)
 
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -22,7 +26,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = HomeworkListSerializer
 
     def filter_queryset_all(self, q):
-        query = dict()
+        query = {}
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")
         lesson = self.request.query_params.get("lesson")
@@ -42,14 +46,19 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             assigned_date_to = self.request.query_params.get("date_to")
             if assigned_date_from or assigned_date_to:
                 listed_queryset = list(queryset)
-                listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None, listed_queryset))
+                listed_queryset = list(filter(lambda hw: hw.get_status(True)
+                                                         is not None, listed_queryset))
                 if assigned_date_from:
-                    assigned_date_from = datetime.datetime.strptime(assigned_date_from, "%Y-%m-%d").date()
-                    listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() >= assigned_date_from,
+                    assigned_date_from = datetime.datetime.strptime(assigned_date_from,
+                                                                    "%Y-%m-%d").date()
+                    listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() >=
+                                                             assigned_date_from,
                                                   listed_queryset))
                 if assigned_date_to:
-                    assigned_date_to = datetime.datetime.strptime(assigned_date_to, "%Y-%m-%d").date()
-                    listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() <= assigned_date_to,
+                    assigned_date_to = datetime.datetime.strptime(assigned_date_to,
+                                                                  "%Y-%m-%d").date()
+                    listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() <=
+                                                             assigned_date_to,
                                                   listed_queryset))
                 queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
         else:
@@ -59,14 +68,19 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             date_changed_to = self.request.query_params.get("date_changed_to")
             if date_changed_from or date_changed_to:
                 listed_queryset = list(queryset)
-                listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None, listed_queryset))
+                listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None,
+                                              listed_queryset))
                 if date_changed_from:
-                    date_changed_from = datetime.datetime.strptime(date_changed_from, "%Y-%m-%d").date()
-                    listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() >= date_changed_from,
+                    date_changed_from = datetime.datetime.strptime(date_changed_from,
+                                                                   "%Y-%m-%d").date()
+                    listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() >=
+                                                             date_changed_from,
                                                   listed_queryset))
                 if date_changed_to:
-                    date_changed_to = datetime.datetime.strptime(date_changed_to, "%Y-%m-%d").date()
-                    listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() <= date_changed_to,
+                    date_changed_to = datetime.datetime.strptime(date_changed_to,
+                                                                 "%Y-%m-%d").date()
+                    listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() <=
+                                                             date_changed_to,
                                                   listed_queryset))
                 queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
         else:
@@ -83,9 +97,11 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                     filtering_statuses = [4, 6]
                 listed_queryset = [{"id": hw.id,
                                     "status": hw.get_status().status} for hw in queryset]
-                filtered_queryset = list(filter(lambda hw: hw.get("status") in filtering_statuses, listed_queryset))
+                filtered_queryset = list(filter(lambda hw: hw.get("status") in filtering_statuses,
+                                                listed_queryset))
                 queryset = queryset.filter(id__in=[hw.get("id") for hw in filtered_queryset])
-        offset = int(self.request.query_params.get("offset")) if self.request.query_params.get("offset") else 0
+        offset = int(self.request.query_params.get("offset")) if (
+            self.request.query_params.get("offset")) else 0
         return queryset[offset:offset + 50]
 
     def get_queryset(self, *args, **kwargs):
@@ -158,7 +174,8 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             else:
                 last_logs.append({'id': log.id,
                                   'status': log.status})
-        queryset = HomeworkLog.objects.filter(id__in=[log["id"] for log in last_logs]).order_by('-dt')
+        queryset = HomeworkLog.objects.filter(
+            id__in=[log["id"] for log in last_logs]).order_by('-dt')
         return queryset
 
     def get_queryset(self, *args, **kwargs):
@@ -172,8 +189,7 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         last = self.request.query_params.get('last')
         if last is not None:
             return HomeworkLogSerializer
-        else:
-            return HomeworkLogListSerializer
+        return HomeworkLogListSerializer
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset(*args, **kwargs)
@@ -195,7 +211,7 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-        except Exception as e:
+        except Exception:
             pass
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -253,10 +269,8 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                     UserLog.objects.create(**q)
                 instance.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response(status=status.HTTP_403_FORBIDDEN)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -302,7 +316,8 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                         send_homework_tg(initiator=instance.homework.teacher,
                                          listener=instance.homework.listener,
                                          homeworks=[hw])
-                    send_homework_tg(initiator=instance.homework.get_lesson().get_learning_plan().metodist,
+                    send_homework_tg(initiator=instance.homework.get_lesson()
+                                     .get_learning_plan().metodist,
                                      listener=instance.homework.teacher,
                                      homeworks=hws,
                                      text="Следующие ДЗ были согласованы и заданы")
@@ -315,14 +330,16 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                         send_homework_answer_tg(instance.homework.listener, hws[0], 5)
                     else:
                         teacher_msg_text = "Домашнее задание согласовано"
-                    send_homework_tg(initiator=instance.homework.get_lesson().get_learning_plan().metodist,
+                    send_homework_tg(initiator=instance.homework.get_lesson()
+                                     .get_learning_plan().metodist,
                                      listener=instance.homework.teacher,
                                      homeworks=hws,
                                      text=teacher_msg_text)
             elif request.POST.get('action') == 'decline':
                 user_log["title"] = "Действие преподавателя НЕ согласовано"
                 user_log["color"] = "warning"
-                send_homework_tg(request.user, instance.homework.teacher, hws, "Действие по ДЗ не согласовано")
+                send_homework_tg(request.user, instance.homework.teacher,
+                                 hws, "Действие по ДЗ не согласовано")
             if request.POST.get('message'):
                 agreement['message'] = request.POST.get('message')
                 message = Message.objects.create(sender=request.user,
@@ -365,8 +382,7 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                 })
             UserLog.objects.create(**user_log)
             return Response(data={'status': True}, status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class HomeworkReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
@@ -395,19 +411,20 @@ class HomeworkSetCancelledAPIView(LoginRequiredMixin, APIView):
         try:
             hw = Homework.objects.get(pk=kwargs.get('pk'))
         except Homework.DoesNotExist:
-            return Response({'status': 'Ошибка! ДЗ не найдено'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'status': 'Ошибка! ДЗ не найдено'},
+                            status=status.HTTP_404_NOT_FOUND)
         if hw.get_status().status in [4, 6]:
-            return Response({'status': 'Невозможно отменить ДЗ, так как оно либо принято, либо уже отменено'},
+            return Response({'status': 'Невозможно отменить ДЗ, так как '
+                                       'оно либо принято, либо уже отменено'},
                             status=status.HTTP_400_BAD_REQUEST)
-        else:
-            hl = HomeworkLog.objects.create(
-                homework=hw,
-                user=request.user,
-                comment="Домашнее задание отменено",
-                status=6
-            )
-            serializer = HomeworkLogSerializer(hl, many=False, context={'request': request})
-            return Response({'status': 'ok', 'log': serializer.data}, status=status.HTTP_200_OK)
+        hl = HomeworkLog.objects.create(
+            homework=hw,
+            user=request.user,
+            comment="Домашнее задание отменено",
+            status=6
+        )
+        serializer = HomeworkLogSerializer(hl, many=False, context={'request': request})
+        return Response({'status': 'ok', 'log': serializer.data}, status=status.HTTP_200_OK)
 
 
 class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
@@ -418,7 +435,8 @@ class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
             return Response({"error": "ДЗ не найдено"}, status=status.HTTP_404_NOT_FOUND)
         perm = get_can_edit_hw_permission(hw, request)
         if not perm:
-            return Response({"error": "Нет прав для редактирования ДЗ"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"error": "Нет прав для редактирования ДЗ"},
+                            status=status.HTTP_403_FORBIDDEN)
         try:
             hw.materials.set(hw.materials.exclude(pk=kwargs.get('mat_id')))
             lesson = hw.get_lesson()
@@ -427,7 +445,7 @@ class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
                 mat = Material.objects.get(pk=kwargs.get('mat_id'))
                 UserLog.objects.create(log_type=4,
                                        learning_plan=plan,
-                                       title=f"Из домашнего задания удалён материал",
+                                       title="Из домашнего задания удалён материал",
                                        content={
                                            "list": [{
                                                "name": "Наименование занятия",

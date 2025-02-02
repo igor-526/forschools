@@ -13,5 +13,5 @@ def status_code_to_string(status_code):
     try:
         st = int(status_code)
         return statuses.get(st)
-    except Exception as e:
+    except Exception:
         return None

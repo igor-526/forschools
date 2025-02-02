@@ -1,5 +1,5 @@
-from profile_management.models import NewUser
 from django.db.models import Q
+from profile_management.models import NewUser
 
 
 def can_see_other_users_messages(request):
@@ -7,10 +7,11 @@ def can_see_other_users_messages(request):
 
 
 def can_see_chat(request, user_id: int):
-    user_groups = [group.name for group in request.user.groups.filter(name__in=["Admin", "Metodist"])]
+    user_groups = [group.name for group in
+                   request.user.groups.filter(name__in=["Admin", "Metodist"])]
     if "Admin" in user_groups:
         return True
-    elif "Metodist" in user_groups:
+    if "Metodist" in user_groups:
         return NewUser.objects.filter(
             Q(plan_listeners__metodist=request.user,
               is_active=True) |

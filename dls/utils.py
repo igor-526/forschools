@@ -1,5 +1,5 @@
-from profile_management.models import Telegram
 from django.urls import reverse
+from profile_management.models import Telegram
 
 
 def get_tg_id_sync(user_id: int, usertype=None):
@@ -8,11 +8,11 @@ def get_tg_id_sync(user_id: int, usertype=None):
                                      usertype=usertype).first()
         if tg:
             return tg.tg_id
-        else:
-            return None
+        return None
     else:
         tg_ids = [{"tg_id": tgnote.tg_id,
-                   "usertype": tgnote.usertype} for tgnote in Telegram.objects.filter(user__id=user_id).all()]
+                   "usertype": tgnote.usertype} for tgnote
+                  in Telegram.objects.filter(user__id=user_id).all()]
         return tg_ids
 
 
@@ -20,7 +20,8 @@ def get_menu(user):
     superuser_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': f'Cообщения ({user.get_unread_messages_count()})', 'url': reverse('chats'), 'type': 'main'},
+        {'name': f'Cообщения ({user.get_unread_messages_count()})',
+         'url': reverse('chats'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
@@ -83,11 +84,13 @@ def get_menu(user):
         {'name': 'Техподдержка', 'url': "#", 'type': 'main', 'id': 'forschoolsSupportButton'},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
+    menu = []
     if user.is_superuser:
-        return superuser_menu
+        menu = superuser_menu
     if user.groups.filter(name__in=["Metodist", "Admin"]).exists():
-        return admin_menu
+        menu = admin_menu
     if user.groups.filter(name__in=["Teacher", "Curator"]).exists():
-        return teacher_menu
+        menu = teacher_menu
     if user.groups.filter(name="Listener").exists():
-        return listener_menu
+        menu = listener_menu
+    return menu

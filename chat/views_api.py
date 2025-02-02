@@ -2,14 +2,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-
+from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
+from rest_framework import status
 from profile_management.models import NewUser, Telegram
+from chat.models import GroupChats
 from .models import Message
 from .permissions import can_see_chat
 from .serializers import ChatMessageSerializer, ChatGroupInfoSerailizer
-from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
-from rest_framework import status
-from chat.models import GroupChats
 
 
 class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
@@ -22,7 +21,7 @@ class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
                     chats = from_user.get_users_for_chat()
                     return Response(chats, status=status.HTTP_200_OK)
                 except NewUser.DoesNotExist:
-                    raise PermissionDenied
+                    raise PermissionDenied()
             else:
                 raise PermissionDenied()
         chats = request.user.get_users_for_chat()
@@ -66,7 +65,8 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                   sender_tg_id=self.kwargs.get("user"))
             ).order_by('-date')
         elif self.chat_type == "Group":
-            queryset = Message.objects.filter(group_chats_messages=self.kwargs.get("user")).order_by('-date')
+            queryset = Message.objects.filter(
+                group_chats_messages=self.kwargs.get("user")).order_by('-date')
         return queryset
 
     def read_messages(self, queryset):

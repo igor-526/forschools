@@ -147,7 +147,7 @@ class FileParser:
                 counter = 1
                 while True:
                     new_name = f"{self.file_name[:190]}({counter})"
-                    mat_name_exists = await model.objects.afilter(name=new_name).aexists()
+                    mat_name_exists = await model.objects.filter(name=new_name).aexists()
                     if mat_name_exists:
                         counter += 1
                     else:

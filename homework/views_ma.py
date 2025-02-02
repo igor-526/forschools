@@ -15,7 +15,8 @@ class HomeworkItemMAPage(TemplateView):
         context = {
             "title": "Домашнее задание",
             "homework_id": kwargs.get("pk"),
-            "homework_info": request.user.groups.filter(name__in=["Admin", "Metodist", "Teacher", "Curator"]).exists(),
+            "homework_info": request.user.groups.filter(
+                name__in=["Admin", "Metodist", "Teacher", "Curator"]).exists(),
             "is_authenticated": request.user.is_authenticated,
         }
         return render(request, self.template_name, context)

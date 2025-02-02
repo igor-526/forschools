@@ -27,7 +27,7 @@ def plan_calculated_info(date: datetime.datetime, schedule: dict, program: Learn
     return {
         "info": info,
         "last_date": last_date,
-        "total_hours": total_hours//1
+        "total_hours": total_hours // 1
     }
 
 
@@ -131,15 +131,14 @@ class ProgramSetter:
         ld = self.last_date
         while ld.weekday() not in self.schedule.keys():
             ld = ld + datetime.timedelta(days=1)
-        else:
-            result = {
-                "date": ld,
-                "start": self.schedule.get(ld.weekday()).get("start"),
-                "end": self.schedule.get(ld.weekday()).get("end"),
-            }
-            if not show:
-                self.last_date = ld + datetime.timedelta(days=1)
-            return result
+        result = {
+            "date": ld,
+            "start": self.schedule.get(ld.weekday()).get("start"),
+            "end": self.schedule.get(ld.weekday()).get("end"),
+        }
+        if not show:
+            self.last_date = ld + datetime.timedelta(days=1)
+        return result
 
     def get_plan_dict(self):
         plan = [self.program.phases.get(pk=phase) for phase in self.program.phases_order]
@@ -149,11 +148,12 @@ class ProgramSetter:
         } for phase in plan]
 
         for key, phase in enumerate(plan):
-            lessons = (phase.get("lessons"))
+            lessons = phase.get("lessons")
             lessons = [{
                 'object': lesson,
                 'homeworks': [{"object": hw,
-                               "deadline": self.get_next_date(show=True).get("date") + datetime.timedelta(days=3)}
+                               "deadline": self.get_next_date(show=True).get("date") +
+                                           datetime.timedelta(days=3)}
                               for hw in lesson.homeworks.all()],
                 'dt': self.get_next_date()
             } for lesson in lessons]
@@ -220,15 +220,14 @@ class Rescheduling:
         ld = self.last_date
         while ld.weekday() not in self.schedule.keys():
             ld = ld + datetime.timedelta(days=1)
-        else:
-            result = {
-                "date": ld,
-                "start": self.schedule.get(ld.weekday()).get("start"),
-                "end": self.schedule.get(ld.weekday()).get("end"),
-            }
-            if not show:
-                self.last_date = ld + datetime.timedelta(days=1)
-            return result
+        result = {
+            "date": ld,
+            "start": self.schedule.get(ld.weekday()).get("start"),
+            "end": self.schedule.get(ld.weekday()).get("end"),
+        }
+        if not show:
+            self.last_date = ld + datetime.timedelta(days=1)
+        return result
 
     def set_hw_deadline(self, homeworks, date):
         for hw in homeworks:
@@ -264,7 +263,7 @@ class AddLessons:
                  plan: LearningPlan,
                  lessons_count: int = None,
                  last_lesson_date: datetime = None
-    ):
+                 ):
         self.last_date = first_date
         self.schedule = schedule
         self.plan = plan
@@ -275,27 +274,25 @@ class AddLessons:
         ld = self.last_date
         while ld.weekday() not in self.schedule.keys():
             ld = ld + datetime.timedelta(days=1)
-        else:
-            result = {
-                "date": ld,
-                "start": self.schedule.get(ld.weekday()).get("start"),
-                "end": self.schedule.get(ld.weekday()).get("end")
-            }
-            if not show:
-                self.last_date = ld + datetime.timedelta(days=1)
-            return result
+        result = {
+            "date": ld,
+            "start": self.schedule.get(ld.weekday()).get("start"),
+            "end": self.schedule.get(ld.weekday()).get("end")
+        }
+        if not show:
+            self.last_date = ld + datetime.timedelta(days=1)
+        return result
 
     def get_phase(self):
         plan_phases = self.plan.phases.order_by("-pk").first()
         if plan_phases:
             return plan_phases
-        else:
-            phase = LearningPhases.objects.create(
-                name="Этап 1",
-                purpose="Без цели"
-            )
-            self.plan.phases.add(phase)
-            self.plan.save()
+        phase = LearningPhases.objects.create(
+            name="Этап 1",
+            purpose="Без цели"
+        )
+        self.plan.phases.add(phase)
+        self.plan.save()
         return phase
 
     def get_next_lesson_break(self, counter: int = None, next_date: datetime = None):
