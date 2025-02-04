@@ -627,9 +627,7 @@ async def show_homework(callback: CallbackQuery,
     user = await get_user(callback.from_user.id)
     gp = await get_group_and_perms(user.id)
     hw_status = await hw.aget_status(True) if "Listener" in gp.get('groups') else await hw.aget_status(False)
-    print(hw_status.status)
     if "Listener" in gp.get('groups') and hw_status.status == 7:
-        print("OPEN")
         await hw.aopen()
     lesson = await hw.aget_lesson()
     lp = None

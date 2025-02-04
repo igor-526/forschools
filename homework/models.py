@@ -121,7 +121,6 @@ class Homework(models.Model):
         return await self.lesson_set.afirst()
 
     def set_assigned(self):
-        agreement = None
         if self.get_status().status != 6:
             lesson = self.get_lesson()
             lp = None
@@ -136,17 +135,16 @@ class Homework(models.Model):
                                                "accepted_dt": None,
                                                "accepted": False
                                            })
-                agreement = {"agreement": True}
+                return {"agreement": True}
             HomeworkLog.objects.create(homework=self,
                                        user=self.teacher,
                                        comment="Домашнее задание задано",
                                        status=7)
-            agreement = {"agreement": False}
-        return agreement
+            return {"agreement": False}
+        return None
 
     async def aset_assigned(self, check_methodist=True):
         status = (await self.aget_status()).status
-        agreement = None
         if status != 6:
             if check_methodist:
                 lesson = await self.aget_lesson()
@@ -163,18 +161,18 @@ class Homework(models.Model):
                                                           "accepted": False
                                                       })
 
-                    agreement = {"agreement": True}
+                    return {"agreement": True}
                 await HomeworkLog.objects.acreate(homework=self,
                                                   user=self.teacher,
                                                   comment="Домашнее задание задано",
                                                   status=7)
-                agreement = {"agreement": False}
+                return {"agreement": False}
             await HomeworkLog.objects.acreate(homework=self,
                                               user=self.teacher,
                                               comment="Домашнее задание задано",
                                               status=7)
-            agreement = {"agreement": False}
-        return agreement
+            return {"agreement": False}
+        return None
 
 
 class HomeworkLog(models.Model):

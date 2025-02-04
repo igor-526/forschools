@@ -189,7 +189,6 @@ class FileParser:
                 if not ret:
                     break
                 frames.append(frame)
-            print(self.file_name)
             for i in range(len(frames)):
                 cv2.imwrite(f"{self.file_name}{i}.png", frames[i])
             frame_images = [Image.open(f"{self.file_name}{i}.png") for i in range(len(frames))]

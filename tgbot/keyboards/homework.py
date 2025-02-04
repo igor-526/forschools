@@ -107,7 +107,7 @@ def get_homework_item_buttons(hw_id: int,
                               edit_hw_button: bool) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="ПРОСМОТР",
+        text="Просмотр ДЗ",
         web_app=WebAppInfo(
             url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/homeworks/{hw_id}/"))
     )
