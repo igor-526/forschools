@@ -4,9 +4,9 @@ from .models import HomeworkLog, Homework
 def get_delete_log_permission(log: HomeworkLog, request):
     if (request.user.groups.filter(name__in=['Admin', 'Metodist'])
             .exists() or request.user == log.user):
-        if log.status in [1, 2, 3, 7]:
+        if log.status in [1, 2, 3]:
             return False
-        if log.homework.get_status().status in [1, 2, 7]:
+        if log.homework.get_status().status in [1, 2]:
             return False
         all_logs = [{
             "log_id": log_note.id,
