@@ -335,7 +335,6 @@ async def add_homework_set_homework_ready(state: FSMContext,
         current_deadline.get("day")) if current_deadline else None
     if hw_id:
         homework = await Homework.objects.select_related("teacher").select_related("listener").aget(id=hw_id)
-
         hw_group = await homework.homeworkgroups_set.afirst()
         if hw_group:
             hws = [_ async for _ in hw_group.homeworks.select_related("teacher").select_related("listener").all()]
@@ -375,6 +374,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 teacher=teacher,
                 for_curator=True
             )
+            hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=hw.id)
             await hw.materials.aset(statedata.get("new_hw").get("materials"))
             if lesson:
                 await lesson.homeworks.aadd(hw)

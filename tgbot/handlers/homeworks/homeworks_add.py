@@ -133,7 +133,6 @@ async def h_homework_add(callback: CallbackQuery,
         return
     state_data['new_hw']['lesson_id'] = callback_data.lesson_id
     await state.update_data(state_data)
-    print("ХЭНДЛЕР")
     await add_homework_set_homework_ready(state=state,
                                           callback=callback)
 
