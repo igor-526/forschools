@@ -1,6 +1,31 @@
 function userLogsMain(){
     userLogsSelectPlanButton.addEventListener("click", userLogsOffcanvasShow)
     userLogsSetDate()
+
+    userLogsTabsMessages.addEventListener("click", function (){
+        userLogsTabsActions.classList.remove("active")
+        userLogsTabsMessages.classList.add("active")
+        userLogsBodyMessages.classList.remove("d-none")
+        userLogsBodyActions.classList.add("d-none")
+        userLogsMessagesSet()
+    })
+    userLogsTabsActions.addEventListener("click", function (){
+        userLogsTabsActions.classList.add("active")
+        userLogsTabsMessages.classList.remove("active")
+        userLogsBodyMessages.classList.add("d-none")
+        userLogsBodyActions.classList.remove("d-none")
+    })
+    userLogsTabsMessagesSelectUsers.addEventListener("click", function () {
+        userLogsTabsActions.classList.remove("active")
+        userLogsTabsMessages.classList.add("active")
+        userLogsBodyMessages.classList.remove("d-none")
+        userLogsBodyActions.classList.add("d-none")
+        userLogsMessagesSelectedFirstUser = null
+        userLogsMessagesSelectedSecondUser = null
+        userLogsMessagesDownloaded = false
+        userLogsMessagesSet()
+    })
+
     userLogsPlanActionsFiltersDateSetWeek.addEventListener("click", function () {
         userLogsSetDate(6)
         if (userLogsSelectedPlan){
@@ -38,15 +63,12 @@ function userLogsSetDate(daysCount = 2){
 }
 
 function userLogsGetActions(clear=true, more=false){
+    userLogsBodySpinner.classList.remove("d-none")
     if (!more && userLogsCurrentOffset !== 0){
         userLogsCurrentOffset = 0
     }
-    userLogsTabsActions.classList.add("active")
-    userLogsTabsMessages.classList.remove("active")
-    userLogsBodyMessages.classList.add("active")
-    userLogsBodySpinner.classList.remove("d-none")
     if (clear){
-        userLogsBodyActions.innerHTML = ""
+        userLogsListActions.innerHTML = ""
     }
     userLogsAPIGetActions(userLogsCurrentOffset, userLogsSelectedPlan, userLogsFilterDateFrom, userLogsFilterDateTo,
         userLogsFilterHW, userLogsFilterTGJournal, userLogsFilterMessages,
@@ -103,50 +125,50 @@ function userLogsShowPlanInfo(info){
     })
 }
 
-function userLogsShowActions(actions, clear=true){
-    function getFilesElement(files){
-        const container = document.createElement("div")
-        container.classList.add("logs-information-files")
-        files.forEach(f => {
-            const fileContainer = document.createElement("div")
-            fileContainer.classList.add("logs-information-file")
-            switch (f.type){
-                case 'image_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-image"></i>'
-                    break
-                case 'video_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-file-easel"></i>'
-                    break
-                case 'animation_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-filetype-gif"></i>'
-                    break
-                case 'archive_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-zip"></i>'
-                    break
-                case 'pdf_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-pdf"></i>'
-                    break
-                case 'voice_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-play"></i>'
-                    break
-                case 'audio_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-music"></i>'
-                    break
-                case 'text_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-text"></i>'
-                    break
-                case 'presentation_formats':
-                    fileContainer.innerHTML = '<i class="bi bi-file-earmark-ppt"></i>'
-                    break
-            }
-            fileContainer.addEventListener("click", function () {
-                materialsUtilsFilePreviewByHref(f.type, f.href)
-            })
-            container.insertAdjacentElement("beforeend", fileContainer)
+function userLogsGetFilesElement(files){
+    const container = document.createElement("div")
+    container.classList.add("logs-information-files")
+    files.forEach(f => {
+        const fileContainer = document.createElement("div")
+        fileContainer.classList.add("logs-information-file")
+        switch (f.type){
+            case 'image_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-earmark-image"></i>'
+                break
+            case 'video_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-easel"></i>'
+                break
+            case 'animation_formats':
+                fileContainer.innerHTML = '<i class="bi bi-filetype-gif"></i>'
+                break
+            case 'archive_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-earmark-zip"></i>'
+                break
+            case 'pdf_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-earmark-pdf"></i>'
+                break
+            case 'voice_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-earmark-play"></i>'
+                break
+            case 'audio_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-earmark-music"></i>'
+                break
+            case 'text_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-earmark-text"></i>'
+                break
+            case 'presentation_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-earmark-ppt"></i>'
+                break
+        }
+        fileContainer.addEventListener("click", function () {
+            materialsUtilsFilePreviewByHref(f.type, f.href)
         })
-        return container
-    }
+        container.insertAdjacentElement("beforeend", fileContainer)
+    })
+    return container
+}
 
+function userLogsShowActions(actions, clear=true){
     function getElement(action){
         const li = document.createElement("li")
         li.classList.add("list-group-item", "mb-1")
@@ -204,14 +226,14 @@ function userLogsShowActions(actions, clear=true){
         }
 
         if (action.files.length > 0){
-            li.insertAdjacentElement("beforeend", getFilesElement(action.files))
+            li.insertAdjacentElement("beforeend", userLogsGetFilesElement(action.files))
         }
 
         return li
     }
 
     actions.forEach(action => {
-        userLogsBodyActions.insertAdjacentElement("beforeend", getElement(action))
+        userLogsListActions.insertAdjacentElement("beforeend", getElement(action))
     })
 }
 
@@ -260,6 +282,131 @@ function userLogsFiltersListeners(){
     })
 }
 
+function userLogsMessagesSet(){
+    function getUserListener(element, userID, mode){
+        switch (mode){
+            case "first":
+                userLogsBodyMessagesSelectUsersFirstList.querySelectorAll("a").forEach(element => {
+                    element.classList.remove("active")
+                })
+                element.classList.add("active")
+                userLogsMessagesSelectedFirstUser = userID
+                break
+            case "second":
+                userLogsBodyMessagesSelectUsersSecondList.querySelectorAll("a").forEach(element => {
+                    element.classList.remove("active")
+                })
+                element.classList.add("active")
+                userLogsMessagesSelectedSecondUser = userID
+                break
+        }
+        userLogsMessagesSet()
+    }
+
+    function getUserElement(user, mode){
+        const a = document.createElement("a")
+        a.href = "#"
+        a.classList.add("list-group-item")
+        a.innerHTML = `<b>${user.role}:</b> ${user.name}`
+        a.addEventListener("click", function (){
+            getUserListener(a, user.id, mode)
+        })
+        return a
+    }
+
+    function getMessageElement(message){
+        const messageDiv = document.createElement("div")
+        const messageBody = document.createElement("div")
+        const messageBodyText = document.createElement("p")
+        const messageBodyData = document.createElement("span")
+        messageDiv.classList.add("d-flex")
+        if (message.type === "sender"){
+            messageDiv.classList.add("justify-content-end")
+            messageBody.classList.add("chats-message-sender")
+        } else {
+            messageDiv.classList.add("justify-content-start")
+            messageBody.classList.add("chats-message-receiver")
+        }
+        messageDiv.insertAdjacentElement("beforeend", messageBody)
+        messageBodyText.innerHTML = message.text
+        messageBodyData.classList.add("chats-message-data")
+        messageBodyData.innerHTML = timeUtilsDateTimeToStr(new Date(message.date))
+        const read_data = Object.keys(message.read_data)
+        switch (read_data.length){
+            case 0:
+                break
+            case 1:
+                const rdtObj = (message.read_data[read_data[0]])
+                const rdt = new Date()
+                const rdtObjM = rdtObj.month === 1 ? 12 : rdtObj.month - 1
+                rdt.setUTCFullYear(rdtObj.year, rdtObjM, rdtObj.day)
+                rdt.setUTCHours(rdtObj.hour, rdtObj.minute, 0, 0)
+                messageBodyData.innerHTML += ` | прочитано ${timeUtilsDateTimeToStr(rdt)}`
+                break
+            default:
+                break
+        }
+        messageBody.insertAdjacentElement("beforeend", messageBodyText)
+        if (message.files.length > 0){
+            messageBody.insertAdjacentElement("beforeend", userLogsGetFilesElement(message.files))
+        }
+        messageBody.insertAdjacentElement("beforeend", messageBodyData)
+        return messageDiv
+    }
+
+    if (userLogsMessagesSelectedFirstUser && userLogsMessagesSelectedSecondUser){
+        userLogsBodyMessagesSelectUsers.classList.add("d-none")
+        userLogsBodyMessagesChat.classList.remove("d-none")
+        if (!userLogsMessagesDownloaded){
+            userLogsAPIGetMessages(userLogsMessagesSelectedFirstUser,
+                userLogsMessagesSelectedSecondUser).then(request => {
+                switch (request.status){
+                    case 200:
+                        userLogsBodyMessagesChatMessages.innerHTML = ""
+                        userLogsBodyMessagesChatNames.innerHTML = `
+                        <span>${request.response.user_first}</span>
+                        <span>${request.response.user_second}</span>
+                        `
+                        let last_message = null
+                        request.response.messages.forEach(message => {
+                            const element = getMessageElement(message)
+                            if (!last_message){
+                                last_message = element
+                            }
+                            userLogsBodyMessagesChatMessages.insertAdjacentElement("afterbegin", element)
+                        })
+                        if (last_message){
+                            last_message.scrollIntoView({block: "end", behavior: "auto"})
+                        }
+                }
+            })
+            userLogsMessagesDownloaded = true
+        }
+    } else {
+        userLogsBodyMessagesSelectUsers.classList.remove("d-none")
+        userLogsBodyMessagesChat.classList.add("d-none")
+        userLogsAPIGetMessagesUsers(userLogsSelectedPlan, userLogsMessagesSelectedFirstUser).then(request => {
+            switch (request.status){
+                case 200:
+                    if (!userLogsMessagesSelectedFirstUser){
+                        userLogsBodyMessagesSelectUsersFirst.classList.remove("d-none")
+                        userLogsBodyMessagesSelectUsersSecond.classList.add("d-none")
+                        userLogsBodyMessagesSelectUsersFirstList.innerHTML = ""
+                        request.response.forEach(user => {
+                            userLogsBodyMessagesSelectUsersFirstList.insertAdjacentElement("beforeend", getUserElement(user, "first"))
+                        })
+                    } else {
+                        userLogsBodyMessagesSelectUsersSecond.classList.remove("d-none")
+                        userLogsBodyMessagesSelectUsersSecondList.innerHTML = ""
+                        request.response.forEach(user => {
+                            userLogsBodyMessagesSelectUsersSecondList.insertAdjacentElement("beforeend", getUserElement(user, "second"))
+                        })
+                    }
+            }
+        })
+    }
+}
+
 let userLogsSelectedPlan
 let userLogsCurrentOffset = 0
 let userLogsFilterDateFrom = null
@@ -270,15 +417,30 @@ let userLogsFilterMessages = true
 let userLogsFilterLessons = true
 let userLogsFilterPlans = true
 
+let userLogsMessagesSelectedFirstUser = null
+let userLogsMessagesSelectedSecondUser = null
+let userLogsMessagesDownloaded = false
+
 
 const userLogsSelectPlanButton = document.querySelector("#userLogsSelectPlanButton")
 const userLogsPlanInformation = document.querySelector("#userLogsPlanInformation")
 const userLogsPlanInformationHeaderBtn = document.querySelector("#userLogsPlanInformationHeaderBtn")
 const userLogsTabsActions = document.querySelector("#userLogsTabsActions")
+const userLogsListActions = document.querySelector("#userLogsListActions")
 const userLogsBodyActions = document.querySelector("#userLogsBodyActions")
+const userLogsBodySpinner = document.querySelector("#userLogsBodySpinner")
+
 const userLogsTabsMessages = document.querySelector("#userLogsTabsMessages")
 const userLogsBodyMessages = document.querySelector("#userLogsBodyMessages")
-const userLogsBodySpinner = document.querySelector("#userLogsBodySpinner")
+const userLogsBodyMessagesSelectUsers = document.querySelector("#userLogsBodyMessagesSelectUsers")
+const userLogsBodyMessagesSelectUsersFirst = document.querySelector("#userLogsBodyMessagesSelectUsersFirst")
+const userLogsBodyMessagesSelectUsersFirstList = document.querySelector("#userLogsBodyMessagesSelectUsersFirstList")
+const userLogsBodyMessagesSelectUsersSecond = document.querySelector("#userLogsBodyMessagesSelectUsersSecond")
+const userLogsBodyMessagesSelectUsersSecondList = document.querySelector("#userLogsBodyMessagesSelectUsersSecondList")
+const userLogsBodyMessagesChat = document.querySelector("#userLogsBodyMessagesChat")
+const userLogsBodyMessagesChatNames = document.querySelector("#userLogsBodyMessagesChatNames")
+const userLogsBodyMessagesChatMessages = document.querySelector("#userLogsBodyMessagesChatMessages")
+const userLogsTabsMessagesSelectUsers = document.querySelector("#userLogsTabsMessagesSelectUsers")
 
 const userLogsPlanActionsFilters = document.querySelector("#userLogsPlanActionsFilters")
 const userLogsPlanActionsFiltersDateFrom = userLogsPlanActionsFilters.querySelector("#userLogsPlanActionsFiltersDateFrom")

@@ -36,3 +36,32 @@ async function userLogsAPIGetActions(offset=null, planID=null, date_from=null, d
     const request = await fetch(url)
     return APIGetToObject(request)
 }
+
+async function userLogsAPIGetMessagesUsers(planID=null, selectedFirstUser=null){
+    let url = `/api/v1/user_logs/plan${planID}/messages/`
+    const queryParams = []
+    if (selectedFirstUser){
+        queryParams.push(`selected_first_user=${selectedFirstUser}`)
+    }
+    if (queryParams.length > 0){
+        url += "?" + queryParams.join("&")
+    }
+    const request = await fetch(url)
+    return APIGetToObject(request)
+}
+
+async function userLogsAPIGetMessages(selectedFirstUser=null, selectedSecondUser=null){
+    let url = `/api/v1/user_logs/messages/`
+    const queryParams = []
+    if (selectedFirstUser){
+        queryParams.push(`selected_first_user=${selectedFirstUser}`)
+    }
+    if (selectedSecondUser){
+        queryParams.push(`selected_second_user=${selectedSecondUser}`)
+    }
+    if (queryParams.length > 0){
+        url += "?" + queryParams.join("&")
+    }
+    const request = await fetch(url)
+    return APIGetToObject(request)
+}

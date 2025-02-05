@@ -1,10 +1,13 @@
 from _operator import itemgetter
 from datetime import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from homework.models import HomeworkLog
+from material.utils.get_type import get_type
+from profile_management.models import NewUser
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from user_logs.models import UserLog
 from tgbot.models import TgBotJournal
@@ -165,3 +168,84 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
         all_notes = [*hw_logs, *tg_journal_notes, *messages, *lessons, *plans][offset:offset + 50]
         all_notes = sorted(all_notes, key=itemgetter("date"), reverse=True)
         return Response({"plan_info": self.plan_info, "logs": all_notes}, status=status.HTTP_200_OK)
+
+
+class UserLogsMessagesUsersAPIVIew(LoginRequiredMixin, APIView):
+    def get_user_info(self, user: NewUser, role: str):
+        return {
+            "id": user.id,
+            "usertype": "NewUser",
+            "name": f"{user.first_name} {user.last_name}",
+            "role": role,
+            "last_message_dt": None
+        }
+
+    def get(self, request, *args, **kwargs):
+        try:
+            learning_plan = LearningPlan.objects.get(id=kwargs.get('plan_pk'))
+        except LearningPlan.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        users = []
+        selected_first_user = request.query_params.get('selected_first_user')
+        if learning_plan.teacher:
+            users.append(self.get_user_info(learning_plan.teacher, "Преподаватель"))
+        if learning_plan.default_hw_teacher and learning_plan.default_hw_teacher != learning_plan.teacher:
+            users.append(self.get_user_info(learning_plan.default_hw_teacher, "Проверяющий ДЗ"))
+        if learning_plan.metodist:
+            users.append(self.get_user_info(learning_plan.metodist, "Методист"))
+        users.extend([self.get_user_info(user, "Куратор") for user in learning_plan.curators.all()])
+        users.extend([self.get_user_info(user, "Ученик") for user in learning_plan.listeners.all()])
+        if selected_first_user is not None:
+            try:
+                selected_first_user = int(selected_first_user)
+            except ValueError:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            users = list(filter(lambda user: user.get("id") != selected_first_user, users))
+        return Response(data=users, status=status.HTTP_200_OK)
+
+
+class UserLogsMessagesChatAPIVIew(LoginRequiredMixin, APIView):
+    selected_first_user: int
+    selected_second_user: int
+
+    def get_messages(self, query):
+        return [{
+            "text": message.message if message.message else "Без текста",
+            "date": message.date,
+            "type": "receiver" if self.selected_first_user == message.sender.id else "sender",
+            "read_data": message.read_data,
+            "files": [{
+                "type": get_type(f.path.name.split('.')[-1]),
+                "href": f.path.url
+            } for f in message.files.all()]
+        } for message in query]
+
+    def get_users_info(self):
+        try:
+            user_first = NewUser.objects.get(id=self.selected_first_user)
+            user_second = NewUser.objects.get(id=self.selected_second_user)
+        except NewUser.DoesNotExist:
+            return {}
+        return {
+            "user_first": f'{user_first.first_name} {user_first.last_name}',
+            "user_second": f'{user_second.first_name} {user_second.last_name}',
+        }
+
+    def get(self, request, *args, **kwargs):
+        selected_first_user = request.query_params.get('selected_first_user')
+        selected_second_user = request.query_params.get('selected_second_user')
+        if selected_first_user and selected_second_user:
+            try:
+                self.selected_first_user = int(selected_first_user)
+                self.selected_second_user = int(selected_second_user)
+            except ValueError:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        messages = Message.objects.filter(Q(sender=self.selected_first_user,
+                                            receiver=self.selected_second_user) |
+                                          Q(sender=self.selected_second_user,
+                                            receiver=self.selected_first_user)).order_by("-date")
+        return Response(data={"messages": self.get_messages(messages),
+                              **self.get_users_info()}, status=status.HTTP_200_OK)
+
