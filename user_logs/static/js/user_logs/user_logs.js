@@ -47,6 +47,7 @@ function userLogsMain(){
     userLogsFiltersListeners()
     userLogsSelectedPlan = getHashValue("plan_id")
     if (userLogsSelectedPlan){
+        userLogsTabsMessages.classList.remove("disabled")
         userLogsGetActions(true)
     }
     userLogsBodyShowMoreButton.addEventListener("click", function () {

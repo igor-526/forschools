@@ -55,6 +55,7 @@ function userLogsOffcanvasShowLearningPlans(plans){
         a.addEventListener("click", function (){
             userLogsSelectedPlan = plan.id
             bsUserLogsOffcanvasLP.hide()
+            userLogsTabsMessages.classList.remove("disabled")
             userLogsGetActions()
         })
         return a
