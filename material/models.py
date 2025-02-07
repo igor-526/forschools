@@ -36,7 +36,7 @@ class Material(models.Model):
                             max_length=200,
                             null=False,
                             blank=False,
-                            unique=True)
+                            unique=False)
     description = models.CharField(verbose_name='Описание',
                                    null=True,
                                    blank=True)
