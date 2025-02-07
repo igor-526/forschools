@@ -116,9 +116,10 @@ async def h_homework_set_hw_add_material(message: types.Message, state: FSMConte
             ignore_text=False
         )
         await material.download()
-        state_data = await state.get_data()
-        state_data["new_hw"]["materials"].append(material.ready_material.id)
-        await state.set_data(state_data)
+        if material.ready_material:
+            state_data = await state.get_data()
+            state_data["new_hw"]["materials"].append(material.ready_material.id)
+            await state.set_data(state_data)
 
 
 @router.callback_query(HomeworkNewCallback.filter())

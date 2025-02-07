@@ -371,7 +371,7 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                     "name": "Ученик",
                     "val": f"{hw.listener.first_name} {hw.listener.last_name}"
                 })
-                user_log['buttons'].append({"inner": hw.name,
+                user_log['buttons'].append({"inner": f"{hw.name} ({hw.listener})",
                                             "href": f"/homeworks/{hw.id}"})
             user_log['buttons'].append({"inner": "Занятие",
                                         "href": f"/lessons/{lesson.id}"})

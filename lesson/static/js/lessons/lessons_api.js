@@ -113,15 +113,16 @@ async function lessonsAPIUpdateLesson(fd, lessonID){
 }
 
 async function lessonsAPISetPassed(lessonID, fd){
-    const request = await fetch(`/api/v1/lessons/${lessonID}/set_passed/`, {
+    await fetch(`/api/v1/lessons/${lessonID}/set_passed/`, {
         method: "POST",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
         },
         body: fd
+    }).then(request => {
+        return APIPostPatchToObject(request)
     })
-    return await APIPostPatchToObject(request)
 }
 
 async function lessonsAPIReschedulingCalculate(lessonID, fd){

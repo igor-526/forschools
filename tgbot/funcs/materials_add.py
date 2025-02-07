@@ -211,6 +211,7 @@ class FileParser:
             await self.animation_convert()
 
     async def add_material_db(self):
+        try:
             query_params = {
                 "name": self.file_name[:200],
                 "file": self.file_path_db,
@@ -224,6 +225,8 @@ class FileParser:
             self.ready_material = new_mat
             await self.status_message.delete()
             await self.material_message.reply(**self.generate_success_message())
+        except Exception as e:
+            await self.update_status_message(f'Произошла ошибка при добавлении материала:\n{e}')
 
     async def add_file_db(self):
         try:

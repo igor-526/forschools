@@ -31,7 +31,7 @@ def chats_get_show_message_page_button() -> InlineKeyboardMarkup:
     builder.button(
         text="Открыть",
         web_app=WebAppInfo(
-            url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/messages/"))
+            url=keyboard_anti_cache_url("/ma/messages/"))
     )
     builder.adjust(1)
     return builder.as_markup()

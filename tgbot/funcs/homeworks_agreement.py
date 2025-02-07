@@ -186,7 +186,7 @@ async def f_homework_agr_send(tg_id: int,
                 "name": "Ученик",
                 "val": f"{hw.listener.first_name} {hw.listener.last_name}"
             })
-            buttons.append({"inner": hw.name,
+            buttons.append({"inner": f"{hw.name} ({hw.listener.first_name} {hw.listener.last_name})",
                             "href": f"/homeworks/{hw.id}"})
         buttons.append({"inner": "Занятие",
                         "href": f"/lessons/{lesson.id}"})
