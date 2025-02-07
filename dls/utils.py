@@ -84,13 +84,12 @@ def get_menu(user):
         {'name': 'Техподдержка', 'url': "#", 'type': 'main', 'id': 'forschoolsSupportButton'},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
-    menu = []
     if user.is_superuser:
-        menu = superuser_menu
+        return superuser_menu
     if user.groups.filter(name__in=["Metodist", "Admin"]).exists():
-        menu = admin_menu
+        return admin_menu
     if user.groups.filter(name__in=["Teacher", "Curator"]).exists():
-        menu = teacher_menu
+        return teacher_menu
     if user.groups.filter(name="Listener").exists():
-        menu = listener_menu
-    return menu
+        return listener_menu
+    return None

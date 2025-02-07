@@ -175,7 +175,7 @@ function supportWSGIErrorInfoModalSet(logID){
                 for (let key in request.response.params) {
                     supportWSGIErrorsLogModalParametersList.innerHTML += `${key} : ${request.response.params[key]}<br>`
                 }
-                supportWSGIErrorsLogModalServerResponse.innerHTML = request.response.response ? request.response.response : ""
+                supportWSGIErrorsLogModalServerResponse.innerHTML = request.response.response ? JSON.stringify(request.response.response) : ""
                 bsSupportWSGIErrorsLogModal.show()
                 break
             default:
@@ -463,7 +463,6 @@ const supportWSGIErrorsTableFilterResetAll = document.querySelector("#supportWSG
 
 //Modal
 let supportWSGIErrorsLogModalSelectedID = null
-let supportWSGIErrorsLogModalSetNewStatus = null
 const supportWSGIErrorsLogModal = document.querySelector("#supportWSGIErrorsLogModal")
 const bsSupportWSGIErrorsLogModal = new bootstrap.Modal(supportWSGIErrorsLogModal)
 const supportWSGIErrorsLogModalID = supportWSGIErrorsLogModal.querySelector("#supportWSGIErrorsLogModalID")

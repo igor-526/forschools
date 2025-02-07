@@ -25,7 +25,7 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
     def get_title(self, obj):
         role = get_role_ru(get_role_from_plan(self.context['plan'], obj.user))
         action = get_action_str_from_hw_log_status(obj.status)
-        totalstr = f'{role} {action}'
+        totalstr = f'{role} {action} "{obj.homework.name}"'
         lesson = obj.homework.lesson_set.first()
         if lesson:
             totalstr += f' к занятию "{lesson.name}" от {lesson.date.strftime("%d.%m")}'
@@ -39,7 +39,7 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
         return obj.dt
 
     def get_buttons(self, obj):
-        buttons = [{"inner": "ДЗ",
+        buttons = [{"inner": obj.homework.name,
                     "href": f"/homeworks/{obj.homework.id}"}]
         lesson = obj.homework.lesson_set.first()
         if lesson:
@@ -289,18 +289,18 @@ def get_role_ru(role: str, case: str = 'n', lc: bool = False):
 
 def get_action_str_from_hw_log_status(st: int):
     if st == 1:
-        return "создал ДЗ"
+        return "создал"
     elif st == 2:
-        return "открыл ДЗ"
+        return "открыл"
     elif st == 3:
-        return "отправил на проверку ДЗ"
+        return "отправил на проверку"
     elif st == 4:
-        return "принял ДЗ"
+        return "принял"
     elif st == 5:
-        return "отправил ДЗ на доработку"
+        return "отправил на доработку"
     elif st == 6:
-        return "отменил ДЗ"
+        return "отменил"
     elif st == 7:
-        return "задал ДЗ"
+        return "задал"
     else:
         return ""

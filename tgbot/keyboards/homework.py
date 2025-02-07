@@ -109,7 +109,7 @@ def get_homework_item_buttons(hw_id: int,
     builder.button(
         text="Просмотр ДЗ",
         web_app=WebAppInfo(
-            url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/homeworks/{hw_id}/"))
+            url=keyboard_anti_cache_url(f"/ma/homeworks/{hw_id}/"))
     )
     if mat_button:
         builder.button(
@@ -201,12 +201,12 @@ def get_homework_add_ready_buttons(hw_id: int = None,
     if hw_id:
         builder.button(
             text="Домашнее задание",
-            web_app=WebAppInfo(url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/homeworks/{hw_id}/"))
+            web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/homeworks/{hw_id}/"))
         )
     if lesson_id:
         builder.button(
             text="ФОРМА ЗАНЯТИЯ",
-            web_app=WebAppInfo(url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/lessons/{lesson_id}/form/"))
+            web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/lessons/{lesson_id}/form/"))
         )
     if for_curator_status is not None:
         btn_curator_text = "\u2705" if for_curator_status else "\u274C"

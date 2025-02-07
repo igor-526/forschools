@@ -19,7 +19,7 @@ def get_lesson_ma_button(lesson_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
         text="Посмотреть",
-        web_app=WebAppInfo(url=keyboard_anti_cache_url(f"https://kitai-school.forschools.ru/ma/lessons/{lesson_id}/"))
+        web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/lessons/{lesson_id}/"))
     )
     builder.adjust(1)
     return builder.as_markup()
@@ -27,8 +27,8 @@ def get_lesson_ma_button(lesson_id: int) -> InlineKeyboardMarkup:
 
 def get_schedule_ma_button(self=True) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    url = "https://kitai-school.forschools.ru/ma/lessons/schedule/0/" if self \
-        else "https://kitai-school.forschools.ru/ma/lessons/schedule/"
+    url = "/ma/lessons/schedule/0/" if self \
+        else "/ma/lessons/schedule/"
     builder.button(
         text="Открыть расписание",
         web_app=WebAppInfo(url=keyboard_anti_cache_url(url))
