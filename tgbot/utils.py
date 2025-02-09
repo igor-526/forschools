@@ -6,6 +6,7 @@ from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot
 import async_to_sync as sync
 from tgbot.funcs.fileutils import send_file
+from tgbot.keyboards.chats import chats_get_answer_message_button
 from tgbot.keyboards.lessons import get_lesson_ma_button
 from tgbot.keyboards.materials import get_materials_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons
@@ -321,7 +322,8 @@ def notify_chat_message(message: Message):
         msg_text = (f"<b>Новое сообщение от {message.sender.first_name} "
                     f"{message.sender.last_name}</b>\n{message.message}")
         msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
-                                                     message=msg_text)
+                                                     message=msg_text,
+                                                     reply_markup=chats_get_answer_message_button(message.id))
         add_tgjournal_note(msg_result)
         notificate_parents()
         for parent_tg_id in parents_tg_ids:
