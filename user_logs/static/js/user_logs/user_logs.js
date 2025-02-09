@@ -149,6 +149,9 @@ function userLogsGetFilesElement(files){
             case 'pdf_formats':
                 fileContainer.innerHTML = '<i class="bi bi-file-earmark-pdf"></i>'
                 break
+            case 'word_formats':
+                fileContainer.innerHTML = '<i class="bi bi-file-earmark-word"></i>'
+                break
             case 'voice_formats':
                 fileContainer.innerHTML = '<i class="bi bi-file-earmark-play"></i>'
                 break

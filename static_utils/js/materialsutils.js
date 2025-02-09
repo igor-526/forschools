@@ -124,6 +124,13 @@ function materialsUtilsPreview(matID){
         return pdf
     }
 
+    function getWord(href){
+        const word = document.createElement("iframe")
+        word.src = `https://docs.google.com/gview?url=${href}&embedded=true`
+        word.style = "width: 100%; height: 700px;"
+        return word
+    }
+
     function getUnsupported(){
         const p = document.createElement("p")
         p.innerHTML = "Предварительный просмотр материала не поддерживается"
@@ -153,6 +160,9 @@ function materialsUtilsPreview(matID){
             case "pdf_formats":
                 return {title: "PDF файл",
                     elem: getPDF(href)}
+            case "word_formats":
+                return {title: "Документ Word",
+                    elem: getWord(href)}
             default:
                 return {title: "Не поддерживается",
                     elem: getUnsupported()}
@@ -223,6 +233,13 @@ function materialsUtilsFilePreviewByHref(type, href){
         return pdf
     }
 
+    function getWord(href){
+        const word = document.createElement("iframe")
+        word.src = `https://docs.google.com/gview?url=${href}&embedded=true`
+        word.style = "width: 100%; height: 700px;"
+        return word
+    }
+
     function getUnsupported(){
         const p = document.createElement("p")
         p.innerHTML = "Предварительный просмотр материала не поддерживается"
@@ -249,6 +266,9 @@ function materialsUtilsFilePreviewByHref(type, href){
             case "pdf_formats":
                 return {title: "PDF файл",
                     elem: getPDF(href)}
+            case "word_formats":
+                return {title: "Документ Word",
+                    elem: getWord(href)}
             case "text_formats":
                 return {title: "Текст",
                     elem: getText(href)}
