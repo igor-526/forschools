@@ -166,7 +166,7 @@ function userLogsGetFilesElement(files){
                 break
         }
         fileContainer.addEventListener("click", function () {
-            materialsUtilsFilePreviewByHref(f.type, f.href)
+            materialsUtilsFilePreviewByHref(f.type, `https://${location.host}${f.href}`)
         })
         container.insertAdjacentElement("beforeend", fileContainer)
     })
