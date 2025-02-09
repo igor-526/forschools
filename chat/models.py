@@ -41,6 +41,9 @@ class Message(models.Model):
     read_data = models.JSONField(verbose_name="Прочитано",
                                  null=False,
                                  default=dict)
+    tags = models.JSONField(verbose_name="Тэги",
+                            null=False,
+                            default=list)
 
     class Meta:
         verbose_name = 'Сообщение'

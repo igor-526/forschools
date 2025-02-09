@@ -1,17 +1,12 @@
 from aiogram import types, Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-
-from tgbot.create_bot import bot
 from tgbot.finite_states.chats import ChatsFSM
 from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks import homeworks_send_menu
 from tgbot.funcs.chats import chats_show, chats_type_message
 from tgbot.funcs.settings import generate_settings_message
-from tgbot.keyboards.callbacks.homework import HomeworkCallback
-from tgbot.keyboards.lessons import get_lesson_place_button
 
 router = Router(name=__name__)
 
@@ -60,7 +55,7 @@ async def h_mainmenu_message_media_group(message: types.Message, state: FSMConte
 @router.message(StateFilter(None))
 async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
     data = await state.get_data()
-    if not data.get("files") and not data.get("text"):
+    if not data.get("files") and not data.get("comment"):
         await state.set_data({'files': [],
                               'comment': []})
     messages = [message]

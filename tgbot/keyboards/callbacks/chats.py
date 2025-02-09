@@ -6,5 +6,5 @@ class ChatListCallback(CallbackData, prefix="chat"):
     usertype: str
 
 
-class ChatShowMessageCallback(CallbackData, prefix="chat_answer"):
+class ChatAnswerMessageCallback(CallbackData, prefix="chat_answer"):
     chat_message_id: int

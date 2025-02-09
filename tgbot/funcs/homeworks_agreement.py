@@ -147,7 +147,7 @@ async def f_homework_agr_send(tg_id: int,
                         sender=await get_user(tg_id),
                         message="\n".join(st_data.get("comment")),
                     )
-                    await chats_notify(chat_message_id=msg.id, show=False)
+                    await chats_notify(msg.id, False)
                     msg_chat_teacher_send = True
                 await homework_tg_notify(logs_info.get("plan").metodist,
                                          log_.homework.teacher.id,

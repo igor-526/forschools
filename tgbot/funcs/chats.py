@@ -6,13 +6,12 @@ from profile_management.models import Telegram, aget_unread_messages_count
 from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
 from tgbot.funcs.materials_add import FileParser
 from tgbot.keyboards.callbacks.chats import ChatListCallback
-from tgbot.keyboards.chats import chats_get_show_message_page_button
-from tgbot.keyboards.default import homework_typing_keyboard, get_chat_typing_keyboard
+from tgbot.keyboards.chats import chats_get_show_message_page_button, chats_get_answer_message_button
+from tgbot.keyboards.default import get_chat_typing_keyboard
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id, get_user
 from tgbot.create_bot import bot
-from tgbot.finite_states.chats import ChatsFSM
 from chat.models import Message, GroupChats
 
 
@@ -90,7 +89,8 @@ async def chats_type_message(messages: list[types.Message], state: FSMContext):
 async def chats_send(user_tg_id: int, state: FSMContext):
     async def create_message(state_data, ct):
         query_params = {
-            "message": "\n".join(state_data['comment'])
+            "message": "\n".join(state_data['comment']),
+            "tags": state_data.get("message_tags") if state_data.get("message_tags") else []
         }
         if tg_note.usertype == "main":
             if ct == "NewUser":
@@ -118,7 +118,7 @@ async def chats_send(user_tg_id: int, state: FSMContext):
     chat_type = data.get("chat_type")
     try:
         chat_message = await create_message(data, chat_type)
-        await chats_notify(chat_message.id)
+        await chats_notify(chat_message.id, False)
         await message_status.edit_text("Сообщение отправлено")
         await aget_unread_messages_count(tg_note, {
             "id": data.get('message_for'),
@@ -289,7 +289,7 @@ async def chats_notify(chat_message_id: int, show=False):
             msg_text = msg_text.replace("<br>", "\n")
             msg_result = await bot.send_message(chat_id=tg_id,
                                                 text=msg_text,
-                                                reply_markup=None)
+                                                reply_markup=chats_get_answer_message_button(chat_message.id))
             await journal_note(msg_result, chat_message)
             if not show:
                 parents_tg_ids = [tgnote.tg_id async for tgnote in
