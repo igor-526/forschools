@@ -191,6 +191,11 @@ async def f_homework_agr_send(tg_id: int,
                             "href": f"/homeworks/{hw.id}"})
         buttons.append({"inner": "Занятие",
                         "href": f"/lessons/{lesson.id}"})
+
+        if st_data.get("action") == "agreement_decline":
+            buttons.append({"inner": '<i class="bi bi-chat"></i>',
+                            "href": f"#tag=hw{logs_info.get('homeworks')[0].id}"})
+
         if st_data.get("comment"):
             content['list'].append({
                 "name": "Комментарий",

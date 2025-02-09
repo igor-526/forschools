@@ -5,6 +5,7 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import re
 from homework.models import HomeworkLog
 from material.utils.get_type import get_type
 from profile_management.models import NewUser
@@ -81,8 +82,6 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
                                                context={"request": self.request,
                                                         "plan": self.lp}).data
         user_logs_ser = UserLogsSerializer(user_logs_queryset, many=True).data
-        print(query_user_logs)
-        print(user_logs_queryset)
         return [*hw_logs_ser, *user_logs_ser]
 
     def get_tg_journal_notes(self):
@@ -207,9 +206,11 @@ class UserLogsMessagesUsersAPIVIew(LoginRequiredMixin, APIView):
 class UserLogsMessagesChatAPIVIew(LoginRequiredMixin, APIView):
     selected_first_user: int
     selected_second_user: int
+    msg_id: int
 
     def get_messages(self, query):
         return [{
+            "tags": message.tags,
             "text": message.message if message.message else "Без текста",
             "date": message.date,
             "type": "receiver" if self.selected_first_user == message.sender.id else "sender",
@@ -231,9 +232,22 @@ class UserLogsMessagesChatAPIVIew(LoginRequiredMixin, APIView):
             "user_second": f'{user_second.first_name} {user_second.last_name}',
         }
 
+    def get_queryset(self):
+        filters = {}
+        if self.msg_id:
+            filters["id__gte"] = self.msg_id
+        messages = Message.objects.filter(Q(sender=self.selected_first_user,
+                                            receiver=self.selected_second_user,
+                                            **filters) |
+                                          Q(sender=self.selected_second_user,
+                                            receiver=self.selected_first_user,
+                                            **filters)).order_by("-date")
+        return messages
+
     def get(self, request, *args, **kwargs):
         selected_first_user = request.query_params.get('selected_first_user')
         selected_second_user = request.query_params.get('selected_second_user')
+        self.msg_id = request.query_params.get('msg_id')
         if selected_first_user and selected_second_user:
             try:
                 self.selected_first_user = int(selected_first_user)
@@ -242,10 +256,58 @@ class UserLogsMessagesChatAPIVIew(LoginRequiredMixin, APIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        messages = Message.objects.filter(Q(sender=self.selected_first_user,
-                                            receiver=self.selected_second_user) |
-                                          Q(sender=self.selected_second_user,
-                                            receiver=self.selected_first_user)).order_by("-date")
-        return Response(data={"messages": self.get_messages(messages),
+
+        return Response(data={"messages": self.get_messages(self.get_queryset()),
                               **self.get_users_info()}, status=status.HTTP_200_OK)
+
+
+class UserLogsMessagesByTagAPIVIew(LoginRequiredMixin, APIView):
+    plan_id: int
+    tag: str
+
+    def get_message_participants_info(self, message: Message):
+        info = {}
+        if message.sender:
+            info["sender_id"] = message.sender.id
+            info["sender_name"] = (f'{message.sender.first_name} '
+                                   f'{message.sender.last_name}')
+            info["sender_type"] = "NewUser"
+        else:
+            info["sender_id"] = message.sender_tg.id
+            info["sender_name"] = (f'{message.sender_tg.user.first_name} '
+                                   f'{message.sender_tg.user.last_name} '
+                                   f'({message.sender_tg.usertype})')
+            info["sender_type"] = "Telegram"
+        if message.receiver:
+            info["receiver_id"] = message.receiver.id
+            info["receiver_name"] = (f'{message.receiver.first_name} '
+                                     f'{message.receiver.last_name}')
+            info["receiver_type"] = "NewUser"
+        else:
+            info["receiver_id"] = message.receiver_tg.id
+            info["receiver_name"] = (f'{message.receiver_tg.user.first_name} '
+                                     f'{message.receiver_tg.user.last_name} '
+                                     f'({message.receiver_tg.usertype})')
+            info["receiver_type"] = "Telegram"
+        return info
+
+    def get_messages_info(self, query):
+        return [{
+            "id": message.id,
+            "text": message.message if message.message else "Без текста",
+            "date": message.date,
+            "files": message.files.exists(),
+            **self.get_message_participants_info(message)
+        } for message in query]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.plan_id = int(kwargs.get("plan_pk"))
+        except ValueError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        self.tag = request.query_params.get('tag')
+        if not self.tag:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        query = Message.objects.filter(tags__contains=self.tag).order_by("date")
+        return Response(data=self.get_messages_info(query), status=status.HTTP_200_OK)
 

@@ -50,7 +50,9 @@ async function userLogsAPIGetMessagesUsers(planID=null, selectedFirstUser=null){
     return APIGetToObject(request)
 }
 
-async function userLogsAPIGetMessages(selectedFirstUser=null, selectedSecondUser=null){
+async function userLogsAPIGetMessages(selectedFirstUser=null,
+                                      selectedSecondUser=null,
+                                      msgID=null){
     let url = `/api/v1/user_logs/messages/`
     const queryParams = []
     if (selectedFirstUser){
@@ -58,6 +60,22 @@ async function userLogsAPIGetMessages(selectedFirstUser=null, selectedSecondUser
     }
     if (selectedSecondUser){
         queryParams.push(`selected_second_user=${selectedSecondUser}`)
+    }
+    if (msgID){
+        queryParams.push(`msg_id=${msgID}`)
+    }
+    if (queryParams.length > 0){
+        url += "?" + queryParams.join("&")
+    }
+    const request = await fetch(url)
+    return APIGetToObject(request)
+}
+
+async function userLogsAPIGetMessagesByTag(planID, tag){
+    let url = `/api/v1/user_logs/plan${planID}/messages_tag/`
+    const queryParams = []
+    if (tag){
+        queryParams.push(`tag=${tag}`)
     }
     if (queryParams.length > 0){
         url += "?" + queryParams.join("&")

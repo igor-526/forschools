@@ -23,6 +23,7 @@ function userLogsMain(){
         userLogsMessagesSelectedFirstUser = null
         userLogsMessagesSelectedSecondUser = null
         userLogsMessagesDownloaded = false
+        userLogsMessagesSelectedMsgID = null
         userLogsMessagesSet()
     })
 
@@ -215,13 +216,21 @@ function userLogsShowActions(actions, clear=true){
             const buttons = document.createElement("div")
             buttons.classList.add("mt-2")
             action.buttons.forEach(button => {
-                const btn = document.createElement("btn")
-                const btnA = document.createElement("a")
-                btnA.href = button.href
-                btn.classList.add("btn-primary", "btn", "btn-sm", "mx-1", "my-1")
-                btn.innerHTML = button.inner
-                btnA.insertAdjacentElement("beforeend", btn)
-                buttons.insertAdjacentElement("beforeend", btnA)
+                if (button.href[0] === "#"){
+                    const btn = document.createElement("btn")
+                    btn.classList.add("btn-primary", "btn", "btn-sm", "mx-1", "my-1")
+                    btn.innerHTML = button.inner
+                    btn.addEventListener("click", function () {
+                        userLogsTagsSet(getHashValue("tag", button.href))
+                    })
+                    buttons.insertAdjacentElement("beforeend", btn)
+                } else {
+                    const btnA = document.createElement("a")
+                    btnA.href = button.href
+                    btnA.classList.add("btn-primary", "btn", "btn-sm", "mx-1", "my-1")
+                    btnA.innerHTML = button.inner
+                    buttons.insertAdjacentElement("beforeend", btnA)
+                }
             })
             content.insertAdjacentElement("beforeend", buttons)
         }
@@ -299,6 +308,7 @@ function userLogsMessagesSet(){
                 })
                 element.classList.add("active")
                 userLogsMessagesSelectedSecondUser = userID
+                userLogsMessagesSelectedMsgID = null
                 break
         }
         userLogsMessagesSet()
@@ -327,6 +337,9 @@ function userLogsMessagesSet(){
         } else {
             messageDiv.classList.add("justify-content-start")
             messageBody.classList.add("chats-message-receiver")
+        }
+        if (userLogsMessagesSelectedTag && message.tags.indexOf(userLogsMessagesSelectedTag) !== -1){
+            messageBody.classList.add("chats-message-tagged")
         }
         messageDiv.insertAdjacentElement("beforeend", messageBody)
         messageBodyText.innerHTML = message.text
@@ -360,7 +373,7 @@ function userLogsMessagesSet(){
         userLogsBodyMessagesChat.classList.remove("d-none")
         if (!userLogsMessagesDownloaded){
             userLogsAPIGetMessages(userLogsMessagesSelectedFirstUser,
-                userLogsMessagesSelectedSecondUser).then(request => {
+                userLogsMessagesSelectedSecondUser, userLogsMessagesSelectedMsgID).then(request => {
                 switch (request.status){
                     case 200:
                         userLogsBodyMessagesChatMessages.innerHTML = ""
@@ -371,7 +384,7 @@ function userLogsMessagesSet(){
                         let last_message = null
                         request.response.messages.forEach(message => {
                             const element = getMessageElement(message)
-                            if (!last_message){
+                            if (!last_message && !userLogsMessagesSelectedTag){
                                 last_message = element
                             }
                             userLogsBodyMessagesChatMessages.insertAdjacentElement("afterbegin", element)
@@ -384,6 +397,7 @@ function userLogsMessagesSet(){
             userLogsMessagesDownloaded = true
         }
     } else {
+        userLogsMessagesSelectedTag = null
         userLogsBodyMessagesSelectUsers.classList.remove("d-none")
         userLogsBodyMessagesChat.classList.add("d-none")
         userLogsAPIGetMessagesUsers(userLogsSelectedPlan, userLogsMessagesSelectedFirstUser).then(request => {
@@ -420,6 +434,8 @@ let userLogsFilterPlans = true
 
 let userLogsMessagesSelectedFirstUser = null
 let userLogsMessagesSelectedSecondUser = null
+let userLogsMessagesSelectedMsgID = null
+let userLogsMessagesSelectedTag = null
 let userLogsMessagesDownloaded = false
 
 

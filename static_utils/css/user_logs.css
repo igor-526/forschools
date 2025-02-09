@@ -49,6 +49,10 @@
     margin: 5px 0;
 }
 
+.chats-message-tagged{
+    border: 3px solid #afafaf;
+}
+
 .chats-message-receiver p{
     margin: 0;
 }

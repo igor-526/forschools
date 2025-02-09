@@ -129,13 +129,16 @@
         </div>
     </div>
     {% include 'user_logs_offcanvas_lp.html' %}
+    {% include 'user_logs_offcanvas_tags.html' %}
     {% include "material_preview_modal.html" %}
 {% endblock %}
 {% block static_js %}
+    <script src="{% static 'js/hashutils.js' %}"></script>
     <script src="{% static 'js/list_utils.js' %}"></script>
     <script src="{% static 'js/materialsutils.js' %}"></script>
     <script src="{% static 'js/user_logs/user_logs_api.js' %}"></script>
     <script src="{% static 'js/plans/plans_api.js' %}"></script>
     <script src="{% static 'js/user_logs/user_logs_offcanvas_lp.js' %}"></script>
+    <script src="{% static 'js/user_logs/user_logs_tags.js' %}"></script>
     <script src="{% static 'js/user_logs/user_logs.js' %}"></script>
 {% endblock %}
