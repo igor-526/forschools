@@ -69,9 +69,7 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
             file_id = message.animation.file_id
         else:
             file_id = message.document.file_id
-    elif (mat_type == "pdf_formats" or
-          mat_type == "archive_formats" or
-          mat_type == "presentation_formats"):
+    elif mat_type in ["pdf_formats", "word_formats", "archive_formats", "presentation_formats"]:
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
                                           caption=caption,

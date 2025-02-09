@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
 from profile_management.models import Telegram, aget_unread_messages_count
-from tgbot.funcs.fileutils import add_files_to_state, filechecker, filedownloader, send_file
+from tgbot.funcs.fileutils import send_file
 from tgbot.funcs.materials_add import FileParser
 from tgbot.keyboards.callbacks.chats import ChatListCallback
 from tgbot.keyboards.chats import chats_get_show_message_page_button, chats_get_answer_message_button
