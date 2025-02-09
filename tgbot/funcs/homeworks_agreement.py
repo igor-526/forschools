@@ -101,7 +101,7 @@ async def f_homework_agr_send(tg_id: int,
             "plan": lp
         }
 
-    async def notify_users(logs, action):
+    async def notify_users(logs, hws, action):
         msg_teacher = ""
         msg_curator = ""
         msg_listener = ""
@@ -146,6 +146,7 @@ async def f_homework_agr_send(tg_id: int,
                         receiver=log_.homework.teacher,
                         sender=await get_user(tg_id),
                         message="\n".join(st_data.get("comment")),
+                        tags=[f"hw{hw.id}" for hw in hws]
                     )
                     await chats_notify(msg.id, False)
                     msg_chat_teacher_send = True
@@ -236,7 +237,7 @@ async def f_homework_agr_send(tg_id: int,
     for log in logs_info.get("logs"):
         log.agreement = agreement
         await log.asave()
-    await notify_users(logs_info.get("logs"), st_data.get("action"))
+    await notify_users(logs_info.get("logs"), logs_info.get("homeworks"), st_data.get("action"))
     await journal_log()
     await bot.send_message(chat_id=tg_id,
                            text=answer_msg)
