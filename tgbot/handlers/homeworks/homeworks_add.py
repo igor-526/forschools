@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from homework.models import Homework
 from tgbot.finite_states.homework import HomeworkNewFSM
-from tgbot.funcs.homeworks import (add_homework_select_lesson, add_homework_set_homework_message,
+from tgbot.funcs.homeworks.homeworks import (add_homework_select_lesson, add_homework_set_homework_message,
                                    add_homework_set_homework_ready, send_hw_materials, hw_for_curator_set)
 from tgbot.funcs.materials_add import FileParser
 from tgbot.funcs.menu import send_menu

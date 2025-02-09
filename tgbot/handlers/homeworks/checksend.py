@@ -2,7 +2,7 @@ from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from tgbot.funcs.homeworks import send_hw_check, send_hw_answer, hw_send
+from tgbot.funcs.homeworks.homeworks import send_hw_check, send_hw_answer, hw_send
 from tgbot.funcs.materials_add import FileParser
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkCallback

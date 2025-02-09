@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from tgbot.finite_states.chats import ChatsFSM
 from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
-from tgbot.funcs.homeworks import homeworks_send_menu
+from tgbot.funcs.homeworks.homeworks import homeworks_send_menu
 from tgbot.funcs.chats import chats_show, chats_type_message
 from tgbot.funcs.settings import generate_settings_message
 

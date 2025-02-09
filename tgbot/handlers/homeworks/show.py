@@ -2,9 +2,8 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from homework.models import Homework
-from tgbot.funcs.homeworks import show_homework, send_hw_materials
+from tgbot.funcs.homeworks.homeworks import show_homework, send_hw_materials, hw_send
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
-from tgbot.funcs.homeworks import hw_send
 
 router = Router(name=__name__)
 

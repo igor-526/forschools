@@ -12,3 +12,7 @@ class HomeworkNewFSM(StatesGroup):
 
 class HomeworkAgreementFSM(StatesGroup):
     message = State()
+
+
+class HomeworkLogFSM(StatesGroup):
+    edit_log = State()

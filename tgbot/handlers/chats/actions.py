@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from chat.models import Message
 from tgbot.create_bot import bot
 from tgbot.funcs.chats import chats_send_ask, chats_type_message, chats_notify, chats_send
-from tgbot.funcs.homeworks import show_homework_queryset
+from tgbot.funcs.homeworks.homeworks import show_homework_queryset
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatAnswerMessageCallback
 from tgbot.finite_states.chats import ChatsFSM

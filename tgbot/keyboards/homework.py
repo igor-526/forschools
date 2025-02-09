@@ -222,6 +222,12 @@ def get_homework_add_ready_buttons(hw_id: int = None,
 def get_hw_log_edit_button(hw_log_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
+        text="Изменить",
+        callback_data=HomeworkLogEditingCallback(action="feedback_change",
+                                                 hw_log_id=hw_log_id,
+                                                 file_id=0)
+    )
+    builder.button(
         text="Удалить ОС",
         callback_data=HomeworkLogEditingCallback(action="feedback_delete",
                                                  hw_log_id=hw_log_id,

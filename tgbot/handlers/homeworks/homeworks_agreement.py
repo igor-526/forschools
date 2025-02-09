@@ -3,7 +3,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from tgbot.finite_states.homework import HomeworkAgreementFSM
-from tgbot.funcs.homeworks_agreement import f_homework_agr_message, f_homework_agr_send, f_homework_agr_add_comment
+from tgbot.funcs.homeworks.homeworks_agreement import f_homework_agr_message, f_homework_agr_send, f_homework_agr_add_comment
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 

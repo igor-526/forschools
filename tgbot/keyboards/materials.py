@@ -187,13 +187,6 @@ def get_keyboard_material_item(material, send_tg=False, sd=None) -> InlineKeyboa
                                                action="hw_delete",
                                                obj_id=sd.get("mat_show_hw_id"))
         )
-    # if send_tg:
-    #     builder.button(
-    #         text="Отправить в TG",
-    #         callback_data=MaterialItemCallback(mat_id=material.id,
-    #                                            action="send_tg",
-    #                                            obj_id=None)
-    #     )
     builder.adjust(1)
     return builder.as_markup()
 

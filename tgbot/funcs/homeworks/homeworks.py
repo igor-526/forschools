@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery
 from django.db.models import Q
 from lesson.models import Lesson
 from material.models import Material
+from tgbot.funcs.fileutils import send_file
 from tgbot.funcs.lessons import get_lesson_can_be_passed
 from tgbot.funcs.materials import send_material_item
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCuratorCallback
@@ -692,63 +693,7 @@ async def show_log_item(chat_id: int, log_id: int):
         if len(files) > 0:
             for file in files:
                 rm = get_hw_log_delete_file_button(log.id, file.id) if edit_perm else None
-                file_type = get_type(file.path.path.split(".")[-1])
-                if file_type == "image_formats":
-                    try:
-                        if file.tg_url:
-                            await bot.send_photo(chat_id=chat_id,
-                                                 photo=file.tg_url,
-                                                 caption=file.caption,
-                                                 reply_markup=rm)
-                        else:
-                            await bot.send_photo(chat_id=chat_id,
-                                                 photo=types.FSInputFile(file.path.path),
-                                                 caption=file.caption,
-                                                 reply_markup=rm)
-                    except TelegramBadRequest:
-                        if file.tg_url:
-                            await bot.send_document(chat_id=chat_id,
-                                                    document=file.tg_url,
-                                                    caption=file.caption,
-                                                    reply_markup=rm)
-                        else:
-                            await bot.send_document(chat_id=chat_id,
-                                                    document=types.FSInputFile(file.path.path),
-                                                    caption=file.caption,
-                                                    reply_markup=rm)
-                if file_type == "video_formats":
-                    if file.tg_url:
-                        await bot.send_video(chat_id=chat_id,
-                                             video=file.tg_url,
-                                             caption=file.caption,
-                                             reply_markup=rm)
-                    else:
-                        await bot.send_video(chat_id=chat_id,
-                                             video=types.FSInputFile(file.path.path),
-                                             caption=file.caption,
-                                             reply_markup=rm)
-                elif file_type == "audio_formats":
-                    if file.tg_url:
-                        await bot.send_audio(chat_id=chat_id,
-                                             audio=file.tg_url,
-                                             caption=file.caption,
-                                             reply_markup=rm)
-                    else:
-                        await bot.send_audio(chat_id=chat_id,
-                                             audio=types.FSInputFile(file.path.path),
-                                             caption=file.caption,
-                                             reply_markup=rm)
-                elif file_type == "voice_formats":
-                    if file.tg_url:
-                        await bot.send_voice(chat_id=chat_id,
-                                             voice=file.tg_url,
-                                             caption=file.caption,
-                                             reply_markup=rm)
-                    else:
-                        await bot.send_voice(chat_id=chat_id,
-                                             voice=types.FSInputFile(file.path.path),
-                                             caption=file.caption,
-                                             reply_markup=rm)
+                await send_file(chat_id, file, rm)
 
     log = await HomeworkLog.objects.select_related("user").select_related("homework").aget(pk=log_id)
     comment = log.comment.replace('<br>', '\n') if log.comment else '-'

@@ -3,7 +3,7 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from chat.models import Message
-from tgbot.funcs.homeworks import homework_tg_notify
+from tgbot.funcs.homeworks.homeworks import homework_tg_notify
 from tgbot.funcs.materials_add import FileParser
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 from tgbot.keyboards.homework import get_homework_agreement_buttons

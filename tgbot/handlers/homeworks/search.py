@@ -2,7 +2,7 @@ from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from tgbot.funcs.homeworks import search_homeworks_message, search_homeworks_query, show_homework_queryset
+from tgbot.funcs.homeworks.homeworks import search_homeworks_message, search_homeworks_query, show_homework_queryset
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkMenuCallback
 from tgbot.finite_states.homework import HomeworkFSM
