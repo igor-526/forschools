@@ -126,7 +126,7 @@ function materialsUtilsPreview(matID){
 
     function getWord(href){
         const word = document.createElement("iframe")
-        word.src = `https://docs.google.com/gview?url=${href}&embedded=true`
+        word.src = `https://view.officeapps.live.com/op/embed.aspx?src=${href}`
         word.style = "width: 100%; height: 700px;"
         return word
     }
@@ -235,7 +235,7 @@ function materialsUtilsFilePreviewByHref(type, href){
 
     function getWord(href){
         const word = document.createElement("iframe")
-        word.src = `https://docs.google.com/gview?url=${href}&embedded=true`
+        word.src = `https://view.officeapps.live.com/op/embed.aspx?src=${href}`
         word.style = "width: 100%; height: 700px;"
         return word
     }
