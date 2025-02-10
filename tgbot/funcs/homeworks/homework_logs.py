@@ -3,8 +3,11 @@ from aiogram.types import CallbackQuery
 from homework.models import HomeworkLog
 from tgbot.create_bot import bot
 from tgbot.finite_states.homework import HomeworkLogFSM
+from tgbot.funcs.homeworks.homeworks import homework_tg_notify
 from tgbot.keyboards.default import ready_cancel_keyboard
 from aiogram import types
+
+from tgbot.utils import get_user
 
 
 async def f_homework_logs_change_log_message(callback: CallbackQuery, state: FSMContext, hw_log_id: int):
@@ -32,9 +35,46 @@ async def f_homework_logs_change_log_message(callback: CallbackQuery, state: FSM
 
 
 async def f_homework_logs_change_log_ready(message: types.Message, state: FSMContext):
+    async def notify():
+        user = await get_user(message.from_user.id)
+        lesson = await hw_log.homework.aget_lesson()
+        if not lesson:
+            return
+        plan = await lesson.aget_learning_plan()
+        if user == plan.teacher or user == user == plan.default_hw_teacher:
+            if plan.metodist:
+                await homework_tg_notify(user,
+                                         plan.metodist.id,
+                                         [hw_log.homework],
+                                         "Преподаватель изменил ОС ученику")
+            for cur_id in [curator.id async for curator in plan.curators.all()]:
+                await homework_tg_notify(user,
+                                         cur_id,
+                                         [hw_log.homework],
+                                         "Преподаватель изменил ОС ученику")
+        if user == plan.metodist:
+            await homework_tg_notify(user,
+                                     plan.default_hw_teacher.id if plan.default_hw_teacher else plan.teacher.id,
+                                     [hw_log.homework],
+                                     "Методист изменил ОС ученику")
+            for cur_id in [curator.id async for curator in plan.curators.all()]:
+                await homework_tg_notify(user,
+                                         cur_id,
+                                         [hw_log.homework],
+                                         "Методист изменил ОС ученику")
+        if await plan.curators.filter(id=user.id).aexists():
+            await homework_tg_notify(user,
+                                     plan.metodist.id,
+                                     [hw_log.homework],
+                                     "Куратор изменил ОС ученику")
+            await homework_tg_notify(user,
+                                     plan.default_hw_teacher.id if plan.default_hw_teacher else plan.teacher.id,
+                                     [hw_log.homework],
+                                     "Куратор изменил ОС ученику")
+
     state_data = await state.get_data()
     try:
-        hw_log = await HomeworkLog.objects.aget(pk=state_data.get("hw_log_id"))
+        hw_log = await HomeworkLog.objects.select_related("homework").select_related("homework__listener").aget(pk=state_data.get("hw_log_id"))
     except HomeworkLog.DoesNotExist:
         await message.answer("Ошибка. Лога ДЗ не найдено")
         await message.delete()
@@ -43,3 +83,4 @@ async def f_homework_logs_change_log_ready(message: types.Message, state: FSMCon
     hw_log.comment = "<br>".join(state_data.get("comment"))
     await hw_log.asave()
     await message.answer("Обратная связь успешно изменена")
+    await notify()
