@@ -118,7 +118,7 @@ def send_homework_tg(initiator: NewUser, listener: NewUser,
                      homeworks: list[Homework], text="У вас новые домашние задания!",
                      tg_id: int = None) -> dict:
     if tg_id:
-        tg_ids = [tg_id]
+        tg_ids = [{"tg_id": tg_id}]
     else:
         tg_ids = get_tg_id_sync(listener.id)
     user_groups = [group.name for group in listener.groups.all()]

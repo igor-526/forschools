@@ -149,7 +149,7 @@ class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
 class HomeworkItemPageEditAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
         hw = Homework.objects.get(pk=kwargs.get('pk'))
-        tg_id = request.query_params.get("tg_id")
+        tg_id = int(request.query_params.get("tg_id")) if request.query_params.get("tg_id") else None
         send_homework_tg(request.user, request.user, [hw], "Вы направили себе ДЗ", tg_id)
         return Response({}, status=status.HTTP_200_OK)
 
