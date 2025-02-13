@@ -200,7 +200,7 @@ function lessonsShowHomeworkCollapse(collapses, action="toggle"){
         tdTeacher.innerHTML = getUsersString([hw.teacher])
         tdListener.innerHTML = getUsersString([hw.listener])
         if (hw.assigned){
-            tdAssigned.innerHTML = new Date(hw.assigned).toLocaleDateString()
+            tdAssigned.innerHTML = timeUtilsDateTimeToStr(hw.assigned)
         }
         tdLastChanged.innerHTML = `${homeworkItemShowLogsStrStatus(hw.status.status)} (${new Date(hw.status.dt).toLocaleDateString()})`
         return tr
