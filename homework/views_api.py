@@ -86,18 +86,12 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         else:
             return None
         if queryset:
-            hw_status = self.request.query_params.get("status")
+            hw_status = self.request.query_params.getlist("status")
             if hw_status:
-                filtering_statuses = []
-                if hw_status == '7':
-                    filtering_statuses = [7, 2, 5]
-                if hw_status == '3':
-                    filtering_statuses = [3]
-                if hw_status == '4':
-                    filtering_statuses = [4, 6]
+                hw_status = [int(s) for s in hw_status]
                 listed_queryset = [{"id": hw.id,
                                     "status": hw.get_status().status} for hw in queryset]
-                filtered_queryset = list(filter(lambda hw: hw.get("status") in filtering_statuses,
+                filtered_queryset = list(filter(lambda hw: hw.get("status") in hw_status,
                                                 listed_queryset))
                 queryset = queryset.filter(id__in=[hw.get("id") for hw in filtered_queryset])
         offset = int(self.request.query_params.get("offset")) if (
@@ -155,8 +149,9 @@ class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
 class HomeworkItemPageEditAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
         hw = Homework.objects.get(pk=kwargs.get('pk'))
-        send_homework_tg(request.user, request.user, [hw], "Вы направили себе ДЗ")
-        return Response({})
+        tg_id = request.query_params.get("tg_id")
+        send_homework_tg(request.user, request.user, [hw], "Вы направили себе ДЗ", tg_id)
+        return Response({}, status=status.HTTP_200_OK)
 
 
 class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):

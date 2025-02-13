@@ -97,10 +97,9 @@ class FileParser:
             self.file_format = "m4a"
 
         if self.material_message.animation:
-            tg_file_name = self.material_message.animation.file_name
             self.file_type = "animation"
-            self.file_name = tg_file_name.split(".")[0] if tg_file_name else (f'Анимация TG '
-                                                                              f'{self.material_message.message_id}')
+            self.file_name = (f'Анимация TG '
+                              f'{self.material_message.message_id}')
             self.file_id_tg = self.material_message.animation.file_id
             self.file_format = self.material_message.animation.file_name.split(".")[-1] \
                 if self.material_message.animation.file_name else "mp4"
@@ -122,7 +121,7 @@ class FileParser:
             file_name_tg = self.material_message.video.file_name
             self.file_type = "video"
             self.file_name = file_name_tg.split(".")[0] if file_name_tg else (f'Видео TG '
-                                                                            f'{self.material_message.message_id}')
+                                                                              f'{self.material_message.message_id}')
             self.file_id_tg = self.material_message.video.file_id
             self.file_format = "webm"
 

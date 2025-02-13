@@ -29,7 +29,7 @@ function homeworkItemMain(){
                 if (request.response.can_add_materials_tg){
                     hwItemAddMaterialsTG.classList.remove("d-none")
                     hwItemAddMaterialsTG.addEventListener("click", function () {
-                        homeworkAPIEditTelegram(hwID).then(request => {
+                        homeworkAPISendTelegram(hwID).then(request => {
                             switch (request.status){
                                 case 200:
                                     showSuccessToast("Сообщение отправлено Вам в Telegram")

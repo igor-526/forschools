@@ -9,6 +9,13 @@ from tgbot.keyboards.utils import keyboard_anti_cache_url
 
 def get_homework_menu_buttons(params: dict) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="Открыть список ДЗ (ЭКСПЕРИМЕНТАЛЬНАЯ ФУНКЦИЯ)",
+        web_app=WebAppInfo(
+            url=keyboard_anti_cache_url(f"/ma/homeworks/"))
+    )
+
     if params.get("check_hw_btn"):
         builder.button(
             text=f"Проверка домашних заданий",

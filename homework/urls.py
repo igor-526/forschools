@@ -5,7 +5,7 @@ from .views_api import (HomeworkListCreateAPIView, HomeworkLogListCreateAPIView,
                         HomeworkItemPageInfoAPIView, HomeworkItemPageEditAPIView,
                         HomeworkLogAPIView, HomeworkRetrieveUpdateDestroyAPIView,
                         HomeworkItemDeleteMaterialAPIView)
-from .views_ma import HomeworkItemMAPage
+from .views_ma import HomeworkItemMAPage, HomeworkListMAPage
 
 urlpatterns = [
     path('', HomeworksPage.as_view(), name='homeworks'),
@@ -25,5 +25,6 @@ apiv1patterns = [
 ]
 
 ma_patterns = [
+    path('', HomeworkListMAPage.as_view()),
     path('<int:pk>/', HomeworkItemMAPage.as_view()),
 ]

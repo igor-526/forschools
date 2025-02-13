@@ -88,7 +88,7 @@ async function homeworkAPISend(homeworkID, fd){
     return APIPostPatchToObject(request)
 }
 
-async function homeworkAPIGet(offset=null, lesson=null, status=null, teachers=[],
+async function homeworkAPIGet(offset=null, lesson=null, status=[], teachers=[],
                               listeners=[], dateFrom=null, dateTo=null,
                               dateChangedFrom=null, dateChangedTo=null, name=null){
     let url = "/api/v1/homeworks/"
@@ -102,9 +102,9 @@ async function homeworkAPIGet(offset=null, lesson=null, status=null, teachers=[]
     if (name){
         queryArray.push(`name=${name}`)
     }
-    if (status){
+    status.forEach(status => {
         queryArray.push(`status=${status}`)
-    }
+    })
     if (dateFrom){
         queryArray.push(`date_from=${dateFrom}`)
     }
@@ -140,8 +140,12 @@ async function homeworkAPIGetItem(homeworkID){
     return await APIGetToObject(request)
 }
 
-async function homeworkAPIEditTelegram(homeworkID){
-    const request = await fetch(`/api/v1/homeworks/${homeworkID}/edit/`)
+async function homeworkAPISendTelegram(homeworkID, tgID=null){
+    let url = `/api/v1/homeworks/${homeworkID}/edit/`
+    if (tgID){
+        url += `?tg_id=${tgID}`
+    }
+    const request = await fetch(url)
     return await APIGetToObject(request)
 }
 

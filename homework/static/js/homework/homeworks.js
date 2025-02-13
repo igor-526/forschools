@@ -35,7 +35,7 @@ function homeworksGet(more=false){
         userLogsCurrentOffset = 0
     }
     homeworkAPIGet(homeworksCurrentOffset, homeworksFilterCurrentLesson,
-        homeworksFilterCurrentStatus, homeworksFilterSelectedTeachers,
+        [], homeworksFilterSelectedTeachers,
         homeworksFilterSelectedListeners, homeworksFilterDateFrom,
         homeworksFilterDateTo, homeworksFilterDateChangedFrom,
         homeworksFilterDateChangedTo, homeworksFilterName).then(request => {
