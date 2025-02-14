@@ -143,13 +143,7 @@
             homeworkTabsInfo.push({
                 name: "{{ tab.name }}",
                 statuses: [{% for status in tab.statuses %}{{ status }},{% endfor %}],
-                {% if tab.need_agreement is not None %}
-                    {% if tab.need_agreement %}
-                        need_agreement: true,
-                    {% else %}
-                        need_agreement: false,
-                    {% endif %}
-                {% endif %}
+                agreement: [{% for agreement in tab.agreement %}"{{ agreement }}",{% endfor %}],
             })
         {% endfor %}
     </script>

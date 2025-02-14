@@ -1,0 +1,55 @@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="homeworkListMAFiltersOffcanvas">
+    <div class="offcanvas-header">
+        <h5>Фильтры
+            <button id="homeworkListMAFiltersOffcanvasResetAllButton" type="button" class="btn btn-danger ms-3">
+                X
+            </button>
+        </h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <label for="homeworkListMAFiltersOffcanvasAssignedFromField" class="form-label">Задано</label>
+        <div class="input-group mb-3">
+            <input type="date" class="form-control" id="homeworkListMAFiltersOffcanvasAssignedFromField">
+            <span class="input-group-text">-</span>
+            <input type="date" class="form-control" id="homeworkListMAFiltersOffcanvasAssignedToField" aria-label="">
+        </div>
+
+        <label for="homeworkListMAFiltersOffcanvasChangedFromField" class="form-label">Последнее изменение</label>
+        <div class="input-group mb-3">
+            <input type="date" class="form-control" id="homeworkListMAFiltersOffcanvasChangedFromField">
+            <span class="input-group-text">-</span>
+            <input type="date" class="form-control" id="homeworkListMAFiltersOffcanvasChangedToField" aria-label="">
+        </div>
+
+        <div class="d-flex justify-content-between mb-3">
+            {% if settings.show_listener %}
+            <div class="btn-group">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                    <b>Ученик</b></button>
+                <ul id="homeworkListMAFiltersOffcanvasListenerList" class="dropdown-menu" style="min-width: 250px;">
+                    <li class="input-group px-1">
+                        <input id="homeworkListMAFiltersOffcanvasListenerSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                        <button id="homeworkListMAFiltersOffcanvasListenerSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if settings.show_teacher%}
+            <div class="btn-group">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                    <b>Преподаватель</b></button>
+                <ul id="homeworkListMAFiltersOffcanvasTeacherList" class="dropdown-menu" style="min-width: 250px;">
+                    <li class="input-group px-1">
+                        <input id="homeworkListMAFiltersOffcanvasTeacherSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                        <button id="homeworkListMAFiltersOffcanvasTeacherSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <button class="btn btn-primary" id="homeworkListMAFiltersOffcanvasAcceptButton" type="button">Применить</button>
+    </div>
+</div>

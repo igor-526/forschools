@@ -25,22 +25,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = Homework
     serializer_class = HomeworkListSerializer
 
-    def filter_queryset_all(self, q):
-        query = {}
-        teachers = self.request.query_params.getlist("teacher")
-        listeners = self.request.query_params.getlist("listener")
-        lesson = self.request.query_params.get("lesson")
-        name = self.request.query_params.get("name")
-        if teachers:
-            query['teacher__id__in'] = teachers
-        if listeners:
-            query['listener__id__in'] = listeners
-        if lesson:
-            query['lesson'] = lesson
-        if name:
-            query['name__icontains'] = name
-        q |= Q(**query)
-        queryset = Homework.objects.filter(q)
+    def filter_queryset_date_assigned(self, queryset):
         if queryset:
             assigned_date_from = self.request.query_params.get("date_from")
             assigned_date_to = self.request.query_params.get("date_to")
@@ -60,9 +45,11 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                     listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() <=
                                                              assigned_date_to,
                                                   listed_queryset))
-                queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
-        else:
-            return None
+                queryset = queryset.filter(id__in=[hw.get("id") for hw in listed_queryset])
+            return queryset
+        return None
+
+    def filter_queryset_date_changed(self, queryset):
         if queryset:
             date_changed_from = self.request.query_params.get("date_changed_from")
             date_changed_to = self.request.query_params.get("date_changed_to")
@@ -82,21 +69,73 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                     listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() <=
                                                              date_changed_to,
                                                   listed_queryset))
-                queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
-        else:
-            return None
+                queryset = queryset.filter(id__in=[hw.get("id") for hw in listed_queryset])
+            return queryset
+        return None
+
+    def filter_queryset_status(self, queryset):
         if queryset:
             hw_status = self.request.query_params.getlist("status")
             if hw_status:
+                agreement_filter_perm = self.request.user.groups.filter(
+                    name__in=['Curator', 'Teacher', 'Metodist', 'Admin']).exists()
                 hw_status = [int(s) for s in hw_status]
                 listed_queryset = [{"id": hw.id,
-                                    "status": hw.get_status().status} for hw in queryset]
-                filtered_queryset = list(filter(lambda hw: hw.get("status") in hw_status,
-                                                listed_queryset))
+                                    "status": hw.get_status(accepted_only=not agreement_filter_perm).status}
+                                   for hw in queryset]
+                listed_queryset = list(filter(lambda hw: hw.get("status") in hw_status, listed_queryset))
+                queryset = queryset.filter(id__in=[hw.get("id") for hw in listed_queryset])
+            return queryset
+        return None
+
+    def filter_queryset_agreement(self, queryset):
+        if queryset:
+            hw_agreement = self.request.query_params.getlist("agreement")
+            if hw_agreement:
+                agreement_filter_perm = self.request.user.groups.filter(
+                    name__in=['Curator', 'Teacher', 'Metodist', 'Admin']).exists()
+                if not agreement_filter_perm:
+                    return queryset
+                listed_queryset = [{"id": hw.id,
+                                    "agreement": hw.get_status().agreement}
+                                   for hw in queryset]
+                filtered_queryset = []
+                if "not_accepted" in hw_agreement:
+                    filtered_queryset.extend(list(filter(lambda hw: hw.get("agreement").get("accepted") is False,
+                                                         listed_queryset)))
+                if "accepted" in hw_agreement:
+                    filtered_queryset.extend(list(filter(lambda hw: hw.get("agreement").get("accepted") is True,
+                                                         listed_queryset)))
+                if "no_need" in hw_agreement:
+                    filtered_queryset.extend(list(filter(lambda hw: hw.get("agreement") == {},
+                                                         listed_queryset)))
                 queryset = queryset.filter(id__in=[hw.get("id") for hw in filtered_queryset])
+            return queryset
+        return None
+
+    def filter_queryset_all(self, q):
+        query = {}
+        teachers = self.request.query_params.getlist("teacher")
+        listeners = self.request.query_params.getlist("listener")
+        lesson = self.request.query_params.get("lesson")
+        name = self.request.query_params.get("name")
+        if teachers:
+            query['teacher__id__in'] = teachers
+        if listeners:
+            query['listener__id__in'] = listeners
+        if lesson:
+            query['lesson'] = lesson
+        if name:
+            query['name__icontains'] = name
+        q |= Q(**query)
+        queryset = Homework.objects.filter(q)
+        queryset = self.filter_queryset_date_assigned(queryset)
+        queryset = self.filter_queryset_date_changed(queryset)
+        queryset = self.filter_queryset_status(queryset)
+        queryset = self.filter_queryset_agreement(queryset)
         offset = int(self.request.query_params.get("offset")) if (
             self.request.query_params.get("offset")) else 0
-        return queryset[offset:offset + 50]
+        return queryset[offset:offset + 50] if queryset else None
 
     def get_queryset(self, *args, **kwargs):
         user_groups = [group.name for group in self.request.user.groups.all()]

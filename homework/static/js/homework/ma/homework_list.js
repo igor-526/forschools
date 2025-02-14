@@ -5,6 +5,7 @@ function homeworkListMAMain(){
 function homeworkListMAInitTabs(){
     function tabListener(tab){
         homeworkListMAFiltersStatus = tab.statuses
+        homeworkListMAFiltersAgreement = tab.agreement
         homeworkListMAGet()
     }
 
@@ -35,22 +36,17 @@ function homeworkListMAInitTabs(){
 }
 
 function homeworkListMAGet(){
-    homeworkAPIGet(null,
-        null,
-        homeworkListMAFiltersStatus,
-        [],
-        [],
-        null,
-        null,
-        null,
-        null,
-        homeworkListMAFiltersName).then(request => {
+    homeworkAPIGet(null, null, homeworkListMAFiltersStatus,
+        homeworkListMAFiltersTeachers, homeworkListMAFiltersListeners,
+        homeworkListMAFiltersAssignedFrom, homeworkListMAFiltersAssignedTo,
+        homeworkListMAFiltersChangedFrom, homeworkListMAFiltersChangedTo,
+        homeworkListMAFiltersName, homeworkListMAFiltersAgreement).then(request => {
         switch (request.status){
             case 200:
                 homeworkListMAShow(request.response)
                 break
             default:
-                alert("Не удалось отправить ДЗ")
+                alert("Не удалось загрузить ДЗ")
                 break
         }
     })
@@ -146,6 +142,14 @@ const homeworkListMATabs = document.querySelector("#homeworkListMATabs")
 const homeworkListMAList = document.querySelector("#homeworkListMAList")
 
 let homeworkListMAFiltersStatus = []
+let homeworkListMAFiltersAgreement = []
 let homeworkListMAFiltersName = null
+
+let homeworkListMAFiltersAssignedFrom = null
+let homeworkListMAFiltersAssignedTo = null
+let homeworkListMAFiltersChangedFrom = null
+let homeworkListMAFiltersChangedTo = null
+let homeworkListMAFiltersListeners = []
+let homeworkListMAFiltersTeachers = []
 
 homeworkListMAMain()

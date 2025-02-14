@@ -28,14 +28,22 @@ def get_homework_list_settings(user_groups):
         tabs.append({
             "name": "В работе",
             "statuses": [1, 2, 3, 5, 7],
+            "agreement": ["no_need"]
+        })
+        tabs.append({
+            "name": "Ожидает согласования",
+            "statuses": [1, 2, 3, 4, 5, 7],
+            "agreement": ["not_accepted"]
         })
         tabs.append({
             "name": "Принято",
             "statuses": [4],
+            "agreement": ["no_need", "accepted"]
         })
         tabs.append({
             "name": "Отменено",
             "statuses": [6],
+            "agreement": []
         })
         settings["show_listener"] = True
         settings["show_teacher"] = True
@@ -43,13 +51,13 @@ def get_homework_list_settings(user_groups):
     elif "Metodist" in user_groups:
         tabs.append({
             "name": "Согласовать",
-            "statuses": [4, 5, 7],
-            "need_agreement": True
+            "statuses": [1, 2, 3, 4, 5, 7],
+            "agreement": ["not_accepted"]
         })
         tabs.append({
             "name": "Остальные",
-            "statuses": [1, 2, 3],
-            "need_agreement": False
+            "statuses": [1, 2, 3, 4, 5, 7],
+            "agreement": ["no_need", "accepted"]
         })
         settings["show_listener"] = True
         settings["show_teacher"] = True
@@ -57,29 +65,35 @@ def get_homework_list_settings(user_groups):
     elif "Teacher" in user_groups or "Curator" in user_groups:
         tabs.append({
             "name": "Проверить",
-            "statuses": [3]
+            "statuses": [3],
+            "agreement": []
         })
         tabs.append({
             "name": "Отправлено",
-            "statuses": [1, 2, 5, 7]
+            "statuses": [1, 2, 5, 7],
+            "agreement": []
         })
         tabs.append({
             "name": "Принято",
-            "statuses": [4]
+            "statuses": [4],
+            "agreement": []
         })
         settings["show_listener"] = True
     elif "Listener" in user_groups:
         tabs.append({
             "name": "Выполнить",
-            "statuses": [2, 5, 7]
+            "statuses": [2, 5, 7],
+            "agreement": ["no_need", "accepted"]
         })
         tabs.append({
             "name": "Отправлено",
-            "statuses": [3]
+            "statuses": [3],
+            "agreement": []
         })
         tabs.append({
             "name": "Принято",
-            "statuses": [4]
+            "statuses": [4],
+            "agreement": ["no_need", "accepted"]
         })
         settings["show_teacher"] = True
     return {"tabs": tabs, "settings": settings}

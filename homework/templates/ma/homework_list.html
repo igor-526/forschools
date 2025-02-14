@@ -17,28 +17,22 @@
         </div>
         <div id="homeworkListMAList"></div>
     </div>
-
+    {% include "ma/homework_list_filter_offcanvas.html" %}
 {% endblock %}
 {% block static_js %}
     <script>
         const homeworkListMASettingTeacher = {% if settings.show_teacher %}true{% else %}false{% endif %}
         const homeworkListMASettingListener = {% if settings.show_listener %}true{% else %}false{% endif %}
-        const homeworkListMASettingAgreementFilter = {% if settings.show_agreement_filter %}true{% else %}false{% endif %}
         const homeworkListMATabsInfo = []
         {% for tab in tabs %}
             homeworkListMATabsInfo.push({
                 name: "{{ tab.name }}",
                 statuses: [{% for status in tab.statuses %}{{ status }},{% endfor %}],
-                {% if tab.need_agreement is not None %}
-                    {% if tab.need_agreement %}
-                        need_agreement: true,
-                    {% else %}
-                        need_agreement: false,
-                    {% endif %}
-                {% endif %}
+                agreement: [{% for agreement in tab.agreement %}"{{ agreement }}",{% endfor %}],
             })
         {% endfor %}
     </script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_utils.js' %}"></script>
     <script src="{% static 'js/homework/ma/homework_list_filter.js' %}"></script>

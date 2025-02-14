@@ -12,6 +12,7 @@ function homeworksMain(){
 function homeworksInitTabs(){
     function tabListener(tab){
         homeworksFilterCurrentStatus = tab.statuses
+        homeworksFilterCurrentAgreement = tab.agreement
         homeworksGet()
     }
 
@@ -49,7 +50,8 @@ function homeworksGet(more=false){
         homeworksFilterCurrentStatus, homeworksFilterSelectedTeachers,
         homeworksFilterSelectedListeners, homeworksFilterDateFrom,
         homeworksFilterDateTo, homeworksFilterDateChangedFrom,
-        homeworksFilterDateChangedTo, homeworksFilterName).then(request => {
+        homeworksFilterDateChangedTo, homeworksFilterName,
+        homeworksFilterCurrentAgreement).then(request => {
         switch (request.status){
             case 200:
                 homeworksShow(request.response, !more)
@@ -115,6 +117,7 @@ let homeworksCurrentOffset = 0
 let homeworksFilterCurrentLesson
 let homeworksFilterName = null
 let homeworksFilterCurrentStatus = []
+let homeworksFilterCurrentAgreement = []
 let homeworksFilterSelectedTeachers = []
 let homeworksFilterSelectedListeners = []
 let homeworksFilterDateFrom = null
