@@ -119,7 +119,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")
         lesson = self.request.query_params.get("lesson")
-        name = self.request.query_params.get("name")
+        name = self.request.query_params.get("hw_name")
         logging.log(level=logging.INFO, msg=f'NAME: {name}')
         if teachers:
             query['teacher__id__in'] = teachers

@@ -101,7 +101,7 @@ async function homeworkAPIGet(offset=null, lesson=null, status=[],
         queryArray.push(`lesson=${lesson}`)
     }
     if (name){
-        queryArray.push(`name=${name}`)
+        queryArray.push(`hw_name=${name}`)
     }
     status.forEach(status => {
         queryArray.push(`status=${status}`)
