@@ -3,13 +3,11 @@ function homeworkListFilterMAMain(){
         homeworkListMAFiltersOffcanvasTeacherList = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherList")
         homeworkListMAFiltersOffcanvasTeacherSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchField")
         homeworkListMAFiltersOffcanvasTeacherSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchFieldErase")
-        homeworkListMAFiltersOffcanvasTeacherSearchButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchButton")
     }
     if (homeworkListMASettingListener){
         homeworkListMAFiltersOffcanvasListenerList = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerList")
         homeworkListMAFiltersOffcanvasListenerSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchField")
         homeworkListMAFiltersOffcanvasListenerSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchFieldErase")
-        homeworkListMAFiltersOffcanvasListenerSearchButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchButton")
     }
     homeworkListMAFiltersButton.addEventListener("click", function () {
         bsHomeworkListMAFiltersOffcanvas.show()
@@ -82,7 +80,7 @@ function homeworkListFilterMASetTeachersAndListeners(){
 
 function homeworkListFilterMASetSearchListeners(){
     if (homeworkListMASettingTeacher){
-        homeworkListMAFiltersOffcanvasTeacherSearchButton.addEventListener("click", function () {
+        homeworkListMAFiltersOffcanvasTeacherSearchField.addEventListener("input", function () {
             const query = homeworkListMAFiltersOffcanvasTeacherSearchField.value.trim().toLowerCase()
             if (query === ""){
                 homeworkListMAFiltersOffcanvasTeacherList.querySelectorAll("a").forEach(element => {
@@ -97,7 +95,7 @@ function homeworkListFilterMASetSearchListeners(){
         })
     }
     if (homeworkListMASettingListener){
-        homeworkListMAFiltersOffcanvasListenerSearchButton.addEventListener("click", function () {
+        homeworkListMAFiltersOffcanvasListenerSearchField.addEventListener("input", function () {
             const query = homeworkListMAFiltersOffcanvasListenerSearchField.value.trim().toLowerCase()
             if (query === ""){
                 homeworkListMAFiltersOffcanvasListenerList.querySelectorAll("a").forEach(element => {
@@ -111,7 +109,7 @@ function homeworkListFilterMASetSearchListeners(){
             }
         })
     }
-    homeworkListMAFilterNameSearch.addEventListener("click", function (){
+    homeworkListMAFilterName.addEventListener("input", function (){
         if (homeworkListMAFilterName.value.trim() !== ""){
             homeworkListMAFiltersName = homeworkListMAFilterName.value.trim()
         } else {
@@ -274,7 +272,6 @@ function homeworkListFilterMAAcceptListener(){
 const homeworkListMAFiltersButton = homeworkListMATabs.querySelector("#homeworkListMAFiltersButton")
 const homeworkListMAFilterName = document.querySelector("#homeworkListMAFilterName")
 const homeworkListMAFilterNameErase = document.querySelector("#homeworkListMAFilterNameErase")
-const homeworkListMAFilterNameSearch = document.querySelector("#homeworkListMAFilterNameSearch")
 
 //Offcanvas & buttons
 const homeworkListMAFiltersOffcanvas = document.querySelector("#homeworkListMAFiltersOffcanvas")
@@ -297,7 +294,5 @@ let homeworkListMAFiltersOffcanvasListenerSearchField = homeworkListMAFiltersOff
 let homeworkListMAFiltersOffcanvasListenerSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchFieldErase")
 let homeworkListMAFiltersOffcanvasTeacherSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchField")
 let homeworkListMAFiltersOffcanvasTeacherSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchFieldErase")
-let homeworkListMAFiltersOffcanvasTeacherSearchButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchButton")
-let homeworkListMAFiltersOffcanvasListenerSearchButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchButton")
 
 homeworkListFilterMAMain()

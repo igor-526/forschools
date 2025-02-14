@@ -39,8 +39,6 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
         "check_hw_btn": False,
         "compl_hw_btn": False,
         "sended_hw_btn": False,
-        "main_func": "",
-        "func_counter": 0
     }
     open_as = []
     if len(perms.get("groups")) > 1:
@@ -52,27 +50,17 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
     if "Curator" in perms.get("groups"):
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
-        func_params["func_counter"] += 2
     if "Listener" in perms.get("groups"):
         func_params["compl_hw_btn"] = True
-        func_params["func_counter"] += 1
-        func_params["main_func"] = "complete"
     if "Metodist" in perms.get("groups"):
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
-        func_params["func_counter"] += 2
     if "Teacher" in perms.get("groups"):
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
         func_params["sended_hw_btn"] = True
-        func_params["func_counter"] += 3
-    if func_params["func_counter"] == 0:
-        await message.answer("Функция для Вашей роли недоступна")
-    elif func_params["func_counter"] == 1:
-        await show_homework_queryset(message.from_user.id, state, func_params['main_func'])
-    elif func_params["func_counter"] > 1:
-        await message.answer(text="Выберите функцию:",
-                             reply_markup=get_homework_menu_buttons(func_params, open_as))
+    await message.answer(text="Выберите функцию:",
+                         reply_markup=get_homework_menu_buttons(func_params, open_as))
 
 
 async def add_homework_select_lesson(user_tg_id: int, message: types.Message = None,

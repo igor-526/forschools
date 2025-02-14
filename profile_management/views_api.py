@@ -171,20 +171,20 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
                 )
             elif "Teacher" in user_groups:
                 queryset = NewUser.objects.filter(
-                    Q(plan_listeners__curators=self.request.user,
-                      is_active=True) |
-                    Q(plan_teacher__curators=self.request.user,
-                      is_active=True) |
-                    Q(plan_metodist__curators=self.request.user,
-                      is_active=True)
-                )
-            elif "Curator" in user_groups:
-                queryset = NewUser.objects.filter(
                     Q(plan_listeners__teacher=self.request.user,
                       is_active=True) |
                     Q(plan_curator__teacher=self.request.user,
                       is_active=True) |
                     Q(plan_metodist__teacher=self.request.user,
+                      is_active=True)
+                )
+            elif "Curator" in user_groups:
+                queryset = NewUser.objects.filter(
+                    Q(plan_listeners__curators=self.request.user,
+                      is_active=True) |
+                    Q(plan_teacher__curators=self.request.user,
+                      is_active=True) |
+                    Q(plan_metodist__curators=self.request.user,
                       is_active=True)
                 )
             elif "Listener" in user_groups:

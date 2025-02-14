@@ -2,7 +2,7 @@ from aiogram.fsm.context import FSMContext
 from profile_management.models import aget_unread_messages_count, Telegram
 from tgbot.create_bot import bot
 from tgbot.keyboards import get_menu_keyboard
-from tgbot.utils import get_user, get_group_and_perms
+from tgbot.utils import get_group_and_perms
 
 
 async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выберите действие: ") -> None:
@@ -38,7 +38,7 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
         settings = True
     elif 'Admin' in perms.get('groups'):
         materials = False
-        homeworks = False
+        homeworks = True
         lessons = True
         messages = True
         settings = True
