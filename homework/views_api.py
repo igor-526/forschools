@@ -130,7 +130,6 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         queryset = self.filter_queryset_date_changed(queryset)
         queryset = self.filter_queryset_status(queryset)
         queryset = self.filter_queryset_agreement(queryset)
-        print(len(queryset))
         offset = int(self.request.query_params.get("offset")) if (
             self.request.query_params.get("offset")) else 0
         return queryset[offset:offset + 50] if queryset else None
