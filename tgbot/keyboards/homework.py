@@ -15,7 +15,7 @@ def get_homework_menu_buttons(params: dict, open_ma: list = None) -> InlineKeybo
             builder.button(
                 text=f"Открыть список как {role.get('name_ru')}",
                 web_app=WebAppInfo(
-                    url=keyboard_anti_cache_url(f"/ma/homeworks/?open_as={role.get('name')}"))
+                    url=keyboard_anti_cache_url(f"/ma/homeworks/?open_as={role.get('name')}&"))
             )
     else:
         builder.button(
