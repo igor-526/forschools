@@ -13,8 +13,8 @@ class HomeworkListMAPage(TemplateView):
     template_name = "ma/homework_list.html"
 
     def get(self, request, *args, **kwargs):
-        if request.query_params.get("open_as"):
-            user_groups = [request.query_params.get("open_as")]
+        if request.GET.get("open_as"):
+            user_groups = [request.GET.get("open_as")]
         else:
             user_groups = [group.name for group in request.user.groups.all()]
         settings = get_homework_list_settings(user_groups)
