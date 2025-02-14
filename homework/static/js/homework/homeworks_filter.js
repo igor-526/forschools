@@ -135,17 +135,17 @@ function homeworksFilterEraseListeners(){
         homeworksFilterSelectedListeners = []
     }
 
-    homeworksTableFilterResetAll.addEventListener("click", function () {
-        eraseDateStartField()
-        eraseDateEndField()
-        cancelTeachersSearchField()
-        cancelListenersSearchField()
-        eraseDateChangedStartField()
-        eraseDateChangedEndField()
-        eraseNameField()
-        homeworksFilterCurrentLesson = null
-        homeworksGet()
-    })
+    // homeworksTableFilterResetAll.addEventListener("click", function () {
+    //     eraseDateStartField()
+    //     eraseDateEndField()
+    //     cancelTeachersSearchField()
+    //     cancelListenersSearchField()
+    //     eraseDateChangedStartField()
+    //     eraseDateChangedEndField()
+    //     eraseNameField()
+    //     homeworksFilterCurrentLesson = null
+    //     homeworksGet()
+    // })
     homeworksTableFilterTeacherSearchFieldReset.addEventListener("click", function () {
         cancelTeachersSearchField()
         homeworksGet()

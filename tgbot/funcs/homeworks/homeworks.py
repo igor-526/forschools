@@ -42,6 +42,13 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
         "main_func": "",
         "func_counter": 0
     }
+    open_as = []
+    if len(perms.get("groups")) > 1:
+        for role in perms.get("groups"):
+            open_as.append({
+                "name": role,
+                "name_ru": get_role_ru(role, "n", True)
+            })
     if "Curator" in perms.get("groups"):
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
@@ -65,7 +72,7 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
         await show_homework_queryset(message.from_user.id, state, func_params['main_func'])
     elif func_params["func_counter"] > 1:
         await message.answer(text="Выберите функцию:",
-                             reply_markup=get_homework_menu_buttons(func_params))
+                             reply_markup=get_homework_menu_buttons(func_params, open_as))
 
 
 async def add_homework_select_lesson(user_tg_id: int, message: types.Message = None,

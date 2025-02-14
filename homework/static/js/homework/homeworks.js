@@ -2,31 +2,42 @@ function homeworksMain(){
     homeworksFilterCurrentLesson = Number(getHashValue("lesson"))
     homeworksFilterSelectedListeners = getHashValue("listener")?[Number(getHashValue("listener"))]:[]
     homeworksFilterSelectedTeachers = getHashValue("teacher")?[Number(getHashValue("teacher"))]:[]
-
-    if (isAdminOrMetodist){
-        homeworksSetTab("all")
-    } else {
-        if (isTeacher){
-            homeworksSetTab("checking")
-        } else {
-            homeworksSetTab("doing")
-        }
-    }
-    homeworksTabAll.addEventListener("click", function () {
-        homeworksSetTab("all")
-    })
-    homeworksTabDoing.addEventListener("click", function () {
-        homeworksSetTab("doing")
-    })
-    homeworksTabChecking.addEventListener("click", function () {
-        homeworksSetTab("checking")
-    })
-    homeworksTabClosed.addEventListener("click", function () {
-        homeworksSetTab("closed")
-    })
+    homeworksInitTabs()
     homeworksTableShowMoreButton.addEventListener("click", function () {
         homeworksCurrentOffset += 50
         homeworksGet(true)
+    })
+}
+
+function homeworksInitTabs(){
+    function tabListener(tab){
+        homeworksFilterCurrentStatus = tab.statuses
+        homeworksGet()
+    }
+
+    function getTabElement(tab){
+        const li = document.createElement("li")
+        li.classList.add("nav-item")
+        li.role = "presentation"
+        const btn = document.createElement("button")
+        btn.classList.add("nav-link")
+        btn.setAttribute("data-bs-toggle", "pill")
+        btn.type = "button"
+        btn.role = "tab"
+        btn.innerHTML = tab.name
+        btn.addEventListener("click", function (){
+            tabListener(tab)
+        })
+        if (tab === homeworkTabsInfo[homeworkTabsInfo.length - 1]){
+            btn.classList.add("active")
+            tabListener(tab)
+        }
+        li.insertAdjacentElement("beforeend", btn)
+        return li
+    }
+
+    homeworkTabsInfo.reverse().forEach(tab => {
+        homeworkTabs.insertAdjacentElement("afterbegin", getTabElement(tab))
     })
 }
 
@@ -35,7 +46,7 @@ function homeworksGet(more=false){
         userLogsCurrentOffset = 0
     }
     homeworkAPIGet(homeworksCurrentOffset, homeworksFilterCurrentLesson,
-        [], homeworksFilterSelectedTeachers,
+        homeworksFilterCurrentStatus, homeworksFilterSelectedTeachers,
         homeworksFilterSelectedListeners, homeworksFilterDateFrom,
         homeworksFilterDateTo, homeworksFilterDateChangedFrom,
         homeworksFilterDateChangedTo, homeworksFilterName).then(request => {
@@ -50,43 +61,6 @@ function homeworksGet(more=false){
                 break
         }
     })
-}
-
-function homeworksSetTab(tab = "all"){
-    switch (tab) {
-        case "all":
-            homeworksTabAll.classList.add("active")
-            homeworksTabDoing.classList.remove("active")
-            homeworksTabChecking.classList.remove("active")
-            homeworksTabClosed.classList.remove("active")
-            homeworksFilterCurrentStatus = null
-            homeworksGet()
-            break
-        case "doing":
-            homeworksTabAll.classList.remove("active")
-            homeworksTabDoing.classList.add("active")
-            homeworksTabChecking.classList.remove("active")
-            homeworksTabClosed.classList.remove("active")
-            homeworksFilterCurrentStatus = 7
-            homeworksGet()
-            break
-        case "checking":
-            homeworksTabAll.classList.remove("active")
-            homeworksTabDoing.classList.remove("active")
-            homeworksTabChecking.classList.add("active")
-            homeworksTabClosed.classList.remove("active")
-            homeworksFilterCurrentStatus = 3
-            homeworksGet()
-            break
-        case "closed":
-            homeworksTabAll.classList.remove("active")
-            homeworksTabDoing.classList.remove("active")
-            homeworksTabChecking.classList.remove("active")
-            homeworksTabClosed.classList.add("active")
-            homeworksFilterCurrentStatus = 4
-            homeworksGet()
-            break
-    }
 }
 
 function homeworksShow(homeworks, clear=true){
@@ -140,7 +114,7 @@ function homeworksShow(homeworks, clear=true){
 let homeworksCurrentOffset = 0
 let homeworksFilterCurrentLesson
 let homeworksFilterName = null
-let homeworksFilterCurrentStatus = null
+let homeworksFilterCurrentStatus = []
 let homeworksFilterSelectedTeachers = []
 let homeworksFilterSelectedListeners = []
 let homeworksFilterDateFrom = null
@@ -148,12 +122,7 @@ let homeworksFilterDateTo = null
 let homeworksFilterDateChangedFrom = null
 let homeworksFilterDateChangedTo = null
 
-
-//Tabs
-const homeworksTabAll = document.querySelector("#homeworksTabAll")
-const homeworksTabDoing = document.querySelector("#homeworksTabDoing")
-const homeworksTabChecking = document.querySelector("#homeworksTabChecking")
-const homeworksTabClosed = document.querySelector("#homeworksTabClosed")
+const homeworkTabs = document.querySelector("#homeworkTabs")
 
 //Table
 const homeworksTableBody = document.querySelector("#homeworksTableBody")
