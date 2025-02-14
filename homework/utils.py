@@ -88,7 +88,7 @@ def get_homework_list_settings(user_groups):
         tabs.append({
             "name": "Отправлено",
             "statuses": [3],
-            "agreement": []
+            "agreement": ["no_need", "accepted"]
         })
         tabs.append({
             "name": "Принято",
