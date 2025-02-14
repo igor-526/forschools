@@ -19,15 +19,7 @@ from .permissions import (get_delete_log_permission, get_can_accept_log_permissi
                           get_can_edit_hw_permission)
 from .serializers import (HomeworkListSerializer, HomeworkLogListSerializer,
                           HomeworkLogSerializer, HomeworkSerializer)
-import logging
 
-logger = logging.getLogger('wsgi')
-logger.setLevel(logging.DEBUG)
-log_format = logging.Formatter('[%(asctime)s HW] %(message)s', datefmt='%H:%M:%S')
-file_handler = logging.FileHandler('logs/wsgi_platform.log', 'a')
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(log_format)
-logger.addHandler(file_handler)
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = Homework
@@ -85,11 +77,9 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         if queryset:
             hw_status = self.request.query_params.getlist("status")
             if hw_status:
-                agreement_filter_perm = self.request.user.groups.filter(
-                    name__in=['Curator', 'Teacher', 'Metodist', 'Admin']).exists()
                 hw_status = [int(s) for s in hw_status]
                 listed_queryset = [{"id": hw.id,
-                                    "status": hw.get_status(accepted_only=not agreement_filter_perm).status}
+                                    "status": hw.get_status(accepted_only=self.request.user == hw.listener).status}
                                    for hw in queryset]
                 listed_queryset = list(filter(lambda hw: hw.get("status") in hw_status, listed_queryset))
                 queryset = queryset.filter(id__in=[hw.get("id") for hw in listed_queryset])
@@ -135,12 +125,12 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             query['lesson'] = lesson
         if name:
             query['name__icontains'] = name
-        queryset = Homework.objects.filter(**query)
-        logger.info(f'LEN: {len(queryset)}')
+        queryset = queryset.filter(**query)
         queryset = self.filter_queryset_date_assigned(queryset)
         queryset = self.filter_queryset_date_changed(queryset)
         queryset = self.filter_queryset_status(queryset)
         queryset = self.filter_queryset_agreement(queryset)
+        print(len(queryset))
         offset = int(self.request.query_params.get("offset")) if (
             self.request.query_params.get("offset")) else 0
         return queryset[offset:offset + 50] if queryset else None
@@ -149,7 +139,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         user_groups = [group.name for group in self.request.user.groups.all()]
         q = Q()
         if "Admin" in user_groups:
-            return self.filter_queryset_all(q)
+            return self.filter_queryset_all(Homework.objects.all())
         if "Metodist" in user_groups:
             q |= Q(lesson__learningphases__learningplan__metodist=self.request.user)
         if "Teacher" in user_groups:

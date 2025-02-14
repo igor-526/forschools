@@ -56,7 +56,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
                   "listener", "status", "lesson_info", "assigned", "color"]
 
     def get_status(self, obj):
-        status = obj.get_status()
+        status = obj.get_status(accepted_only=obj.listener == self.context.get("request").user)
         if status:
             return {"status": status.status,
                     "dt": status.dt}
@@ -80,7 +80,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
 
     def get_color(self, obj):
         color = None
-        hw_status = obj.get_status()
+        hw_status = obj.get_status(accepted_only=obj.listener == self.context.get("request").user)
         if hw_status.status == 6:
             color = "danger"
         elif hw_status.status == 4:

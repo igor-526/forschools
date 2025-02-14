@@ -83,17 +83,17 @@ def get_homework_list_settings(user_groups):
         tabs.append({
             "name": "Выполнить",
             "statuses": [2, 5, 7],
-            "agreement": ["no_need", "accepted"]
+            "agreement": []
         })
         tabs.append({
             "name": "Отправлено",
             "statuses": [3],
-            "agreement": ["no_need", "accepted"]
+            "agreement": []
         })
         tabs.append({
             "name": "Принято",
             "statuses": [4],
-            "agreement": ["no_need", "accepted"]
+            "agreement": []
         })
         settings["show_teacher"] = True
     return {"tabs": tabs, "settings": settings}
