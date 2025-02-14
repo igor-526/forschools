@@ -136,6 +136,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             query['lesson'] = lesson
         if name:
             query['name__icontains'] = name
+        logger.info(f'QUERY: {query}')
         q |= Q(**query)
         queryset = Homework.objects.filter(q)
         logger.info(f'LEN: {len(queryset)}')
