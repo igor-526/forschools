@@ -19,6 +19,7 @@ from .permissions import (get_delete_log_permission, get_can_accept_log_permissi
                           get_can_edit_hw_permission)
 from .serializers import (HomeworkListSerializer, HomeworkLogListSerializer,
                           HomeworkLogSerializer, HomeworkSerializer)
+import logging
 
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -119,6 +120,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         listeners = self.request.query_params.getlist("listener")
         lesson = self.request.query_params.get("lesson")
         name = self.request.query_params.get("name")
+        logging.log(level=logging.INFO, msg=f'NAME: {name}')
         if teachers:
             query['teacher__id__in'] = teachers
         if listeners:
@@ -129,6 +131,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             query['name__icontains'] = name
         q |= Q(**query)
         queryset = Homework.objects.filter(q)
+        logging.log(level=logging.INFO, msg=f'LEN: {len(queryset)}')
         queryset = self.filter_queryset_date_assigned(queryset)
         queryset = self.filter_queryset_date_changed(queryset)
         queryset = self.filter_queryset_status(queryset)
