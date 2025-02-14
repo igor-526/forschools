@@ -53,26 +53,6 @@ class ErrorLogsMiddleware:
                 params=params,
                 response=data,
             )
-
-        if response.status_code in [200]:
-            try:
-                if request.method == "GET":
-                    params = dict(request.GET)
-                elif request.method == "POST":
-                    params = dict(request.POST)
-                else:
-                    params = {}
-            except Exception as e:
-                params = None
-            try:
-                if request.method in ["GET"]:
-                    data = response.data
-                else:
-                    data = None
-            except Exception as e:
-                data = None
-            message = f"params: {params}\nresponse: {data}"
-            logger.info(f'{message}\n')
         return response
 
     def process_exception(self, request, exception):

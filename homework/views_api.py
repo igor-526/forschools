@@ -121,13 +121,12 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             return queryset
         return None
 
-    def filter_queryset_all(self, q):
+    def filter_queryset_all(self, queryset):
         query = {}
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")
         lesson = self.request.query_params.get("lesson")
         name = self.request.query_params.get("hw_name")
-        logger.info(f'NAME: {name}')
         if teachers:
             query['teacher__id__in'] = teachers
         if listeners:
@@ -136,10 +135,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             query['lesson'] = lesson
         if name:
             query['name__icontains'] = name
-        logger.info(f'QUERY: {query}')
-        q |= Q(**query)
-        logger.info(f'Q: {q}')
-        queryset = Homework.objects.filter(q)
+        queryset = Homework.objects.filter(**query)
         logger.info(f'LEN: {len(queryset)}')
         queryset = self.filter_queryset_date_assigned(queryset)
         queryset = self.filter_queryset_date_changed(queryset)
@@ -162,7 +158,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             q |= Q(listener=self.request.user)
         if "Curator" in user_groups:
             q |= Q(lesson__learningphases__learningplan__curators=self.request.user)
-        return self.filter_queryset_all(q)
+        return self.filter_queryset_all(Homework.objects.filter(q))
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data,
