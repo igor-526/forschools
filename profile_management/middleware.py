@@ -1,5 +1,14 @@
 import traceback
 from support.models import WSGIErrorsLog
+import logging
+
+logger = logging.getLogger('wsgi')
+logger.setLevel(logging.DEBUG)
+log_format = logging.Formatter('[%(asctime)s WSGI] %(message)s', datefmt='%H:%M:%S')
+file_handler = logging.FileHandler('logs/wsgi_platform.log', 'a')
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(log_format)
+logger.addHandler(file_handler)
 
 
 class LastActivityMiddleware:
@@ -44,6 +53,26 @@ class ErrorLogsMiddleware:
                 params=params,
                 response=data,
             )
+
+        if response.status_code in [200]:
+            try:
+                if request.method == "GET":
+                    params = dict(request.GET)
+                elif request.method == "POST":
+                    params = dict(request.POST)
+                else:
+                    params = {}
+            except Exception as e:
+                params = None
+            try:
+                if request.method in ["GET"]:
+                    data = response.data
+                else:
+                    data = None
+            except Exception as e:
+                data = None
+            message = f"params: {params}\nresponse: {data}"
+            logger.info(f'{message}\n')
         return response
 
     def process_exception(self, request, exception):

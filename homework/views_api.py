@@ -21,6 +21,13 @@ from .serializers import (HomeworkListSerializer, HomeworkLogListSerializer,
                           HomeworkLogSerializer, HomeworkSerializer)
 import logging
 
+logger = logging.getLogger('wsgi')
+logger.setLevel(logging.DEBUG)
+log_format = logging.Formatter('[%(asctime)s HW] %(message)s', datefmt='%H:%M:%S')
+file_handler = logging.FileHandler('logs/wsgi_platform.log', 'a')
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(log_format)
+logger.addHandler(file_handler)
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     model = Homework
@@ -120,7 +127,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         listeners = self.request.query_params.getlist("listener")
         lesson = self.request.query_params.get("lesson")
         name = self.request.query_params.get("hw_name")
-        logging.log(level=logging.INFO, msg=f'NAME: {name}')
+        logger.info(f'NAME: {name}')
         if teachers:
             query['teacher__id__in'] = teachers
         if listeners:
@@ -131,7 +138,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             query['name__icontains'] = name
         q |= Q(**query)
         queryset = Homework.objects.filter(q)
-        logging.log(level=logging.INFO, msg=f'LEN: {len(queryset)}')
+        logger.info(f'LEN: {len(queryset)}')
         queryset = self.filter_queryset_date_assigned(queryset)
         queryset = self.filter_queryset_date_changed(queryset)
         queryset = self.filter_queryset_status(queryset)
