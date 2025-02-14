@@ -45,7 +45,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                     listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() <=
                                                              assigned_date_to,
                                                   listed_queryset))
-                queryset = queryset.filter(id__in=[hw.get("id") for hw in listed_queryset])
+                queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
             return queryset
         return None
 
@@ -69,7 +69,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                     listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() <=
                                                              date_changed_to,
                                                   listed_queryset))
-                queryset = queryset.filter(id__in=[hw.get("id") for hw in listed_queryset])
+                queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
             return queryset
         return None
 

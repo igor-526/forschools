@@ -1,9 +1,24 @@
 function homeworkListFilterMAMain(){
+    if (homeworkListMASettingTeacher){
+        homeworkListMAFiltersOffcanvasTeacherList = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherList")
+        homeworkListMAFiltersOffcanvasTeacherSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchField")
+        homeworkListMAFiltersOffcanvasTeacherSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchFieldErase")
+        homeworkListMAFiltersOffcanvasTeacherSearchButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchButton")
+    }
+    if (homeworkListMASettingListener){
+        homeworkListMAFiltersOffcanvasListenerList = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerList")
+        homeworkListMAFiltersOffcanvasListenerSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchField")
+        homeworkListMAFiltersOffcanvasListenerSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchFieldErase")
+        homeworkListMAFiltersOffcanvasListenerSearchButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchButton")
+    }
     homeworkListMAFiltersButton.addEventListener("click", function () {
         bsHomeworkListMAFiltersOffcanvas.show()
     })
-    homeworkListFilterMAFieldsListener()
-    homeworkListFilterMAMainEraseListener()
+    homeworkListMAFiltersOffcanvasAcceptButton.addEventListener("click", function () {
+        homeworkListFilterMAAcceptListener()
+    })
+    homeworkListFilterMASetSearchListeners()
+    homeworkListFilterMAEraseListener()
     homeworkListFilterMASetTeachersAndListeners()
 }
 
@@ -66,16 +81,37 @@ function homeworkListFilterMASetTeachersAndListeners(){
 }
 
 function homeworkListFilterMASetSearchListeners(){
-    homeworkListMAFiltersOffcanvasListenerSearchField.addEventListener("input", function () {
-
-    })
-    homeworkListMAFiltersOffcanvasTeacherSearchField.addEventListener("input", function () {
-
-    })
-}
-
-function homeworkListFilterMAFieldsListener(){
-    homeworkListMAFilterName.addEventListener("change", function (){
+    if (homeworkListMASettingTeacher){
+        homeworkListMAFiltersOffcanvasTeacherSearchButton.addEventListener("click", function () {
+            const query = homeworkListMAFiltersOffcanvasTeacherSearchField.value.trim().toLowerCase()
+            if (query === ""){
+                homeworkListMAFiltersOffcanvasTeacherList.querySelectorAll("a").forEach(element => {
+                    element.classList.remove("d-none")
+                })
+            } else {
+                const queryRegExp = new RegExp(query)
+                homeworkListMAFiltersOffcanvasTeacherList.querySelectorAll("a").forEach(element => {
+                    queryRegExp.test(element.innerHTML.toLowerCase()) ? element.classList.remove("d-none") : element.classList.add("d-none")
+                })
+            }
+        })
+    }
+    if (homeworkListMASettingListener){
+        homeworkListMAFiltersOffcanvasListenerSearchButton.addEventListener("click", function () {
+            const query = homeworkListMAFiltersOffcanvasListenerSearchField.value.trim().toLowerCase()
+            if (query === ""){
+                homeworkListMAFiltersOffcanvasListenerList.querySelectorAll("a").forEach(element => {
+                    element.classList.remove("d-none")
+                })
+            } else {
+                const queryRegExp = new RegExp(query)
+                homeworkListMAFiltersOffcanvasListenerList.querySelectorAll("a").forEach(element => {
+                    queryRegExp.test(element.innerHTML.toLowerCase()) ? element.classList.remove("d-none") : element.classList.add("d-none")
+                })
+            }
+        })
+    }
+    homeworkListMAFilterNameSearch.addEventListener("click", function (){
         if (homeworkListMAFilterName.value.trim() !== ""){
             homeworkListMAFiltersName = homeworkListMAFilterName.value.trim()
         } else {
@@ -85,37 +121,183 @@ function homeworkListFilterMAFieldsListener(){
     })
 }
 
-function homeworkListFilterMAMainEraseListener(){
+function homeworkListFilterMAEraseListener(){
     function eraseName(){
         homeworkListMAFilterName.value = ""
         homeworkListMAFiltersName = null
+    }
+
+    function eraseDateAssigned(){
+        homeworkListMAFiltersOffcanvasAssignedFromField.value = ""
+        homeworkListMAFiltersOffcanvasAssignedToField.value = ""
+        homeworkListMAFiltersAssignedFrom = null
+        homeworkListMAFiltersAssignedTo = null
+    }
+
+    function eraseDateChanged(){
+        homeworkListMAFiltersOffcanvasChangedFromField.value = ""
+        homeworkListMAFiltersOffcanvasChangedToField.value = ""
+        homeworkListMAFiltersChangedFrom = null
+        homeworkListMAFiltersChangedTo = null
+    }
+
+    function eraseListeners(reset=false){
+        homeworkListMAFiltersOffcanvasListenerList.querySelectorAll("a").forEach(element => {
+            element.classList.remove("d-none")
+            if (reset){
+                element.classList.remove("active")
+            }
+        })
+        homeworkListMAFiltersOffcanvasListenerSearchField.value = ""
+        if (reset){
+            homeworkListMAFiltersListeners.length = 0
+        }
+    }
+
+    function eraseTeachers(reset=false){
+        homeworkListMAFiltersOffcanvasTeacherList.querySelectorAll("a").forEach(element => {
+            element.classList.remove("d-none")
+            if (reset){
+                element.classList.remove("active")
+            }
+        })
+        homeworkListMAFiltersOffcanvasTeacherSearchField.value = ""
+        if (reset){
+            homeworkListMAFiltersTeachers.length = 0
+        }
     }
 
     homeworkListMAFilterNameErase.addEventListener("click", function () {
         eraseName()
         homeworkListMAGet()
     })
+    if (homeworkListMASettingTeacher){
+        homeworkListMAFiltersOffcanvasTeacherSearchFieldErase.addEventListener("click", function () {
+            eraseTeachers()
+        })
+    }
+    if (homeworkListMASettingListener){
+        homeworkListMAFiltersOffcanvasListenerSearchFieldErase.addEventListener("click", function () {
+            eraseListeners()
+        })
+    }
+    homeworkListMAFiltersOffcanvasAssignedErase.addEventListener("click", function () {
+        eraseDateAssigned()
+    })
+    homeworkListMAFiltersOffcanvasChangedErase.addEventListener("click", function () {
+        eraseDateChanged()
+    })
+    homeworkListMAFiltersOffcanvasResetAllButton.addEventListener("click", function () {
+        homeworkListFilterMAResetValidation()
+        eraseName()
+        if (homeworkListMASettingTeacher){
+            eraseTeachers(true)
+        }
+        if (homeworkListMASettingListener){
+            eraseListeners(true)
+        }
+        eraseDateAssigned()
+        eraseDateChanged()
+        bsHomeworkListMAFiltersOffcanvas.hide()
+        homeworkListMAGet()
+    })
 }
 
+function homeworkListFilterMAResetValidation(){
+    homeworkListMAFiltersOffcanvasAssignedFromField.classList.remove("is-invalid")
+    homeworkListMAFiltersOffcanvasAssignedToField.classList.remove("is-invalid")
+    homeworkListMAFiltersOffcanvasChangedFromField.classList.remove("is-invalid")
+    homeworkListMAFiltersOffcanvasChangedToField.classList.remove("is-invalid")
+}
+
+function homeworkListFilterMAAcceptListener(){
+    function validate(){
+        homeworkListFilterMAResetValidation()
+        let validationStatus = true
+        const today = new Date().setHours(0, 0, 0, 0)
+        if (homeworkListMAFiltersOffcanvasAssignedFromField.value !== ""){
+            if (new Date(homeworkListMAFiltersOffcanvasAssignedFromField.value).setHours(0, 0, 0, 0) > today){
+                homeworkListMAFiltersOffcanvasAssignedFromField.classList.add("is-invalid")
+                validationStatus = false
+            }
+        }
+        if (homeworkListMAFiltersOffcanvasAssignedToField.value !== ""){
+            if (new Date(homeworkListMAFiltersOffcanvasAssignedToField.value).setHours(0, 0, 0, 0) > today){
+                homeworkListMAFiltersOffcanvasAssignedToField.classList.add("is-invalid")
+                validationStatus = false
+            }
+        }
+        if (homeworkListMAFiltersOffcanvasAssignedFromField.value !== "" &&
+            homeworkListMAFiltersOffcanvasAssignedToField.value !== ""){
+            if (new Date(homeworkListMAFiltersOffcanvasAssignedFromField.value) >
+                new Date(homeworkListMAFiltersOffcanvasAssignedToField.value)){
+                homeworkListMAFiltersOffcanvasAssignedFromField.classList.add("is-invalid")
+                homeworkListMAFiltersOffcanvasAssignedToField.classList.add("is-invalid")
+                validationStatus = false
+            }
+        }
+        if (homeworkListMAFiltersOffcanvasChangedFromField.value !== ""){
+            if (new Date(homeworkListMAFiltersOffcanvasChangedFromField.value).setHours(0, 0, 0, 0) > today){
+                homeworkListMAFiltersOffcanvasChangedFromField.classList.add("is-invalid")
+                validationStatus = false
+            }
+        }
+        if (homeworkListMAFiltersOffcanvasChangedToField.value !== ""){
+            if (new Date(homeworkListMAFiltersOffcanvasChangedToField.value).setHours(0, 0, 0, 0) > today){
+                homeworkListMAFiltersOffcanvasChangedToField.classList.add("is-invalid")
+                validationStatus = false
+            }
+        }
+        if (homeworkListMAFiltersOffcanvasChangedFromField.value !== "" &&
+            homeworkListMAFiltersOffcanvasChangedToField.value !== ""){
+            if (new Date(homeworkListMAFiltersOffcanvasChangedFromField.value) >
+                new Date(homeworkListMAFiltersOffcanvasChangedToField.value)){
+                homeworkListMAFiltersOffcanvasChangedFromField.classList.add("is-invalid")
+                homeworkListMAFiltersOffcanvasChangedToField.classList.add("is-invalid")
+                validationStatus = false
+            }
+        }
+        return validationStatus
+    }
+
+    if (validate()){
+        bsHomeworkListMAFiltersOffcanvas.hide()
+        homeworkListMAFiltersAssignedFrom = homeworkListMAFiltersOffcanvasAssignedFromField.value
+        homeworkListMAFiltersAssignedTo = homeworkListMAFiltersOffcanvasAssignedToField.value
+        homeworkListMAFiltersChangedFrom = homeworkListMAFiltersOffcanvasChangedFromField.value
+        homeworkListMAFiltersChangedTo = homeworkListMAFiltersOffcanvasChangedToField.value
+        homeworkListMAGet()
+    }
+}
+
+//Name
 const homeworkListMAFiltersButton = homeworkListMATabs.querySelector("#homeworkListMAFiltersButton")
 const homeworkListMAFilterName = document.querySelector("#homeworkListMAFilterName")
 const homeworkListMAFilterNameErase = document.querySelector("#homeworkListMAFilterNameErase")
+const homeworkListMAFilterNameSearch = document.querySelector("#homeworkListMAFilterNameSearch")
 
+//Offcanvas & buttons
 const homeworkListMAFiltersOffcanvas = document.querySelector("#homeworkListMAFiltersOffcanvas")
 const bsHomeworkListMAFiltersOffcanvas = new bootstrap.Offcanvas(homeworkListMAFiltersOffcanvas)
 const homeworkListMAFiltersOffcanvasResetAllButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasResetAllButton")
 const homeworkListMAFiltersOffcanvasAcceptButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasAcceptButton")
+const homeworkListMAFiltersOffcanvasAssignedErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasAssignedErase")
+const homeworkListMAFiltersOffcanvasChangedErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasChangedErase")
 
-const homeworkListMAFiltersOffcanvasListenerList = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerList")
-const homeworkListMAFiltersOffcanvasTeacherList = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherList")
-
+//Fields
 const homeworkListMAFiltersOffcanvasAssignedFromField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasAssignedFromField")
 const homeworkListMAFiltersOffcanvasAssignedToField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasAssignedToField")
 const homeworkListMAFiltersOffcanvasChangedFromField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasChangedFromField")
 const homeworkListMAFiltersOffcanvasChangedToField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasChangedToField")
-const homeworkListMAFiltersOffcanvasListenerSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchField")
-const homeworkListMAFiltersOffcanvasListenerSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchFieldErase")
-const homeworkListMAFiltersOffcanvasTeacherSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchField")
-const homeworkListMAFiltersOffcanvasTeacherSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchFieldErase")
+
+//Teachers & Listeners
+let homeworkListMAFiltersOffcanvasListenerList = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerList")
+let homeworkListMAFiltersOffcanvasTeacherList = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherList")
+let homeworkListMAFiltersOffcanvasListenerSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchField")
+let homeworkListMAFiltersOffcanvasListenerSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchFieldErase")
+let homeworkListMAFiltersOffcanvasTeacherSearchField = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchField")
+let homeworkListMAFiltersOffcanvasTeacherSearchFieldErase = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchFieldErase")
+let homeworkListMAFiltersOffcanvasTeacherSearchButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasTeacherSearchButton")
+let homeworkListMAFiltersOffcanvasListenerSearchButton = homeworkListMAFiltersOffcanvas.querySelector("#homeworkListMAFiltersOffcanvasListenerSearchButton")
 
 homeworkListFilterMAMain()
