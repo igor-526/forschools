@@ -32,8 +32,8 @@ class ExcelFileMaker:
                 self.filename = f'{filename}({counter}).xlsx'
             else:
                 self.filename = f'generated_{datetime.date.today().strftime("%d.%m.%Y")}({counter}).xlsx'
-            self.filepath = os.path.join(BASE_DIR, "media", "downloaded_data", self.filename)
-            self.filepath_db = os.path.join(MEDIA_ROOT, "downloaded_data", self.filename)
+            self.filepath = os.path.join(MEDIA_ROOT, "downloaded_data", self.filename)
+            self.filepath_db = os.path.join("downloaded_data", self.filename)
 
 
     def set_columns(self, columns: list = None):
