@@ -58,7 +58,7 @@ class PlansDownloader:
 
     def set_schedule(self):
         if self.plan.schedule:
-            print(self.plan.schedule)
+            self.ready_data['Расписание'] = "Отсутствует"
         else:
             self.ready_data['Расписание'] = "Отсутствует"
 
