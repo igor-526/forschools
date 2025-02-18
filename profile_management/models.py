@@ -115,10 +115,6 @@ class NewUser(AbstractUser):
                                            blank=True,
                                            null=True,
                                            on_delete=models.SET_NULL)
-    parents = models.ManyToManyField("self",
-                                     verbose_name="Родители",
-                                     blank=True,
-                                     )
 
     class Meta:
         verbose_name = 'Пользователь'

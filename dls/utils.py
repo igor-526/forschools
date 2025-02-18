@@ -30,6 +30,7 @@ def get_menu(user):
         {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
+            {'name': 'Выгрузка данных', 'url': reverse('generated')},
             {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
             {'name': 'Логи пользователей', 'url': reverse('user_logs')},
             {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},
@@ -53,6 +54,7 @@ def get_menu(user):
         {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
             {'name': 'Управление пользователями', 'url': reverse('admin_users')},
             {'name': 'Коллекция данных', 'url': reverse('admin_collections')},
+            {'name': 'Выгрузка данных', 'url': reverse('generated')},
             {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
             {'name': 'Логи пользователей', 'url': reverse('user_logs')},
             {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},

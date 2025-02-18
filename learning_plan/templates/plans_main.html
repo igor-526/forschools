@@ -8,7 +8,7 @@
             </div>
             <div class="col-auto">
                 {% if can_download %}
-                    <button id="plansDownloadInfo" type="button" class="btn btn-warning mt-1"><i class="bi bi-file-earmark-spreadsheet"></i> Выгрузить</button>
+                    <button id="plansDownloadInfo" type="button" class="btn btn-warning mt-1" disabled><i class="bi bi-file-earmark-spreadsheet"></i> Выгрузить</button>
                     {% include 'plans_modal_download.html' %}
                 {% endif %}
                 <button id="plansFilterEraseAll" type="button" class="btn btn-danger mt-1"><i class="bi bi-funnel-fill"></i> Сбросить</button>

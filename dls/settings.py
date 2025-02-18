@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'lesson',
     'homework',
     'data_collections',
+    'download_data',
     'chat',
 ]
 
@@ -64,7 +65,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / 'templates',
-        ],
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

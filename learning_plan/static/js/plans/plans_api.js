@@ -159,7 +159,19 @@ async function planItemAPISetPlanFromProgram(fd, planID){
 
 async function planItemAPIAddLessons(fd, planID){
     const request = await fetch(`/api/v1/learning_plans/${planID}/add_lessons/`, {
-        method: "post",
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
+}
+
+async function planItemAPIDownload(fd){
+    const request = await fetch(`/api/v1/learning_plans/download/`, {
+        method: "POST",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+            <div class="row justify-content-between">
+            <div class="col-auto">
+                <h1>Выгрузка данных</h1>
+            </div>
+            <div class="col-auto">
+                    <button id="generatedTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i>Сбросить</button>
+            </div>
+        </div>
+    </div>
+    <div class="container-xxl">
+        <div class="container-xxl">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Тип</b></button>
+                            <ul id="generatedTableFilterTypeList" class="dropdown-menu" style="min-width: 250px;"></ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Инициатор</b></button>
+                            <ul id="generatedTableFilterInitiatorList" class="dropdown-menu" style="min-width: 250px;">
+                                <li class="input-group px-1">
+                                    <button id="generatedTableFilterInitiatorSearchFieldReset" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                    <input id="generatedTableFilterInitiatorSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                    <button id="generatedTableFilterInitiatorSearchFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Дата задания</b></button>
+                            <ul class="dropdown-menu" style="min-width: 320px;">
+                                <li class="input-group px-1 mb-1">
+                                    <span class="input-group-text">Начало</span>
+                                    <input id="generatedTableFilterDateStartField" type="date" class="form-control form-control-sm" aria-label="date start">
+                                    <button id="generatedTableFilterDateStartFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                                <li class="input-group px-1">
+                                    <span class="input-group-text">Конец</span>
+                                    <input id="generatedTableFilterDateEndField" type="date" class="form-control form-control-sm" aria-label="date end">
+                                    <button id="generatedTableFilterDateEndFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                    <th scope="col">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                <b>Выполнено</b></button>
+                            <ul class="dropdown-menu" style="min-width: 135px;">
+                                <li class="mx-1 mb-3">
+                                    <div class="btn-group" role="group" aria-label="">
+                                        <input type="radio" class="btn-check" name="complete_filter" id="generatedTableFilterCompleteAll" autocomplete="off" checked>
+                                        <label class="btn btn-outline-primary btn-sm" for="generatedTableFilterCompleteAll">Все</label>
+
+                                        <input type="radio" class="btn-check" name="complete_filter" id="generatedTableFilterCompleteTrue" autocomplete="off">
+                                        <label class="btn btn-outline-primary btn-sm" for="generatedTableFilterCompleteTrue">Да</label>
+
+                                        <input type="radio" class="btn-check" name="complete_filter" id="generatedTableFilterCompleteFalse" autocomplete="off">
+                                        <label class="btn btn-outline-primary btn-sm" for="generatedTableFilterCompleteFalse">Нет</label>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody id="generatedTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+{% block static_js %}
+    <script src="{% static 'js/generated/generated_api.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/generated/generated_main.js' %}"></script>
+    <script src="{% static 'js/generated/generated_filters.js' %}"></script>
+{% endblock %}

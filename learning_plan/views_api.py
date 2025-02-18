@@ -5,13 +5,16 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from download_data.models import GenerateFilesTasks
 from homework.models import Homework, HomeworkLog
 from lesson.models import Lesson
 from user_logs.models import UserLog
-from .permissions import can_edit_plan, can_generate_from_program
+from .permissions import can_edit_plan, can_generate_from_program, CanDownloadPlan
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer, \
     LearningPlanParticipantsOnlyListSerializer
+from .tasks import plans_download
 from .utils import plan_calculated_info, ProgramSetter, get_schedule, AddLessons
 from learning_program.models import LearningProgram
 from datetime import datetime
@@ -244,3 +247,13 @@ class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
                                buttons=[],
                                user=request.user)
         return Response({"status": "ok"}, status=201)
+
+
+class PlansDownloadAPIView(CanDownloadPlan, APIView):
+    def post(self, request, *args, **kwargs):
+        note = GenerateFilesTasks.objects.create(
+            type=1,
+            initiator=request.user,
+        )
+        plans_download(request.data, note).delay()
+        return Response({"status": "ok"}, status=200)

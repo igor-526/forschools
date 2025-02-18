@@ -78,7 +78,7 @@ function plansAddSetTeacherListeners(){
         }
     })
 
-    usersAPIGetMetodists().then(request => {
+    usersAPIGetMethodists().then(request => {
         switch (request.status) {
             case 200:
                 PlanNewHWMetodistField.innerHTML = '<option value="">Выберите методиста</option>'

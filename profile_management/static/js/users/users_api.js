@@ -13,8 +13,13 @@ async function usersAPIGetCurators(){
     return await APIGetToObject(request)
 }
 
-async function usersAPIGetMetodists(){
+async function usersAPIGetMethodists(){
     const request = await fetch("/api/v1/users/?role=Metodist")
+    return await APIGetToObject(request)
+}
+
+async function usersAPIGetAdmins(){
+    const request = await fetch("/api/v1/users/?role=Admin")
     return await APIGetToObject(request)
 }
 

@@ -1,6 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-
 from learning_plan.models import LearningPlan
 from lesson.models import Lesson
 
@@ -8,6 +7,13 @@ from lesson.models import Lesson
 class CanSeePlansPageMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if plans_button(request):
+            return super().dispatch(request, *args, **kwargs)
+        raise PermissionDenied('Permission denied')
+
+
+class CanDownloadPlan(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if can_download_plan(request):
             return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
 
@@ -40,3 +46,7 @@ def get_can_see_plan(request, plan: LearningPlan, lesson: Lesson = None):
             plan.metodist == request.user or plan.teacher == request.user or
             plan.curators.filter(pk=request.user.pk).exists() or
             (lesson and lesson.replace_teacher == request.user))
+
+
+def can_download_plan(request):
+    return request.user.groups.filter(name="Admin").exists()
