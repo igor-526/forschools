@@ -231,7 +231,7 @@ class PlansDownloader:
 
 
 @shared_task
-def plans_download(data: QueryDict, note: GenerateFilesTasks):
+def plans_download(data: QueryDict, note_id: int):
     learning_plans = LearningPlan.objects.filter(id__in=data.getlist('plan_id'))
     all_data = []
     columns = []
@@ -303,6 +303,7 @@ def plans_download(data: QueryDict, note: GenerateFilesTasks):
         all_data.append(plan_data.ready_data)
     file = ExcelFileMaker(data=all_data, columns=columns,
                           filename=f'Планы_обучения_{datetime.date.today().strftime("%d.%m.%Y")}')
+    note = GenerateFilesTasks.objects.get(pk=note_id)
     note.task_complete = timezone.now()
     note.output_file = file.filepath_db
     note.save()
