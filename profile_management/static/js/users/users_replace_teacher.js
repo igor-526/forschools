@@ -13,7 +13,7 @@ function usersReplaceTeacherSetTeachers(){
     function getListElement(user){
         const a = document.createElement("a")
         a.classList.add("list-group-item", "list-group-item-action")
-        a.innerHTML = `${user.first_name} ${user.first_name}`
+        a.innerHTML = `${user.first_name} ${user.last_name}`
         a.addEventListener("click", function () {
             getListElementListener(user.id, a)
         })

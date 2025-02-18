@@ -17,6 +17,7 @@ class PlansPageView(CanSeePlansPageMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = {'title': 'Планы обучения',
                    'menu': get_menu(request.user),
+                   'can_download': True,
                    'can_set_teacher': self.get_teacher_set_permission()}
         return render(request, self.template_name, context)
 

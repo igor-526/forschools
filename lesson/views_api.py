@@ -1,12 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import Q, Count
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
-
-import lesson
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from material.models import Material
 from profile_management.models import NewUser
@@ -91,7 +88,6 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         for hw_status in homework_statuses:
             if hw_agreement and hw_status.agreement.get("accepted") is False:
                 return True
-            print(f'{hw_status.status} - {hw_statuses}')
             if hw_statuses and hw_status.status in [int(st) for st in hw_statuses]:
                 return True
         return False

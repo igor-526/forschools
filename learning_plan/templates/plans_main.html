@@ -7,6 +7,10 @@
                 <h1>Планы обучения</h1>
             </div>
             <div class="col-auto">
+                {% if can_download %}
+                    <button id="plansDownloadInfo" type="button" class="btn btn-warning mt-1"><i class="bi bi-file-earmark-spreadsheet"></i> Выгрузить</button>
+                    {% include 'plans_modal_download.html' %}
+                {% endif %}
                 <button id="plansFilterEraseAll" type="button" class="btn btn-danger mt-1"><i class="bi bi-funnel-fill"></i> Сбросить</button>
                 {% if perms.lesson.edit_plans_self %}
                     <button id="PlansAddButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="offcanvas" href="#offcanvasNewPlan" role="button"><i class="bi bi-plus-lg"></i></button>
@@ -20,6 +24,12 @@
         <table class="table table-hover">
             <thead>
             <tr>
+                <th scope="col" {% if not can_download %}class="d-none"{% endif %}>
+                    <input class="form-check-input" type="checkbox" id="plansTableSelect">
+                    <label class="form-check-label" for="plansTableSelect" id="plansTableSelectLabel">
+                        (0)
+                    </label>
+                </th>
                 <th scope="col">
                     <div class="btn-group">
                         <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
@@ -68,8 +78,12 @@
     </div>
 {% endblock %}
 {% block static_js %}
+    {% if can_download %}
+        <script src="{% static 'js/plans/plans_main_download.js' %}"></script>
+    {% endif %}
     <script>
         const userID = '{{ request.user.id }}'
+        const plansCanDownload = {% if can_download %}true{% else %}false{% endif %}
     </script>
     <script src="{% static 'js/plans/plans_api.js' %}"></script>
     {% if perms.lesson.edit_plans_self %}

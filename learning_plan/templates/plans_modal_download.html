@@ -1,0 +1,99 @@
+<div class="modal" tabindex="-1" id="learningPlansDownloadModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Выгрузка данных</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="learningPlansDownloadModalForm">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormName" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormName">Наименование</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormTeacher" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormTeacher">Преподаватель</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormHWTeacher" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormHWTeacher">Проверяющий ДЗ</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormMethodist" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormMethodist">Методист</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormListeners" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormListeners">Ученики</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormCurators" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormCurators">Кураторы</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormSchedule" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormSchedule">Расписание</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormLessonsCount" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormLessonsCount">Занятия</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormLessonsPassedCount" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormLessonsPassedCount">Занятия (проведено)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormLessonsCanceledCount" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormLessonsCanceledCount">Занятия (отменено)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormHWProcessing" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormHWProcessing">ДЗ (ожидается выполнение)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormHWChecking" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormHWChecking">ДЗ (ожидается проверка)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormHWAgreement" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormHWAgreement">ДЗ (ожидается согласование)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormHWProcessingTime" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormHWProcessingTime">ДЗ (среднее время выполнения)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormHWCheckingTime" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormHWCheckingTime">ДЗ (среднее время проверки)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormHWAgreementTime" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormHWAgreementTime">ДЗ (среднее время согласования)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormListenersProgress" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormListenersProgress">Ученики (Прогресс)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormListenersNote" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormListenersNote">Ученики (Примечания)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormListenersEngChannel" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormListenersEngChannel">Ученики (Канал привлечения)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="learningPlansDownloadModalFormListenersLevel" checked>
+                        <label class="form-check-label" for="learningPlansDownloadModalFormListenersLevel">Ученики (Канал привлечения)</label>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="learningPlansDownloadModalDownloadButton" type="button" class="btn btn-warning">Создать задание</button>
+            </div>
+        </div>
+    </div>
+</div>
