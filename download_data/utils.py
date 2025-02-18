@@ -24,7 +24,7 @@ class ExcelFileMaker:
         else:
             self.filename = f'generated_{datetime.date.today().strftime("%d.%m.%Y")}.xlsx'
         self.filepath = os.path.join(MEDIA_ROOT, "downloaded_data", self.filename)
-        self.filepath_db = os.path.join("media", "downloaded_data", self.filename)
+        self.filepath_db = os.path.join("downloaded_data", self.filename)
         counter = 0
         while os.path.isfile(self.filepath):
             counter += 1
