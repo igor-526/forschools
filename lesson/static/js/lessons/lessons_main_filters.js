@@ -5,6 +5,7 @@ function lessonsFiltersMain(){
     lessonsFilterResetListeners()
     lessonsFilterSearchListeners()
     lessonsFilterSetHWListeners()
+    lessonsFilterSetHWStatusesListeners()
     usersAPIGetTeachersListeners("teacher").then(request => {
         switch (request.status){
             case 200:
@@ -26,6 +27,56 @@ function lessonsFiltersMain(){
         }
     })
     lessonsFilterSetFieldsInputListeners()
+}
+
+function lessonsFilterSetHWStatusesListeners(){
+    function statusListener(status, element){
+        const index = lessonsTableFilterHWStatuses.indexOf(status)
+        switch (index){
+            case -1:
+                lessonsTableFilterHWStatuses.push(status)
+                element.classList.add("active")
+                break
+            default:
+                lessonsTableFilterHWStatuses.splice(index, 1)
+                element.classList.remove("active")
+                break
+        }
+        lessonsGet()
+    }
+
+    function agreementListener(){
+        if (lessonsTableFilterHWAgreementStatus){
+            lessonsTableFilterHWAgreementStatus = false
+            lessonsTableFilterHWAgreement.classList.remove("active")
+        } else {
+            lessonsTableFilterHWAgreementStatus = true
+            lessonsTableFilterHWAgreement.classList.add("active")
+        }
+        lessonsGet()
+    }
+
+    lessonsTableFilterHWStatus1.addEventListener("click", function () {
+        statusListener(1, lessonsTableFilterHWStatus1)
+    })
+    lessonsTableFilterHWStatus2.addEventListener("click", function () {
+        statusListener(2, lessonsTableFilterHWStatus2)
+    })
+    lessonsTableFilterHWStatus3.addEventListener("click", function () {
+        statusListener(3, lessonsTableFilterHWStatus3)
+    })
+    lessonsTableFilterHWStatus4.addEventListener("click", function () {
+        statusListener(4, lessonsTableFilterHWStatus4)
+    })
+    lessonsTableFilterHWStatus5.addEventListener("click", function () {
+        statusListener(5, lessonsTableFilterHWStatus5)
+    })
+    lessonsTableFilterHWStatus7.addEventListener("click", function () {
+        statusListener(7, lessonsTableFilterHWStatus7)
+    })
+    lessonsTableFilterHWAgreement.addEventListener("click", function () {
+        agreementListener()
+    })
 }
 
 function lessonsFilterSearchListeners(){
@@ -287,6 +338,14 @@ function lessonsFilterResetListeners(){
 let lessonsTableFilterCommentAll = isAdmin ? document.querySelector("#lessonsTableFilterCommentAll") : null
 let lessonsTableFilterCommentTrue = isAdmin ? document.querySelector("#lessonsTableFilterCommentTrue") : null
 let lessonsTableFilterCommentFalse = isAdmin ? document.querySelector("#lessonsTableFilterCommentFalse") : null
+
+const lessonsTableFilterHWStatus1 = document.querySelector("#lessonsTableFilterHWStatus1")
+const lessonsTableFilterHWStatus2 = document.querySelector("#lessonsTableFilterHWStatus2")
+const lessonsTableFilterHWStatus3 = document.querySelector("#lessonsTableFilterHWStatus3")
+const lessonsTableFilterHWStatus4 = document.querySelector("#lessonsTableFilterHWStatus4")
+const lessonsTableFilterHWStatus5 = document.querySelector("#lessonsTableFilterHWStatus5")
+const lessonsTableFilterHWStatus7 = document.querySelector("#lessonsTableFilterHWStatus7")
+const lessonsTableFilterHWAgreement = document.querySelector("#lessonsTableFilterHWAgreement")
 
 const lessonsTableFilterNameField = document.querySelector("#lessonsTableFilterNameField")
 const lessonsTableFilterNameErase = document.querySelector("#lessonsTableFilterNameErase")

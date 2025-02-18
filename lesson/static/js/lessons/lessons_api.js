@@ -54,7 +54,8 @@ async function lessonsAPIReplaceTeacher(teacherID, lesson){
 }
 
 async function lessonsAPIGetAll(offset=0, status=null, teachers=[], listeners=[],
-                                ds= null, de= null, has_hw=null, name=null, comment=null){
+                                ds= null, de= null, has_hw=null, name=null, comment=null,
+                                hwStatuses=[], hwAgreement=false){
     let url = '/api/v1/lessons/'
     const searchParams=[]
     if (offset){
@@ -69,16 +70,12 @@ async function lessonsAPIGetAll(offset=0, status=null, teachers=[], listeners=[]
     if (status){
         searchParams.push(`status=${status}`)
     }
-    if (teachers){
-        teachers.forEach(teacher => {
-            searchParams.push(`teacher=${teacher}`)
-        })
-    }
-    if (listeners){
-        listeners.forEach(listener => {
-            searchParams.push(`listener=${listener}`)
-        })
-    }
+    teachers.forEach(teacher => {
+        searchParams.push(`teacher=${teacher}`)
+    })
+    listeners.forEach(listener => {
+        searchParams.push(`listener=${listener}`)
+    })
     if (ds){
         searchParams.push(`date_start=${ds}`)
     }
@@ -88,6 +85,12 @@ async function lessonsAPIGetAll(offset=0, status=null, teachers=[], listeners=[]
     if (has_hw){
         searchParams.push(`has_hw=${has_hw}`)
     }
+    if (hwAgreement){
+        searchParams.push(`hw_agreement=${hwAgreement}`)
+    }
+    hwStatuses.forEach(status => {
+        searchParams.push(`hw_status=${status}`)
+    })
     if (searchParams){
         url += "?"+searchParams.join("&")
     }

@@ -55,7 +55,8 @@ function lessonsGet(more=false){
     }
     lessonsAPIGetAll(lessonsCurrentOffset, lessonsCurrentStatus, lessonsTableFilterTeachersSelected,
         lessonsTableFilterListenersSelected, lessonsTableFilterDateStart, lessonsTableFilterDateEnd,
-        lessonsTableFilterHW, lessonsTableFilterName, lessonsTableFilterComment).then(request => {
+        lessonsTableFilterHW, lessonsTableFilterName, lessonsTableFilterComment, lessonsTableFilterHWStatuses,
+        lessonsTableFilterHWAgreementStatus).then(request => {
         switch (request.status){
             case 200:
                 lessonsShow(request.response, !more)
@@ -317,6 +318,8 @@ let lessonsTableFilterListenersSelected
 let lessonsTableFilterDateStart = null
 let lessonsTableFilterDateEnd = null
 let lessonsTableFilterHW = null
+let lessonsTableFilterHWStatuses = []
+let lessonsTableFilterHWAgreementStatus = false
 let lessonsCurrentStatus = 0
 let lessonsCurrentOffset = 0
 

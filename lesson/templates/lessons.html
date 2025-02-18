@@ -90,8 +90,8 @@
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                                 <b>ДЗ</b></button>
-                            <ul class="dropdown-menu" style="min-width: 175px;">
-                                <li class="mx-1">
+                            <ul class="dropdown-menu" style="min-width: 200px;">
+                                <li class="mx-1 mb-3">
                                     <div class="btn-group" role="group" aria-label="">
                                         <input type="radio" class="btn-check" name="hw_filter" id="lessonsTableFilterHWAll" autocomplete="off" checked>
                                         <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterHWAll">Все</label>
@@ -103,30 +103,42 @@
                                         <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterHWFalse">Без ДЗ</label>
                                     </div>
                                 </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li class="mx-1">
+                                    Последний статус ДЗ:
+                                </li>
+                                <li><a id="lessonsTableFilterHWStatus1" class="dropdown-item" href="#">Создано</a></li>
+                                <li><a id="lessonsTableFilterHWStatus7" class="dropdown-item" href="#">Задано</a></li>
+                                <li><a id="lessonsTableFilterHWStatus2" class="dropdown-item" href="#">Открыто</a></li>
+                                <li><a id="lessonsTableFilterHWStatus3" class="dropdown-item" href="#">На проверке</a></li>
+                                <li><a id="lessonsTableFilterHWStatus5" class="dropdown-item" href="#">На доработке</a></li>
+                                <li><a id="lessonsTableFilterHWStatus4" class="dropdown-item" href="#">Принято</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a id="lessonsTableFilterHWAgreement" class="dropdown-item" href="#">Ожидает согласования</a></li>
                             </ul>
                         </div>
                     </th>
                     {% if is_admin %}
-                    <th scope="col">
-                        <div class="btn-group">
-                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                                <b>Комментарий</b></button>
-                            <ul class="dropdown-menu" style="min-width: 320px;">
-                                <li class="mx-1">
-                                    <div class="btn-group" role="group" aria-label="">
-                                        <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentAll" autocomplete="off" checked>
-                                        <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentAll">Все</label>
+                        <th scope="col">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                    <b>Комментарий</b></button>
+                                <ul class="dropdown-menu" style="min-width: 320px;">
+                                    <li class="mx-1">
+                                        <div class="btn-group" role="group" aria-label="">
+                                            <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentAll" autocomplete="off" checked>
+                                            <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentAll">Все</label>
 
-                                        <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentTrue" autocomplete="off">
-                                        <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentTrue">С комментарием</label>
+                                            <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentTrue" autocomplete="off">
+                                            <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentTrue">С комментарием</label>
 
-                                        <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentFalse" autocomplete="off">
-                                        <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentFalse">Без комментария</label>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </th>
+                                            <input type="radio" class="btn-check" name="comment_filter" id="lessonsTableFilterCommentFalse" autocomplete="off">
+                                            <label class="btn btn-outline-primary btn-sm" for="lessonsTableFilterCommentFalse">Без комментария</label>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </th>
                     {% endif %}
                 </tr>
                 </thead>

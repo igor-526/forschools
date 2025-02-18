@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from django.db.models import Q, Count
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
+
+import lesson
 from learning_plan.utils import Rescheduling, get_schedule, plan_rescheduling_info
 from material.models import Material
 from profile_management.models import NewUser
@@ -44,6 +46,8 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         has_hw = self.request.query_params.get("has_hw")
         name = self.request.query_params.get("name")
         has_comment = self.request.query_params.get("comment")
+        hw_agreement = self.request.query_params.get("hw_agreement")
+        hw_statuses = self.request.query_params.getlist("hw_status")
         if lesson_status:
             query['status'] = lesson_status
         if ds:
@@ -69,12 +73,28 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
 
         if query:
             queryset = queryset.filter(**query)
-        if teachers:
+        if teachers and queryset:
             queryset = queryset.filter(
                 Q(learningphases__learningplan__teacher_id__in=teachers) |
                 Q(replace_teacher_id__in=teachers)
             )
+        if queryset and (hw_agreement or hw_statuses):
+            listed_queryset = list(queryset)
+            filtered_queryset = list(filter(lambda lesson: self.filter_hw(lesson, hw_statuses, hw_agreement), listed_queryset))
+            if not filtered_queryset:
+                return None
+            queryset = Lesson.objects.filter(id__in=[lesson.id for lesson in filtered_queryset])
         return queryset
+
+    def filter_hw(self, lesson: Lesson, hw_statuses, hw_agreement):
+        homework_statuses = [hw.get_status() for hw in lesson.homeworks.all()]
+        for hw_status in homework_statuses:
+            if hw_agreement and hw_status.agreement.get("accepted") is False:
+                return True
+            print(f'{hw_status.status} - {hw_statuses}')
+            if hw_statuses and hw_status.status in [int(st) for st in hw_statuses]:
+                return True
+        return False
 
     def get_queryset(self, *args, **kwargs):
         if self.request.user.groups.filter(name="Admin").exists():
