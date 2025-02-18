@@ -1,14 +1,12 @@
 import datetime
-from pprint import pprint
+from celery import shared_task
 from django.db.models import QuerySet
 from django.http import QueryDict
-
 from download_data.models import GenerateFilesTasks
 from download_data.utils import ExcelFileMaker
 from homework.models import Homework, HomeworkLog
 from learning_plan.models import LearningPlan
 from lesson.models import Lesson
-from profile_management.models import NewUser
 from django.utils import timezone
 
 
@@ -232,6 +230,7 @@ class PlansDownloader:
         self.ready_data["Уровни учеников"] = "\n".join(level_data)
 
 
+@shared_task
 def plans_download(data: QueryDict, note: GenerateFilesTasks):
     learning_plans = LearningPlan.objects.filter(id__in=data.getlist('plan_id'))
     all_data = []
