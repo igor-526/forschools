@@ -255,5 +255,5 @@ class PlansDownloadAPIView(CanDownloadPlan, APIView):
             type=1,
             initiator=request.user,
         )
-        plans_download.delay(request.data, note.id)
+        plans_download(request.data, note.id)
         return Response({"status": "ok"}, status=200)
