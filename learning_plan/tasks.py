@@ -239,67 +239,88 @@ def plans_download(data: QueryDict, note_id: int):
         plan_data = PlansDownloader(learning_plan)
         if data.get('name'):
             plan_data.set_name()
-            columns.append("Наименование")
+            if "Наименование" not in columns:
+                columns.append("Наименование")
         if data.get('teacher'):
             plan_data.set_teacher()
-            columns.append("Преподаватель")
+            if "Преподаватель" not in columns:
+                columns.append("Преподаватель")
         if data.get('hw_teacher'):
             plan_data.set_hw_teacher()
-            columns.append("Проверяющий ДЗ")
+            if "Проверяющий ДЗ" not in columns:
+                columns.append("Проверяющий ДЗ")
         if data.get('methodist'):
             plan_data.set_methodist()
-            columns.append("Методист")
+            if "Методист" not in columns:
+                columns.append("Методист")
         if data.get('listeners'):
             plan_data.set_listeners()
-            columns.append("Ученики")
+            if "Ученики" not in columns:
+                columns.append("Ученики")
         if data.get('curators'):
             plan_data.set_curators()
-            columns.append("Кураторы")
+            if "Кураторы" not in columns:
+                columns.append("Кураторы")
         if data.get('schedule'):
             plan_data.set_schedule()
-            columns.append("Расписание")
+            if "Расписание" not in columns:
+                columns.append("Расписание")
         if data.get('lessons_all'):
             plan_data.set_lessons_all()
-            columns.append("Кол-во занятий (общее)")
+            if "Кол-во занятий (общее)" not in columns:
+                columns.append("Кол-во занятий (общее)")
         if data.get('lessons_passed'):
             plan_data.set_lessons_passed()
-            columns.append("Кол-во занятий (Проведено)")
+            if "Кол-во занятий (Проведено)" not in columns:
+                columns.append("Кол-во занятий (Проведено)")
         if data.get('lessons_canceled'):
             plan_data.set_lessons_canceled()
-            columns.append("Кол-во занятий (Отменено)")
+            if "Кол-во занятий (Отменено)" not in columns:
+                columns.append("Кол-во занятий (Отменено)")
         if data.get('hw_processing'):
             plan_data.set_hw_processing()
-            columns.append("Кол-во ДЗ (Выполняются)")
+            if "Кол-во ДЗ (Выполняются)" not in columns:
+                columns.append("Кол-во ДЗ (Выполняются)")
         if data.get('hw_checking'):
             plan_data.set_hw_checking()
-            columns.append("Кол-во ДЗ (Проверяются)")
+            if "Кол-во ДЗ (Проверяются)" not in columns:
+                columns.append("Кол-во ДЗ (Проверяются)")
         if data.get('hw_agreement'):
             plan_data.set_hw_agreement()
-            columns.append("Кол-во ДЗ (На согласовании)")
+            if "Кол-во ДЗ (На согласовании)" not in columns:
+                columns.append("Кол-во ДЗ (На согласовании)")
         if data.get('hw_processing_time'):
             plan_data.set_hw_processing_time()
-            columns.append("ДЗ (Среднее время выполнения)")
+            if "ДЗ (Среднее время выполнения)" not in columns:
+                columns.append("ДЗ (Среднее время выполнения)")
         if data.get('hw_checking_time'):
             plan_data.set_hw_checking_time()
-            columns.append("ДЗ (Среднее время проверки)")
+            if "ДЗ (Среднее время проверки)" not in columns:
+                columns.append("ДЗ (Среднее время проверки)")
         if data.get('hw_agreement_time'):
             plan_data.set_hw_agreement_time()
-            columns.append("ДЗ (Среднее время согласования)")
+            if "ДЗ (Среднее время согласования)" not in columns:
+                columns.append("ДЗ (Среднее время согласования)")
         if data.get('listeners_age'):
             plan_data.set_listeners_age()
-            columns.append("Возраст учеников")
+            if "Возраст учеников" not in columns:
+                columns.append("Возраст учеников")
         if data.get('listeners_progress'):
             plan_data.set_listeners_progress()
-            columns.append("Прогресс учеников")
+            if "Прогресс учеников" not in columns:
+                columns.append("Прогресс учеников")
         if data.get('listeners_note'):
             plan_data.set_listeners_note()
-            columns.append("Примечания учеников")
+            if "Примечания учеников" not in columns:
+                columns.append("Примечания учеников")
         if data.get('listeners_eng_channel'):
             plan_data.set_listeners_eng_channel()
-            columns.append("Каналы привлечения учеников")
+            if "Каналы привлечения учеников" not in columns:
+                columns.append("Каналы привлечения учеников")
         if data.get('listeners_level'):
             plan_data.set_listeners_level()
-            columns.append("Уровни учеников")
+            if "Уровни учеников" not in columns:
+                columns.append("Уровни учеников")
         all_data.append(plan_data.ready_data)
     file = ExcelFileMaker(data=all_data, columns=columns,
                           filename=f'Планы_обучения_{datetime.date.today().strftime("%d.%m.%Y")}')
