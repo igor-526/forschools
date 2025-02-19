@@ -5,7 +5,6 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from download_data.models import GenerateFilesTasks
 from homework.models import Homework, HomeworkLog
 from lesson.models import Lesson
@@ -115,7 +114,7 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = LearningPlan.objects.filter(teacher=self.request.user)
         queryset = self.filter_all(queryset)
         queryset = self.order_by_name(queryset)
-        return queryset.distinct()[:50] if queryset else None
+        return queryset.distinct() if queryset else None
 
 
 class PlansItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
