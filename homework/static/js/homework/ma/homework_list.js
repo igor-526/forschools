@@ -100,21 +100,16 @@ function homeworkListMAShow(homeworks, clear=true){
         const hwButton = document.createElement("a")
         hwButton.classList.add("btn", "btn-outline-primary", "btn-sm")
         hwButton.href = `/ma/homeworks/${hw.id}/`
-        hwButton.innerHTML = 'Открыть <i class="bi bi-globe"></i>'
+        hwButton.innerHTML = '<i class="bi bi-globe"></i>'
         buttonsBlockLeft.insertAdjacentElement("beforeend", hwButton)
 
         if (hw.lesson_info){
             bodyText.innerHTML += `<br><b>Занятие: </b>${hw.lesson_info.name} от ${new Date(hw.lesson_info.date).toLocaleDateString()}`
-            const lessonButton = document.createElement("a")
-            lessonButton.classList.add("btn", "btn-outline-primary", "btn-sm", "ms-1")
-            lessonButton.href = `/ma/lessons/${hw.lesson_info.id}/`
-            lessonButton.innerHTML = 'Занятие'
-            buttonsBlockLeft.insertAdjacentElement("beforeend", lessonButton)
         }
 
         const tgButton = document.createElement("button")
         tgButton.classList.add("btn", "btn-outline-primary", "btn-sm")
-        tgButton.innerHTML = '<i class="bi bi-telegram"></i>'
+        tgButton.innerHTML = 'Открыть <i class="bi bi-telegram"></i>'
         buttonsBlockRight.insertAdjacentElement("beforeend", tgButton)
         tgButton.addEventListener("click", function (){
             telegramButtonListener(hw.id)

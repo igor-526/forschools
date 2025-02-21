@@ -102,7 +102,9 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                 filtered_plans.extend(list(filter(lambda plan: plan.get_is_closed(), queryset)))
             if filtered_plans:
                 queryset = queryset.filter(id__in=[plan.id for plan in filtered_plans])
-        return queryset
+        offset = int(self.request.query_params.get("offset")) if (
+            self.request.query_params.get("offset")) else 0
+        return queryset[offset:offset + 50] if queryset else None
 
     def order_by_name(self, queryset):
         order_name = self.request.query_params.get('sort_name')
