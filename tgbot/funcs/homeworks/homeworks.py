@@ -149,7 +149,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
     async def new_hw_result():
         is_curator = user.id in curators_ids
         is_methodist = methodist == user
-        is_teacher = teacher == user
+        is_teacher = user in [teacher, lesson.replace_teacher]
         lesson_can_be_passed = get_lesson_can_be_passed(lesson) if lesson else False
         rm = None
         msg_text = "!"
