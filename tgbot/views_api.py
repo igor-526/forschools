@@ -62,19 +62,19 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
 
         if self.request.user.groups.filter(name="Admin").exists():
             queryset = TgBotJournal.objects.filter(Q(
-                event__in=[1, 2, 3, 4, 5, 6]
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9]
             ) | mq)
         elif self.request.user.groups.filter(name="Metodist").exists():
             queryset = TgBotJournal.objects.filter(Q(
-                event__in=[1, 2, 3, 4, 5, 6],
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9],
                 initiator__groups__name__in=["Teacher", "Listener"],
                 recipient__groups__name__in=["Teacher", "Listener"],
             ) | Q(
-                event__in=[1, 2, 3, 4, 5, 6],
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9],
                 initiator__isnull=True,
                 recipient__groups__name__in=["Teacher", "Listener"],
             ) | Q(
-                event__in=[1, 2, 3, 4, 5, 6],
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9],
                 initiator=self.request.user,
                 recipient=self.request.user,
             ) | mq)
@@ -87,11 +87,11 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
                 Q(id=self.request.user.id)
             ).distinct()]
             queryset = TgBotJournal.objects.filter(Q(
-                event__in=[1, 2, 3, 4, 5, 6],
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9],
                 initiator__id__in=users_ids,
                 recipient__id__in=users_ids,
             ) | Q(
-                event__in=[1, 2, 3, 4, 5, 6],
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9],
                 initiator__isnull=True,
                 recipient__id__in=users_ids,
             ) | mq)

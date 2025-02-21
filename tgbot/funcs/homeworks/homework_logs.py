@@ -57,12 +57,12 @@ async def f_homework_logs_change_log_ready(message: types.Message, state: FSMCon
             await homework_tg_notify(user,
                                      plan.default_hw_teacher.id if plan.default_hw_teacher else plan.teacher.id,
                                      [hw_log.homework],
-                                     "Методист изменил ОС ученику")
+                                     "Методист изменил ОС ученику", 9)
             for cur_id in [curator.id async for curator in plan.curators.all()]:
                 await homework_tg_notify(user,
                                          cur_id,
                                          [hw_log.homework],
-                                         "Методист изменил ОС ученику")
+                                         "Методист изменил ОС ученику", 9)
         if await plan.curators.filter(id=user.id).aexists():
             await homework_tg_notify(user,
                                      plan.metodist.id,

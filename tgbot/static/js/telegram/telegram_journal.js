@@ -92,7 +92,9 @@ function tgJournalGetEventStr(event){
         case 7:
             return "Новое сообщение"
         case 8:
-            return "Согласование ДЗ"
+            return "Домашнее заданее: согласование"
+        case 9:
+            return "Домашнее заданее: изменение ОС"
         default:
             return ""
     }

@@ -165,7 +165,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 await homework_tg_notify(user,
                                          methodist.id,
                                          [hw],
-                                         "Преподаватель задал ДЗ. Требуется согласование")
+                                         "Преподаватель задал ДЗ. Требуется согласование", 8)
             elif lesson.status == 1 and methodist is None:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
