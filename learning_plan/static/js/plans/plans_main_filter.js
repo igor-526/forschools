@@ -68,11 +68,9 @@ function learningPlansFilterSetEraseResetListeners() {
                 elem.classList.remove("active")
             }
         })
-    }
-
-    function resetTeacher(){
-        eraseTeacher(true)
-        learningPlansSelectedTeachers = []
+        if (reset){
+            learningPlansSelectedTeachers.length = 0
+        }
     }
 
     function eraseListener(reset=false){
@@ -83,11 +81,9 @@ function learningPlansFilterSetEraseResetListeners() {
                 elem.classList.remove("active")
             }
         })
-    }
-
-    function resetListener(){
-        eraseListener(true)
-        learningPlansSelectedListeners = []
+        if (reset){
+            learningPlansSelectedListeners.length = 0
+        }
     }
 
     function eraseName(){
@@ -105,8 +101,8 @@ function learningPlansFilterSetEraseResetListeners() {
     plansFilterEraseAll.addEventListener("click", function (){
         resetNameSort()
         eraseName()
-        resetTeacher()
-        resetListener()
+        eraseTeacher(true)
+        eraseListener(true)
         learningPlansGet()
     })
     plansFilterNameErase.addEventListener("click", function (){
@@ -120,11 +116,11 @@ function learningPlansFilterSetEraseResetListeners() {
         eraseListener()
     })
     plansFilterTeacherSearchFieldReset.addEventListener("click", function (){
-        resetTeacher()
+        eraseTeacher(true)
         learningPlansGet()
     })
     plansFilterListenerSearchFieldReset.addEventListener("click", function (){
-        resetListener()
+        eraseListener(true)
         learningPlansGet()
     })
 }
