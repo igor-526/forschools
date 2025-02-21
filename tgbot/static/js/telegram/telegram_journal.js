@@ -91,6 +91,8 @@ function tgJournalGetEventStr(event){
             return "Материалы: автоматическая отправка"
         case 7:
             return "Новое сообщение"
+        case 8:
+            return "Согласование ДЗ"
         default:
             return ""
     }

@@ -1060,7 +1060,7 @@ async def hw_send(tg_id: int, state: FSMContext):
 
 
 async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
-                             homeworks: list[Homework], text="У вас новые домашние задания!"):
+                             homeworks: list[Homework], text="У вас новые домашние задания!", log_event=3):
     recipients_tgs = await get_tg_id(recipient_user_id)
     user_groups = [group.name async for group in (await NewUser.objects.aget(pk=recipient_user_id)).groups.all()]
     for user_tg_note in recipients_tgs:
@@ -1074,7 +1074,7 @@ async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
             await TgBotJournal.objects.acreate(
                 recipient_id=recipient_user_id,
                 initiator=initiator,
-                event=3,
+                event=log_event,
                 data={
                     "status": "success",
                     "text": text,
@@ -1087,7 +1087,7 @@ async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
             await TgBotJournal.objects.acreate(
                 recipient_id=recipient_user_id,
                 initiator=initiator,
-                event=3,
+                event=log_event,
                 data={
                     "status": "error",
                     "text": None,
@@ -1100,7 +1100,7 @@ async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
         await TgBotJournal.objects.acreate(
             recipient_id=recipient_user_id,
             initiator=initiator,
-            event=3,
+            event=log_event,
             data={
                 "status": "error",
                 "text": None,

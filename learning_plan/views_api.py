@@ -102,17 +102,18 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                 filtered_plans.extend(list(filter(lambda plan: plan.get_is_closed(), queryset)))
             if filtered_plans:
                 queryset = queryset.filter(id__in=[plan.id for plan in filtered_plans])
-        offset = int(self.request.query_params.get("offset")) if (
-            self.request.query_params.get("offset")) else 0
-        return queryset[offset:offset + 50] if queryset else None
+        return queryset
 
     def order_by_name(self, queryset):
         order_name = self.request.query_params.get('sort_name')
+        order_query = []
         if order_name == "asc":
-            queryset = queryset.order_by('name')
+            order_query.append("name")
         elif order_name == "desc":
-            queryset = queryset.order_by('-name')
-        return queryset
+            order_query.append("-name")
+        offset = int(self.request.query_params.get("offset")) if (
+            self.request.query_params.get("offset")) else 0
+        return queryset.order_by(*order_query).distinct()[offset:offset + 50] if queryset else None
 
     def get_queryset(self):
         queryset = None
@@ -122,7 +123,7 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = LearningPlan.objects.filter(teacher=self.request.user)
         queryset = self.filter_all(queryset)
         queryset = self.order_by_name(queryset)
-        return queryset.distinct() if queryset else None
+        return queryset
 
 
 class PlansItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):

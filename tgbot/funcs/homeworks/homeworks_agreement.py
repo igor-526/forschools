@@ -123,7 +123,7 @@ async def f_homework_agr_send(tg_id: int,
                 await homework_tg_notify(logs_info.get("plan").metodist,
                                          log_.homework.teacher.id,
                                          [log_.homework],
-                                         msg_teacher)
+                                         msg_teacher, 8)
                 await homework_tg_notify(logs_info.get("plan").metodist,
                                          log_.homework.listener.id,
                                          [log_.homework],
@@ -132,7 +132,7 @@ async def f_homework_agr_send(tg_id: int,
                     [await homework_tg_notify(logs_info.get("plan").metodist,
                                               curator.id,
                                               [log_.homework],
-                                              msg_curator)
+                                              msg_curator, 8)
                      async for curator in logs_info.get("plan").curators.all()]
             elif action == "agreement_decline":
                 if log_.status == 7:
@@ -153,7 +153,7 @@ async def f_homework_agr_send(tg_id: int,
                 await homework_tg_notify(logs_info.get("plan").metodist,
                                          log_.homework.teacher.id,
                                          [log_.homework],
-                                         msg_teacher)
+                                         msg_teacher, 8)
 
     async def journal_log():
         title = "Действие преподавателя согласовано" if st_data.get("action") == "agreement_accept" else \
