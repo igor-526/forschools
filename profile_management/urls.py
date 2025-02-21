@@ -4,9 +4,8 @@ from .views import DashboardPageTemplateView, UsersPageTemplateView, ProfilePage
 from .views_api import (UserListAPIView, UserDetailAPIView,
                         UserPhotoAPIView, TelegramAPIView,
                         DeactivateUserAPIView, ActivateUserAPIView,
-                        ChangePasswordAPIView, TeacherListenersListAPIView,
-                        UsersForJournalListAPIView, UsersForScheduleListAPIView,
-                        )
+                        ChangePasswordAPIView, UsersForJournalListAPIView,
+                        UsersForScheduleListAPIView)
 from .views_login import (user_login, user_logout,
                           register_view, AdminLoginAPIView)
 from lesson.views_api import UserLessonListAPIView
@@ -27,7 +26,6 @@ urlpatterns = [
 apiv1patterns = [
     path('', UserListAPIView.as_view()),
     path('forjournals/', UsersForJournalListAPIView.as_view()),
-    path('teacherslisteners/', TeacherListenersListAPIView.as_view()),
     path('schedule/', UsersForScheduleListAPIView.as_view()),
     path('<int:pk>/', UserDetailAPIView.as_view()),
     path('<int:pk>/photo/', UserPhotoAPIView.as_view()),

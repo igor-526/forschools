@@ -6,7 +6,7 @@ function lessonsFiltersMain(){
     lessonsFilterSearchListeners()
     lessonsFilterSetHWListeners()
     lessonsFilterSetHWStatusesListeners()
-    usersAPIGetTeachersListeners("teacher").then(request => {
+    usersAPIGetTeachers().then(request => {
         switch (request.status){
             case 200:
                 lessonsFilterSetTeachers(request.response)
@@ -16,7 +16,7 @@ function lessonsFiltersMain(){
                 break
         }
     })
-    usersAPIGetTeachersListeners("listener").then(request => {
+    usersAPIGetListeners().then(request => {
         switch (request.status){
             case 200:
                 lessonsFilterSetListeners(request.response)

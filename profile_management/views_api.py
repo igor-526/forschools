@@ -133,6 +133,8 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
             order_query.append('last_name')
         elif sort_full_name == "desc":
             order_query.append('-last_name')
+        else:
+            order_query.append('first_name')
         return queryset.order_by(*order_query)
 
     def get_queryset_read_all_messages(self):
@@ -203,39 +205,6 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
                 queryset = self.filter_fullname(queryset)
                 queryset = self.sort_queryset_all(queryset)
             return queryset.distinct() if queryset else None
-
-
-class TeacherListenersListAPIView(LoginRequiredMixin, ListAPIView):
-    serializer_class = NewUserNameOnlyListSerializer
-
-    def get_queryset(self):
-        if self.request.user.groups.filter(name__in=['Admin', 'Metodist']).exists():
-            if self.request.query_params.get('group') == 'teacher':
-                return NewUser.objects.filter(groups__name='Teacher',
-                                              is_active=True).distinct()
-            elif self.request.query_params.get('group') == 'listener':
-                return NewUser.objects.filter(groups__name='Listener',
-                                              is_active=True).distinct()
-        if self.request.user.groups.filter(name="Teacher").exists():
-            if self.request.query_params.get('group') == 'teacher':
-                return NewUser.objects.filter(pk=self.request.user.id).distinct()
-            elif self.request.query_params.get('group') == 'listener':
-                return NewUser.objects.filter(
-                    Q(plan_listeners__teacher=self.request.user,
-                      is_active=True) |
-                    Q(plan_listeners__phases__lessons__replace_teacher=self.request.user,
-                      is_active=True)
-                ).distinct()
-        if self.request.user.groups.filter(name='Listener').exists():
-            if self.request.query_params.get('group') == 'teacher':
-                return NewUser.objects.filter(
-                    Q(plan_teacher__listeners=self.request.user,
-                      is_active=True) |
-                    Q(replace_teacher__learningphases__learningplan__listeners=self.request.user,
-                      is_active=True)).distinct()
-            elif self.request.query_params.get('group') == 'listener':
-                return NewUser.objects.filter(pk=self.request.user.id).distinct()
-        return None
 
 
 class UsersForJournalListAPIView(LoginRequiredMixin, ListAPIView):
