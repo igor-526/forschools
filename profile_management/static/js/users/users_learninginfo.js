@@ -83,7 +83,7 @@ function usersLearnInfoSetPlans(){
     changeElements()
     switch (usersLearningInfoModalCurrentUserRole){
         case "Teacher":
-            plansAPIGet(null, null, null, [usersLearningInfoModalCurrentUserID], []).then(request => {
+            plansAPIGet(0, null, null, null, [usersLearningInfoModalCurrentUserID], []).then(request => {
                 switch (request.status){
                     case 200:
                         show(request.response)
@@ -94,7 +94,7 @@ function usersLearnInfoSetPlans(){
             })
             break
         case "Listener":
-            plansAPIGet(null, null, null, [], [usersLearningInfoModalCurrentUserID]).then(request => {
+            plansAPIGet(0, null, null, null, [], [usersLearningInfoModalCurrentUserID]).then(request => {
                 switch (request.status){
                     case 200:
                         show(request.response)

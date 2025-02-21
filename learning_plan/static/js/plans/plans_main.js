@@ -9,14 +9,23 @@ function learningPlansMain(){
         plansTableSelect.addEventListener("change", learningPlansSelectAllListener)
         plansDownloadInfo.addEventListener("click", plansAllDownloadSetModal)
     }
+    plansTableShowMoreButton.addEventListener("click", function () {
+        plansCurrentOffset += 50
+        learningPlansGet(true)
+    })
 }
 
-function learningPlansGet(){
-    plansAPIGet(null, null, learningPlansSelectedName, learningPlansSelectedTeachers,
-        learningPlansSelectedListeners, learningPlansSelectedNameSort).then(request => {
+function learningPlansGet(more=false){
+    if (!more && plansCurrentOffset !== 0){
+        plansCurrentOffset = 0
+    }
+    plansAPIGet(plansCurrentOffset, null, null, learningPlansSelectedName, learningPlansSelectedTeachers,
+        learningPlansSelectedListeners, learningPlansSelectedStatus, learningPlansSelectedNameSort).then(request => {
         switch (request.status){
             case 200:
-                learningPlansShow(request.response)
+                learningPlansShow(request.response, !more)
+                request.response.length === 50 ? plansTableShowMoreButton.classList.remove("d-none") :
+                    plansTableShowMoreButton.classList.add("d-none")
                 break
             default:
                 showErrorToast()
@@ -157,8 +166,11 @@ const plansTableSelect = plansCanDownload ? document.querySelector("#plansTableS
 const plansTableSelectLabel = plansCanDownload ? document.querySelector("#plansTableSelectLabel") : null
 
 const plansTableBody = document.querySelector("#PlansTableBody")
+const plansTableShowMoreButton = document.querySelector("#plansTableShowMoreButton")
 
 //Filtering
+let plansCurrentOffset = 0
+let learningPlansSelectedStatus = "processing"
 let learningPlansSelectedName = null
 let learningPlansSelectedNameSort = null
 let learningPlansSelectedTeachers = []

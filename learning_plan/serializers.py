@@ -34,7 +34,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
     def get_color(self, obj):
         if self.get_deletable(obj):
             return "warning"
-        if Lesson.objects.filter(learningphases__learningplan=obj, status=0).count() == 0:
+        if obj.get_is_closed():
             return "success"
         return None
 

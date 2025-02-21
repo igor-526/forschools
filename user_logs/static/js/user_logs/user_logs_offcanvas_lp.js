@@ -6,7 +6,7 @@ function userLogsOffcanvasShow(){
 }
 
 function userLogsOffcanvasGetLearningPlans(){
-    plansAPIGet(userLogsOffcanvasQAllFilter, "true").then(request => {
+    plansAPIGet(0, userLogsOffcanvasQAllFilter, "true").then(request => {
         switch (request.status){
             case 200:
                 userLogsOffcanvasShowLearningPlans(request.response)

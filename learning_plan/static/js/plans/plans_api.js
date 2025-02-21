@@ -1,7 +1,10 @@
-async function plansAPIGet(q_all=null, part_only=null, name=null, teacher=[],
-                           listener=[], nameSort=null){
+async function plansAPIGet(offset=0, q_all=null, part_only=null, name=null, teacher=[],
+                           listener=[], status=null, nameSort=null){
     let url = "/api/v1/learning_plans/"
     let searchParams = []
+    if (offset){
+        searchParams.push(`offset=${offset}`)
+    }
     if (q_all){
         searchParams.push(`q_all=${q_all}`)
     }
@@ -17,6 +20,9 @@ async function plansAPIGet(q_all=null, part_only=null, name=null, teacher=[],
     listener.forEach(listener => {
         searchParams.push(`listener=${listener}`)
     })
+    if (status){
+        searchParams.push(`status=${status}`)
+    }
     if (nameSort){
         searchParams.push(`sort_name=${nameSort}`)
     }

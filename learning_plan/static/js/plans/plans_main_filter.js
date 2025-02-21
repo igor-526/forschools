@@ -4,6 +4,7 @@ function learningPlansFilterMain() {
     learningPlansFilterSetFilterListeners()
     learningPlansFilterSetSortListeners()
     learningPlansFilterSetEraseResetListeners()
+    learningPlansFilterSetStatusListeners()
 }
 
 function learningPlansFilterSetTeachersListeners() {
@@ -60,6 +61,13 @@ function learningPlansFilterSetTeachersListeners() {
 }
 
 function learningPlansFilterSetEraseResetListeners() {
+    function resetStatus(){
+        plansFilterStatusProcessing.classList.add("active")
+        plansFilterStatusClosed.classList.remove("active")
+        plansFilterStatusAll.classList.remove("active")
+        learningPlansSelectedStatus = "processing"
+    }
+
     function eraseTeacher(reset=false){
         plansFilterTeacherSearchField.value = ""
         plansFilterTeacherList.querySelectorAll("a").forEach(elem => {
@@ -100,6 +108,7 @@ function learningPlansFilterSetEraseResetListeners() {
 
     plansFilterEraseAll.addEventListener("click", function (){
         resetNameSort()
+        resetStatus()
         eraseName()
         eraseTeacher(true)
         eraseListener(true)
@@ -170,10 +179,29 @@ function learningPlansFilterSetSortListeners() {
     })
 }
 
+function learningPlansFilterSetStatusListeners(){
+    plansFilterStatusProcessing.addEventListener("click", function () {
+        learningPlansSelectedStatus = "processing"
+        learningPlansGet()
+    })
+    plansFilterStatusClosed.addEventListener("click", function () {
+        learningPlansSelectedStatus = "closed"
+        learningPlansGet()
+    })
+    plansFilterStatusAll.addEventListener("click", function () {
+        learningPlansSelectedStatus = null
+        learningPlansGet()
+    })
+}
+
 //Fields
 const plansFilterNameField = document.querySelector("#plansFilterNameField")
 const plansFilterTeacherSearchField = document.querySelector("#plansFilterTeacherSearchField")
 const plansFilterListenerSearchField = document.querySelector("#plansFilterListenerSearchField")
+
+const plansFilterStatusProcessing = document.querySelector("#plansFilterStatusProcessing")
+const plansFilterStatusClosed = document.querySelector("#plansFilterStatusClosed")
+const plansFilterStatusAll = document.querySelector("#plansFilterStatusAll")
 
 //Reset/Erase
 const plansFilterEraseAll = document.querySelector("#plansFilterEraseAll")

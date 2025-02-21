@@ -19,7 +19,7 @@ class LessonTeacherReviewSerializer(serializers.ModelSerializer):
 class LessonSerializer(serializers.ModelSerializer):
     replace_teacher = NewUserNameOnlyListSerializer(required=False)
     materials = MaterialListSerializer(many=True, required=False)
-    homeworks = HomeworkListSerializer(many=True, required=False)
+    homeworks = serializers.SerializerMethodField(read_only=True)
     lesson_teacher_review = serializers.SerializerMethodField(read_only=True)
     place = PlaceSerializer()
     deletable = serializers.SerializerMethodField(read_only=True)
@@ -29,6 +29,11 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = "__all__"
+
+    def get_homeworks(self, obj):
+        queryset = obj.homeworks.exclude(log_set__status=6)
+        return HomeworkListSerializer(queryset, many=True,
+                                      context={"request": self.context.get("request")}).data
 
     def get_learning_plan(self, obj):
         plan = obj.get_learning_plan()

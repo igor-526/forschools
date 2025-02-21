@@ -117,5 +117,4 @@ class LearningPlan(models.Model):
         return lesson
 
     def get_is_closed(self):
-        return not Lesson.objects.filter(learningphases__learningplan=self,
-                                         status=0).exists()
+        return not Lesson.objects.filter(learningphases__learningplan=self, status=0).exists() and Lesson.objects.filter(learningphases__learningplan=self).exists()

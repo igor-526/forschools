@@ -44,7 +44,7 @@ function homeworksInitTabs(){
 
 function homeworksGet(more=false){
     if (!more && homeworksCurrentOffset !== 0){
-        userLogsCurrentOffset = 0
+        homeworksCurrentOffset = 0
     }
     homeworkAPIGet(homeworksCurrentOffset, homeworksFilterCurrentLesson,
         homeworksFilterCurrentStatus, homeworksFilterSelectedTeachers,

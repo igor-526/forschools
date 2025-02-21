@@ -83,20 +83,26 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                 q |= Q(curators__patronymic__icontains=query)
                 q |= Q(name__icontains=query)
                 return queryset.filter(q)
-        else:
-            q_name = self.request.query_params.get('name')
-            q_teacher = self.request.query_params.getlist('teacher')
-            q_listeners = self.request.query_params.getlist('listener')
-            if q_name:
-                query["name__icontains"] = q_name
-            if q_teacher:
-                query["teacher__id__in"] = q_teacher
-            if q_listeners:
-                query["listeners__id__in"] = q_listeners
-            if not query:
-                return queryset
-            else:
-                return queryset.filter(**query)
+        q_name = self.request.query_params.get('name')
+        q_teacher = self.request.query_params.getlist('teacher')
+        q_listeners = self.request.query_params.getlist('listener')
+        q_status = self.request.query_params.get('status')
+        if q_name:
+            query["name__icontains"] = q_name
+        if q_teacher:
+            query["teacher__id__in"] = q_teacher
+        if q_listeners:
+            query["listeners__id__in"] = q_listeners
+        queryset = queryset.filter(**query)
+        if q_status and queryset:
+            filtered_plans = []
+            if q_status == "processing":
+                filtered_plans.extend(list(filter(lambda plan: not plan.get_is_closed(), queryset)))
+            if q_status == "closed":
+                filtered_plans.extend(list(filter(lambda plan: plan.get_is_closed(), queryset)))
+            if filtered_plans:
+                queryset = queryset.filter(id__in=[plan.id for plan in filtered_plans])
+        return queryset
 
     def order_by_name(self, queryset):
         order_name = self.request.query_params.get('sort_name')

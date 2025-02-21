@@ -3,7 +3,7 @@
 {% block content %}
     <div class="container-xxl mt-4 mb-3">
         <div class="row justify-content-between">
-            <div class="col-auto">
+            <div class="col-auto d-flex">
                 <h1>Планы обучения</h1>
             </div>
             <div class="col-auto">
@@ -21,6 +21,19 @@
         </div>
     </div>
     <div class="container-xxl">
+
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="plansFilterStatusProcessing" data-bs-toggle="pill" type="button" role="tab">В процессе</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="plansFilterStatusClosed" data-bs-toggle="pill" type="button" role="tab">Обучение завершено</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="plansFilterStatusAll" data-bs-toggle="pill" type="button" role="tab">Все</button>
+            </li>
+        </ul>
+
         <table class="table table-hover">
             <thead>
             <tr>
@@ -33,7 +46,7 @@
                 <th scope="col">
                     <div class="btn-group">
                         <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                            Наименование
+                            <b>Наименование</b>
                             <span class="visually-hidden"></span></button>
                         <button id="plansFilterNameSort" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-bar-expand"></i></button>
                         <ul class="dropdown-menu" style="min-width: 250px;">
@@ -75,6 +88,7 @@
             </thead>
             <tbody id="PlansTableBody"></tbody>
         </table>
+        <button id="plansTableShowMoreButton" class="btn btn-primary d-none">Показать ещё</button>
     </div>
 {% endblock %}
 {% block static_js %}
