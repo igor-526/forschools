@@ -77,7 +77,8 @@ async def f_homework_agr_add_comment(messages: list[types.Message],
 
 
 async def f_homework_agr_send(tg_id: int,
-                              state: FSMContext):
+                              state: FSMContext,
+                              stealth=False):
     async def get_logs_info():
         hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=st_data.get("hw_id"))
         last_log = await hw.aget_status()
@@ -214,8 +215,9 @@ async def f_homework_agr_send(tg_id: int,
     st_data = await state.get_data()
     logs_info = await get_logs_info()
     if not logs_info.get("logs"):
-        await bot.send_message(chat_id=tg_id,
-                               text="ДЗ не нуждается в согласовании")
+        if not stealth:
+            await bot.send_message(chat_id=tg_id,
+                                   text="ДЗ не нуждается в согласовании")
         return
     now = datetime.datetime.now()
     agreement = {

@@ -34,7 +34,7 @@ function learningPlansGet(more=false){
     })
 }
 
-function learningPlansShow(plans){
+function learningPlansShow(plans, clear=true){
     function getSelectListener(planID, checked){
         const index = plansSelected.indexOf(planID)
         if (checked){
@@ -126,7 +126,7 @@ function learningPlansShow(plans){
         return tr
     }
 
-    plansTableBody.innerHTML = ''
+    if (clear) plansTableBody.innerHTML = ''
     plans.forEach(plan => {
         plansTableBody.insertAdjacentElement("beforeend", getElement(plan))
     })

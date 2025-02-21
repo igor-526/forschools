@@ -4,10 +4,11 @@ from homework.models import HomeworkLog
 from tgbot.create_bot import bot
 from tgbot.finite_states.homework import HomeworkLogFSM
 from tgbot.funcs.homeworks.homeworks import homework_tg_notify
+from tgbot.funcs.homeworks.homeworks_agreement import f_homework_agr_send
 from tgbot.keyboards.default import ready_cancel_keyboard
 from aiogram import types
 
-from tgbot.utils import get_user
+from tgbot.utils import get_user, get_group_and_perms
 
 
 async def f_homework_logs_change_log_message(callback: CallbackQuery, state: FSMContext, hw_log_id: int):
@@ -84,3 +85,13 @@ async def f_homework_logs_change_log_ready(message: types.Message, state: FSMCon
     await hw_log.asave()
     await message.answer("Обратная связь успешно изменена")
     await notify()
+
+    gp = await get_group_and_perms((await get_user(message.from_user.id)).id)
+    if "Metodist" in gp.get("groups"):
+        await state.update_data(
+            action="agreement_accept",
+            comment=[],
+            hw_id=hw_log.homework.id
+        )
+        await f_homework_agr_send(message.from_user.id, state, True)
+
