@@ -1,6 +1,8 @@
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
+
+from lesson.models import Lesson
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
 from lesson.serializers import LessonListSerializer
@@ -14,6 +16,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
     curators = NewUserNameOnlyListSerializer(many=True, read_only=True)
     metodist = NewUserNameOnlyListSerializer(many=False, read_only=True)
     deletable = serializers.SerializerMethodField(read_only=False)
+    color = serializers.SerializerMethodField(read_only=False)
 
     class Meta:
         model = LearningPlan
@@ -21,10 +24,19 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
                   'teacher', 'purpose', 'deadline',
                   'show_lessons', 'show_materials',
                   'default_hw_teacher', 'deletable',
-                  'metodist', 'curators']
+                  'metodist', 'curators', 'color']
 
     def get_deletable(self, obj):
-        return obj.phases.count() == 0
+        if obj.phases.count() == 0:
+            return True
+        return not Lesson.objects.filter(learningphases__learningplan=obj).exists()
+
+    def get_color(self, obj):
+        if self.get_deletable(obj):
+            return "warning"
+        if Lesson.objects.filter(learningphases__learningplan=obj, status=0).count() == 0:
+            return "success"
+        return None
 
     def validate_deadline(self, value):
         if value and value <= timezone.now().date():

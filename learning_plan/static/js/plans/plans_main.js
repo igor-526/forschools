@@ -51,6 +51,9 @@ function learningPlansShow(plans){
 
     function getElement(plan){
         const tr = document.createElement("tr")
+        if (plan.color){
+            tr.classList.add(`table-${plan.color}`)
+        }
 
         if (plansCanDownload){
             const tdSelect = document.createElement("td")

@@ -353,7 +353,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                              reply_markup=None)
         await send_menu(message.from_user.id, state)
     else:
-        lesson = await Lesson.objects.aget(pk=statedata.get("new_hw").get("lesson_id"))
+        lesson = await Lesson.objects.select_related("replace_teacher").aget(pk=statedata.get("new_hw").get("lesson_id"))
         listeners = await lesson.aget_listeners()
         plan = await lesson.aget_learning_plan() if lesson else None
         teacher = plan.default_hw_teacher if plan else user
