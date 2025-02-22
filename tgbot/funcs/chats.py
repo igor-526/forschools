@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
-from profile_management.models import Telegram, aget_unread_messages_count
+from profile_management.models import Telegram, aget_unread_messages_count, NewUser
 from tgbot.funcs.fileutils import send_file
 from tgbot.funcs.materials_add import FileParser
 from tgbot.keyboards.callbacks.chats import ChatListCallback
@@ -12,7 +12,7 @@ from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id, get_user
 from tgbot.create_bot import bot
-from chat.models import Message, GroupChats
+from chat.models import Message, GroupChats, AdminMessage
 
 
 async def chats_show(message: types.Message, state: FSMContext):
@@ -86,6 +86,33 @@ async def chats_type_message(messages: list[types.Message], state: FSMContext):
     await state.set_data(state_data)
 
 
+async def admin_chat_send(state: FSMContext, state_data, tg_note: Telegram, message_status: types.Message):
+    async def create_message():
+        query_params = {
+            "message": "\n".join(state_data['comment'])
+        }
+        is_admin = await tg_note.user.groups.filter(name="Admin").aexists()
+        if is_admin:
+            query_params['receiver_id'] = state_data.get('message_for')
+            query_params['sender_id'] = tg_note.user.id
+        else:
+            query_params['sender_id'] = tg_note.user.id
+        obj = await AdminMessage.objects.acreate(**query_params)
+        await obj.files.aset(state_data['files'])
+        await obj.asave()
+        obj = await AdminMessage.objects.select_related("receiver").select_related("sender").aget(pk=obj.id)
+        return obj
+
+    # try:
+    chat_message = await create_message()
+    await admin_chats_notify(chat_message)
+    await message_status.edit_text("Сообщение отправлено")
+    # except Exception as e:
+    #     await message_status.edit_text(f"Не удалось отправить сообщение\n"
+    #                                    f"Ошибка: {e}")
+    await send_menu(tg_note.tg_id, state)
+
+
 async def chats_send(user_tg_id: int, state: FSMContext):
     async def create_message(state_data, ct):
         query_params = {
@@ -116,6 +143,9 @@ async def chats_send(user_tg_id: int, state: FSMContext):
     message_status = await bot.send_message(chat_id=user_tg_id,
                                             text="Отправка...")
     chat_type = data.get("chat_type")
+    if chat_type == "Admin":
+        await admin_chat_send(state, data, tg_note, message_status)
+        return
     try:
         chat_message = await create_message(data, chat_type)
         await chats_notify(chat_message.id, False)
@@ -335,3 +365,69 @@ async def chats_notify(chat_message_id: int, show=False):
                     "attachments": []
                 }
             )
+
+
+async def admin_chats_notify(message: AdminMessage):
+    async def add_tg_journal_note(result: types.Message, recipient):
+        if result.message_id:
+            await TgBotJournal.objects.acreate(
+                recipient=recipient,
+                initiator=message.sender,
+                event=10,
+                data={
+                    "status": "success",
+                    "text": result.text,
+                    "msg_id": result.message_id,
+                    "errors": [],
+                    "attachments": [att.id for att in attachments]
+                }
+            )
+        else:
+            TgBotJournal.objects.create(
+                recipient=recipient,
+                initiator=message.sender,
+                event=10,
+                data={
+                    "status": "error",
+                    "text": msg_text,
+                    "msg_id": None,
+                    "errors": [],
+                    "attachments": [att.id for att in attachments]
+                }
+            )
+
+    if message.receiver:
+        users = [message.receiver]
+        msg_text = (f"<b>Новое сообщение от администратора {message.sender.first_name} "
+                    f"{message.sender.last_name}</b>\n{message.message}")
+    else:
+        users = [_ async for _ in NewUser.objects.filter(groups__name="Admin")]
+        msg_text = (f"<b>Новое сообщение администратору {message.sender.first_name} "
+                    f"{message.sender.last_name}</b>\n{message.message}")
+    attachments = [_ async for _ in message.files.all()]
+    for user in users:
+        user_tg_ids = [tg_note.tg_id async for tg_note in user.telegram.all()]
+        for tg_id in user_tg_ids:
+            msg_result = await bot.send_message(chat_id=tg_id,
+                                                text=msg_text,
+                                                reply_markup=chats_get_answer_message_button(message.id, "admin"))
+            for attachment in attachments:
+                await send_file(tg_id, attachment)
+            await add_tg_journal_note(msg_result, user)
+        if not user_tg_ids:
+            await TgBotJournal.objects.acreate(
+                recipient=user,
+                initiator=message.sender,
+                event=10,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": ["У пользователя не привязан Telegram"],
+                    "attachments": [att.id for att in attachments]
+                }
+            )
+
+
+
+

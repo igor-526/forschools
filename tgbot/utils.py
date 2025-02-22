@@ -1,5 +1,5 @@
 from django.db.models import Q
-from chat.models import Message
+from chat.models import Message, AdminMessage
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
 from django.contrib.auth.models import Permission
@@ -267,7 +267,7 @@ def notify_group_chat_message(message: Message):
 
 
 def notify_chat_message(message: Message):
-    def add_tgjournal_note(result):
+    def add_tg_journal_note(result):
         if result.get("status") == "success":
             TgBotJournal.objects.create(
                 recipient=message.receiver,
@@ -295,7 +295,7 @@ def notify_chat_message(message: Message):
                 }
             )
 
-    def notificate_parents():
+    def notify_parents():
         if message.sender:
             if message.receiver:
                 receiver_fullname = f'{message.receiver.first_name} {message.receiver.last_name}'
@@ -328,14 +328,14 @@ def notify_chat_message(message: Message):
         msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
                                                      message=msg_text,
                                                      reply_markup=chats_get_answer_message_button(message.id))
-        add_tgjournal_note(msg_result)
-        notificate_parents()
+        add_tg_journal_note(msg_result)
+        notify_parents()
         for parent_tg_id in parents_tg_ids:
             msg_text = (f"<b>Новое сообщение ДЛЯ УЧЕНИКА от {message.sender.first_name} "
                         f"{message.sender.last_name}</b>\n{message.message}")
             msg_result = sync_funcs.send_tg_message_sync(tg_id=parent_tg_id,
                                                          message=msg_text)
-            add_tgjournal_note(msg_result)
+            add_tg_journal_note(msg_result)
         for att in message.files.all():
             for tg_id in [user_tg_id, *parents_tg_ids]:
                 sync_funcs.send_tg_file_sync(tg_id, att)
@@ -352,6 +352,68 @@ def notify_chat_message(message: Message):
                 "attachments": []
             }
         )
+
+
+def notify_admin_chat_message(message: AdminMessage):
+    def add_tg_journal_note(result, recipient):
+        if result.get("status") == "success":
+            TgBotJournal.objects.create(
+                recipient=recipient,
+                initiator=message.sender,
+                event=10,
+                data={
+                    "status": "success",
+                    "text": msg_text,
+                    "msg_id": result.get("msg_id"),
+                    "errors": [],
+                    "attachments": []
+                }
+            )
+        else:
+            TgBotJournal.objects.create(
+                recipient=recipient,
+                initiator=message.sender,
+                event=10,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": result.get("errors"),
+                    "attachments": []
+                }
+            )
+
+    if message.receiver:
+        users = [message.receiver]
+        msg_text = (f"<b>Новое сообщение от администратора {message.sender.first_name} "
+                    f"{message.sender.last_name}</b>\n{message.message}")
+    else:
+        users = NewUser.objects.filter(groups__name="Admin")
+        msg_text = (f"<b>Новое сообщение администратору {message.sender.first_name} "
+                    f"{message.sender.last_name}</b>\n{message.message}")
+    attachments = message.files.all()
+    for user in users:
+        user_tg_ids = [tg_note.tg_id for tg_note in user.telegram.all()]
+        for tg_id in user_tg_ids:
+            msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id,
+                                                         message=msg_text,
+                                                         reply_markup=chats_get_answer_message_button(message.id, "admin"))
+            for att in attachments:
+                sync_funcs.send_tg_file_sync(tg_id, att)
+            add_tg_journal_note(msg_result, user)
+        if not user_tg_ids:
+            TgBotJournal.objects.create(
+                recipient=user,
+                initiator=message.sender,
+                event=10,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "errors": ["У пользователя не привязан Telegram"],
+                    "attachments": []
+                }
+            )
 
 
 def notify_lesson_passed(tg_id: int,

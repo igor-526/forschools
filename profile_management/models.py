@@ -266,6 +266,26 @@ class NewUser(AbstractUser):
         return [*unread_list, *has_messages_list, *no_messages_list]
 
     def get_users_for_chat(self):
+        def get_admin_support_user():
+            info = {
+                "id": None,
+                "tg_id": None,
+                "name": f"Администратор",
+                "note": None,
+                "chat_type": "Admin",
+                "unread": 0,
+                "photo": "/media/profile_pictures/base_avatar.png",
+                "last_message_text": None,
+                "last_message_date": None
+            }
+            last_message = Message.objects.filter(
+                Q(sender=self) | Q(receiver=self)
+            ).order_by('-date').first()
+            if last_message:
+                info["last_message_text"] = last_message.message[:50] if last_message.message else ""
+                info["last_message_date"] = last_message.date
+            return info
+
         def get_user_info(u):
             info = {
                 "id": u.id,
@@ -321,8 +341,6 @@ class NewUser(AbstractUser):
         groups = [get_group_info(g) for g in self.group_chats.all()]
         roles = [g.name for g in self.groups.all()]
         users_profiles = []
-        print(roles)
-
         if "Admin" in roles:
             users_profiles.extend([get_user_info(u) for u in NewUser.objects.filter(
                 is_active=True).exclude(pk=self.id)])
@@ -360,10 +378,28 @@ class NewUser(AbstractUser):
                                user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
         users = [*users_profiles, *users_telegrams, *groups]
         users = self._remove_duplicates(users)
-        print(users)
-        return self._sort_users_for_chat(users)
+        users = self._sort_users_for_chat(users)
+        if "Admin" not in roles:
+            users = [get_admin_support_user(), *users]
+        return users
 
     async def aget_users_for_chat(self, tg_id):
+        async def get_admin_support_user():
+            info = {
+                "id": 0,
+                "name": f"Администратор",
+                "note": None,
+                "usertype": "Admin",
+                "unreaded": 0,
+                "last_message_date": None
+            }
+            last_message = await Message.objects.filter(
+                Q(sender=self) | Q(receiver=self)
+            ).order_by('-date').afirst()
+            if last_message:
+                info["last_message_date"] = last_message.date
+            return info
+
         async def get_user_chat_info(u):
             info = {
                 "id": u.id,
@@ -463,7 +499,10 @@ class NewUser(AbstractUser):
                                user_id__in=[u.get("id") for u in users_profiles]).exclude(usertype="main")]
         users = [*users_profiles, *users_telegrams, *groups]
         users = self._remove_duplicates(users)
-        return self._sort_users_for_chat(users)
+        users = self._sort_users_for_chat(users)
+        if "Admin" not in roles:
+            users = [await get_admin_support_user(), *users]
+        return users
 
     def get_unread_messages_count(self, sender=None):
         if sender is None:

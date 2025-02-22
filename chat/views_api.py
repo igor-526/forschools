@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
 from rest_framework import status
 from profile_management.models import NewUser, Telegram
-from chat.models import GroupChats
+from chat.models import GroupChats, AdminMessage
 from .models import Message
 from .permissions import can_see_chat
-from .serializers import ChatMessageSerializer, ChatGroupInfoSerailizer
+from .serializers import ChatMessageSerializer, ChatGroupInfoSerializer, ChatAdminMessageSerializer
 
 
 class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
@@ -28,8 +28,31 @@ class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
         return Response(chats, status=status.HTTP_200_OK)
 
 
+class ChatAdminUsersListAPIView(LoginRequiredMixin, ListAPIView):
+    def list(self, request, *args, **kwargs):
+        def get_info(u):
+            info = {
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "unread": 0,
+                "photo": u.photo.url,
+                "last_message_text": None,
+                "last_message_date": None
+            }
+            last_message = AdminMessage.objects.filter(
+                Q(sender=u, receiver=None) | Q(receiver=u)
+            ).order_by('-date').first()
+            if last_message:
+                info["last_message_text"] = last_message.message[:50] if last_message.message else ""
+                info["last_message_date"] = last_message.date
+            return info
+
+        users = NewUser.objects.filter(admin_message_sender__isnull=False).exclude(groups__name="Admin").distinct()
+        users = [get_info(user) for user in users] if users else []
+        return Response(users, status=status.HTTP_200_OK)
+
+
 class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
-    serializer_class = ChatMessageSerializer
     chat_type = None
 
     def set_chat_type(self):
@@ -67,13 +90,31 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         elif self.chat_type == "Group":
             queryset = Message.objects.filter(
                 group_chats_messages=self.kwargs.get("user")).order_by('-date')
+        elif self.chat_type == "Admin":
+            if self.request.user.groups.filter(name="Admin").exists():
+                queryset = AdminMessage.objects.filter(
+                    Q(sender=self.kwargs.get("user")) | Q(receiver=self.kwargs.get("user"))
+                ).order_by('-date')
+            else:
+                queryset = AdminMessage.objects.filter(
+                    Q(sender=from_user) | Q(receiver=from_user)
+                ).order_by('-date')
+
         return queryset
 
+    def get_serializer_class(self):
+        if self.chat_type == "Admin":
+            return ChatAdminMessageSerializer
+        return ChatMessageSerializer
+
     def read_messages(self, queryset):
-        messages_to_read = queryset.exclude(
-            Q(sender=self.request.user) |
-            Q(read_data__has_key=f'nu{self.request.user.id}')
-        )
+        if self.chat_type != "Admin":
+            messages_to_read = queryset.exclude(
+                Q(sender=self.request.user) |
+                Q(read_data__has_key=f'nu{self.request.user.id}')
+            )
+        else:
+            messages_to_read = []
         for message in messages_to_read:
             message.set_read(self.request.user.id, "NewUser")
 
@@ -86,7 +127,7 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         else:
             current_user_id = self.request.user.id
             self.read_messages(queryset)
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.get_serializer_class()
         if self.chat_type == "NewUser":
             usr = NewUser.objects.get(pk=self.kwargs.get("user"))
             username = f'{usr.first_name} {usr.last_name}'
@@ -96,20 +137,27 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         elif self.chat_type == "Group":
             group_chat = GroupChats.objects.get(pk=self.kwargs.get("user"))
             username = group_chat.name
-        return Response({'messages': serializer.data,
+        elif self.chat_type == "Admin":
+            if self.request.user.groups.filter(name="Admin").exists():
+                user = NewUser.objects.get(pk=self.kwargs.get("user"))
+                username = f'{user.first_name} {user.last_name}'
+            else:
+                username = "Администратор"
+        return Response({'messages': serializer(queryset, many=True).data,
                          'username': username,
                          'current_user_id': int(current_user_id)}, status=200)
 
     def create(self, request, *args, **kwargs):
         self.set_chat_type()
-        serializer = self.get_serializer(data=request.data,
-                                         context={'request': request,
-                                                  'receiver': self.kwargs.get("user"),
-                                                  'chat_type': self.chat_type})
+        serializer = self.get_serializer_class()
+        serializer = serializer(data=request.data,
+                                context={'request': request,
+                                         'receiver': self.kwargs.get("user"),
+                                         'chat_type': self.chat_type})
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class ChatGroupsCreateAPIView(LoginRequiredMixin, CreateAPIView):
-    serializer_class = ChatGroupInfoSerailizer
+    serializer_class = ChatGroupInfoSerializer

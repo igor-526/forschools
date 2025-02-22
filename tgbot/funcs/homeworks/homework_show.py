@@ -64,7 +64,7 @@ class TGHomework:
             else self.homework.get_status(accepted_only=False)
 
     async def send_materials(self):
-        materials = [_ async for _ in self.homework.materials.all()]
+        materials = [_ async for _ in self.homework.materials.all().order_by("uploaded_at")]
         if materials:
             delete_settings = None if self.user_roles["is_listener"] else {"action": "hw", "id": self.homework_id}
             for material in materials:

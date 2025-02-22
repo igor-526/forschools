@@ -1,15 +1,17 @@
 from django.urls import path
-from .views import ChatPageTemplateView
+from .views import ChatPageTemplateView, ChatAdminPageTemplateView
 from .views_api import (ChatUsersListAPIView, ChatMessagesListCreateAPIView,
-                        ChatGroupsCreateAPIView)
+                        ChatGroupsCreateAPIView, ChatAdminUsersListAPIView)
 from .views_ma import ChatPageSelectUserMATemplateView, ChatPageChatMATemplateView
 
 urlpatterns = [
     path('', ChatPageTemplateView.as_view(), name='chats'),
+    path('admin_messages', ChatAdminPageTemplateView.as_view(), name='admin_chats'),
 ]
 
 apiv1patterns = [
     path('', ChatUsersListAPIView.as_view()),
+    path('admin_messages/', ChatAdminUsersListAPIView.as_view()),
     path('groupchats/', ChatGroupsCreateAPIView.as_view()),
     path('<int:user>/', ChatMessagesListCreateAPIView.as_view()),
 ]

@@ -17,11 +17,14 @@ def get_tg_id_sync(user_id: int, usertype=None):
 
 
 def get_menu(user):
+    unread_messages_count = user.get_unread_messages_count()
     superuser_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': f'Cообщения ({user.get_unread_messages_count()})',
-         'url': reverse('chats'), 'type': 'main'},
+        {'name': f'Cообщения ({unread_messages_count})', 'type': 'dropdown', 'menu': [
+            {'name': 'Cообщения', 'url': reverse('chats')},
+            {'name': 'Cообщения администратору', 'url': reverse('admin_chats')},
+        ]},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
@@ -44,7 +47,10 @@ def get_menu(user):
     admin_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
+        {'name': f'Cообщения ({unread_messages_count})', 'type': 'dropdown', 'menu': [
+            {'name': 'Cообщения', 'url': reverse('chats')},
+            {'name': 'Cообщения администратору', 'url': reverse('admin_chats')},
+        ]},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
@@ -58,13 +64,14 @@ def get_menu(user):
             {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
             {'name': 'Логи пользователей', 'url': reverse('user_logs')},
             {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},
+            {'name': 'Ошибки Telegram', 'url': reverse('telegramerrors')},
         ]},
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
     teacher_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
+        {'name': f'Cообщения ({unread_messages_count})', 'url': reverse('chats'), 'type': 'main'},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
         {'name': 'Планы обучения', 'url': reverse('learning_plans'), 'type': 'main'},
@@ -80,7 +87,7 @@ def get_menu(user):
     listener_menu = [
         {'name': 'Главная', 'url': reverse('dashboard'), 'type': 'main'},
         {'name': 'Профиль', 'url': reverse('profile'), 'type': 'main'},
-        {'name': 'Cообщения', 'url': reverse('chats'), 'type': 'main'},
+        {'name': f'Cообщения ({unread_messages_count})', 'url': reverse('chats'), 'type': 'main'},
         {'name': 'Занятия', 'url': reverse('lessons'), 'type': 'main'},
         {'name': 'Домашние задания', 'url': reverse('homeworks'), 'type': 'main'},
         {'name': 'Техподдержка', 'url': "#", 'type': 'main', 'id': 'forschoolsSupportButton'},

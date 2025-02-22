@@ -4,8 +4,8 @@ from material.serializers import FileSerializer
 from material.models import File
 from profile_management.models import NewUser, Telegram
 from profile_management.serializers import (NewUserNameOnlyListSerializer, TelegramListSerializer)
-from tgbot.utils import notify_chat_message, notify_group_chat_message
-from .models import Message, GroupChats
+from tgbot.utils import notify_chat_message, notify_group_chat_message, notify_admin_chat_message
+from .models import Message, GroupChats, AdminMessage
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):
@@ -54,7 +54,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         return message
 
 
-class ChatGroupInfoSerailizer(serializers.ModelSerializer):
+class ChatGroupInfoSerializer(serializers.ModelSerializer):
     users = NewUserNameOnlyListSerializer(many=True, read_only=True, required=False)
     administrators = NewUserNameOnlyListSerializer(many=True, read_only=True, required=False)
     owner = NewUserNameOnlyListSerializer(many=False, read_only=True, required=False)
@@ -71,12 +71,12 @@ class ChatGroupInfoSerailizer(serializers.ModelSerializer):
         name = request.POST.get("name")
         if name == "setauto":
             users = [
-                *[f"{user.first_name}" for user in
-                  NewUser.objects.filter(Q(pk__in=request.POST.getlist("users")) |
-                                         Q(pk=request.user.id))],
-                *[f"{tgnote.user.first_name} [{tgnote.usertype}]" for tgnote in
-                  Telegram.objects.filter(pk__in=request.POST.getlist("users_tg"))]
-            ][:3]
+                        *[f"{user.first_name}" for user in
+                          NewUser.objects.filter(Q(pk__in=request.POST.getlist("users")) |
+                                                 Q(pk=request.user.id))],
+                        *[f"{tgnote.user.first_name} [{tgnote.usertype}]" for tgnote in
+                          Telegram.objects.filter(pk__in=request.POST.getlist("users_tg"))]
+                    ][:3]
             name = "Группа: "
             counter = -1
             symbol_counter = len(name)
@@ -116,3 +116,33 @@ class ChatGroupInfoSerailizer(serializers.ModelSerializer):
         group.administrators.add(request.user)
         group.save()
         return group
+
+
+class ChatAdminMessageSerializer(serializers.ModelSerializer):
+    sender = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    receiver = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    files = FileSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = AdminMessage
+        fields = "__all__"
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        message_params = {"sender": request.user}
+        if request.user.groups.filter(name="Admin").exists():
+            message_params["receiver_id"] = self.context.get("receiver")
+        message = AdminMessage.objects.create(**validated_data,
+                                              **message_params)
+        attachments = request.FILES.getlist("attachments")
+        if attachments:
+            att_list = []
+            for attachment in attachments:
+                file = File.objects.create(name="Сообщение администратору",
+                                           owner=request.user,
+                                           path=attachment)
+                att_list.append(file)
+            message.files.set(att_list)
+            message.save()
+        notify_admin_chat_message(message)
+        return message

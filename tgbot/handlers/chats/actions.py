@@ -2,7 +2,7 @@ from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from chat.models import Message
+from chat.models import Message, AdminMessage
 from tgbot.create_bot import bot
 from tgbot.funcs.chats import chats_send_ask, chats_type_message, chats_notify, chats_send
 from tgbot.funcs.homeworks.homeworks import show_homework_queryset
@@ -27,13 +27,22 @@ async def h_chats_send_ask(callback: CallbackQuery,
 async def h_chats_answer(callback: CallbackQuery,
                          callback_data: ChatAnswerMessageCallback,
                          state: FSMContext) -> None:
-    chat_message = await (Message.objects.select_related("receiver").select_related("sender")
-                          .aget(pk=callback_data.chat_message_id))
-    await state.set_data({'files': [],
-                          'comment': [],
-                          'chat_type': "NewUser" if chat_message.sender else "Telegram",
-                          'message_for': chat_message.sender.id if chat_message.sender else chat_message.sender_tg.id,
-                          'message_tags': chat_message.tags})
+    if callback_data.message_type == "user":
+        chat_message = await (Message.objects.select_related("receiver").select_related("sender")
+                              .aget(pk=callback_data.chat_message_id))
+        await state.set_data({'files': [],
+                              'comment': [],
+                              'chat_type': "NewUser" if chat_message.sender else "Telegram",
+                              'message_for': chat_message.sender.id if chat_message.sender else chat_message.sender_tg.id,
+                              'message_tags': chat_message.tags})
+    else:
+        chat_message = await (AdminMessage.objects.select_related("receiver").select_related("sender")
+                              .aget(pk=callback_data.chat_message_id))
+        is_admin = await (await get_user(callback.from_user.id)).groups.filter(name="Admin").aexists()
+        await state.set_data({'files': [],
+                              'comment': [],
+                              'chat_type': "Admin",
+                              'message_for': chat_message.sender.id if is_admin else 0})
     await bot.send_message(chat_id=callback.from_user.id,
                            text="Введите сообщение")
     await state.set_state(ChatsFSM.send_message)
@@ -49,7 +58,7 @@ async def h_chats_cancel(message: types.Message, state: FSMContext) -> None:
                 F.text == "Отправить")
 async def h_chats_send(message: types.Message, state: FSMContext) -> None:
     state_data = await state.get_data()
-    if state_data.get("message_for"):
+    if state_data.get("message_for") is not None:
         await chats_send(message.from_user.id, state)
     else:
         user = await get_user(message.from_user.id)

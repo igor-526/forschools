@@ -95,6 +95,8 @@ function tgJournalGetEventStr(event){
             return "Домашнее заданее: согласование"
         case 9:
             return "Домашнее заданее: изменение ОС"
+        case 10:
+            return "Сообщения администратору"
         default:
             return ""
     }

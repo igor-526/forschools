@@ -217,6 +217,7 @@ class FileParser:
                 "type": 2,
                 "owner": self.file_owner,
                 "tg_url": self.file_id_tg,
+                "uploaded_at": self.material_message.date
             }
             if not self.ignore_text:
                 query_params["description"] = self.file_description
@@ -234,6 +235,7 @@ class FileParser:
                 "path": self.file_path_db,
                 "owner": self.file_owner,
                 "tg_url": self.file_id_tg,
+                "uploaded_at": self.material_message.date
             }
             if not self.ignore_text:
                 query_params["caption"] = self.file_description

@@ -16,3 +16,13 @@ class ChatPageTemplateView(LoginRequiredMixin, TemplateView):
                    'can_see_other_users_messages': can_see_other_users_messages(request),
                    'can_add_group_chat': True}
         return render(request, self.template_name, context)
+
+
+class ChatAdminPageTemplateView(LoginRequiredMixin, TemplateView):
+    template_name = "admin_chats_main.html"
+
+    def get(self, request, *args, **kwargs):
+        context = {'title': 'Сообщения администратору',
+                   'menu': get_menu(request.user),
+                   'material_formats': MATERIAL_FORMATS}
+        return render(request, self.template_name, context)

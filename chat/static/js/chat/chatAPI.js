@@ -7,9 +7,14 @@ async function chatAPIGetChats(user=null){
     return await APIGetToObject(request)
 }
 
+async function chatAPIGetAdminChats(){
+    let url = '/api/v1/messages/admin_messages/'
+    const request = await fetch(url)
+    return await APIGetToObject(request)
+}
+
 async function chatAPIGetMessages(userID, chatType=null, fromUserID= null){
-    console.log(fromUserID)
-    let url = `/api/v1/messages/${userID}/`
+    let url = `/api/v1/messages/${userID ? userID : 0}/`
     const queryArray = []
     if (chatType){
         queryArray.push(`chat_type=${chatType}`)
@@ -25,7 +30,7 @@ async function chatAPIGetMessages(userID, chatType=null, fromUserID= null){
 }
 
 async function chatAPISendMessage(userID, fd){
-    const request = await fetch(`/api/v1/messages/${userID}/`, {
+    const request = await fetch(`/api/v1/messages/${userID ? userID : 0}/`, {
         method: 'POST',
         credentials: 'same-origin',
         headers:{
