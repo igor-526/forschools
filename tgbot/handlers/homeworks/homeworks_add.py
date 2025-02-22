@@ -3,9 +3,11 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from homework.models import Homework
+from material.models import Material
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.homeworks.homeworks import (add_homework_select_lesson, add_homework_set_homework_message,
-                                   add_homework_set_homework_ready, send_hw_materials, hw_for_curator_set)
+                                             add_homework_set_homework_ready, hw_for_curator_set)
+from tgbot.funcs.materials import send_material_item
 from tgbot.funcs.materials_add import FileParser
 from tgbot.funcs.menu import send_menu
 from tgbot.keyboards.callbacks.homework import (HomeworkMenuCallback, HomeworkNewCallback,
@@ -67,14 +69,12 @@ async def h_homework_sethw_cancel(message: types.Message, state: FSMContext) -> 
                 F.text == "Показать прик. материалы")
 async def h_homework_set_hw_materials(message: types.Message, state: FSMContext) -> None:
     sd = await state.get_data()
-    if sd.get("new_hw") and sd.get("new_hw").get("materials"):
-        await send_hw_materials(mat_ids=sd.get("new_hw").get("materials"),
-                                hw_id=sd.get("new_hw").get("hw_id"),
-                                user_id=message.from_user.id,
-                                callback=None,
-                                state=state,
-                                meta=True,
-                                del_hw_msg=False)
+    materials = sd.get("new_hw").get("materials") if sd.get("new_hw") else []
+    if materials:
+        for material in materials:
+            mat = await Material.objects.aget(id=material)
+            await send_material_item(message.from_user.id, mat, meta=False,
+                                     delete_settings={"action": "hw", "id": sd.get("new_hw").get("hw_id")})
     else:
         await message.answer("Не прикреплено ни одного материала.\n"
                              "Для прикрепления просто отправьте или перешлите их мне")

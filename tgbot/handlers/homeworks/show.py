@@ -1,8 +1,8 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from homework.models import Homework
-from tgbot.funcs.homeworks.homeworks import show_homework, send_hw_materials, hw_send
+from tgbot.funcs.homeworks.homework_show import TGHomework
+from tgbot.funcs.homeworks.homeworks import hw_send
 from tgbot.keyboards.callbacks.homework import HomeworkCallback
 
 router = Router(name=__name__)
@@ -18,15 +18,16 @@ async def h_homework_show_hw(callback: CallbackQuery,
                                  'hw_id': callback_data.hw_id})
         await hw_send(callback.from_user.id, state)
     else:
-        await show_homework(callback, callback_data, state)
+        hw = TGHomework(homework_id=callback_data.hw_id,
+                        telegram_id=callback.from_user.id)
+        await hw.ainit_homework()
+        await hw.show_homework()
 
 
 @router.callback_query(HomeworkCallback.filter(F.action == 'materials'))
 async def h_homework_show_materials(callback: CallbackQuery,
-                                    callback_data: HomeworkCallback,
-                                    state: FSMContext) -> None:
-    hw = await (Homework.objects.select_related("listener")
-                .select_related("teacher")
-                .aget(pk=callback_data.hw_id))
-    await send_hw_materials([mat.id async for mat in hw.materials.all()], hw.id, callback.from_user.id,
-                            callback, state, True)
+                                    callback_data: HomeworkCallback) -> None:
+    hw = TGHomework(homework_id=callback_data.hw_id,
+                    telegram_id=callback.from_user.id)
+    await hw.ainit_homework()
+    await hw.send_materials()

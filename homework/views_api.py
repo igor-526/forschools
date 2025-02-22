@@ -10,6 +10,7 @@ from chat.models import Message
 from lesson.permissions import CanReplaceTeacherMixin
 from material.utils.get_type import get_type
 from material.models import File, Material
+from tgbot.funcs.homeworks.homework_show import open_homework_in_tg
 from tgbot.utils import (send_homework_tg, notify_chat_message,
                          send_homework_answer_tg)
 from user_logs.models import UserLog
@@ -182,11 +183,20 @@ class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
         })
 
 
-class HomeworkItemPageEditAPIView(LoginRequiredMixin, APIView):
+class HomeworkItemPageSendTGAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
-        hw = Homework.objects.get(pk=kwargs.get('pk'))
-        tg_id = int(request.query_params.get("tg_id")) if request.query_params.get("tg_id") else None
-        send_homework_tg(request.user, request.user, [hw], "Вы направили себе ДЗ", tg_id)
+        try:
+            hw = Homework.objects.get(pk=kwargs.get('pk'))
+        except Homework.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if request.query_params.get("tg_id"):
+            tg_id = int(request.query_params.get("tg_id"))
+        else:
+            tg_note = request.user.telegram.filter(usertype="main").first()
+            if not tg_note:
+                return Response({"error": "Telegram не привязан"}, status=status.HTTP_400_BAD_REQUEST)
+            tg_id = tg_note.tg_id
+        open_homework_in_tg(tg_id, hw.id)
         return Response({}, status=status.HTTP_200_OK)
 
 

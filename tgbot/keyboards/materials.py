@@ -178,14 +178,14 @@ def get_show_key(mat_id) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_keyboard_material_item(material, send_tg=False, sd=None) -> InlineKeyboardMarkup:
+def get_keyboard_material_item(material, send_tg=False, delete_settings=None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    if sd and sd.get("mat_show_action") == "hw":
+    if delete_settings and delete_settings.get("action") == "hw":
         builder.button(
             text="Удалить из ДЗ",
             callback_data=MaterialItemCallback(mat_id=material.id,
                                                action="hw_delete",
-                                               obj_id=sd.get("mat_show_hw_id"))
+                                               obj_id=delete_settings.get("id"))
         )
     builder.adjust(1)
     return builder.as_markup()

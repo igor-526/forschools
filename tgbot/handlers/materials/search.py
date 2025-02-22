@@ -59,9 +59,8 @@ async def h_material_type_callback(callback: CallbackQuery,
 
 @router.callback_query(MaterialItemCallback.filter(F.action == 'show'))
 async def h_material_show_callback(callback: CallbackQuery,
-                                   callback_data: MaterialItemCallback,
-                                   state: FSMContext) -> None:
-    await show_material_item(callback, state, callback_data.mat_id)
+                                   callback_data: MaterialItemCallback) -> None:
+    await show_material_item(callback, callback_data.mat_id)
 
 
 @router.callback_query(MaterialItemCallback.filter(F.action == 'hw_delete'))

@@ -24,7 +24,7 @@ from material.utils.get_type import get_type
 from user_logs.models import UserLog
 
 
-async def send_material_item(tg_id: int, state: FSMContext, material: Material, protect=False, meta=True) -> None:
+async def send_material_item(tg_id: int, material: Material, protect=False, meta=True, delete_settings=None) -> None:
     def generate_material_message() -> str:
         if meta:
             msg_text = f"<b>{material.name}</b>"
@@ -40,7 +40,6 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
     perms = await get_group_and_perms(user.id)
     send_tg = 'material.send_telegram' in perms.get('permissions')
     file_id = None
-    sd = await state.get_data()
     all_text = generate_material_message()
     caption = all_text[:1024]
     other_text = all_text[1024:5120]
@@ -49,21 +48,21 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
             message = await bot.send_photo(chat_id=tg_id,
                                            photo=file,
                                            caption=caption,
-                                           reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                           reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                            protect_content=protect)
             file_id = message.photo[-1].file_id
         except TelegramBadRequest:
             message = await bot.send_document(chat_id=tg_id,
                                               document=file,
                                               caption=caption,
-                                              reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                              reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                               protect_content=protect)
             file_id = message.document.file_id
     elif mat_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
                                            caption=caption,
                                            animation=file,
-                                           reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                           reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                            protect_content=protect)
         if message.animation:
             file_id = message.animation.file_id
@@ -73,28 +72,28 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
                                           caption=caption,
-                                          reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                          reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                           protect_content=protect)
         file_id = message.document.file_id
     elif mat_type == "video_formats":
         message = await bot.send_video(chat_id=tg_id,
                                        video=file,
                                        caption=caption,
-                                       reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                       reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                        protect_content=protect)
         file_id = message.video.file_id
     elif mat_type == "audio_formats":
         message = await bot.send_audio(chat_id=tg_id,
                                        audio=file,
                                        caption=caption,
-                                       reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                       reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                        protect_content=protect)
         file_id = message.audio.file_id if message.audio else message.document.file_id
     elif mat_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,
                                        voice=file,
                                        caption=caption,
-                                       reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                       reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                        protect_content=protect)
         file_id = message.voice.file_id
     elif mat_type == "text_formats":
@@ -102,13 +101,13 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
             with open(material.file.path, "r", encoding="utf-16") as textfile:
                 await bot.send_message(chat_id=tg_id,
                                        text=textfile.read()[:4096],
-                                       reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                       reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                        protect_content=protect)
         except (UnicodeDecodeError, UnicodeError):
             with open(material.file.path, "r", encoding="utf-8") as textfile:
                 await bot.send_message(chat_id=tg_id,
                                        text=textfile.read()[:4096],
-                                       reply_markup=get_keyboard_material_item(material, send_tg, sd),
+                                       reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                        protect_content=protect)
     if other_text:
         await bot.send_message(chat_id=tg_id,
@@ -118,10 +117,10 @@ async def send_material_item(tg_id: int, state: FSMContext, material: Material, 
         await material.asave()
 
 
-async def show_material_item(callback: CallbackQuery, state: FSMContext, mat_id):
+async def show_material_item(callback: CallbackQuery, mat_id):
     material = await Material.objects.filter(id=mat_id).afirst()
     if material:
-        await send_material_item(callback.from_user.id, state, material)
+        await send_material_item(callback.from_user.id, material)
     else:
         await callback.answer(text="Произошла ошибка. Материал не существует")
 
