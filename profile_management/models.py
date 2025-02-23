@@ -265,7 +265,7 @@ class NewUser(AbstractUser):
         no_messages_list = sorted(no_messages_list, key=itemgetter("name"))
         return [*unread_list, *has_messages_list, *no_messages_list]
 
-    def get_users_for_chat(self):
+    def get_users_for_chat(self, from_user=False):
         def get_admin_support_user():
             info = {
                 "id": None,
@@ -379,7 +379,7 @@ class NewUser(AbstractUser):
         users = [*users_profiles, *users_telegrams, *groups]
         users = self._remove_duplicates(users)
         users = self._sort_users_for_chat(users)
-        if "Admin" not in roles:
+        if "Admin" not in roles and not from_user:
             users = [get_admin_support_user(), *users]
         return users
 

@@ -18,13 +18,13 @@ class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
             if can_see_chat(request, from_user):
                 try:
                     from_user = NewUser.objects.get(pk=from_user)
-                    chats = from_user.get_users_for_chat()
+                    chats = from_user.get_users_for_chat(from_user=True)
                     return Response(chats, status=status.HTTP_200_OK)
                 except NewUser.DoesNotExist:
                     raise PermissionDenied()
             else:
                 raise PermissionDenied()
-        chats = request.user.get_users_for_chat()
+        chats = request.user.get_users_for_chat(from_user=False)
         return Response(chats, status=status.HTTP_200_OK)
 
 

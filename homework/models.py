@@ -118,7 +118,7 @@ class Homework(models.Model):
         return self.lesson_set.first()
 
     async def aget_lesson(self):
-        return await self.lesson_set.afirst()
+        return await self.lesson_set.select_related("replace_teacher").afirst()
 
     def set_assigned(self):
         if self.get_status().status != 6:
