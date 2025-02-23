@@ -30,7 +30,7 @@ async def h_mainmenu_lessons(message: types.Message) -> None:
 
 
 @router.message(StateFilter(None),
-                F.text.contains("Сообщения"))
+                F.text.contains("История сообщений"))
 async def h_mainmenu_chats(message: types.Message, state: FSMContext) -> None:
     await chats_show(message, state)
     await message.delete()

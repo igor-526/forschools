@@ -100,7 +100,7 @@ function homeworkListMAShow(homeworks, clear=true){
         const hwButton = document.createElement("a")
         hwButton.classList.add("btn", "btn-outline-primary", "btn-sm")
         hwButton.href = `/ma/homeworks/${hw.id}/`
-        hwButton.innerHTML = '<i class="bi bi-globe"></i>'
+        hwButton.innerHTML = 'История <i class="bi bi-globe"></i>'
         buttonsBlockLeft.insertAdjacentElement("beforeend", hwButton)
 
         if (hw.lesson_info){
