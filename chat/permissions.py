@@ -1,5 +1,14 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from profile_management.models import NewUser
+
+
+class CanSeeAdminChats(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Admin').exists():
+            return super().dispatch(request, *args, **kwargs)
+        raise PermissionDenied('Permission denied')
 
 
 def can_see_other_users_messages(request):

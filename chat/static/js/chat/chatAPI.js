@@ -1,14 +1,24 @@
-async function chatAPIGetChats(user=null){
+async function chatAPIGetChats(user=null, search=null){
     let url = '/api/v1/messages/'
+    const queryParams = []
     if (user){
-        url += `?from_user=${user}`
+        queryParams.push(`from_user=${user}`)
+    }
+    if (search){
+        queryParams.push(`search=${search}`)
+    }
+    if (queryParams){
+        url += "?" + queryParams.join("&")
     }
     const request = await fetch(url)
     return await APIGetToObject(request)
 }
 
-async function chatAPIGetAdminChats(){
+async function chatAPIGetAdminChats(search=null){
     let url = '/api/v1/messages/admin_messages/'
+    if (search){
+        url += `?search=${search}`
+    }
     const request = await fetch(url)
     return await APIGetToObject(request)
 }

@@ -7,11 +7,18 @@ from rest_framework import status
 from profile_management.models import NewUser, Telegram
 from chat.models import GroupChats, AdminMessage
 from .models import Message
-from .permissions import can_see_chat
-from .serializers import ChatMessageSerializer, ChatGroupInfoSerializer, ChatAdminMessageSerializer
+from .permissions import can_see_chat, CanSeeAdminChats
+from .serializers import (ChatMessageSerializer, ChatGroupInfoSerializer,
+                          ChatAdminMessageSerializer)
 
 
 class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
+    def filter_chats(self, chats):
+        query = self.request.query_params.get('search')
+        if not chats or query is None:
+            return chats
+        return list(filter(lambda user: query in user.get('name').lower(), chats))
+
     def list(self, request, *args, **kwargs):
         from_user = self.request.query_params.get('from_user')
         if from_user:
@@ -19,16 +26,24 @@ class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
                 try:
                     from_user = NewUser.objects.get(pk=from_user)
                     chats = from_user.get_users_for_chat(from_user=True)
+                    chats = self.filter_chats(chats)
                     return Response(chats, status=status.HTTP_200_OK)
                 except NewUser.DoesNotExist:
                     raise PermissionDenied()
             else:
                 raise PermissionDenied()
         chats = request.user.get_users_for_chat(from_user=False)
+        chats = self.filter_chats(chats)
         return Response(chats, status=status.HTTP_200_OK)
 
 
-class ChatAdminUsersListAPIView(LoginRequiredMixin, ListAPIView):
+class ChatAdminUsersListAPIView(CanSeeAdminChats, ListAPIView):
+    def filter_chats(self, chats):
+        query = self.request.query_params.get('search')
+        if not chats or query is None:
+            return chats
+        return list(filter(lambda user: query in user.get('name').lower(), chats))
+
     def list(self, request, *args, **kwargs):
         def get_info(u):
             info = {
@@ -49,6 +64,7 @@ class ChatAdminUsersListAPIView(LoginRequiredMixin, ListAPIView):
 
         users = NewUser.objects.filter(admin_message_sender__isnull=False).exclude(groups__name="Admin").distinct()
         users = [get_info(user) for user in users] if users else []
+        users = self.filter_chats(users)
         return Response(users, status=status.HTTP_200_OK)
 
 

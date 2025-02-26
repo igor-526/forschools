@@ -1,0 +1,16 @@
+{% extends 'ma_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-3">
+        <div class="input-group mb-3">
+            <input id="chatAdminUsersMASearchField" type="text" class="form-control" placeholder="Поиск: " aria-label="" aria-describedby="">
+            <button id="chatAdminUsersMASearchErase" class="btn btn-outline-danger" type="button"><i class="bi bi-eraser"></i></button>
+        </div>
+        <ul class="list-group" id="chatAdminUsersMAList"></ul>
+    </div>
+{% endblock %}
+{% block static_js %}
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/chat/chatAPI.js' %}"></script>
+    <script src="{% static 'js/chat/ma/chat_admin_users.js' %}"></script>
+{% endblock %}

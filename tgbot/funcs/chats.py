@@ -47,17 +47,16 @@ async def chats_show(message: types.Message, state: FSMContext):
     if unread > 0:
         await show_unread()
     else:
+        is_admin = await tg_note.user.groups.filter(name='Admin').aexists()
         await message.answer(text="Все диалоги:",
-                             reply_markup=chats_get_show_message_page_button())
-    await send_menu(message.from_user.id,
-                    state=state,
-                    custom_text="Непрочитанных сообщений нет")
+                             reply_markup=chats_get_show_message_page_button(is_admin))
 
 
 async def chats_type_message(messages: list[types.Message], state: FSMContext):
+    state_data = await state.get_data()
     user = await get_user(messages[0].from_user.id)
     is_listener = await user.groups.filter(name="Listener").aexists()
-    if is_listener:
+    if is_listener and not state_data.get('message_for'):
         success_text = ("Если вы отправляете сообщение, связанное с выполнением домашнего задания, нажмите кнопку "
                         "'<b>Отправить решение ДЗ</b>'. Если ваш вопрос или сообщение не связано с домашним заданием, "
                         "выберите кнопку '<b>Отправить</b>'")
@@ -70,7 +69,7 @@ async def chats_type_message(messages: list[types.Message], state: FSMContext):
             message=m,
             mode="file",
             success_text=success_text,
-            reply_markup=get_chat_typing_keyboard(is_listener),
+            reply_markup=get_chat_typing_keyboard(is_listener and not state_data.get('message_for')),
             add_time_stamp=False,
             ignore_text=True
         )

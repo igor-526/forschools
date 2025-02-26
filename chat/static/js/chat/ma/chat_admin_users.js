@@ -1,13 +1,13 @@
-function chatUsersMAMain(){
-    chatUsersMAGet()
+function chatAdminUsersMAMain(){
+    chatAdminUsersMAGet()
     chatUsersMASearchListeners()
 }
 
-function chatUsersMAGet(){
-    chatAPIGetChats(chatUsersMAFromUser, chatUsersFilterSearch).then(request => {
+function chatAdminUsersMAGet(){
+    chatAPIGetAdminChats(chatAdminUsersFilterSearch).then(request => {
         switch (request.status){
             case 200:
-                chatUsersMAShow(request.response)
+                chatAdminUsersMAShow(request.response)
                 break
             default:
                 break
@@ -16,23 +16,23 @@ function chatUsersMAGet(){
 }
 
 function chatUsersMASearchListeners(){
-    chatUsersMASearchErase.addEventListener("click", function () {
-        chatUsersMASearchField.value = ""
-        chatUsersFilterSearch = null
-        chatUsersMAGet()
+    chatAdminUsersMASearchErase.addEventListener("click", function () {
+        chatAdminUsersMASearchField.value = ""
+        chatAdminUsersFilterSearch = null
+        chatAdminUsersMAGet()
     })
-    chatUsersMASearchField.addEventListener("input", function () {
-        const query = chatUsersMASearchField.value.trim().toLowerCase()
+    chatAdminUsersMASearchField.addEventListener("input", function () {
+        const query = chatAdminUsersMASearchField.value.trim().toLowerCase()
         if (query !== ""){
-            chatUsersFilterSearch = query
+            chatAdminUsersFilterSearch = query
         } else {
-            chatUsersFilterSearch = null
+            chatAdminUsersFilterSearch = null
         }
-        chatUsersMAGet()
+        chatAdminUsersMAGet()
     })
 }
 
-function chatUsersMAShow(userlist = []) {
+function chatAdminUsersMAShow(userlist = []) {
     function getBadge(number) {
         const badge = document.createElement("span")
         badge.classList.add("badge", "bg-primary", "rounded-pill", "ms-1", "mb-1")
@@ -43,10 +43,7 @@ function chatUsersMAShow(userlist = []) {
     function getElement(user) {
         const a = document.createElement("a")
         a.classList.add("list-group-item", "d-flex")
-        a.href = `/ma/messages/${user.id ? user.id : user.tg_id ? user.tg_id : 0}/#chat_type=${user.chat_type}`
-        if (chatUsersMAFromUser){
-            a.href += `&#from_user=${chatUsersMAFromUser}`
-        }
+        a.href = `/ma/messages/admin_messages/${user.id}/`
         const avatar = document.createElement("img")
         avatar.classList.add("chats-profile_photo", "me-2")
         avatar.alt = ""
@@ -80,16 +77,15 @@ function chatUsersMAShow(userlist = []) {
         return a
     }
 
-    chatUsersMAList.innerHTML = ""
+    chatAdminUsersMAList.innerHTML = ""
     userlist.forEach(chat => {
-        chatUsersMAList.insertAdjacentElement("beforeend", getElement(chat))
+        chatAdminUsersMAList.insertAdjacentElement("beforeend", getElement(chat))
     })
 }
 
-let chatUsersMAFromUser = null
-let chatUsersFilterSearch = null
-const chatUsersMASearchField = document.querySelector("#chatUsersMASearchField")
-const chatUsersMASearchErase = document.querySelector("#chatUsersMASearchErase")
-const chatUsersMAList = document.querySelector("#chatUsersMAList")
+let chatAdminUsersFilterSearch = null
+const chatAdminUsersMASearchField = document.querySelector("#chatAdminUsersMASearchField")
+const chatAdminUsersMASearchErase = document.querySelector("#chatAdminUsersMASearchErase")
+const chatAdminUsersMAList = document.querySelector("#chatAdminUsersMAList")
 
-chatUsersMAMain()
+chatAdminUsersMAMain()

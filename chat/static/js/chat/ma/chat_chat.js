@@ -188,7 +188,6 @@ function chatMASend(){
                     chatMANewAttachmentButton.classList.remove("btn-danger")
                     chatMANewAttachmentButton.setAttribute("data-att-action", "open")
                     chatMANewAttachmentButton.innerHTML = 'Вложение'
-                    console.log(request.response)
                     break
                 case 400:
                     tgAPI.showAlert("Произошла ошибка. Сообщение не доставлено")

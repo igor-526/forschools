@@ -58,7 +58,7 @@ function chatsFromUserSearchListeners(){
 }
 
 function chatsFromUserSelectListener(userID){
-    chatAPIGetChats(userID).then(request => {
+    chatAPIGetChats(userID, chatUsersSearch).then(request => {
         switch (request.status) {
             case 200:
                 chatMessagesFromUserID = userID

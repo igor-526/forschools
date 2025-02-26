@@ -12,22 +12,40 @@ function chatAdminMain(){
             mediaFormats.presentationFormats
         )
     chatAdminGetUsers()
+    chatAdminSearchListeners()
     chatAdminMessagesNewSend.addEventListener("click", chatAdminMessageSend)
-    // chatMessagesNewAttachmentButton.addEventListener("click", function (){
-    //     if (chatMessagesNewAttachmentInput.files.length === 0){
-    //         chatMessagesNewAttachmentInput.click()
-    //     } else {
-    //         chatMessagesNewAttachmentInput.value = ""
-    //         chatMessagesNewAttachmentButton.innerHTML = "Вложение (0)"
-    //     }
-    // })
-    // chatMessagesNewAttachmentInput.addEventListener("change", function (){
-    //     chatMessagesNewAttachmentButton.innerHTML = `Вложение (${chatMessagesNewAttachmentInput.files.length})`
-    // })
+    chatAdminMessagesNewAttachmentButton.addEventListener("click", function (){
+        if (chatAdminMessagesNewAttachmentInput.files.length === 0){
+            chatAdminMessagesNewAttachmentInput.click()
+        } else {
+            chatAdminMessagesNewAttachmentInput.value = ""
+            chatAdminMessagesNewAttachmentButton.innerHTML = "Вложение (0)"
+        }
+    })
+    chatAdminMessagesNewAttachmentInput.addEventListener("change", function (){
+        chatAdminMessagesNewAttachmentButton.innerHTML = `Вложение (${chatAdminMessagesNewAttachmentInput.files.length})`
+    })
+}
+
+function chatAdminSearchListeners(){
+    chatAdminUsersListSearchErase.addEventListener("click", function () {
+        chatAdminUsersListSearchField.value = ""
+        chatAdminUsersSearch = null
+        chatAdminGetUsers()
+    })
+    chatAdminUsersListSearchField.addEventListener("input", function () {
+        const query = chatAdminUsersListSearchField.value.trim().toLowerCase()
+        if (query === ""){
+            chatAdminUsersSearch = query
+        } else {
+            chatAdminUsersSearch = null
+        }
+        chatAdminGetUsers()
+    })
 }
 
 function chatAdminGetUsers(){
-    chatAPIGetAdminChats().then(request => {
+    chatAPIGetAdminChats(chatAdminUsersSearch).then(request => {
         switch (request.status){
             case 200:
                 chatAdminShowUsers(request.response)
@@ -125,16 +143,14 @@ function chatAdminShowMessages(messages=[], clear=true){
             messageDiv.classList.add("justify-content-end")
             messageBody.classList.add("chats-message-sender")
             const messageBodySenderName = document.createElement("div")
-            console.log(message)
             messageBodySenderName.innerHTML = `${message.sender.first_name} ${message.sender.last_name}`
             messageBodySenderName.classList.add("chats-message-receiver-name", "mb-1")
             messageBody.insertAdjacentElement("beforeend", messageBodySenderName)
         } else {
             messageDiv.classList.add("justify-content-start")
             messageBody.classList.add("chats-message-receiver")
-
-
         }
+
         messageDiv.insertAdjacentElement("beforeend", messageBody)
         messageBodyText.innerHTML = message.message
         messageBodyData.classList.add("chats-message-data")
@@ -255,10 +271,12 @@ function chatAdminMessageSend(){
 
 let chatAdminMessagesSelectedUserID = null
 let chatMessagesAttachmentTypesArray = []
+let chatAdminUsersSearch = null
 
 const chatAdminUsersList = document.querySelector("#chatAdminUsersList")
+const chatAdminUsersListSearchErase = document.querySelector("#chatAdminUsersListSearchErase")
+const chatAdminUsersListSearchField = document.querySelector("#chatAdminUsersListSearchField")
 const chatAdminMessagesUserName = document.querySelector("#chatAdminMessagesUserName")
-const chatAdminMessagesCard = document.querySelector("#chatAdminMessagesCard")
 const chatAdminMessages = document.querySelector("#chatAdminMessages")
 const chatAdminMessagesNew = document.querySelector("#chatAdminMessagesNew")
 const chatAdminMessagesNewAttachmentButton = chatAdminMessagesNew.querySelector("#chatAdminMessagesNewAttachmentButton")

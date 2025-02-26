@@ -40,3 +40,7 @@
 #chatMA{
     overflow-y: scroll;
 }
+
+#chatAdminMA{
+    overflow-y: scroll;
+}

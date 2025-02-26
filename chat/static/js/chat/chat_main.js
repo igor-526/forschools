@@ -12,6 +12,7 @@ function chatMain(){
             mediaFormats.presentationFormats
         )
     chatGetUsers()
+    chatUsersSearchListeners()
     chatMessagesSelectedUserID = getHashValue("user")
     if (chatMessagesSelectedUserID){
         chatSelectUser(chatMessagesSelectedUserID)
@@ -28,10 +29,28 @@ function chatMain(){
     chatMessagesNewAttachmentInput.addEventListener("change", function (){
         chatMessagesNewAttachmentButton.innerHTML = `Вложение (${chatMessagesNewAttachmentInput.files.length})`
     })
+
+}
+
+function chatUsersSearchListeners(){
+    chatUsersListSearchErase.addEventListener("click", function () {
+        chatUsersListSearchField.value = ""
+        chatUsersSearch = null
+        chatGetUsers()
+    })
+    chatUsersListSearchField.addEventListener("input", function () {
+        const query = chatUsersListSearchField.value.trim().toLowerCase()
+        if (query === ""){
+            chatUsersSearch = null
+        } else {
+            chatUsersSearch = query
+        }
+        chatGetUsers()
+    })
 }
 
 function chatGetUsers(){
-    chatAPIGetChats().then(request => {
+    chatAPIGetChats(chatMessagesFromUserID, chatUsersSearch).then(request => {
         switch (request.status){
             case 200:
                 chatShowUsers(request.response)
@@ -276,6 +295,9 @@ const chatMessagesNewTextError = chatMessagesNew.querySelector("#chatMessagesNew
 const chatMessagesUserName = document.querySelector("#chatMessagesUserName")
 const chatMessagesNewAttachmentButton = document.querySelector("#chatMessagesNewAttachmentButton")
 const chatMessagesNewAttachmentInput = document.querySelector("#chatMessagesNewAttachmentInput")
+const chatUsersListSearchErase = document.querySelector("#chatUsersListSearchErase")
+const chatUsersListSearchField = document.querySelector("#chatUsersListSearchField")
+let chatUsersSearch = null
 let chatMessagesSelectedUserID = null
 let chatMessagesSelectedChatType = null
 let chatMessagesFromUserID = null
