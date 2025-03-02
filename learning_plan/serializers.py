@@ -2,6 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
+from homework.models import HomeworkLog, Homework
 from lesson.models import Lesson
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
@@ -94,6 +95,21 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
             raise PermissionDenied("Вы не можете добалять планы обучения")
         return None
 
+    def set_new_hw_teacher(self, plan: LearningPlan, old_teacher: NewUser, new_teacher: NewUser):
+        homeworks = [{"id": hw.id,
+                      "status": hw.get_status(accepted_only=True).status} for hw in Homework.objects.filter(
+            lesson__learningphases__learningplan=plan)]
+        homeworks = [hw.get("id") for hw in list(filter(lambda hw: hw.get("status") != 4, homeworks))]
+        homeworks = Homework.objects.filter(id__in=homeworks)
+        homework_logs = HomeworkLog.objects.filter(homework__in=homeworks,
+                                                   user=old_teacher)
+        for log in homework_logs:
+            log.user = new_teacher
+            log.save()
+        for hw in homeworks:
+            hw.teacher = new_teacher
+            hw.save()
+
     def create(self, validated_data):
         request = self.context.get('request')
         usergroups = [group.name for group in request.user.groups.all()]
@@ -119,6 +135,8 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         curators = request.POST.getlist('curators')
         instance.listeners.set(listeners)
         instance.curators.set(curators)
+        if validated_data["default_hw_teacher"] != instance.default_hw_teacher:
+            self.set_new_hw_teacher(instance, instance.default_hw_teacher, validated_data["default_hw_teacher"])
         instance.save()
         return super(LearningPlanListSerializer, self).update(instance, validated_data)
 
