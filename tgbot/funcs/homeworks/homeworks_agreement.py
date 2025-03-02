@@ -107,20 +107,32 @@ async def f_homework_agr_send(tg_id: int,
         msg_curator = ""
         msg_listener = ""
         msg_chat_teacher_send = False
+        hw = logs[0].homework
+        is_teacher = logs[0].user == logs_info.get("plan").teacher or logs[0].user == logs_info.get("plan").default_hw_teacher
+        is_curator = await logs_info.get("plan").curators.filter(id=logs[0].user.id).aexists()
         for log_ in logs:
             if action == "agreement_accept":
                 if log_.status == 7:
-                    msg_teacher = "ДЗ согласовано методистом и задано ученику"
-                    msg_curator = "Преподаватель задал новое ДЗ"
                     msg_listener = "У вас новое домашнее задание!"
+                    if is_teacher:
+                        msg_teacher = "ДЗ согласовано методистом и задано ученику"
+                        msg_curator = "Преподаватель задал новое ДЗ"
+                    elif is_curator:
+                        msg_teacher = "ДЗ куратора согласовано методистом и задано ученику"
                 elif log_.status == 4:
-                    msg_teacher = "Принятие ДЗ согласовано методистом. Ученик уведомлён"
-                    msg_curator = "Преподаватель принял у ученика ДЗ"
                     msg_listener = "Домашнее задание принято!"
+                    if is_teacher:
+                        msg_teacher = "Принятие ДЗ согласовано методистом. Ученик уведомлён"
+                        msg_curator = "Преподаватель принял у ученика ДЗ"
+                    elif is_curator:
+                        msg_teacher = "Принятие ДЗ от куратора согласовано методистом. Ученик уведомлён"
                 elif log_.status == 5:
-                    msg_teacher = "Отправка ДЗ на доработку согласовано методистом. Ученик уведомлён"
-                    msg_curator = "Преподаватель отправил на доработку ДЗ"
                     msg_listener = "Домашнее задание отправлено на доработку!"
+                    if is_teacher:
+                        msg_teacher = "Отправка ДЗ на доработку согласована методистом. Ученик уведомлён"
+                        msg_curator = "Преподаватель отправил на доработку ДЗ"
+                    elif is_curator:
+                        msg_teacher = "Отправка ДЗ от куратора на доработку согласована методистом. Ученик уведомлён"
                 await homework_tg_notify(logs_info.get("plan").metodist,
                                          log_.homework.teacher.id,
                                          [log_.homework],

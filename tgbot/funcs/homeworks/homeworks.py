@@ -165,7 +165,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 await homework_tg_notify(user,
                                          methodist.id,
                                          [hw],
-                                         "Преподаватель задал ДЗ. Требуется согласование", 8)
+                                         f"Преподаватель задал ДЗ. Требуется согласование", 8)
             elif lesson.status == 1 and methodist is None:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
@@ -200,26 +200,31 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                                     lesson_id=None,
                                                     for_curator_status=True if curators_ids else None)
         elif is_curator:
-            if lesson.status == 1:
-                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
-                await hw.aset_assigned(check_methodist=False)
+            if lesson.status == 1 and methodist:
+                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} отправлено на согласование"
+                await hw.aset_assigned()
                 rm = get_homework_add_ready_buttons(hw_id=hw.id,
                                                     lesson_id=None,
                                                     for_curator_status=None)
+                await homework_tg_notify(user,
+                                         methodist.id,
+                                         [hw],
+                                         f"Куратор задал ДЗ. Требуется согласование", 8)
+            elif lesson.status == 1 and methodist is None:
+                msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
+                await hw.aset_assigned()
+                rm = get_homework_add_ready_buttons(hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          listener.id,
                                          [hw],
                                          "У вас новое домашнее задание!")
                 await homework_tg_notify(user,
-                                         hw.teacher.id,
+                                         teacher.id,
                                          [hw],
-                                         "Куратор задал новое домашнее задание!")
-                if methodist:
-                    await homework_tg_notify(user,
-                                             methodist.id,
-                                             [hw],
-                                             "Куратор задал новое домашнее задание!\nСогласование не требуется")
-            else:
+                                         "Куратор задал новое ДЗ")
+            elif lesson.status == 0:
                 msg_text = (
                     f"ДЗ для {listener.first_name} {listener.last_name} не может быть задано, так как занятие не"
                     f" проведено. ДЗ удалено")
@@ -367,7 +372,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 else "-",
                 deadline=current_deadline_dt,
                 listener_id=listener.id,
-                teacher=teacher,
+                teacher=user,
                 for_curator=True
             )
             hw = await Homework.objects.select_related("teacher").select_related("listener").aget(pk=hw.id)
@@ -832,9 +837,14 @@ async def hw_send(tg_id: int, state: FSMContext):
     if lesson:
         lp = await lesson.aget_learning_plan()
     is_listener = hw.listener == user
-    is_teacher = hw.teacher == user
-    is_curator = await lp.curators.filter(pk=user.id).aexists()
-    is_methodist = lp.metodist == user
+    if lp:
+        is_teacher = (lp.teacher == hw.teacher == user) or (lp.default_hw_teacher == hw.teacher == user)
+        is_curator = await lp.curators.filter(pk=user.id).aexists()
+        is_methodist = lp.metodist == user
+    else:
+        is_teacher = hw.teacher == user
+        is_curator = False
+        is_methodist = False
     hwlog_status = None
     hw_action = state_data.get('action')
     if hw_action == 'send':
@@ -845,7 +855,7 @@ async def hw_send(tg_id: int, state: FSMContext):
                                         "Ожидайте ответа преподавателя")
             await get_hw_log_object(False)
             await notify_teacher("Новый ответ на ДЗ от ученика")
-            if hw.for_curator:
+            if hw.for_curator and (lp and not await lp.curators.filter(id=hw.teacher.id).aexists()):
                 await notify_curators("Ученик отправил решение ДЗ")
         else:
             await bot.send_message(chat_id=tg_id,
@@ -855,20 +865,7 @@ async def hw_send(tg_id: int, state: FSMContext):
             hwlog_status = 4
         elif hw_action == 'check_revision':
             hwlog_status = 5
-
-        if is_curator:
-            await get_hw_log_object(False)
-            await bot.send_message(chat_id=tg_id,
-                                   text="Ответ был отправлен ученику")
-            if hw_action == 'check_accept':
-                await notify_listener("Домашнее задание принято!")
-                await notify_teacher("Куратор принял домашнее задание")
-                await notify_methodist("Куратор принял домашнее задание")
-            elif hw_action == 'check_revision':
-                await notify_listener("Домашнее задание отправлено на доработку")
-                await notify_teacher("Куратор отправил домашнее задание на доработку")
-                await notify_methodist("Куратор отправил домашнее задание на доработку")
-        elif is_methodist:
+        if is_methodist:
             await get_hw_log_object(False)
             await bot.send_message(chat_id=tg_id,
                                    text="Ответ был отправлен ученику")
@@ -899,6 +896,27 @@ async def hw_send(tg_id: int, state: FSMContext):
                     await notify_listener("Домашнее задание отправлено на доработку")
                     if hw.for_curator:
                         await notify_curators("Преподаватель отправил на доработку домашнее задание")
+        elif is_curator:
+            if lp and lp.metodist:
+                await get_hw_log_object(True)
+                await bot.send_message(chat_id=tg_id,
+                                       text="Ответ отправлен на согласование методисту")
+                if hw_action == 'check_accept':
+                    await notify_methodist("Куратор принимает ДЗ. Требуется согласование")
+                elif hw_action == 'check_revision':
+                    await notify_methodist("Куратор отправляет ДЗ на доработку. Требуется согласование")
+            else:
+                await get_hw_log_object(False)
+                await bot.send_message(chat_id=tg_id,
+                                       text="Ответ был отправлен ученику")
+                if hw_action == 'check_accept':
+                    await notify_listener("Домашнее задание принято!")
+                    if hw.for_curator:
+                        await notify_curators("Куратор принял домашнее задание")
+                elif hw_action == 'check_revision':
+                    await notify_listener("Домашнее задание отправлено на доработку")
+                    if hw.for_curator:
+                        await notify_curators("Куратор отправил на доработку домашнее задание")
         else:
             await bot.send_message(chat_id=tg_id,
                                    text="Вы не можете отправить решение на это ДЗ")
