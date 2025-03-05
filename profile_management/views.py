@@ -8,7 +8,7 @@ from .permissions import CanSeeUserPageMixin
 from .models import NewUser
 
 
-class DashboardPageTemplateView(LoginRequiredMixin, TemplateView):    # главная страница Dashboard
+class DashboardPageTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard.html"
 
     def get(self, request, *args, **kwargs):
@@ -87,7 +87,7 @@ class ProfilePageTemplateView(LoginRequiredMixin, TemplateView):
         return render(request, self.template_name, context)
 
 
-class UsersPageTemplateView(CanSeeUserPageMixin, TemplateView):  # страница пользователей (администрирование)
+class UsersPageTemplateView(CanSeeUserPageMixin, TemplateView):
     template_name = "users/admin_users.html"
 
     def get(self, request, *args, **kwargs):

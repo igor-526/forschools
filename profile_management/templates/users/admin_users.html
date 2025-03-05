@@ -105,7 +105,7 @@
     <script>
         const tgAction = "admin"
         const canAddNewCollections = true
-        const canLogin = {% if request.user.is_superuser %}
+        const canLogin = {% if "auth.can_login" in perms %}
             true
         {% else %}
             false

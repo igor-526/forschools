@@ -28,8 +28,8 @@ class Command(BaseCommand):
                                                              name="Регистрация учеников",
                                                              content_type=content_type)[0]
         register_curator = Permission.objects.get_or_create(codename="register_curator",
-                                                             name="Регистрация кураторов",
-                                                             content_type=content_type)[0]
+                                                            name="Регистрация кураторов",
+                                                            content_type=content_type)[0]
         register_users = Permission.objects.get_or_create(codename="register_users",
                                                           name="Регистрация пользователей",
                                                           content_type=content_type)[0]
@@ -75,6 +75,9 @@ class Command(BaseCommand):
         can_read_all_messages = Permission.objects.get_or_create(codename="can_read_all_messages",
                                                                  name="Чтение сообщений от имени других пользователей",
                                                                  content_type=content_type)[0]
+        can_login = Permission.objects.get_or_create(codename="can_login",
+                                                     name="Залогинивание под другими пользователями",
+                                                     content_type=content_type)[0]
         self.admin_perms += (register_users, register_admin,
                              register_metodist, register_teacher,
                              register_listener, edit_admin,

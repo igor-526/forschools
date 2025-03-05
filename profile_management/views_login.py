@@ -69,7 +69,7 @@ def register_view(request):
 
 class AdminLoginAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
-        if request.user.is_superuser:
+        if request.user.user_permissions.filter(codename="can_login").exists():
             user = NewUser.objects.get(pk=kwargs.get('pk'))
             logout(request)
             login(request, user)
