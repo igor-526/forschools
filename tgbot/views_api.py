@@ -55,11 +55,11 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
 
     def get_queryset(self):
         queryset = None
-        if self.request.user.user_permissions.filter(codename="can_read_all_messages").exists():
+        if self.request.user.groups.filter(groups__in="Admin"):
             mq = Q(event__in=[7, 10])
         else:
-            mq = Q(event__in=[7, 10], initiator=self.request.user) | Q(event_in=[7, 10],
-                                                                      recipient__in=[self.request.user, None])
+            mq = Q(event__in=[7, 10], initiator=self.request.user) | Q(event__in=[7, 10],
+                                                                       recipient__in=[self.request.user, None])
 
         if self.request.user.groups.filter(name="Admin").exists():
             queryset = TgBotJournal.objects.filter(Q(
