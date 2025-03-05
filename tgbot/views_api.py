@@ -55,7 +55,7 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
 
     def get_queryset(self):
         queryset = None
-        if self.request.user.groups.filter(groups__in="Admin"):
+        if self.request.user.groups.filter(name="Admin"):
             mq = Q(event__in=[7, 10])
         else:
             mq = Q(event__in=[7, 10], initiator=self.request.user) | Q(event__in=[7, 10],
