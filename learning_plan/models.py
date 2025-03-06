@@ -100,6 +100,10 @@ class LearningPlan(models.Model):
                                  blank=True,
                                  default=0,
                                  choices=PLAN_STATUS_CHOICES)
+    pre_hw_comment = models.CharField(verbose_name="Комментарий перед ДЗ",
+                                      null=True,
+                                      blank=True,
+                                      max_length=1000)
 
     class Meta:
         verbose_name = 'План обучения'

@@ -56,7 +56,7 @@ function lessonsGet(more=false){
     lessonsAPIGetAll(lessonsCurrentOffset, lessonsCurrentStatus, lessonsTableFilterTeachersSelected,
         lessonsTableFilterListenersSelected, lessonsTableFilterDateStart, lessonsTableFilterDateEnd,
         lessonsTableFilterHW, lessonsTableFilterName, lessonsTableFilterComment, lessonsTableFilterHWStatuses,
-        lessonsTableFilterHWAgreementStatus).then(request => {
+        lessonsTableFilterHWAgreementStatus, lessonsTableFilterPlaces).then(request => {
         switch (request.status){
             case 200:
                 lessonsShow(request.response, !more)
@@ -122,6 +122,21 @@ function lessonsShow(lessons, clear=true, replace_element=null){
 
         const tdDate = document.createElement("td")
         tdDate.innerHTML = getLessonDateTimeRangeString(lesson)
+        if (lesson.place){
+            tdDate.insertAdjacentHTML("beforeend", ' <i class="bi bi-globe"></i>')
+            tdDate.setAttribute("data-bs-toggle", "tooltip")
+            tdDate.setAttribute("data-bs-placement", "right")
+            tdDate.setAttribute("data-bs-html", "true")
+            let placeHTML = `<b>Наим.:</b> ${lesson.place.name}`
+            if (lesson.place.conf_id){
+                placeHTML += `<br><b>ID: </b>${lesson.place.conf_id}`
+            }
+            if (lesson.place.access_code){
+                placeHTML += `<br><b>Код: </b>${lesson.place.access_code}`
+            }
+            tdDate.setAttribute("title", placeHTML)
+            new bootstrap.Tooltip(tdDate)
+        }
         tr.insertAdjacentElement("beforeend", tdDate)
 
         const tdTeacher = document.createElement("td")
@@ -317,6 +332,7 @@ let lessonsTableFilterTeachersSelected
 let lessonsTableFilterListenersSelected
 let lessonsTableFilterDateStart = null
 let lessonsTableFilterDateEnd = null
+let lessonsTableFilterPlaces = []
 let lessonsTableFilterHW = null
 let lessonsTableFilterHWStatuses = []
 let lessonsTableFilterHWAgreementStatus = false

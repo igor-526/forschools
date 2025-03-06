@@ -27,6 +27,16 @@ function lessonsFiltersMain(){
         }
     })
     lessonsFilterSetFieldsInputListeners()
+    collectionsAPIGetLessonPlaces().then(request => {
+        switch (request.status){
+            case 200:
+                lessonsFilterSetPlaces(request.response)
+                break
+            default:
+                showErrorToast("Не удалось загрузить места проведения занятий для фильтрации")
+                break
+        }
+    })
 }
 
 function lessonsFilterSetHWStatusesListeners(){
@@ -84,6 +94,7 @@ function lessonsFilterSearchListeners(){
         const q = new RegExp(query.trim().toLowerCase())
         return q.test(name.trim().toLowerCase())
     }
+
     lessonsTableFilterTeacherSearchField.addEventListener("input", function (){
         const teachers = lessonsTableFilterTeacherList.querySelectorAll("[data-teacher-list-id]")
         teachers.forEach(teacher => {
@@ -100,6 +111,15 @@ function lessonsFilterSearchListeners(){
                 lessonsTableFilterListenerSearchField.value,
                 listener.innerHTML
             )?listener.classList.remove("d-none"):listener.classList.add("d-none")
+        })
+    })
+    lessonsTableFilterPlaceField.addEventListener("input", function (){
+        const places = lessonsTableFilterDatePlacesList.querySelectorAll("a")
+        places.forEach(place => {
+            queryTest(
+                lessonsTableFilterPlaceField.value,
+                place.innerHTML
+            )?place.classList.remove("d-none"):place.classList.add("d-none")
         })
     })
 }
@@ -165,6 +185,38 @@ function lessonsFilterSetListeners(list = []){
 
     list.forEach(listener => {
         lessonsTableFilterListenerList.insertAdjacentElement("beforeend", getElement(listener))
+    })
+}
+
+function lessonsFilterSetPlaces(list = []){
+    function clickListener(element, placeID){
+        const index = lessonsTableFilterPlaces.indexOf(placeID)
+        switch (index){
+            case -1:
+                element.classList.add("active")
+                lessonsTableFilterPlaces.push(placeID)
+                break
+            default:
+                element.classList.remove("active")
+                lessonsTableFilterPlaces.splice(index, 1)
+                break
+        }
+        lessonsGet()
+    }
+
+    function getElement(place){
+        const a = document.createElement("a")
+        a.classList.add("dropdown-item")
+        a.innerHTML = place.name
+        a.href = "#"
+        a.addEventListener("click", function (){
+            clickListener(a, place.id)
+        })
+        return a
+    }
+
+    list.forEach(place => {
+        lessonsTableFilterDatePlacesList.insertAdjacentElement("beforeend", getElement(place))
     })
 }
 
@@ -252,7 +304,7 @@ function lessonsFilterResetListeners(){
             }
         })
         if (resActive){
-            lessonsTableFilterTeachersSelected = []
+            lessonsTableFilterTeachersSelected.length = 0
         }
     }
 
@@ -266,7 +318,21 @@ function lessonsFilterResetListeners(){
             }
         })
         if (resActive){
-            lessonsTableFilterListenersSelected = []
+            lessonsTableFilterListenersSelected.length = 0
+        }
+    }
+
+    function resetPlaceSearch(resActive = false){
+        lessonsTableFilterPlaceField.value = ""
+        const places = lessonsTableFilterDatePlacesList.querySelectorAll("a")
+        places.forEach(place => {
+            place.classList.remove("d-none")
+            if (resActive){
+                place.classList.remove("active")
+            }
+        })
+        if (resActive){
+            lessonsTableFilterPlaces.length = 0
         }
     }
 
@@ -321,6 +387,14 @@ function lessonsFilterResetListeners(){
         resetName()
         lessonsGet()
     })
+    lessonsTableFilterPlaceFieldReset.addEventListener("click", function () {
+        resetPlaceSearch(true)
+        lessonsGet()
+    })
+    lessonsTableFilterPlaceFieldErase.addEventListener("click", function () {
+        resetPlaceSearch(false)
+        lessonsGet()
+    })
     lessonsTableFilterResetAll.addEventListener("click", function (){
         resetTeacherSearch(true)
         resetListenerSearch(true)
@@ -328,6 +402,7 @@ function lessonsFilterResetListeners(){
         resetDateEnd()
         resetName()
         resetHW()
+        resetPlaceSearch(true)
         if (isAdmin){
             resetComment()
         }
@@ -359,6 +434,10 @@ const lessonsTableFilterDateStartField = document.querySelector("#lessonsTableFi
 const lessonsTableFilterDateStartFieldErase = document.querySelector("#lessonsTableFilterDateStartFieldErase")
 const lessonsTableFilterDateEndField = document.querySelector("#lessonsTableFilterDateEndField")
 const lessonsTableFilterDateEndFieldErase = document.querySelector("#lessonsTableFilterDateEndFieldErase")
+const lessonsTableFilterDatePlacesList = document.querySelector("#lessonsTableFilterDatePlacesList")
+const lessonsTableFilterPlaceFieldReset = document.querySelector("#lessonsTableFilterPlaceFieldReset")
+const lessonsTableFilterPlaceField = document.querySelector("#lessonsTableFilterPlaceField")
+const lessonsTableFilterPlaceFieldErase = document.querySelector("#lessonsTableFilterPlaceFieldErase")
 const lessonsTableFilterHWAll = document.querySelector("#lessonsTableFilterHWAll")
 const lessonsTableFilterHWTrue = document.querySelector("#lessonsTableFilterHWTrue")
 const lessonsTableFilterHWFalse = document.querySelector("#lessonsTableFilterHWFalse")

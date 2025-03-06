@@ -71,20 +71,17 @@ function adminUsersFilterSetSortListeners(){
     usersAdminFilterUsernameSort.addEventListener("click", function () {
         switch (usersAdminFilteringUsernameSort) {
             case null:
-                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary")
-                usersAdminFilterUsernameSort.classList.remove("btn-warning")
+                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary", "btn-warning")
                 usersAdminFilterUsernameSort.classList.add("btn-success")
                 usersAdminFilteringUsernameSort = "asc"
                 break
             case "asc":
-                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary")
+                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary", "btn-success")
                 usersAdminFilterUsernameSort.classList.add("btn-warning")
-                usersAdminFilterUsernameSort.classList.remove("btn-success")
                 usersAdminFilteringUsernameSort = "desc"
                 break
             case "desc":
-                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary")
-                usersAdminFilterUsernameSort.classList.remove("btn-warning")
+                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary", "btn-warning")
                 usersAdminFilterUsernameSort.classList.add("btn-success")
                 usersAdminFilteringUsernameSort = "asc"
                 break
@@ -94,22 +91,39 @@ function adminUsersFilterSetSortListeners(){
     usersAdminFilterNameSort.addEventListener("click", function () {
         switch (usersAdminFilteringFullNameSort) {
             case null:
-                usersAdminFilterNameSort.classList.remove("btn-outline-secondary")
-                usersAdminFilterNameSort.classList.remove("btn-warning")
+                usersAdminFilterNameSort.classList.remove("btn-outline-secondary", "btn-warning")
                 usersAdminFilterNameSort.classList.add("btn-success")
                 usersAdminFilteringFullNameSort = "asc"
                 break
             case "asc":
-                usersAdminFilterNameSort.classList.remove("btn-outline-secondary")
+                usersAdminFilterNameSort.classList.remove("btn-outline-secondary", "btn-success")
                 usersAdminFilterNameSort.classList.add("btn-warning")
-                usersAdminFilterNameSort.classList.remove("btn-success")
                 usersAdminFilteringFullNameSort = "desc"
                 break
             case "desc":
-                usersAdminFilterNameSort.classList.remove("btn-outline-secondary")
-                usersAdminFilterNameSort.classList.remove("btn-warning")
+                usersAdminFilterNameSort.classList.remove("btn-outline-secondary", "btn-warning")
                 usersAdminFilterNameSort.classList.add("btn-success")
                 usersAdminFilteringFullNameSort = "asc"
+                break
+        }
+        usersAdminGetAll()
+    })
+    usersAdminFilterIDSort.addEventListener("click", function () {
+        switch (usersAdminFilteringIDSort) {
+            case null:
+                usersAdminFilterIDSort.classList.remove("btn-outline-secondary", "btn-warning")
+                usersAdminFilterIDSort.classList.add("btn-success")
+                usersAdminFilteringIDSort = "asc"
+                break
+            case "asc":
+                usersAdminFilterIDSort.classList.remove("btn-outline-secondary", "btn-success")
+                usersAdminFilterIDSort.classList.add("btn-warning")
+                usersAdminFilteringIDSort = "desc"
+                break
+            case "desc":
+                usersAdminFilterIDSort.classList.remove("btn-outline-secondary", "btn-warning")
+                usersAdminFilterIDSort.classList.add("btn-success")
+                usersAdminFilteringIDSort = "asc"
                 break
         }
         usersAdminGetAll()
@@ -120,6 +134,12 @@ function adminUsersFilterSetEraseListeners() {
     function eraseIDField() {
         usersAdminFilterIDField.value = ""
         usersAdminFilteringID = null
+    }
+
+    function eraseIDSort() {
+        usersAdminFilterIDSort.classList.add("btn-outline-secondary")
+        usersAdminFilterIDSort.classList.remove("btn-warning", "btn-success")
+        usersAdminFilteringIDSort = null
     }
 
     function eraseTGField() {
@@ -136,8 +156,7 @@ function adminUsersFilterSetEraseListeners() {
 
     function eraseUsernameSort() {
         usersAdminFilterUsernameSort.classList.add("btn-outline-secondary")
-        usersAdminFilterUsernameSort.classList.remove("btn-warning")
-        usersAdminFilterUsernameSort.classList.remove("btn-success")
+        usersAdminFilterUsernameSort.classList.remove("btn-warning", "btn-success")
         usersAdminFilteringUsernameSort = null
     }
 
@@ -148,8 +167,7 @@ function adminUsersFilterSetEraseListeners() {
 
     function eraseFullNameSort() {
         usersAdminFilterNameSort.classList.add("btn-outline-secondary")
-        usersAdminFilterNameSort.classList.remove("btn-warning")
-        usersAdminFilterNameSort.classList.remove("btn-success")
+        usersAdminFilterNameSort.classList.remove("btn-warning", "btn-success")
         usersAdminFilteringFullNameSort = null
     }
 
@@ -161,6 +179,7 @@ function adminUsersFilterSetEraseListeners() {
 
     usersAdminFilterEraseAll.addEventListener("click", function () {
         eraseIDField()
+        eraseIDSort()
         eraseTGField()
         eraseUsernameField()
         eraseUsernameSort()
@@ -201,6 +220,7 @@ const usersAdminFilterNameErase = document.querySelector("#usersAdminFilterNameE
 //Sort
 const usersAdminFilterUsernameSort = document.querySelector("#usersAdminFilterUsernameSort")
 const usersAdminFilterNameSort = document.querySelector("#usersAdminFilterNameSort")
+const usersAdminFilterIDSort = document.querySelector("#usersAdminFilterIDSort")
 
 
 adminUsersFilterMain()

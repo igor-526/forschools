@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <div class="row justify-content-between">
+            <div class="col-auto">
+                <h1>Журнал событий пользователей</h1>
+            </div>
+            <div class="col-auto">
+                <button id="profileEventJournalFilterResetAll" class="btn btn-danger">Очистить фильтры</button>
+            </div>
+        </div>
+    </div>
+    <div class="container-xxl">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <b>Тип события</b></button>
+                        <ul id="profileEventJournalFilterEventList" class="dropdown-menu" style="min-width: 250px;"></ul>
+                    </div>
+                </th>
+                <th scope="col">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <b>Пользователь</b></button>
+                        <ul id="profileEventJournalFilterUserList" class="dropdown-menu" style="min-width: 250px;">
+                            <li class="input-group px-1">
+                                <input id="profileEventJournalFilterUserSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                <button id="profileEventJournalFilterUserSearchErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                        </ul>
+                    </div>
+                </th>
+                <th scope="col">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <b>Инициатор</b></button>
+                        <ul id="profileEventJournalFilterInitiatorList" class="dropdown-menu" style="min-width: 250px;">
+                            <li class="input-group px-1">
+                                <input id="profileEventJournalFilterInitiatorSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                <button id="profileEventJournalFilterInitiatorSearchErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                        </ul>
+                    </div>
+                </th>
+                <th scope="col">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <b>Дата и время</b></button>
+                        <ul class="dropdown-menu" style="min-width: 320px;">
+                            <li class="input-group px-1 mb-1">
+                                <span class="input-group-text">Начало</span>
+                                <input id="profileEventJournalFilterDateStart" type="date" class="form-control form-control-sm" aria-label="date start">
+                                <button id="profileEventJournalFilterDateStartErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                            <li class="input-group px-1">
+                                <span class="input-group-text">Конец</span>
+                                <input id="profileEventJournalFilterDateEnd" type="date" class="form-control form-control-sm" aria-label="date end">
+                                <button id="profileEventJournalFilterDateEndErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                        </ul>
+                    </div>
+                </th>
+            </tr>
+            </thead>
+            <tbody id="profileEventJournalTableBody"></tbody>
+        </table>
+        <button id="profileEventJournalTableShowMoreButton" class="btn btn-primary d-none">Показать ещё</button>
+    </div>
+{% endblock %}
+{% block static_js %}
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/events_journal/events_journal_api.js' %}"></script>
+    <script src="{% static 'js/events_journal/events_journal.js' %}"></script>
+{% endblock %}

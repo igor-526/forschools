@@ -47,8 +47,8 @@
                     <th scope="col">
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                                <b>Дата и время</b></button>
-                            <ul class="dropdown-menu" style="min-width: 320px;">
+                                <b>Время и место</b></button>
+                            <ul class="dropdown-menu" style="min-width: 320px;" id="lessonsTableFilterDatePlacesList">
                                 <li class="input-group px-1 mb-1">
                                     <span class="input-group-text">Начало</span>
                                     <input id="lessonsTableFilterDateStartField" type="date" class="form-control form-control-sm" aria-label="date start">
@@ -58,6 +58,12 @@
                                     <span class="input-group-text">Конец</span>
                                     <input id="lessonsTableFilterDateEndField" type="date" class="form-control form-control-sm" aria-label="date end">
                                     <button id="lessonsTableFilterDateEndFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li class="input-group px-1 mb-1">
+                                    <button id="lessonsTableFilterPlaceFieldReset" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button>
+                                    <input id="lessonsTableFilterPlaceField" type="text" class="form-control form-control-sm" aria-label="" placeholder="Место проведения">
+                                    <button id="lessonsTableFilterPlaceFieldErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
                                 </li>
                             </ul>
                         </div>
@@ -163,6 +169,7 @@
         </script>
     {% endif %}
     <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/collections/collections_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
     <script src="{% static 'js/homework/homework_utils.js' %}"></script>
     <script src="{% static 'js/homework/homework_api.js' %}"></script>

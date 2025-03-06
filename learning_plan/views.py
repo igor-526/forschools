@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from dls.utils import get_menu
-from .permissions import CanSeePlansPageMixin, can_edit_plan, can_generate_from_program, can_download_plan
+from .permissions import CanSeePlansPageMixin, can_edit_plan, can_generate_from_program, can_download_plan, \
+    get_can_edit_pre_hw_comment
 from .models import LearningPlan
 
 
@@ -31,5 +32,6 @@ class PlansItemPageView(CanSeePlansPageMixin, TemplateView):
                    'menu': get_menu(request.user),
                    'plan': plan,
                    'can_edit_plan': can_edit_plan(request, plan),
-                   'can_generate_from_program': can_generate_from_program(request, plan)}
+                   'can_generate_from_program': can_generate_from_program(request, plan),
+                   'can_edit_pre_hw_comment': get_can_edit_pre_hw_comment(request, plan)}
         return render(request, self.template_name, context)

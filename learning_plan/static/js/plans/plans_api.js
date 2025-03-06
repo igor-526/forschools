@@ -186,3 +186,27 @@ async function planItemAPIDownload(fd){
     })
     return APIPostPatchToObject(request)
 }
+
+async function planItemAPIPreHWComment(planID, fd=null){
+    if (fd){
+        const request = await fetch(`/api/v1/learning_plans/${planID}/pre_hw_comment/`, {
+            method: "POST",
+            credentials: 'same-origin',
+            headers:{
+                "X-CSRFToken": csrftoken,
+            },
+            body: fd
+        })
+        return APIPostPatchToObject(request)
+    } else {
+        const request = await fetch(`/api/v1/learning_plans/${planID}/pre_hw_comment/`, {
+            method: "DELETE",
+            credentials: 'same-origin',
+            headers:{
+                "X-CSRFToken": csrftoken,
+            },
+        })
+        return APIDeleteToObject(request)
+    }
+
+}

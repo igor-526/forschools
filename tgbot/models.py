@@ -1,6 +1,5 @@
 from django.db import models
 from profile_management.models import NewUser
-from material.models import File
 
 EVENT_CHOICES = (
     (0, 'Другое'),
@@ -14,6 +13,7 @@ EVENT_CHOICES = (
     (8, 'Согласование ДЗ'),
     (9, 'Изменение ОС'),
     (10, 'Сообщения администратору'),
+    (11, 'Привязка/отвязка Telegram'),
 )
 
 

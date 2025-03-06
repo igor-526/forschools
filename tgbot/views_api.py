@@ -9,7 +9,7 @@ from lesson.models import Lesson
 from material.models import Material
 from .serializers import (UserTelegramSerializer, TgJournalSerializer,
                           TelegramNotesAllFieldsSerializer, TelegramNotesSerializer)
-from profile_management.models import NewUser, Telegram
+from profile_management.models import NewUser, Telegram, ProfileEventsJournal
 from tgbot.utils import send_materials
 from .models import TgBotJournal
 
@@ -164,9 +164,19 @@ class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
     def delete(self, request, *args, **kwargs):
         tg_note = Telegram.objects.get(pk=kwargs.get("user_id"))
         if tg_note.usertype != "main":
+            ProfileEventsJournal.objects.create(
+                event=3,
+                user=tg_note.user,
+                initiator=request.user
+            )
             tg_note.delete()
         else:
             tg_notes = Telegram.objects.filter(user=tg_note.user)
+            ProfileEventsJournal.objects.create(
+                event=2,
+                user=tg_note.user,
+                initiator=request.user
+            )
             for tg in tg_notes:
                 tg.delete()
         return Response({'status': 'success'}, status=status.HTTP_200_OK)

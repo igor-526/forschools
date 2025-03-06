@@ -1,11 +1,12 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
-from .views import DashboardPageTemplateView, UsersPageTemplateView, ProfilePageTemplateView
+from .views import (DashboardPageTemplateView, UsersPageTemplateView,
+                    ProfilePageTemplateView, EventJournalTemplateView)
 from .views_api import (UserListAPIView, UserDetailAPIView,
                         UserPhotoAPIView, TelegramAPIView,
                         DeactivateUserAPIView, ActivateUserAPIView,
                         ChangePasswordAPIView, UsersForJournalListAPIView,
-                        UsersForScheduleListAPIView)
+                        UsersForScheduleListAPIView, ProfileEventsJournalListAPIView)
 from .views_login import (user_login, user_logout,
                           register_view, AdminLoginAPIView)
 from lesson.views_api import UserLessonListAPIView
@@ -19,12 +20,14 @@ urlpatterns = [
     path('dashboard', DashboardPageTemplateView.as_view(), name='dashboard'),
     path('profile/<int:pk>', ProfilePageTemplateView.as_view()),
     path('profile', ProfilePageTemplateView.as_view(), name='profile'),
+    path('events_journal', EventJournalTemplateView.as_view(), name='events_journal'),
     path('administration/users', UsersPageTemplateView.as_view(),
          name='admin_users'),
 ]
 
 apiv1patterns = [
     path('', UserListAPIView.as_view()),
+    path('events_journal/', ProfileEventsJournalListAPIView.as_view()),
     path('forjournals/', UsersForJournalListAPIView.as_view()),
     path('schedule/', UsersForScheduleListAPIView.as_view()),
     path('<int:pk>/', UserDetailAPIView.as_view()),

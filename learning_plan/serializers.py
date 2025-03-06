@@ -25,7 +25,8 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
                   'teacher', 'purpose', 'deadline',
                   'show_lessons', 'show_materials',
                   'default_hw_teacher', 'deletable',
-                  'metodist', 'curators', 'color']
+                  'metodist', 'curators', 'color',
+                  'pre_hw_comment']
 
     def get_deletable(self, obj):
         if obj.phases.count() == 0:

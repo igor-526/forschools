@@ -6,6 +6,13 @@ from django.db.models import Q
 from django.utils import timezone
 from chat.models import Message
 
+PROFILE_EVENT_CHOICES = (
+    (0, 'Привязка основного Telegram'),
+    (1, 'Привязка родительского Telegram'),
+    (2, 'Отвязка основного Telegram'),
+    (3, 'Отвязка родительского Telegram'),
+)
+
 
 class Level(models.Model):
     name = models.CharField(verbose_name='Наименование',
@@ -594,6 +601,36 @@ class Telegram(models.Model):
             if self.last_message_from_user_id < message_id:
                 self.last_message_from_user_id = message_id
         await self.asave()
+
+
+class ProfileEventsJournal(models.Model):
+    class Meta:
+        verbose_name = 'Событие пользователя'
+        verbose_name_plural = 'События пользователя'
+        ordering = ['-dt']
+
+    event = models.IntegerField(verbose_name="Тип события",
+                                choices=PROFILE_EVENT_CHOICES,
+                                null=False,
+                                blank=False)
+    user = models.ForeignKey(to=NewUser,
+                             verbose_name="Пользователь",
+                             on_delete=models.CASCADE,
+                             null=False,
+                             blank=False,
+                             related_name="events_user")
+    initiator = models.ForeignKey(to=NewUser,
+                                  verbose_name="Инициатор",
+                                  on_delete=models.CASCADE,
+                                  null=False,
+                                  blank=False,
+                                  related_name="events_initiator")
+    dt = models.DateTimeField(auto_now_add=True,
+                              null=False,
+                              blank=False)
+
+    def __str__(self):
+        return f'({self.event}){str(self.user)}: {self.dt}'
 
 
 async def aget_unread_messages_count(tgnote, sender=None, read=False):

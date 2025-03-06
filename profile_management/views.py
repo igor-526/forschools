@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 from dls.utils import get_menu
 from json import dumps
 from django.http import Http404
-from .permissions import CanSeeUserPageMixin
+from .permissions import CanSeeUserPageMixin, CanSeeEventJournalMixin
 from .models import NewUser
 
 
@@ -94,4 +94,13 @@ class UsersPageTemplateView(CanSeeUserPageMixin, TemplateView):
         context = {'title': 'Пользователи',
                    'menu': get_menu(request.user),
                    'perms': dumps({'permissions': list(request.user.get_all_permissions())})}
+        return render(request, self.template_name, context)
+
+
+class EventJournalTemplateView(CanSeeEventJournalMixin, TemplateView):
+    template_name = "events_journal/events_journal_main.html"
+
+    def get(self, request, *args, **kwargs):
+        context = {'title': 'Журнал событий пользователей',
+                   'menu': get_menu(request.user)}
         return render(request, self.template_name, context)

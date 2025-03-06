@@ -43,7 +43,7 @@ async function usersAPIGetForSchedule(name=null, role=null){
 
 async function usersAPIGetAll(setting=null, id=null, tg=null, username=null,
                               fullName=null, roles=[], sortUsername=null,
-                              sortFullName=null, excludeMe=false){
+                              sortFullName=null, sortID=null, excludeMe=false){
     let url = "/api/v1/users/"
     const query = []
     if (id){
@@ -66,6 +66,9 @@ async function usersAPIGetAll(setting=null, id=null, tg=null, username=null,
     }
     if (sortFullName){
         query.push(`sort_full_name=${sortFullName}`)
+    }
+    if (sortID){
+        query.push(`sort_id=${sortID}`)
     }
     if (excludeMe){
         query.push(`exclude_me=True}`)

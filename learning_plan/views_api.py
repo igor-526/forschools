@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404
+from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
@@ -9,7 +10,7 @@ from download_data.models import GenerateFilesTasks
 from homework.models import Homework, HomeworkLog
 from lesson.models import Lesson
 from user_logs.models import UserLog
-from .permissions import can_edit_plan, can_generate_from_program, CanDownloadPlan
+from .permissions import can_edit_plan, can_generate_from_program, CanDownloadPlan, get_can_edit_pre_hw_comment
 from .models import LearningPlan, LearningPhases
 from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer, \
     LearningPlanParticipantsOnlyListSerializer
@@ -254,6 +255,30 @@ class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
                                },
                                buttons=[],
                                user=request.user)
+        return Response({"status": "ok"}, status=201)
+
+
+class PlansItemPreHWCommentAPIView(LoginRequiredMixin, APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            plan = LearningPlan.objects.get(pk=kwargs.get("pk"))
+        except LearningPlan.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if not get_can_edit_pre_hw_comment(request, plan):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        plan.pre_hw_comment = request.POST.get("pre_hw_comment")
+        plan.save()
+        return Response({"status": "ok"}, status=201)
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            plan = LearningPlan.objects.get(pk=kwargs.get("pk"))
+        except LearningPlan.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if not get_can_edit_pre_hw_comment(request, plan):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        plan.pre_hw_comment = None
+        plan.save()
         return Response({"status": "ok"}, status=201)
 
 

@@ -22,8 +22,9 @@
         <tr>
             <th scope="col">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                         ID|TG</button>
+                    <button id="usersAdminFilterIDSort" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-bar-expand"></i></button>
                     <ul class="dropdown-menu" style="min-width: 250px;">
                         <li class="input-group px-1 mb-2">
                             <input id="usersAdminFilterIDField" type="number" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
@@ -48,8 +49,6 @@
                                     Только без TG
                                 </label>
                             </div>
-
-
                         </li>
                     </ul>
                 </div>
@@ -123,7 +122,6 @@
     <script src="{% static 'js/users/users.js' %}"></script>
     <script src="{% static 'js/users/users_filter.js' %}"></script>
     <script src="{% static 'js/users/users_edit.js' %}"></script>
-    {#    <script src="{% static 'js/users/photo.js' %}"></script>#}
     <script src="{% static 'js/users/telegram.js' %}"></script>
     <script src="{% static 'js/users/registration.js' %}"></script>
 {% endblock %}

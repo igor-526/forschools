@@ -50,3 +50,9 @@ def get_can_see_plan(request, plan: LearningPlan, lesson: Lesson = None):
 
 def can_download_plan(request):
     return request.user.groups.filter(name="Admin").exists()
+
+
+def get_can_edit_pre_hw_comment(request, plan: LearningPlan):
+    if request.user.groups.filter(name="Admin").exists():
+        return True
+    return plan.metodist == request.user

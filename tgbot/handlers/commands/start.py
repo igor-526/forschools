@@ -1,14 +1,49 @@
 from aiogram import types, Router
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
-from profile_management.models import NewUser, Telegram
+from profile_management.models import NewUser, Telegram, ProfileEventsJournal
+from tgbot.create_bot import bot
 from tgbot.funcs.menu import send_menu
+from tgbot.models import TgBotJournal
 
 router = Router(name=__name__)
 
 
 @router.message(CommandStart())
 async def command_start_handler(message: types.Message, state: FSMContext):
+    async def create_tgjournal_note(recipient: NewUser, connected_user: NewUser, message_result: types.Message):
+        await TgBotJournal.objects.acreate(
+            initiator=connected_user,
+            recipient=recipient,
+            event=11,
+            data={
+                "status": "success",
+                "text": message_result.text,
+                "msg_id": message_result.message_id,
+                "errors": [],
+                "attachments": []
+            }
+        )
+
+    async def notify_admins(connected_user: NewUser):
+        telegrams = [{"tg_id": tgnote.tg_id,
+                      "user": tgnote.user} async for tgnote in
+                     Telegram.objects.select_related("user").filter(user__groups__name='Admin').exclude(
+                         user__id=connected_user.id)]
+        for telegram in telegrams:
+            message_result = await bot.send_message(chat_id=telegram.get("tg_id"),
+                                                    text=f'Пользователь {connected_user.first_name} '
+                                                         f'{connected_user.last_name} выполнил связку Telegram с '
+                                                         f'профилем')
+            await create_tgjournal_note(telegram.get("user"), connected_user, message_result)
+
+    async def create_event_note(connected_user: NewUser, main_tg):
+        await ProfileEventsJournal.objects.acreate(
+            event=0 if main_tg else 1,
+            user=connected_user,
+            initiator=connected_user
+        )
+
     try:
         code = message.text.split(" ")[1]
         if len(code) != 5:
@@ -31,6 +66,8 @@ async def command_start_handler(message: types.Message, state: FSMContext):
                                                           first_name=message.from_user.first_name,
                                                           last_name=message.from_user.last_name,
                                                           usertype=usertype)
+                    await notify_admins(user)
+                    await create_event_note(user, tg_count == 0)
                     await message.answer(text=f'Аккаунт успешно привязан!\n'
                                               f'Добро пожаловать, {user.first_name}!')
                     await send_menu(message.from_user.id, state)

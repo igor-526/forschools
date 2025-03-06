@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
 from django.db.models import Q, Count
@@ -9,10 +11,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chat.permissions import can_see_other_users_messages
-from .permissions import get_editable_perm, get_secretinfo_perm
-from .models import NewUser
+from .permissions import get_editable_perm, get_secretinfo_perm, CanSeeEventJournalMixin
+from .models import NewUser, ProfileEventsJournal
 from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
-                          NewUserNameOnlyListSerializer, NewUserLastMessageDateListSerializer)
+                          NewUserNameOnlyListSerializer, NewUserLastMessageDateListSerializer,
+                          ProfileEventsJournalSerializer)
 
 
 class DeactivateUserAPIView(LoginRequiredMixin, APIView):
@@ -125,6 +128,11 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
         order_query = ["-is_active"]
         sort_username = self.request.query_params.get('sort_username')
         sort_full_name = self.request.query_params.get('sort_full_name')
+        sort_id = self.request.query_params.get('sort_id')
+        if sort_id == "asc":
+            order_query.append('id')
+        elif sort_id == "desc":
+            order_query.append('-id')
         if sort_username == "asc":
             order_query.append('username')
         elif sort_username == "desc":
@@ -339,3 +347,33 @@ class UsersForScheduleListAPIView(LoginRequiredMixin, ListAPIView):
             queryset = self.filter_queryset_name(queryset)
             queryset = self.filter_queryset_role(queryset)
         return queryset.distinct() if queryset else None
+
+
+class ProfileEventsJournalListAPIView(CanSeeEventJournalMixin, ListAPIView):
+    serializer_class = ProfileEventsJournalSerializer
+
+    def filter_queryset_all(self, queryset):
+        event = self.request.query_params.getlist('event')
+        user = self.request.query_params.getlist('user')
+        initiator = self.request.query_params.getlist('initiator')
+        date_start = self.request.query_params.get('date_start')
+        date_end = self.request.query_params.get('date_end')
+        query_params = {}
+        if event:
+            query_params['event__in'] = event
+        if user:
+            query_params['user__in'] = user
+        if initiator:
+            query_params['initiator__in'] = initiator
+        if date_start:
+            date_start = datetime.strptime(date_start, "%Y-%m-%d")
+            query_params['dt__date__gte'] = date_start
+        if date_end:
+            date_end = datetime.strptime(date_end, "%Y-%m-%d")
+            query_params['dt__date__lte'] = date_end
+        return queryset.filter(**query_params).distinct() if queryset else None
+
+    def get_queryset(self):
+        queryset = ProfileEventsJournal.objects.all()
+        queryset = self.filter_queryset_all(queryset)
+        return queryset

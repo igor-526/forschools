@@ -10,6 +10,13 @@ class CanSeeUserPageMixin(LoginRequiredMixin):
         raise PermissionDenied('Permission denied')
 
 
+class CanSeeEventJournalMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name="Admin").exists():
+            return super().dispatch(request, *args, **kwargs)
+        raise PermissionDenied('Permission denied')
+
+
 def get_editable_perm(user, obj) -> bool:
     usergroups = [group.name for group in user.groups.all()]
     if "Admin" in usergroups:

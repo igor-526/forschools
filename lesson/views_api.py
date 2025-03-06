@@ -45,6 +45,7 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         has_comment = self.request.query_params.get("comment")
         hw_agreement = self.request.query_params.get("hw_agreement")
         hw_statuses = self.request.query_params.getlist("hw_status")
+        lesson_places = self.request.query_params.getlist("place")
         if lesson_status:
             query['status'] = lesson_status
         if ds:
@@ -63,6 +64,8 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
             query['hw_count__gt'] = 0
         if name:
             query['name__icontains'] = name
+        if lesson_places:
+            query['place__in'] = lesson_places
         if has_comment == "false" and self.request.user.groups.filter(name="Admin").exists():
             query['admin_comment__isnull'] = True
         elif has_comment == "true" and self.request.user.groups.filter(name="Admin").exists():

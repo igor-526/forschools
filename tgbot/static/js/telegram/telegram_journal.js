@@ -97,6 +97,8 @@ function tgJournalGetEventStr(event){
             return "Домашнее заданее: изменение ОС"
         case 10:
             return "Сообщения администратору"
+        case 11:
+            return "Привязка/отвязка Telegram"
         default:
             return ""
     }

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
-from .models import NewUser, Telegram
+from .models import NewUser, Telegram, ProfileEventsJournal
 from django.contrib.auth.models import Group
 from data_collections.serializers import EngagementChannelSerializer, LevelSerializer
 from .permissions import get_editable_perm, get_can_add_new_engch_lvl_prg_perm, get_secretinfo_perm
@@ -122,3 +122,12 @@ class TelegramListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Telegram
         fields = ['id', 'user', 'usertype']
+
+
+class ProfileEventsJournalSerializer(serializers.ModelSerializer):
+    user = NewUserListSerializer(read_only=True, many=False, required=False)
+    initiator = NewUserListSerializer(read_only=True, many=False, required=False)
+
+    class Meta:
+        model = ProfileEventsJournal
+        fields = "__all__"

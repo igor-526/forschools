@@ -42,6 +42,22 @@
                 </div>
 
                 <div class="card mb-3">
+                    <div class="card-header">Комментарий перед формированием ДЗ
+                        {% if can_edit_pre_hw_comment %}
+                            <button id="plansItemPreHWCommentButton" class="btn btn-warning btn-sm ms-2"><i class="bi bi-pencil"></i></button>
+                            {% include 'plans_item_modal_pre_hw_comment.html' %}
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if plan.pre_hw_comment %}
+                            {{ plan.pre_hw_comment }}
+                        {% else %}
+                            Комментарий отсутствует
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card mb-3">
                     <div class="card-header">Статистика</div>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">
@@ -77,7 +93,7 @@
                         {% if plan.curators %}
                             <ul class="list-group list-group-flush">
                                 {% for curator in plan.curators.all %}
-                                    <li class="list-group-item">Куратор: <a href="/profile/{{ curator.id }}">{{ curator }}</a></li>
+                                    <li class="list-group-item"><b>Куратор:</b> <a href="/profile/{{ curator.id }}">{{ curator }}</a></li>
                                 {% endfor %}
                             </ul>
                         {% endif %}
@@ -168,5 +184,14 @@
             const canEditPlan = false
         </script>
     {% endif %}
-
+    {% if can_edit_pre_hw_comment %}
+        <script>
+            const canEditPreHWComment = true
+        </script>
+        <script src="{% static 'js/plans/plans_item/plan_item_pre_hw_comment.js' %}"></script>
+    {% else %}
+        <script>
+            const canEditPreHWComment = false
+        </script>
+    {% endif %}
 {% endblock %}

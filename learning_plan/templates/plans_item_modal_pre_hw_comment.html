@@ -1,0 +1,26 @@
+<div class="modal fade" tabindex="-1" id="plansItemPreHWCommentModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Комментарий</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% csrf_token %}
+                <p class="mb-3">
+                    Комментарий будет выводиться каждый раз, когда преподаватель будет задавать ДЗ к занятиям,
+                    находящимся в этом плане обучения
+                </p>
+                <div class="mb-3">
+                    <textarea rows="10" type="text" class="form-control" id="plansItemPreHWCommentModalField" aria-label="" placeholder="Введите комментарий"></textarea>
+                    <div class="invalid-feedback" id="plansItemPreHWCommentModalFieldError"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="plansItemPreHWCommentModalDeleteButton" type="button" class="btn btn-danger">Удалить</button>
+                <button id="plansItemPreHWCommentModalSaveButton" type="button" class="btn btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
