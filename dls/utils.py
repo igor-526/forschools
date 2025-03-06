@@ -68,6 +68,7 @@ def get_menu(user):
             {'name': 'Выгрузка данных', 'url': reverse('generated')},
             {'name': 'Журнал Telegram', 'url': reverse('tgjournal')},
             {'name': 'Логи пользователей', 'url': reverse('user_logs')},
+            {'name': 'Журнал событий пользователей', 'url': reverse('events_journal')},
             {'name': 'Ошибки WSGI', 'url': reverse('wsgierrors')},
             {'name': 'Ошибки Telegram', 'url': reverse('telegramerrors')},
         ]},
