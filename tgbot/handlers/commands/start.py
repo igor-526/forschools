@@ -57,22 +57,19 @@ async def command_start_handler(message: types.Message, state: FSMContext):
                 await message.answer(text="Ошибка.\nВаш Telegram уже привязан")
                 return
             if user:
-                try:
-                    tg_count = await user.telegram.acount()
-                    usertype = "main" if tg_count == 0 else "Родительский"
-                    await Telegram.objects.aget_or_create(user=user,
-                                                          tg_id=message.from_user.id,
-                                                          nickname=message.from_user.username,
-                                                          first_name=message.from_user.first_name,
-                                                          last_name=message.from_user.last_name,
-                                                          usertype=usertype)
-                    await notify_admins(user)
-                    await create_event_note(user, tg_count == 0)
-                    await message.answer(text=f'Аккаунт успешно привязан!\n'
-                                              f'Добро пожаловать, {user.first_name}!')
-                    await send_menu(message.from_user.id, state)
-                except Exception as ex:
-                    await message.answer(text="Произошла нерпедвиденная ошибка. Попробуйте позже")
+                tg_count = await user.telegram.acount()
+                usertype = "main" if tg_count == 0 else "Родительский"
+                await Telegram.objects.aget_or_create(user=user,
+                                                      tg_id=message.from_user.id,
+                                                      nickname=message.from_user.username,
+                                                      first_name=message.from_user.first_name,
+                                                      last_name=message.from_user.last_name,
+                                                      usertype=usertype)
+                await notify_admins(user)
+                await create_event_note(user, tg_count == 0)
+                await message.answer(text=f'Аккаунт успешно привязан!\n'
+                                          f'Добро пожаловать, {user.first_name}!')
+                await send_menu(message.from_user.id, state)
     except IndexError:
         await message.answer(text="Для привязки бота к Вашему аккаунту воспользуйтесь ссылкой в Вашем профиле")
     except ValueError:
