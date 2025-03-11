@@ -31,11 +31,14 @@ async def command_start_handler(message: types.Message, state: FSMContext):
                      Telegram.objects.select_related("user").filter(user__groups__name='Admin').exclude(
                          user__id=connected_user.id)]
         for telegram in telegrams:
-            message_result = await bot.send_message(chat_id=telegram.get("tg_id"),
-                                                    text=f'Пользователь {connected_user.first_name} '
-                                                         f'{connected_user.last_name} выполнил связку Telegram с '
-                                                         f'профилем')
-            await create_tgjournal_note(telegram.get("user"), connected_user, message_result)
+            try:
+                message_result = await bot.send_message(chat_id=telegram.get("tg_id"),
+                                                        text=f'Пользователь {connected_user.first_name} '
+                                                             f'{connected_user.last_name} выполнил связку Telegram с '
+                                                             f'профилем')
+                await create_tgjournal_note(telegram.get("user"), connected_user, message_result)
+            except Exception as e:
+                pass
 
     async def create_event_note(connected_user: NewUser, main_tg):
         await ProfileEventsJournal.objects.acreate(
