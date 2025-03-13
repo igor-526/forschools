@@ -400,19 +400,34 @@ async def admin_chats_notify(message: AdminMessage):
         msg_text = (f"<b>Новое сообщение от администратора {message.sender.first_name} "
                     f"{message.sender.last_name}</b>\n{message.message}")
     else:
-        users = [_ async for _ in NewUser.objects.filter(groups__name="Admin")]
+        users = [_ async for _ in NewUser.objects.filter(groups__name="Admin",
+                                                         is_active=True)]
         msg_text = (f"<b>Новое сообщение администратору {message.sender.first_name} "
                     f"{message.sender.last_name}</b>\n{message.message}")
     attachments = [_ async for _ in message.files.all()]
     for user in users:
         user_tg_ids = [tg_note.tg_id async for tg_note in user.telegram.all()]
         for tg_id in user_tg_ids:
-            msg_result = await bot.send_message(chat_id=tg_id,
-                                                text=msg_text,
-                                                reply_markup=chats_get_answer_message_button(message.id, "admin"))
-            for attachment in attachments:
-                await send_file(tg_id, attachment)
-            await add_tg_journal_note(msg_result, user)
+            try:
+                msg_result = await bot.send_message(chat_id=tg_id,
+                                                    text=msg_text,
+                                                    reply_markup=chats_get_answer_message_button(message.id, "admin"))
+                for attachment in attachments:
+                    await send_file(tg_id, attachment)
+                await add_tg_journal_note(msg_result, user)
+            except Exception as e:
+                await TgBotJournal.objects.acreate(
+                    recipient=user,
+                    initiator=message.sender,
+                    event=10,
+                    data={
+                        "status": "error",
+                        "text": msg_text,
+                        "msg_id": None,
+                        "errors": [str(e)],
+                        "attachments": [att.id for att in attachments]
+                    }
+                )
         if not user_tg_ids:
             await TgBotJournal.objects.acreate(
                 recipient=user,
@@ -420,7 +435,7 @@ async def admin_chats_notify(message: AdminMessage):
                 event=10,
                 data={
                     "status": "error",
-                    "text": None,
+                    "text": msg_text,
                     "msg_id": None,
                     "errors": ["У пользователя не привязан Telegram"],
                     "attachments": [att.id for att in attachments]
