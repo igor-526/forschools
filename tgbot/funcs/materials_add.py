@@ -53,7 +53,7 @@ class FileParser:
 
     async def update_status_message(self, text: str):
         if self.status_message:
-            pass
+            await self.status_message.edit_text(text=text)
         else:
             self.status_message = await self.material_message.reply(text)
 
@@ -318,6 +318,7 @@ class FileParser:
                     await self.add_file_db()
 
             elif self.file_type == "unsupported":
+                print("JNFJFNJFNFJ")
                 await self.update_status_message("\u2757\u2757\u2757Данный документ не может быть загружен, так как "
                                                  "формат не поддерживается\u2757\u2757\u2757")
 
