@@ -1,30 +1,24 @@
 import datetime
 from aiogram import types
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
 from lesson.models import Lesson
 from material.models import Material
-from tgbot.funcs.fileutils import send_file
 from tgbot.funcs.lessons import get_lesson_can_be_passed
-from tgbot.funcs.materials import send_material_item
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCuratorCallback
-from tgbot.keyboards.homework import (get_homework_item_buttons, get_homeworks_buttons,
-                                      get_homework_menu_buttons, get_homework_lessons_buttons,
-                                      get_homework_editing_buttons, get_homework_curator_button,
-                                      get_homework_add_ready_buttons, get_hw_log_edit_button,
-                                      get_hw_log_delete_file_button)
+from tgbot.keyboards.homework import (get_homeworks_buttons, get_homework_menu_buttons,
+                                      get_homework_lessons_buttons, get_homework_editing_buttons,
+                                      get_homework_curator_button, get_homework_add_ready_buttons)
 from tgbot.keyboards.default import cancel_keyboard, homework_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
-from tgbot.utils import get_tg_id, get_tg_note
+from tgbot.utils import get_tg_id
 from profile_management.models import NewUser
 from homework.models import Homework, HomeworkLog, HomeworkGroups
 from tgbot.create_bot import bot
 from tgbot.utils import get_group_and_perms, get_user
-from homework.utils import status_code_to_string
 from material.utils.get_type import get_type
 from user_logs.models import UserLog
 from user_logs.serializers import get_role_ru

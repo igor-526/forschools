@@ -78,6 +78,9 @@ class Command(BaseCommand):
         can_login = Permission.objects.get_or_create(codename="can_login",
                                                      name="Залогинивание под другими пользователями",
                                                      content_type=content_type)[0]
+        mailing_access = Permission.objects.get_or_create(codename="mailing_access",
+                                                          name="Управление рассылками",
+                                                          content_type=content_type)[0]
         self.admin_perms += (register_users, register_admin,
                              register_metodist, register_teacher,
                              register_listener, edit_admin,

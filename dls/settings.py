@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'data_collections',
     'download_data',
     'chat',
+    'mailing',
 ]
 
 MIDDLEWARE = [
@@ -186,3 +187,12 @@ TGPARSER_SESSION_NAME = os.environ.get("TGPARSER_SESSION_NAME")
 TGPARSER_API_ID = os.environ.get("TGPARSER_API_ID")
 TGPARSER_API_HASH = os.environ.get("TGPARSER_API_HASH")
 TGPARSER_CHANNEL_NAME = os.environ.get("TGPARSER_CHANNEL_NAME")
+
+EMAIL_HOST = "smtp.yandex.ru"
+EMAIL_PORT = 465
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_USE_SSL = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_ADMIN = EMAIL_HOST_USER

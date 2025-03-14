@@ -100,11 +100,21 @@ def get_menu(user):
         {'name': 'Выйти', 'url': reverse('logout'), 'type': 'main'},
     ]
     if user.is_superuser:
-        return superuser_menu
-    if user.groups.filter(name__in=["Metodist", "Admin"]).exists():
-        return admin_menu
-    if user.groups.filter(name__in=["Teacher", "Curator"]).exists():
-        return teacher_menu
-    if user.groups.filter(name="Listener").exists():
-        return listener_menu
-    return None
+        menu = superuser_menu
+    elif user.groups.filter(name__in=["Metodist", "Admin"]).exists():
+        menu = admin_menu
+    elif user.groups.filter(name__in=["Teacher", "Curator"]).exists():
+        menu = teacher_menu
+    elif user.groups.filter(name="Listener").exists():
+        menu = listener_menu
+    else:
+        menu = None
+    if user.user_permissions.filter(codename="mailing_access").exists():
+        admin_dropdown_index = next((index for (index, d) in enumerate(menu) if d["name"] == "Администрирование"), None)
+        if admin_dropdown_index:
+            menu[admin_dropdown_index]["menu"].append({'name': 'Рассылки', 'url': reverse('mailing')})
+        else:
+            menu.insert(-1, {'name': 'Администрирование', 'type': 'dropdown', 'menu': [
+                {'name': 'Рассылки', 'url': reverse('mailing')},
+            ]})
+    return menu

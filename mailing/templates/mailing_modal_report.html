@@ -1,0 +1,33 @@
+<div class="modal modal-lg fade" tabindex="-1" id="mailingReportModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Отчёт о рассылке</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        Информация о рассылке
+                    </div>
+                    <ul id="mailingReportModalInfoList" class="list-group list-group-flush"></ul>
+                </div>
+                <div id="mailingReportModalInfoMessages"></div>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">Пользователь</th>
+                        <th scope="col">Контакт</th>
+                        <th scope="col">Статус</th>
+                    </tr>
+                    </thead>
+                    <tbody id="mailingReportModalTableBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button id="mailingReportModalReMailButton" type="button" class="btn btn-warning">Повторить рассылку</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>

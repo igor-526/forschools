@@ -34,6 +34,8 @@ from user_logs.urls import (urlpatterns as user_logs_urlpatterns,
 from download_data.urls import (urlpatterns as download_data_urlpatterns,
                                 api_v1_patterns as download_data_api_v1_patterns,
                                 ma_patterns as download_data_ma_patterns)
+from mailing.urls import (urlpatterns as mailing_urlpatterns,
+                          api_v1_patterns as mailing_api_v1_patterns)
 from . import settings
 
 
@@ -70,6 +72,9 @@ urlpatterns = [
     path('generated/', include(download_data_urlpatterns)),
     path('api/v1/generated/', include(download_data_api_v1_patterns)),
     path('ma/generated/', include(download_data_ma_patterns)),
+
+    path('mailing/', include(mailing_urlpatterns)),
+    path('api/v1/mailing/', include(mailing_api_v1_patterns)),
 
     path('api/v1/telegram/', include(tgbot_apiv1patterns)),
     path('tgjournal/', include(tgbot_urlpatterns)),
