@@ -159,7 +159,8 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                 username = f'{user.first_name} {user.last_name}'
             else:
                 username = "Администратор"
-        return Response({'messages': serializer(queryset, many=True).data,
+        return Response({'messages': serializer(queryset, many=True,
+                                                context={"request": request}).data,
                          'username': username,
                          'current_user_id': int(current_user_id)}, status=200)
 

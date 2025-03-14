@@ -1,9 +1,12 @@
 from aiogram import Router, F, types
+import datetime
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from homework.models import Homework
+from lesson.models import Lesson
 from material.models import Material
+from tgbot.create_bot import bot
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.homeworks.homeworks import (add_homework_select_lesson, add_homework_set_homework_message,
                                              add_homework_set_homework_ready, hw_for_curator_set)
@@ -49,13 +52,8 @@ async def h_homework_select_lesson_current_date(callback: CallbackQuery) -> None
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
                 F.text == "Подтвердить ДЗ")
 async def h_homework_sethw_ready(message: types.Message, state: FSMContext) -> None:
-    sd = await state.get_data()
-    if sd.get("new_hw") and sd.get("new_hw").get("hw_id"):
-        await add_homework_set_homework_ready(state=state,
-                                              message=message)
-    else:
-        await add_homework_select_lesson(user_tg_id=message.from_user.id,
-                                         message=message)
+    await add_homework_set_homework_ready(state=state,
+                                          message=message)
 
 
 @router.message(StateFilter(HomeworkNewFSM.change_menu),
@@ -127,15 +125,31 @@ async def h_homework_add(callback: CallbackQuery,
                          callback_data: HomeworkNewCallback,
                          state: FSMContext) -> None:
     state_data = await state.get_data()
-    if state_data.get('new_hw') is None:
-        await callback.answer("Похоже, нет сформированного ДЗ для отправки. Создайте, пожалуйста, "
-                              "ДЗ через главное меню")
-        await callback.message.delete()
-        return
-    state_data['new_hw']['lesson_id'] = callback_data.lesson_id
+    last_count = await Homework.objects.acount()
+    deadline = datetime.date.today() + datetime.timedelta(days=6)
+    lesson = await Lesson.objects.aget(id=callback_data.lesson_id)
+    plan = await lesson.aget_learning_plan()
+    if plan.pre_hw_comment:
+        await bot.send_message(chat_id=callback.from_user.id,
+                               text=plan.pre_hw_comment)
+    await state.update_data({
+        "new_hw": {
+            "hw_id": None,
+            'lesson_id': callback_data.lesson_id,
+            "name": f'ДЗ {last_count + 1}',
+            "description": None,
+            "materials": [],
+            "deadline": {
+                'day': deadline.day,
+                'month': deadline.month,
+                'year': deadline.year
+            },
+        },
+        "messages_to_delete": []
+    })
     await state.update_data(state_data)
-    await add_homework_set_homework_ready(state=state,
-                                          callback=callback)
+    await add_homework_set_homework_message(callback.from_user.id, state)
+    await callback.message.delete()
 
 
 @router.callback_query(HomeworkNewSelectDateCallback.filter())
@@ -149,8 +163,7 @@ async def h_homework_add_navigate(callback: CallbackQuery,
 @router.callback_query(HomeworkMenuCallback.filter(F.action == 'new'))
 async def h_homework_sethw(callback: CallbackQuery,
                            state: FSMContext) -> None:
-    await add_homework_set_homework_message(callback.from_user.id, state)
-    await callback.message.delete()
+    await add_homework_select_lesson(callback.from_user.id, callback=callback)
 
 
 @router.callback_query(HomeworkCuratorCallback.filter())
