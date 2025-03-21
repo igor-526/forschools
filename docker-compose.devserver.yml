@@ -51,6 +51,15 @@ services:
       - /home/sdo/static:/src/static
     restart: always
 
+  devserver_local_tg_server:
+    build: telegram_local_server
+    ports:
+      - "8083:8083"
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+    entrypoint: bash -c  "telegram-bot-api --api-id=${TELEGRAM_API_ID} --api-hash=${TELEGRAM_API_HASH} --http-ip-address=0.0.0.0 --http-port=8083 --dir=/src";
+    restart: always
+
   devserver_redis:
     image: redis:latest
     restart: always

@@ -168,20 +168,21 @@ MATERIAL_FORMATS = {
     'archive_formats': ['rar', 'zip', '7z'],
     'pdf_formats': ['pdf'],
     'word_formats': ['doc', 'docx'],
-    'voice_formats': ['ogg'],
-    'audio_formats': ['mp3', 'm4a', 'oga'],
+    'voice_formats': ['ogg', 'oga'],
+    'audio_formats': ['mp3', 'm4a'],
     'text_formats': ['txt'],
     'presentation_formats': ['pptx'],
 }
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-TG_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TG_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN").replace("\\", "")
 TG_REDIS_URL = f'redis://{os.environ.get("REDIS_HOST")}:6379/2'
 TG_WEBHOOKS_MODE = os.environ.get("TG_WEBHOOKS_MODE")
 TG_WEB_SERVER_HOST = os.environ.get("TG_WEB_SERVER_HOST")
 TG_WEBHOOK_SECRET = os.environ.get("TG_WEBHOOK_SECRET")
 TG_WEBHOOK_PATH = os.environ.get("TG_WEBHOOK_PATH")
+TG_FILES_PATH = os.path.join(BASE_DIR, "media", "telegram")
 
 TGPARSER_SESSION_NAME = os.environ.get("TGPARSER_SESSION_NAME")
 TGPARSER_API_ID = os.environ.get("TGPARSER_API_ID")
