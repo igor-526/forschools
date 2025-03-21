@@ -33,5 +33,5 @@ services:
       - "8083:8083"
     volumes:
       - ${TELEGRAM_FILES_PATH}:/src/tgdata
-    entrypoint: bash -c "telegram-bot-api --api-id=${TELEGRAM_API_ID} --api-hash=${TELEGRAM_API_HASH} --http-ip-address=0.0.0.0 --http-port=8083 --dir=/src";
+    entrypoint: bash -c "telegram-bot-api --api-id=${TELEGRAM_API_ID} --api-hash=${TELEGRAM_API_HASH} --http-ip-address=0.0.0.0 --http-port=8083 --dir=/src --local";
     restart: always
