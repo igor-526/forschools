@@ -182,7 +182,7 @@ TG_WEBHOOKS_MODE = os.environ.get("TG_WEBHOOKS_MODE")
 TG_WEB_SERVER_HOST = os.environ.get("TG_WEB_SERVER_HOST")
 TG_WEBHOOK_SECRET = os.environ.get("TG_WEBHOOK_SECRET")
 TG_WEBHOOK_PATH = os.environ.get("TG_WEBHOOK_PATH")
-TG_FILES_PATH = os.path.join(BASE_DIR, "media", "telegram")
+TG_SERVER_URL = os.environ.get("TELEGRAM_SERVER_URL")
 
 TGPARSER_SESSION_NAME = os.environ.get("TGPARSER_SESSION_NAME")
 TGPARSER_API_ID = os.environ.get("TGPARSER_API_ID")
