@@ -4,6 +4,7 @@ then
 echo "Сервер собран"
 else
 echo "Сервер не собран"
+cd /src/telegram-bot-api
 rm -rf build
 mkdir build
 cd build
