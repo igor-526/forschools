@@ -124,7 +124,6 @@ async def h_homework_set_hw_add_material(message: types.Message, state: FSMConte
 async def h_homework_add(callback: CallbackQuery,
                          callback_data: HomeworkNewCallback,
                          state: FSMContext) -> None:
-    state_data = await state.get_data()
     last_count = await Homework.objects.acount()
     deadline = datetime.date.today() + datetime.timedelta(days=6)
     lesson = await Lesson.objects.aget(id=callback_data.lesson_id)
@@ -147,7 +146,6 @@ async def h_homework_add(callback: CallbackQuery,
         },
         "messages_to_delete": []
     })
-    await state.update_data(state_data)
     await add_homework_set_homework_message(callback.from_user.id, state)
     await callback.message.delete()
 
