@@ -1,8 +1,10 @@
 FROM ubuntu:22.04
 ARG TELEGRAM_BOT_TOKEN=prod
 ENV TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN}"
-COPY ./telegram-bot-api /usr/local/bin/telegram-bot-api
-RUN apt-get update && apt-get install libc++-14-dev -y
+RUN apt-get update && apt-get install make git zlib1g-dev libssl-dev gperf cmake clang-14 libc++-14-dev libc++abi-14-dev -y
+COPY ./telegram-bot-api /src/telegram-bot-api
+RUN chmod +x /src/telegram-bot-api/build_server.sh
+RUN ./src/telegram-bot-api/build_server.sh
 RUN mkdir -p /src/${TELEGRAM_BOT_TOKEN}
 RUN ln -s /src/${TELEGRAM_BOT_TOKEN} /src/tgdata
 WORKDIR src
