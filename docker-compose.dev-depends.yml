@@ -4,7 +4,7 @@ volumes:
 
 services:
   forschools_dev_database:
-    image: postgres:latest
+    image: postgres:16.8
     ports:
       - "${DB_PORT_FORWARD}:5432"
     environment:

@@ -80,6 +80,10 @@ class Material(models.Model):
     tg_url = models.CharField(verbose_name="ID файла в Telegram",
                               null=True,
                               blank=True)
+    is_animation = models.BooleanField(verbose_name="Является анимацией",
+                                       null=False,
+                                       blank=False,
+                                       default=False)
 
     class Meta:
         verbose_name = 'Материал'
@@ -145,6 +149,10 @@ class File(models.Model):
     tg_url = models.CharField(verbose_name="ID файла в Telegram",
                               null=True,
                               blank=True)
+    is_animation = models.BooleanField(verbose_name="Является анимацией",
+                                       null=False,
+                                       blank=False,
+                                       default=False)
 
     class Meta:
         verbose_name = 'Файл'

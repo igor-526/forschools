@@ -104,6 +104,10 @@ class LearningPlan(models.Model):
                                       null=True,
                                       blank=True,
                                       max_length=1000)
+    can_report_lesson_name_only = models.BooleanField(verbose_name="Заполнять только наименование занятия",
+                                                      null=False,
+                                                      blank=False,
+                                                      default=False)
 
     class Meta:
         verbose_name = 'План обучения'
