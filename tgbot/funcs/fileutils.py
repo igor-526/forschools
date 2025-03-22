@@ -16,51 +16,72 @@ async def send_file(tg_id: int, file_object: File, reply_markup=None, protect=Fa
                                            protect_content=protect,
                                            caption=file_object.caption,
                                            reply_markup=reply_markup)
-            file_id = message.photo[-1].file_id
+            try:
+                file_id = message.photo[-1].file_id
+            except Exception:
+                file_id = None
         except TelegramBadRequest:
             message = await bot.send_document(chat_id=tg_id,
                                               document=file,
                                               protect_content=protect,
                                               caption=file_object.caption,
                                               reply_markup=reply_markup)
-            file_id = message.document.file_id
+            try:
+                file_id = message.document.file_id
+            except Exception:
+                file_id = None
     elif file_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
                                            animation=file,
                                            protect_content=protect,
                                            caption=file_object.caption,
                                            reply_markup=reply_markup)
-        if message.animation:
-            file_id = message.animation.file_id
-        else:
-            file_id = message.document.file_id
+        try:
+            if message.animation:
+                file_id = message.animation.file_id
+            else:
+                file_id = message.document.file_id
+        except Exception:
+            file_id = None
     elif file_type in ["pdf_formats", "archive_formats", "presentation_formats", "word_formats"]:
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
                                           protect_content=protect,
                                           caption=file_object.caption,
                                           reply_markup=reply_markup)
-        file_id = message.document.file_id
+        try:
+            file_id = message.document.file_id
+        except Exception:
+            file_id = None
     elif file_type == "video_formats":
         message = await bot.send_video(chat_id=tg_id,
                                        video=file,
                                        protect_content=protect,
                                        caption=file_object.caption,
                                        reply_markup=reply_markup)
-        file_id = message.video.file_id
+        try:
+            file_id = message.video.file_id
+        except Exception:
+            file_id = None
     elif file_type == "audio_formats":
         message = await bot.send_audio(chat_id=tg_id,
                                        audio=file,
                                        protect_content=protect,
                                        caption=file_object.caption,
                                        reply_markup=reply_markup)
-        file_id = message.audio.file_id
+        try:
+            file_id = message.audio.file_id
+        except Exception:
+            file_id = None
     elif file_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,
                                        voice=file,
                                        protect_content=protect,
                                        reply_markup=reply_markup)
-        file_id = message.voice.file_id
+        try:
+            file_id = message.voice.file_id
+        except Exception:
+            file_id = None
     if not file_object.tg_url and file_id:
         file_object.tg_url = file_id
         await file_object.asave()

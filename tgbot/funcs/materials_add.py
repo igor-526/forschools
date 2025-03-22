@@ -53,7 +53,10 @@ class FileParser:
 
     async def update_status_message(self, text: str):
         if self.status_message:
-            await self.status_message.edit_text(text=text)
+            try:
+                await self.status_message.edit_text(text=text)
+            except Exception:
+                pass
         else:
             self.status_message = await self.material_message.reply(text)
 
