@@ -570,10 +570,14 @@ class ScheduleAPIView(LoginRequiredMixin, APIView):
             q = Lesson.objects.filter(learningphases__learningplan__listeners__id=user_id,
                                       date__gte=self.monday,
                                       date__lte=self.sunday)
+
         if "Teacher" in usergroups:
-            q = Lesson.objects.filter(learningphases__learningplan__teacher__id=user_id,
-                                      date__gte=self.monday,
-                                      date__lte=self.sunday)
+            q = Lesson.objects.filter(Q(learningphases__learningplan__teacher__id=user_id,
+                                        date__gte=self.monday,
+                                        date__lte=self.sunday) |
+                                      Q(replace_teacher__id=user_id,
+                                        date__gte=self.monday,
+                                        date__lte=self.sunday))
         return q
 
     def set_week_info(self):
