@@ -27,13 +27,9 @@ class CanSeeLessonMixin(LoginRequiredMixin):
             return super().dispatch(request, *args, **kwargs)
         if "Listener" in usergroups:
             lesson = Lesson.objects.get(pk=kwargs.get('pk'))
-            if not lesson.date:
+            if not lesson and lesson.date:
                 raise PermissionDenied('Permission denied')
-            learning_plan = lesson.learningphases_set.first().learningplan_set.first()
-            lessondt = timezone.datetime(lesson.date.year, lesson.date.month, lesson.date.day)
-            if ((learning_plan.listeners.filter(id=request.user.id).exists()) and
-                    (timezone.now().timestamp() >= (
-                            lessondt - timezone.timedelta(days=learning_plan.show_lessons)).timestamp())):
+            if request.user in lesson.get_listeners():
                 return super().dispatch(request, *args, **kwargs)
         if "Curator" in usergroups:
             lesson = Lesson.objects.get(pk=kwargs.get('pk'))
@@ -66,7 +62,7 @@ def can_see_lesson_materials(request, lesson: Lesson):
     if (lp.teacher == request.user or lp.metodist == request.user or
             lesson.replace_teacher == request.user or lp.curators.filter(id=request.user.id).exists()):
         return True
-    if LearningPlan.listeners.filter(id=request.user.id).exists():
+    if lp.listeners.filter(id=request.user.id).exists():
         if not lesson.date:
             return False
         lessondt = timezone.datetime(lesson.date.year, lesson.date.month, lesson.date.day)
