@@ -1,6 +1,8 @@
 from aiogram import types, Router
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
+
+from material.models import Material
 from profile_management.models import NewUser, Telegram, ProfileEventsJournal
 from tgbot.create_bot import bot
 from tgbot.funcs.menu import send_menu
@@ -84,3 +86,11 @@ async def command_start_handler(message: types.Message, state: FSMContext):
 @router.message(Command('reset'))
 async def command_reset_handler(message: types.Message, state: FSMContext):
     await send_menu(message.from_user.id, state)
+
+
+@router.message(Command('mattest'))
+async def command_mattest_handler(message: types.Message, state: FSMContext):
+    mat_id = message.text.split(" ")[1]
+    mat = await Material.objects.aget(id=mat_id)
+    x = await bot.get_file(file_id=mat.tg_url)
+    await bot.send_message(x)

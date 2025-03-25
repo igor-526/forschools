@@ -30,8 +30,7 @@ class AsyncClass:
         await send_file(tg_id, file_object)
 
     async def check_unsend_messages(self):
-        all_users = [{"is_admin": await tg_note.user.groups.filter(name="admin").aexists(),
-                      "tg_id": tg_note.tg_id,
+        all_users = [{"tg_id": tg_note.tg_id,
                       "full_name": f'{tg_note.user.first_name} {tg_note.user.last_name}'} async for tg_note in
                      Telegram.objects.select_related("user").all()]
         now = datetime.now()
@@ -51,13 +50,6 @@ class AsyncClass:
                     if minutes_ago > 5:
                         await bot.send_message(chat_id=user.get("tg_id"),
                                                text="Ваше сообщение не отправлено!\nДля отправки необходимо нажать кнопку <b>ОТПРАВИТЬ</b>")
-                    elif minutes_ago > 20:
-                        await bot.send_message(chat_id=user.get("tg_id"),
-                                               text="Ваше сообщение не отправлено!\nДля отправки необходимо нажать кнопку <b>ОТПРАВИТЬ</b>")
-                        for admin in list(
-                                filter(lambda u: u.get("is_admin") and u.get("tg_id") != user.get("tg_id"), all_users)):
-                            await bot.send_message(chat_id=admin.get("tg_id"),
-                                                   text=f"Пользователь {user.get('full_name')} сформировал сообщение, но не отправил его!")
 
 
 sync_funcs = sync.methods(AsyncClass())
