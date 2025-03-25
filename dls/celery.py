@@ -23,5 +23,11 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour='5, 6, 7, 8, 9, 10, 11, 12, 13, 14, '
                                  '15, 16, 17, 18, 19, 20, 21, 22, 23',
                             minute='0')
+    },
+    'check_unsend_messages_task': {
+        'task': 'chat.tasks.check_unsend_messages_task',
+        'schedule': crontab(hour='8, 9, 10, 11, 12, 13, 14, '
+                                 '15, 16, 17, 18, 19, 20, 21, 22, 23',
+                            minute='0, 20, 40')
     }
 }

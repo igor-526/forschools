@@ -1,3 +1,5 @@
+import datetime
+
 from aiogram import types, Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -57,7 +59,8 @@ async def h_mainmenu_message(message: types.Message, state: FSMContext) -> None:
     data = await state.get_data()
     if not data.get("files") and not data.get("comment"):
         await state.set_data({'files': [],
-                              'comment': []})
+                              'comment': [],
+                              'start_time': datetime.datetime.now().strftime('%d.%m.%YT%H:%M')})
     messages = [message]
     if message.reply_to_message:
         messages.append(message.reply_to_message)
