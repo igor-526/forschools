@@ -93,4 +93,5 @@ async def command_mattest_handler(message: types.Message, state: FSMContext):
     mat_id = message.text.split(" ")[1]
     mat = await Material.objects.aget(id=mat_id)
     x = await bot.get_file(file_id=mat.tg_url)
-    await bot.send_message(x)
+    await bot.send_message(chat_id=message.from_user.id,
+                           text=str(x))
