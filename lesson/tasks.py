@@ -1,5 +1,5 @@
 from dls.celery import app
-from dls.utils import get_tg_id_sync
+from profile_management.models import Telegram
 from tgbot.keyboards.lessons import get_lesson_place_button
 from .models import Lesson
 from tgbot.utils import sync_funcs as tg
@@ -37,7 +37,10 @@ def notification_listeners_lessons():
         listeners = lesson.get_listeners()
         teacher = lesson.get_teacher()
         for listener in listeners:
-            telegram_ids = get_tg_id_sync(listener.id)
+            telegram_ids = [{"tg_id": tgnote.tg_id,
+                             "usertype": tgnote.usertype} for tgnote
+                            in Telegram.objects.filter(user__id=listener.id,
+                                                       setting_notifications_lessons_hour=True).all()]
             for telegram in telegram_ids:
                 msg = (f"<b>Напоминание о занятии</b>\n"
                        f"<b>Сегодня</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
@@ -66,7 +69,13 @@ def notification_listeners_lessons():
             if not telegram_ids:
                 log_notification(listener, 'error', None, None, None,
                                  ["У пользователя не привязан Telegram"])
-        teacher_tg_id = get_tg_id_sync(teacher.id, "main")
+        teacher_tg_id = Telegram.objects.filter(user__id=teacher.id,
+                                                usertype="main").first()
+        if not teacher_tg_id:
+            continue
+        if not teacher_tg_id.setting_notifications_lessons_hour:
+            continue
+        teacher_tg_id = teacher_tg_id.tg_id
         msg = (f"<b>Напоминание о занятии</b>\n"
                f"<b>Сегодня</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
                f"{'учеником' if len(listeners) == 1 else 'учениками'} "
@@ -99,7 +108,10 @@ def notification_listeners_tomorrow_lessons():
     for lesson in lessons:
         listeners = lesson.get_listeners()
         for listener in listeners:
-            telegram_ids = get_tg_id_sync(listener.id)
+            telegram_ids = [{"tg_id": tgnote.tg_id,
+                             "usertype": tgnote.usertype} for tgnote
+                            in Telegram.objects.filter(user__id=listener.id,
+                                                       setting_notifications_lesson_day=True).all()]
             for telegram in telegram_ids:
                 msg = (f"<b>Напоминание о занятии</b>\n"
                        f"<b>Завтра</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
@@ -165,18 +177,10 @@ def notification_tomorrow_schedule():
     for lesson in lessons:
         listeners = lesson.get_listeners()
         teacher = lesson.get_teacher()
-        telegram_t_ids = get_tg_id_sync(teacher.id)
-        for telegram_t in telegram_t_ids:
-            listeners_str = ', '.join([str(listener) for listener in listeners])
-            if notifications_t.get(telegram_t.get("tg_id")):
-                notifications_t[telegram_t.get("tg_id")]["msg"] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                                    f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}")
-            else:
-                notifications_t[telegram_t.get("tg_id")] = {"msg": (f"<b>Ваше расписание на завтра:</b>\n"
-                                                                    f"<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                                    f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}"),
-                                                            "usr_id": teacher.id}
-        if not telegram_t_ids:
+        teacher_tg_id = Telegram.objects.filter(user__id=teacher.id,
+                                                usertype="main",
+                                                setting_notifications_lesson_day=True).first()
+        if not teacher_tg_id:
             TgBotJournal.objects.create(
                 recipient=teacher,
                 event=1,
@@ -188,6 +192,18 @@ def notification_tomorrow_schedule():
                     "attachments": []
                 }
             )
+            continue
+        if not teacher_tg_id.setting_notifications_lessons_hour:
+            continue
+        listeners_str = ', '.join([str(listener) for listener in listeners])
+        if notifications_t.get(teacher_tg_id.tg_id):
+            notifications_t[teacher_tg_id.tg_id]["msg"] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
+                                                                f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}")
+        else:
+            notifications_t[teacher_tg_id.tg_id] = {"msg": (f"<b>Ваше расписание на завтра:</b>\n"
+                                                                f"<b>{lesson.start_time.strftime('%H:%M')}-"
+                                                                f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}"),
+                                                        "usr_id": teacher.id}
     for tg_id in notifications_t:
         msg_result = tg.send_tg_message_sync(
             tg_id=tg_id,

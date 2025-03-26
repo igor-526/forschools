@@ -549,15 +549,15 @@ class Telegram(models.Model):
     last_name = models.CharField(verbose_name="Фамилия",
                                  null=True,
                                  blank=True)
-    notifications_changed_lesson = models.BooleanField(verbose_name="Уведомление об изменении занятия",
-                                                       null=False,
-                                                       blank=False,
-                                                       default=True)
-    notifications_lesson_day = models.BooleanField(verbose_name="Уведомление о занятии за сутки",
+    setting_notifications_lesson_day = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о занятии за сутки",
                                                    null=False,
                                                    blank=False,
                                                    default=True)
-    notifications_lessons_hour = models.BooleanField(verbose_name="Уведомление о занятии за час",
+    setting_notifications_lessons_hour = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о занятии за час",
+                                                     null=False,
+                                                     blank=False,
+                                                     default=True)
+    setting_notifications_tg_connecting = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о привязке пользователя к TG",
                                                      null=False,
                                                      blank=False,
                                                      default=True)

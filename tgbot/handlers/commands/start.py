@@ -31,6 +31,7 @@ async def command_start_handler(message: types.Message, state: FSMContext):
         telegrams = [{"tg_id": tgnote.tg_id,
                       "user": tgnote.user} async for tgnote in
                      Telegram.objects.select_related("user").filter(user__groups__name='Admin',
+                                                                    setting_notifications_tg_connecting=True,
                                                                     user__is_active=True).exclude(
                          user__id=connected_user.id)]
         for telegram in telegrams:
