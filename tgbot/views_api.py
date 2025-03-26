@@ -199,3 +199,20 @@ class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
         else:
             return Response({'error': 'Невозможно поменять роль основного Telegram'},
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class TelegramSetMainAPIView(LoginRequiredMixin, APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            tg_note_selected = Telegram.objects.get(pk=kwargs.get("pk"))
+            tg_note_main = Telegram.objects.filter(user=tg_note_selected.user,
+                                                   usertype="main").exclude(id=tg_note_selected.id).first()
+            if not tg_note_main:
+                raise Telegram.DoesNotExist
+        except Telegram.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        tg_note_main.usertype = tg_note_selected.usertype
+        tg_note_selected.usertype = "main"
+        tg_note_main.save()
+        tg_note_selected.save()
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)

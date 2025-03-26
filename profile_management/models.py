@@ -122,6 +122,9 @@ class NewUser(AbstractUser):
                                            blank=True,
                                            null=True,
                                            on_delete=models.SET_NULL)
+    setting_notifications_email = models.BooleanField(verbose_name="НАСТРОЙКА: Получать уведомления на email",
+                                                      null=False,
+                                                      default=True)
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -550,17 +553,17 @@ class Telegram(models.Model):
                                  null=True,
                                  blank=True)
     setting_notifications_lesson_day = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о занятии за сутки",
-                                                   null=False,
-                                                   blank=False,
-                                                   default=True)
+                                                           null=False,
+                                                           blank=False,
+                                                           default=True)
     setting_notifications_lessons_hour = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о занятии за час",
-                                                     null=False,
-                                                     blank=False,
-                                                     default=True)
+                                                             null=False,
+                                                             blank=False,
+                                                             default=True)
     setting_notifications_tg_connecting = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о привязке пользователя к TG",
-                                                     null=False,
-                                                     blank=False,
-                                                     default=True)
+                                                              null=False,
+                                                              blank=False,
+                                                              default=True)
     last_message_from_user_time = models.DateTimeField(verbose_name="Время последнего взаимодействия с ботом",
                                                        null=True,
                                                        blank=True)

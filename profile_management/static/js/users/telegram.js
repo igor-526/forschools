@@ -1,9 +1,8 @@
 function usersAdminTelegramMain(){
     userTelegramDisconnectModalButton.addEventListener("click", usersAdminTelegramDisconnect)
     userTelegramEditRoleModalButton.addEventListener("click", usersAdminTelegramEditRole)
+    userTelegramSetMainModalButton.addEventListener("click", usersAdminTelegramSetMain)
 }
-
-
 
 function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
     function setAdminMode(){
@@ -56,15 +55,35 @@ function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
             tdActionsEditRoleButton.classList.add("btn", "btn-warning", "mx-1")
             tdActionsEditRoleButton.type = "button"
             tdActionsEditRoleButton.innerHTML = '<i class="bi bi-pencil"></i>'
+            tdActionsEditRoleButton.setAttribute("data-bs-toggle", "tooltip")
+            tdActionsEditRoleButton.setAttribute("data-bs-placement", "bottom")
+            tdActionsEditRoleButton.setAttribute("title", "Изменить наименование")
+            new bootstrap.Tooltip(tdActionsEditRoleButton)
             tdActionsEditRoleButton.addEventListener("click", function () {
                 usersAdminTelegramEditRoleModalSet(telegram.id, telegram.usertype)
             })
+            const tdActionsSetMainButton = document.createElement("button")
+            tdActionsSetMainButton.classList.add("btn", "btn-warning", "mx-1")
+            tdActionsSetMainButton.type = "button"
+            tdActionsSetMainButton.innerHTML = '<i class="bi bi-arrow-90deg-up"></i>'
+            tdActionsSetMainButton.setAttribute("data-bs-toggle", "tooltip")
+            tdActionsSetMainButton.setAttribute("data-bs-placement", "bottom")
+            tdActionsSetMainButton.setAttribute("title", "Сделать основным")
+            new bootstrap.Tooltip(tdActionsSetMainButton)
+            tdActionsSetMainButton.addEventListener("click", function () {
+                usersAdminTelegramSetMainModalSet(telegram.id)
+            })
             tdActions.insertAdjacentElement("beforeend", tdActionsEditRoleButton)
+            tdActions.insertAdjacentElement("beforeend", tdActionsSetMainButton)
         }
         const tdActionsDisconnectButton = document.createElement("button")
         tdActionsDisconnectButton.classList.add("btn", "btn-danger", "mx-1")
         tdActionsDisconnectButton.type = "button"
         tdActionsDisconnectButton.innerHTML = '<i class="bi bi-trash"></i>'
+        tdActionsDisconnectButton.setAttribute("data-bs-toggle", "tooltip")
+        tdActionsDisconnectButton.setAttribute("data-bs-placement", "bottom")
+        tdActionsDisconnectButton.setAttribute("title", "Удалить привязку")
+        new bootstrap.Tooltip(tdActionsDisconnectButton)
         tdActionsDisconnectButton.addEventListener("click", function () {
             usersAdminTelegramDisconnectModalSet(telegram.id, telegram.usertype==="main")
         })
@@ -261,6 +280,20 @@ function usersAdminTelegramEditRole(){
 }
 
 
+function usersAdminTelegramSetMainModalSet(noteID, currentRole=null) {
+    userTelegramSelectedNote = noteID
+    bsUserTelegramSetMainModal.show()
+}
+
+function usersAdminTelegramSetMain(){
+    telegramAPISetMain(userTelegramSelectedNote).then(request => {
+        bsUserTelegramSetMainModal.hide()
+        if (request.status === 200){
+            usersAdminTelegramSet()
+        }
+    })
+}
+
 let userTelegramSelectedUser = null
 let userTelegramSelectedNote = null
 
@@ -284,5 +317,9 @@ const userTelegramEditRoleModalField = userTelegramEditRoleModal.querySelector("
 const userTelegramEditRoleModalError = userTelegramEditRoleModal.querySelector("#userTelegramEditRoleModalError")
 const userTelegramEditRoleModalButton = userTelegramEditRoleModal.querySelector("#userTelegramEditRoleModalButton")
 
+//SetMainModal
+const userTelegramSetMainModal = document.querySelector("#userTelegramSetMainModal")
+const bsUserTelegramSetMainModal = new bootstrap.Modal(userTelegramSetMainModal)
+const userTelegramSetMainModalButton = userTelegramSetMainModal.querySelector("#userTelegramSetMainModalButton")
 
 usersAdminTelegramMain()

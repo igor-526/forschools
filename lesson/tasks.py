@@ -1,5 +1,6 @@
 from dls.celery import app
 from profile_management.models import Telegram
+from profile_management.utils import send_email_message
 from tgbot.keyboards.lessons import get_lesson_place_button
 from .models import Lesson
 from tgbot.utils import sync_funcs as tg
@@ -36,16 +37,17 @@ def notification_listeners_lessons():
     for lesson in lessons:
         listeners = lesson.get_listeners()
         teacher = lesson.get_teacher()
+        msg = (f"<b>Напоминание о занятии</b>\n"
+               f"<b>Сегодня</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+               f"преподавателем <b>{lesson.get_teacher()}</b>\n\n")
+        rm = None
         for listener in listeners:
             telegram_ids = [{"tg_id": tgnote.tg_id,
                              "usertype": tgnote.usertype} for tgnote
                             in Telegram.objects.filter(user__id=listener.id,
                                                        setting_notifications_lessons_hour=True).all()]
             for telegram in telegram_ids:
-                msg = (f"<b>Напоминание о занятии</b>\n"
-                       f"<b>Сегодня</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
-                       f"преподавателем <b>{lesson.get_teacher()}</b>\n\n")
-                rm = None
+
                 if lesson.place:
                     rm = get_lesson_place_button(url=lesson.place.url,
                                                  place_id=lesson.place.id if lesson.place.conf_id or
@@ -69,8 +71,36 @@ def notification_listeners_lessons():
             if not telegram_ids:
                 log_notification(listener, 'error', None, None, None,
                                  ["У пользователя не привязан Telegram"])
+            if listener.email and listener.email != '' and listener.setting_notifications_email:
+                if lesson.place:
+                    msg += f'<a href={lesson.place.url}>Ссылка для подключения</a>'
+                    if lesson.place.conf_id:
+                        msg += f'\n<b>ID конференции: </b>{lesson.place.conf_id}>'
+                    if lesson.place.access_code:
+                        msg += f'\n<b>Код: </b>{lesson.place.access_code}>'
+                send_email_message(
+                    email=listener.email,
+                    message=msg,
+                    subject="Напоминание о предстоящем занятии"
+                )
         teacher_tg_id = Telegram.objects.filter(user__id=teacher.id,
                                                 usertype="main").first()
+        msg = (f"<b>Напоминание о занятии</b>\n"
+               f"<b>Сегодня</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+               f"{'учеником' if len(listeners) == 1 else 'учениками'} "
+               f"{', '.join([f'<b>{listener.first_name} {listener.last_name}</b>' for listener in listeners])}\n\n")
+        if teacher.email and teacher.email != '' and teacher.setting_notifications_email:
+            if lesson.place:
+                msg += f'<a href={lesson.place.url}>Ссылка для подключения</a>'
+                if lesson.place.conf_id:
+                    msg += f'\n<b>ID конференции: </b>{lesson.place.conf_id}>'
+                if lesson.place.access_code:
+                    msg += f'\n<b>Код: </b>{lesson.place.access_code}>'
+            send_email_message(
+                email=teacher.email,
+                message=msg,
+                subject="Напоминание о предстоящем занятии"
+            )
         if not teacher_tg_id:
             continue
         if not teacher_tg_id.setting_notifications_lessons_hour:

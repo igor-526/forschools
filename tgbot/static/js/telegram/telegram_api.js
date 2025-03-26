@@ -36,6 +36,17 @@ async function telegramAPIEditRole(noteID, fd){
     return APIPostPatchToObject(request)
 }
 
+async function telegramAPISetMain(noteID){
+    const request = await fetch(`/api/v1/telegram/${noteID}/set_main/`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            "X-CSRFToken": csrftoken,
+        }
+    })
+    return APIPostPatchToObject(request)
+}
+
 async function telegramAPISendMaterials(users, materials){
     const fd = new FormData()
     users.forEach(user => {

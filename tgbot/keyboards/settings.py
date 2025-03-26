@@ -56,6 +56,19 @@ def get_settings_keyboard(settings: dict) -> InlineKeyboardMarkup:
             callback_data=SettingsCallback(action="notifications_tg_connecting")
         )
 
+    def set_notifications_lessons_email():
+        if settings.get("notifications_lessons_email") is None:
+            return None
+        if settings.get("notifications_lessons_email"):
+            text = "\u2705 "
+        else:
+            text = "\u274C "
+        text += "Уведомления на email"
+        builder.button(
+            text=text,
+            callback_data=SettingsCallback(action="notifications_lessons_email")
+        )
+
     def set_cancel_button():
         builder.button(
             text="Отмена",
@@ -67,6 +80,7 @@ def get_settings_keyboard(settings: dict) -> InlineKeyboardMarkup:
     set_notifications_lesson_day()
     set_notifications_lessons_hour()
     set_notifications_tg_connecting()
+    set_notifications_lessons_email()
     set_cancel_button()
     builder.adjust(1)
     return builder.as_markup()

@@ -16,7 +16,9 @@ async def generate_settings_message(message: types.Message = None, callback: Cal
         'notifications_lesson_day': tg_note.setting_notifications_lesson_day,
         'notifications_lessons_hour': tg_note.setting_notifications_lessons_hour,
         'notifications_tg_connecting': tg_note.setting_notifications_tg_connecting
-        if await tg_note.user.groups.filter(name="Admin").aexists() else None
+        if await tg_note.user.groups.filter(name="Admin").aexists() else None,
+        'notifications_lessons_email': tg_note.setting_notifications_lessons_email
+        if (tg_note.user.email and tg_note.user.email) != '' else None,
     }
     if message:
         await message.answer(text="Выберите пункт:",
@@ -75,3 +77,17 @@ async def settings_switch_notifications_tg_connecting(callback: CallbackQuery):
         await callback.answer(text="Теперь будут приходить уведомления о привязке Telegram")
     await tg_note.asave()
     await generate_settings_message(callback=callback)
+
+
+async def settings_switch_notifications_email(callback: CallbackQuery):
+    tg_note = await Telegram.objects.aget(tg_id=callback.from_user.id)
+    if tg_note.user.setting_notifications_email:
+        tg_note.user.setting_notifications_email = False
+        await callback.answer(text="Уведомления теперь будут приходить на email")
+    else:
+        tg_note.user.setting_notifications_email = True
+        await callback.answer(text="Уведомления больше не будут приходить на email")
+    await tg_note.asave()
+    await generate_settings_message(callback=callback)
+
+

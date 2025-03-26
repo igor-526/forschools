@@ -1,9 +1,10 @@
-from aiogram import types, Router, F
+from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from tgbot.funcs.settings import (settings_switch_show_hw_materials,
                                   settings_switch_notifications_lesson_day,
                                   settings_switch_notifications_lessons_hour,
-                                  settings_switch_notifications_tg_connecting)
+                                  settings_switch_notifications_tg_connecting,
+                                  settings_switch_notifications_email)
 from tgbot.keyboards.callbacks.settings import SettingsCallback
 
 router = Router(name=__name__)
@@ -27,6 +28,11 @@ async def h_homework_set_notification_lesson_hour(callback: CallbackQuery) -> No
 @router.callback_query(SettingsCallback.filter(F.action == 'notifications_tg_connecting'))
 async def h_homework_set_notification_tg_connecting(callback: CallbackQuery) -> None:
     await settings_switch_notifications_tg_connecting(callback=callback)
+
+
+@router.callback_query(SettingsCallback.filter(F.action == 'notifications_lessons_email'))
+async def h_homework_set_notifications_lessons_email(callback: CallbackQuery) -> None:
+    await settings_switch_notifications_email(callback=callback)
 
 
 @router.callback_query(SettingsCallback.filter(F.action == 'cancel'))
