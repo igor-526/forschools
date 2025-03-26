@@ -84,6 +84,9 @@ class Material(models.Model):
                                        null=False,
                                        blank=False,
                                        default=False)
+    extension = models.CharField(verbose_name="Расширение файла",
+                                 null=True,
+                                 blank=True)
 
     class Meta:
         verbose_name = 'Материал'
@@ -153,6 +156,9 @@ class File(models.Model):
                                        null=False,
                                        blank=False,
                                        default=False)
+    extension = models.CharField(verbose_name="Расширение файла",
+                                 null=True,
+                                 blank=True)
 
     class Meta:
         verbose_name = 'Файл'

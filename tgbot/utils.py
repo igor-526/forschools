@@ -1,9 +1,10 @@
 from datetime import datetime
-
+import os
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 from django.db.models import Q
 from chat.models import Message, AdminMessage
+from dls.settings import MEDIA_ROOT
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
 from django.contrib.auth.models import Permission
@@ -50,6 +51,15 @@ class AsyncClass:
                     if minutes_ago > 5:
                         await bot.send_message(chat_id=user.get("tg_id"),
                                                text="Ваше сообщение не отправлено!\nДля отправки необходимо нажать кнопку <b>ОТПРАВИТЬ</b>")
+
+    async def restore_file(self, file_tg_id, extension: str):
+        file = await bot.get_file(file_id=file_tg_id)
+        file_path = [MEDIA_ROOT, "telegram", *file.file_path.split("/")[-2:]]
+        file_path_new_db = ["telegram", *file.file_path.split("/")[-2:]]
+        file_path_new_db[-1] += f'.{extension}'
+        file_path_new = os.path.join(MEDIA_ROOT, *file_path_new_db)
+        os.rename(os.path.join(*file_path), file_path_new)
+        return os.path.join(*file_path_new_db)
 
 
 sync_funcs = sync.methods(AsyncClass())

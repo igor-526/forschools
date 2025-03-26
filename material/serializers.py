@@ -1,4 +1,8 @@
+import os.path
+
 from rest_framework import serializers
+
+from tgbot.utils import sync_funcs
 from .models import Material, File
 from .utils.get_type import get_type
 from data_collections.serializers import MaterialLevelSerializer, MaterialCategorySerializer
@@ -9,6 +13,7 @@ class MaterialSerializer(serializers.ModelSerializer):
     category = MaterialCategorySerializer(many=True, required=False)
     level = MaterialLevelSerializer(many=True, required=False)
     owner = NewUserNameOnlyListSerializer(required=False)
+    file = serializers.SerializerMethodField()
     file_type = serializers.SerializerMethodField()
 
     class Meta:
@@ -19,8 +24,17 @@ class MaterialSerializer(serializers.ModelSerializer):
     def validate_visible(self, value):
         return True
 
+    def get_file(self, obj):
+        if not os.path.exists(obj.file.path):
+            if not obj.tg_url:
+                return None
+            new_url = sync_funcs.restore_file(obj.tg_url, obj.extension)
+            obj.file = new_url
+            obj.save()
+        return obj.file.url
+
     def get_file_type(self, obj):
-        filetype = get_type(obj.file.path.split('.')[-1])
+        filetype = get_type(obj.extension)
         return filetype
 
     def create(self, validated_data):
@@ -51,23 +65,43 @@ class MaterialSerializer(serializers.ModelSerializer):
 
 class MaterialListSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = Material
         fields = ['id', 'name', 'file', 'type']
 
+    def get_file(self, obj):
+        if not os.path.exists(obj.file.path):
+            if not obj.tg_url:
+                return None
+            new_url = sync_funcs.restore_file(obj.tg_url, obj.extension)
+            obj.file = new_url
+            obj.save()
+        return obj.file.url
+
     def get_type(self, obj):
-        filetype = get_type(obj.file.path.split('.')[-1])
+        filetype = get_type(obj.extension)
         return filetype
 
 
 class FileSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
+    path = serializers.SerializerMethodField()
 
     class Meta:
         model = File
         fields = '__all__'
 
+    def get_path(self, obj):
+        if not os.path.exists(obj.path.path):
+            if not obj.tg_url:
+                return None
+            new_url = sync_funcs.restore_file(obj.tg_url, obj.extension)
+            obj.path = new_url
+            obj.save()
+        return obj.path.url
+
     def get_type(self, obj):
-        filetype = get_type(obj.path.path.split('.')[-1])
+        filetype = get_type(obj.extension)
         return filetype

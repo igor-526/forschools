@@ -9,6 +9,6 @@ urlpatterns = [
 
 apiv1patterns = [
     path('', MaterialListCreateAPIView.as_view()),
-    path('<int:pk>', MaterialAPIView.as_view()),
+    path('<int:pk>/', MaterialAPIView.as_view()),
     path('get_text/', MaterialFileTextAPIView.as_view()),
 ]

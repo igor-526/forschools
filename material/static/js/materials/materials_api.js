@@ -38,7 +38,7 @@ async function materialsAPIGetAll(type=2, offset=0, name="",
 }
 
 async function materialsAPIGet(matID){
-    const request = await fetch(`/api/v1/materials/${matID}`)
+    const request = await fetch(`/api/v1/materials/${matID}/`)
     return await APIGetToObject(request)
 }
 
