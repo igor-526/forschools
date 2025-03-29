@@ -35,6 +35,11 @@ class MaterialItemPage(CanSeeMaterialMixin, TemplateView):
                    'can_edit': can_edit,
                    'material_formats': MATERIAL_FORMATS}
         if material_type == "text_formats":
-            with open(material.file.path, 'r') as f:
-                context['text'] = f.readlines()
+            try:
+                with open(material.file.path, "r", encoding="utf-16") as f:
+                    context['text'] = f.readlines()
+
+            except (UnicodeDecodeError, UnicodeError):
+                with open(material.file.path, "r", encoding="utf-8") as f:
+                    context['text'] = f.readlines()
         return render(request, self.template_name, context)

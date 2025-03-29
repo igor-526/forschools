@@ -406,7 +406,6 @@ async def add_homework_set_homework_message(tg_id: int,
                            text="Перешлите сюда или прикрепите материал, или напишите сообщение\n"
                                 "Когда будет готово, нажмите кнопку <b>'Подтвердить ДЗ'</b>",
                            reply_markup=get_homework_editing_buttons())
-    await state.update_data({"messages_to_delete": []})
     await state.set_state(HomeworkNewFSM.change_menu)
 
 
