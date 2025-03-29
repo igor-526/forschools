@@ -1,3 +1,5 @@
+from _operator import itemgetter
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework.exceptions import PermissionDenied
@@ -45,6 +47,17 @@ class ChatAdminUsersListAPIView(CanSeeAdminChats, ListAPIView):
         return list(filter(lambda user: query in user.get('name').lower(), chats))
 
     def list(self, request, *args, **kwargs):
+        def _sort_users_for_chat(users):
+            filtered_users = users
+            unread_list = list(filter(lambda u: u.get("unread"), filtered_users))
+            has_messages_list = list(
+                filter(lambda u: u.get("last_message_text") is not None and u not in unread_list, filtered_users))
+            no_messages_list = list(filter(lambda u: u.get("last_message_text") is None, filtered_users))
+            unread_list = sorted(unread_list, key=itemgetter("last_message_date"), reverse=True)
+            has_messages_list = sorted(has_messages_list, key=itemgetter("last_message_date"), reverse=True)
+            no_messages_list = sorted(no_messages_list, key=itemgetter("name"))
+            return [*unread_list, *has_messages_list, *no_messages_list]
+
         def get_info(u):
             info = {
                 "id": u.id,
@@ -65,6 +78,7 @@ class ChatAdminUsersListAPIView(CanSeeAdminChats, ListAPIView):
         users = NewUser.objects.filter(admin_message_sender__isnull=False).exclude(groups__name="Admin").distinct()
         users = [get_info(user) for user in users] if users else []
         users = self.filter_chats(users)
+        users = _sort_users_for_chat(users)
         return Response(users, status=status.HTTP_200_OK)
 
 
