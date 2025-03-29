@@ -169,6 +169,7 @@ class FileParser:
         else:
             file = await self.material_message.bot.get_file(file_id=self.file_id_tg)
             file_path = file.file_path.split("/")[-2:]
+            self.file_format = file_path[-1].split(".")[-1]
             self.file_path_db = os.path.join("telegram", *file_path)
             self.file_path = os.path.join(MEDIA_ROOT, self.file_path_db)
 
@@ -215,7 +216,8 @@ class FileParser:
                 "owner": self.file_owner,
                 "tg_url": self.file_id_tg,
                 "uploaded_at": self.material_message.date,
-                "is_animation": self.file_type == "animation"
+                "is_animation": self.file_type == "animation",
+                "extension": self.file_format
             }
             if not self.ignore_text:
                 query_params["description"] = self.file_description
@@ -234,7 +236,8 @@ class FileParser:
                 "owner": self.file_owner,
                 "tg_url": self.file_id_tg,
                 "uploaded_at": self.material_message.date,
-                "is_animation": self.file_type == "animation"
+                "is_animation": self.file_type == "animation",
+                "extension": self.file_format
             }
             if not self.ignore_text:
                 query_params["caption"] = self.file_description

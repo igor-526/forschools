@@ -38,7 +38,6 @@ async def h_chats_answer(callback: CallbackQuery,
                               'message_tags': chat_message.tags})
     else:
         chat_message = await (AdminMessage.objects.select_related("receiver").select_related("sender")
-                              .select_related("receiver_tg").select_related("sender_tg")
                               .aget(pk=callback_data.chat_message_id))
         is_admin = await (await get_user(callback.from_user.id)).groups.filter(name="Admin").aexists()
         await state.set_data({'files': [],
