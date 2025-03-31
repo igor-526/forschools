@@ -72,12 +72,15 @@ def notification_listeners_lessons():
                 log_notification(listener, 'error', None, None, None,
                                  ["У пользователя не привязан Telegram"])
             if listener.email and listener.email != '' and listener.setting_notifications_email:
+                msg = (f"Напоминание о занятии\n"
+                       f"Сегодня в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+                       f"преподавателем {lesson.get_teacher()}\n\n")
                 if lesson.place:
-                    msg += f'<a href={lesson.place.url}>Ссылка для подключения</a>'
+                    msg += lesson.place.url
                     if lesson.place.conf_id:
-                        msg += f'\n<b>ID конференции: </b>{lesson.place.conf_id}>'
+                        msg += f'\nID конференции: {lesson.place.conf_id}'
                     if lesson.place.access_code:
-                        msg += f'\n<b>Код: </b>{lesson.place.access_code}>'
+                        msg += f'\nКод: {lesson.place.access_code}'
                 send_email_message(
                     email=listener.email,
                     message=msg,
@@ -85,17 +88,17 @@ def notification_listeners_lessons():
                 )
         teacher_tg_id = Telegram.objects.filter(user__id=teacher.id,
                                                 usertype="main").first()
-        msg = (f"<b>Напоминание о занятии</b>\n"
-               f"<b>Сегодня</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+        msg = (f"Напоминание о занятии\n"
+               f"Сегодня в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
                f"{'учеником' if len(listeners) == 1 else 'учениками'} "
                f"{', '.join([f'<b>{listener.first_name} {listener.last_name}</b>' for listener in listeners])}\n\n")
         if teacher.email and teacher.email != '' and teacher.setting_notifications_email:
             if lesson.place:
-                msg += f'<a href={lesson.place.url}>Ссылка для подключения</a>'
+                msg += lesson.place.url
                 if lesson.place.conf_id:
-                    msg += f'\n<b>ID конференции: </b>{lesson.place.conf_id}>'
+                    msg += f'\nID конференции: {lesson.place.conf_id}'
                 if lesson.place.access_code:
-                    msg += f'\n<b>Код: </b>{lesson.place.access_code}>'
+                    msg += f'\nКод: {lesson.place.access_code}'
             send_email_message(
                 email=teacher.email,
                 message=msg,
