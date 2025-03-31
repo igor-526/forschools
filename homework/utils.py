@@ -26,6 +26,11 @@ def get_homework_list_settings(user_groups):
     }
     if "Admin" in user_groups:
         tabs.append({
+            "name": "Все",
+            "statuses": [1, 2, 3, 4, 5, 7],
+            "agreement": []
+        })
+        tabs.append({
             "name": "В работе",
             "statuses": [1, 2, 3, 5, 7],
             "agreement": ["no_need"]

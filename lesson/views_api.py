@@ -51,11 +51,15 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         if ds:
             query['date__gte'] = ds
         else:
-            query['date__gte'] = date.today() - timedelta(days=2)
+            if not (teachers or listeners or has_hw or name or has_comment or
+                    hw_agreement or hw_statuses or lesson_places):
+                query['date__gte'] = date.today() - timedelta(days=2)
         if de:
             query['date__lte'] = de
         else:
-            query['date__lte'] = date.today() + timedelta(days=6)
+            if not (teachers or listeners or has_hw or name or has_comment or
+                    hw_agreement or hw_statuses or lesson_places):
+                query['date__lte'] = date.today() + timedelta(days=6)
         if listeners:
             query['learningphases__learningplan__listeners__in'] = listeners
         if has_hw == "false":
