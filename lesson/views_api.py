@@ -84,7 +84,8 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
             )
         if queryset and (hw_agreement or hw_statuses):
             listed_queryset = list(queryset)
-            filtered_queryset = list(filter(lambda lesson: self.filter_hw(lesson, hw_statuses, hw_agreement), listed_queryset))
+            filtered_queryset = list(filter(lambda lesson: self.filter_hw(lesson, hw_statuses, hw_agreement),
+                                            listed_queryset))
             if not filtered_queryset:
                 return None
             queryset = Lesson.objects.filter(id__in=[lesson.id for lesson in filtered_queryset])
