@@ -1,5 +1,6 @@
 from django.db import models
 from learning_plan.models import LearningPlan
+from material.models import Material, File
 from profile_management.models import NewUser
 
 LOG_TYPE_CHOICES = (
@@ -42,9 +43,13 @@ class UserLog(models.Model):
                                blank=False,
                                default=list)
     files = models.JSONField(verbose_name="Файлы",
-                             null=False,
-                             blank=False,
-                             default=list)
+                                 null=False,
+                                 blank=False,
+                                 default=list)
+    materials_db = models.ManyToManyField(Material,
+                                       related_name='user_logs_materials')
+    files_db = models.ManyToManyField(File,
+                                   related_name='user_logs_files')
     user = models.ForeignKey(NewUser,
                              on_delete=models.SET_NULL,
                              null=True,
