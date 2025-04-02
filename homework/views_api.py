@@ -296,10 +296,6 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                             ],
                             "text": [instance.comment] if instance.comment else [],
                         },
-                        "files": [{
-                            "type": get_type(file.path.name.split('.')[-1]),
-                            "href": file.path.url
-                        } for file in instance.files.all()],
                         "buttons": [{"inner": "ДЗ",
                                      "href": f"/homeworks/{instance.homework.id}"},
                                     {"inner": "Занятие",
@@ -307,7 +303,8 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                         "user": request.user,
                         "color": "danger"
                     }
-                    UserLog.objects.create(**q)
+                    ul = UserLog.objects.create(**q)
+                    ul.files_db.add(*[file.id for file in instance.files.all()])
                 instance.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(status=status.HTTP_403_FORBIDDEN)

@@ -109,13 +109,13 @@ class FileSerializer(serializers.ModelSerializer):
 
 class MaterialLogSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
-    href = serializers.SerializerMethodField()
+    path = serializers.SerializerMethodField()
 
     class Meta:
         model = Material
-        fields = ['type', 'href']
+        fields = ['type', 'path']
 
-    def get_href(self, obj):
+    def get_path(self, obj):
         if not os.path.exists(obj.file.path):
             if not obj.tg_url:
                 return None
@@ -130,13 +130,13 @@ class MaterialLogSerializer(serializers.ModelSerializer):
 
 class FileLogSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
-    href = serializers.SerializerMethodField()
+    path = serializers.SerializerMethodField()
 
     class Meta:
         model = File
-        fields = ['type', 'href']
+        fields = ['type', 'path']
 
-    def get_href(self, obj):
+    def get_path(self, obj):
         if not os.path.exists(obj.path.path):
             if not obj.tg_url:
                 return None
