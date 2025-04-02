@@ -286,12 +286,8 @@ async def add_homework_set_homework_ready(state: FSMContext,
         added_materials = list(filter(lambda mat_id: mat_id not in old_mat, new_mat))
         if added_materials:
             plan = await lesson.aget_learning_plan() if lesson else None
-            files = [{
-                "type": get_type(f.file.name.split('.')[-1]),
-                "href": f.file.url
-            } async for f in Material.objects.filter(id__in=added_materials)]
             user_role_ru = get_role_ru(await aget_role_from_plan(plan, user))
-            await UserLog.objects.acreate(log_type=4,
+            ul = await UserLog.objects.acreate(log_type=4,
                                           learning_plan=plan,
                                           title=f'{user_role_ru} добавил в ДЗ новые материалы',
                                           content={
@@ -316,8 +312,8 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                                    {"inner": "ДЗ",
                                                     "href": f"/homeworks/{hw.id}"}
                                                    ],
-                                          files=files,
                                           user=user)
+            await ul.materials_db.aadd(added_materials)
 
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")

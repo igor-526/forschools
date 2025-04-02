@@ -259,7 +259,7 @@ async def delete_material_from_hw(callback: CallbackQuery, callback_data: Materi
                     if plan:
                         user = await get_user(callback.from_user.id)
                         mat = await Material.objects.filter(id=callback_data.mat_id).afirst()
-                        await UserLog.objects.acreate(log_type=4,
+                        ul = await UserLog.objects.acreate(log_type=4,
                                                       color="danger",
                                                       learning_plan=plan,
                                                       title=f"Из домашнего задания удалён материал",
@@ -275,15 +275,12 @@ async def delete_material_from_hw(callback: CallbackQuery, callback_data: Materi
                                                           ],
                                                           "text": []
                                                       },
-                                                      files=[{
-                                                          "type": get_type(mat.file.name.split('.')[-1]),
-                                                          "href": mat.file.url
-                                                      }],
                                                       buttons=[{"inner": "ДЗ",
                                                                 "href": f"/homeworks/{hw.id}"},
                                                                {"inner": "Занятие",
                                                                 "href": f"/lessons/{lesson.id}"}],
                                                       user=user)
+                        await ul.materials_db.aadd(mat.id)
                 await callback.answer("Материала больше нет в ДЗ")
             else:
                 await callback.answer("Ошибка. Домашнее задание не найдено")

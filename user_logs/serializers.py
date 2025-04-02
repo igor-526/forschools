@@ -1,7 +1,7 @@
 from datetime import datetime
 from rest_framework import serializers
 from homework.models import HomeworkLog
-from material.serializers import FileSerializer, MaterialLogSerializer, FileLogSerializer
+from material.serializers import MaterialLogSerializer, FileLogSerializer
 from tgbot.models import TgBotJournal
 from chat.models import Message
 from lesson.models import LessonTeacherReview

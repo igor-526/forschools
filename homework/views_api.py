@@ -481,7 +481,7 @@ class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
             plan = lesson.get_learning_plan() if lesson else None
             if plan:
                 mat = Material.objects.get(pk=kwargs.get('mat_id'))
-                UserLog.objects.create(log_type=4,
+                ul = UserLog.objects.create(log_type=4,
                                        learning_plan=plan,
                                        title="Из домашнего задания удалён материал",
                                        content={
@@ -496,16 +496,14 @@ class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
                                            ],
                                            "text": []
                                        },
-                                       files=[{
-                                           "type": get_type(mat.file.name.split('.')[-1]),
-                                           "href": mat.file.url
-                                       }],
                                        buttons=[{"inner": "ДЗ",
                                                  "href": f"/homeworks/{hw.id}"},
                                                 {"inner": "Занятие",
                                                  "href": f"/lessons/{lesson.id}"}],
                                        user=request.user,
                                        color="danger")
+                ul.materials_db.add(mat.id)
+                ul.save()
 
             return Response({'status': 'ok'}, status=status.HTTP_200_OK)
         except Exception as e:
