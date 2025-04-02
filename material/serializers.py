@@ -105,3 +105,45 @@ class FileSerializer(serializers.ModelSerializer):
     def get_type(self, obj):
         filetype = get_type(obj.extension)
         return filetype
+
+
+class MaterialLogSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+    href = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Material
+        fields = ['type', 'href']
+
+    def get_href(self, obj):
+        if not os.path.exists(obj.file.path):
+            if not obj.tg_url:
+                return None
+            new_url = sync_funcs.restore_file(obj.tg_url, obj.extension)
+            obj.file = new_url
+            obj.save()
+        return obj.file.url
+
+    def get_type(self, obj):
+        return get_type(obj.extension)
+
+
+class FileLogSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+    href = serializers.SerializerMethodField()
+
+    class Meta:
+        model = File
+        fields = ['type', 'href']
+
+    def get_href(self, obj):
+        if not os.path.exists(obj.path.path):
+            if not obj.tg_url:
+                return None
+            new_url = sync_funcs.restore_file(obj.tg_url, obj.extension)
+            obj.path = new_url
+            obj.save()
+        return obj.path.url
+
+    def get_type(self, obj):
+        return get_type(obj.extension)

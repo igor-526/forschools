@@ -1,10 +1,7 @@
 from datetime import datetime
-
-from aiofiles import os
 from rest_framework import serializers
 from homework.models import HomeworkLog
-from material.serializers import FileSerializer
-from material.utils.get_type import get_type
+from material.serializers import FileSerializer, MaterialLogSerializer, FileLogSerializer
 from tgbot.models import TgBotJournal
 from chat.models import Message
 from lesson.models import LessonTeacherReview
@@ -217,6 +214,7 @@ class UserLogsLessonReviewSerializer(serializers.ModelSerializer):
 class UserLogsSerializer(serializers.ModelSerializer):
     date = serializers.SerializerMethodField()
     user = NewUserNameOnlyListSerializer(many=False)
+    files = serializers.SerializerMethodField()
 
     class Meta:
         model = UserLog
@@ -224,6 +222,16 @@ class UserLogsSerializer(serializers.ModelSerializer):
 
     def get_date(self, obj):
         return obj.date
+
+    def get_files(self, obj):
+        result = []
+        materials = obj.materials_db.all()
+        files = obj.files_db.all()
+        if materials:
+            result.extend(MaterialLogSerializer(materials, many=True).data)
+        if files:
+            result.extend(FileLogSerializer(files, many=True).data)
+        return result
 
 
 def get_role_ru(role: str, case: str = 'n', lc: bool = False):
