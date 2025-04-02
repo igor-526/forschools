@@ -16,7 +16,7 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
     content = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     buttons = serializers.SerializerMethodField()
-    files = FileSerializer(many=True, read_only=True)
+    files = FileLogSerializer(many=True, read_only=True)
 
     class Meta:
         model = HomeworkLog
@@ -54,7 +54,7 @@ class UserLogsTGBotJournalSerializer(serializers.ModelSerializer):
     content = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     buttons = serializers.SerializerMethodField()
-    files = FileSerializer(many=True, read_only=True)
+    files = serializers.SerializerMethodField()
 
     class Meta:
         model = TgBotJournal
@@ -110,13 +110,16 @@ class UserLogsTGBotJournalSerializer(serializers.ModelSerializer):
     def get_buttons(self, obj):
         return []
 
+    def get_files(self, obj):
+        return []
+
 
 class UserLogsMessageSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     content = serializers.SerializerMethodField()
     buttons = serializers.SerializerMethodField()
-    files = FileSerializer(many=True, read_only=True)
+    files = FileLogSerializer(many=True, read_only=True)
     date = serializers.SerializerMethodField()
 
     class Meta:
@@ -149,7 +152,7 @@ class UserLogsLessonReviewSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     content = serializers.SerializerMethodField()
     buttons = serializers.SerializerMethodField()
-    files = FileSerializer(many=True, read_only=True)
+    files = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     color = serializers.SerializerMethodField()
 
@@ -205,6 +208,9 @@ class UserLogsLessonReviewSerializer(serializers.ModelSerializer):
         else:
             lesson = obj.lesson_set.first()
             return datetime.combine(lesson.date, lesson.end_time)
+
+    def get_files(self, obj):
+        return []
 
     def get_buttons(self, obj):
         return [{"inner": "Занятие",
