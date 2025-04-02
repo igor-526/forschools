@@ -1,6 +1,9 @@
 from datetime import datetime
+
+from aiofiles import os
 from rest_framework import serializers
 from homework.models import HomeworkLog
+from material.serializers import FileSerializer
 from material.utils.get_type import get_type
 from tgbot.models import TgBotJournal
 from chat.models import Message
@@ -16,7 +19,7 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
     content = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     buttons = serializers.SerializerMethodField()
-    files = serializers.SerializerMethodField()
+    files = FileSerializer(many=True, read_only=True)
 
     class Meta:
         model = HomeworkLog
@@ -47,12 +50,6 @@ class UserLogsHWLogsSerializer(serializers.ModelSerializer):
                             "href": f"/lessons/{lesson.id}"})
         return buttons
 
-    def get_files(self, obj):
-        return [{
-            "type": get_type(f.path.name.split('.')[-1]),
-            "href": f.path.url
-        } for f in obj.files.all()]
-
 
 class UserLogsTGBotJournalSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
@@ -60,7 +57,7 @@ class UserLogsTGBotJournalSerializer(serializers.ModelSerializer):
     content = serializers.SerializerMethodField()
     date = serializers.SerializerMethodField()
     buttons = serializers.SerializerMethodField()
-    files = serializers.SerializerMethodField()
+    files = FileSerializer(many=True, read_only=True)
 
     class Meta:
         model = TgBotJournal
@@ -116,16 +113,13 @@ class UserLogsTGBotJournalSerializer(serializers.ModelSerializer):
     def get_buttons(self, obj):
         return []
 
-    def get_files(self, obj):
-        return []
-
 
 class UserLogsMessageSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     content = serializers.SerializerMethodField()
     buttons = serializers.SerializerMethodField()
-    files = serializers.SerializerMethodField()
+    files = FileSerializer(many=True, read_only=True)
     date = serializers.SerializerMethodField()
 
     class Meta:
@@ -152,19 +146,13 @@ class UserLogsMessageSerializer(serializers.ModelSerializer):
     def get_buttons(self, obj):
         return []
 
-    def get_files(self, obj):
-        return [{
-            "type": get_type(f.path.name.split('.')[-1]),
-            "href": f.path.url
-        } for f in obj.files.all()]
-
 
 class UserLogsLessonReviewSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     content = serializers.SerializerMethodField()
     buttons = serializers.SerializerMethodField()
-    files = serializers.SerializerMethodField()
+    files = FileSerializer(many=True, read_only=True)
     date = serializers.SerializerMethodField()
     color = serializers.SerializerMethodField()
 
@@ -224,9 +212,6 @@ class UserLogsLessonReviewSerializer(serializers.ModelSerializer):
     def get_buttons(self, obj):
         return [{"inner": "Занятие",
                  "href": f"/lessons/{obj.lesson_set.first().id}"}]
-
-    def get_files(self, obj):
-        return []
 
 
 class UserLogsSerializer(serializers.ModelSerializer):
