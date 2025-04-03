@@ -50,14 +50,14 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
                                            caption=caption,
                                            reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                            protect_content=protect)
-            file_id = message.photo[-1].file_id
+            file_id = message.photo[-1].file_id if message.photo[-1] else None
         except TelegramBadRequest:
             message = await bot.send_document(chat_id=tg_id,
                                               document=file,
                                               caption=caption,
                                               reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                               protect_content=protect)
-            file_id = message.document.file_id
+            file_id = message.document.file_id if message.document else None
     elif mat_type == "animation_formats":
         message = await bot.send_animation(chat_id=tg_id,
                                            caption=caption,
@@ -65,23 +65,23 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
                                            reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                            protect_content=protect)
         if message.animation:
-            file_id = message.animation.file_id
+            file_id = message.animation.file_id if message.animation else None
         else:
-            file_id = message.document.file_id
+            file_id = message.document.file_id if message.document else None
     elif mat_type in ["pdf_formats", "word_formats", "archive_formats", "presentation_formats"]:
         message = await bot.send_document(chat_id=tg_id,
                                           document=file,
                                           caption=caption,
                                           reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                           protect_content=protect)
-        file_id = message.document.file_id
+        file_id = message.document.file_id if message.document else None
     elif mat_type == "video_formats":
         message = await bot.send_video(chat_id=tg_id,
                                        video=file,
                                        caption=caption,
                                        reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                        protect_content=protect)
-        file_id = message.video.file_id
+        file_id = message.video.file_id if message.video else None
     elif mat_type == "audio_formats":
         message = await bot.send_audio(chat_id=tg_id,
                                        audio=file,
@@ -95,7 +95,7 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
                                        caption=caption,
                                        reply_markup=get_keyboard_material_item(material, send_tg, delete_settings),
                                        protect_content=protect)
-        file_id = message.voice.file_id
+        file_id = message.voice.file_id if message.voice else None
     elif mat_type == "text_formats":
         try:
             with open(material.file.path, "r", encoding="utf-16") as textfile:

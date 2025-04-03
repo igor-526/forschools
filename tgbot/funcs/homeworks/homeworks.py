@@ -313,7 +313,7 @@ async def add_homework_set_homework_ready(state: FSMContext,
                                                     "href": f"/homeworks/{hw.id}"}
                                                    ],
                                           user=user)
-            await ul.materials_db.aadd(added_materials)
+            await ul.materials_db.aadd(*added_materials)
 
     statedata = await state.get_data()
     hw_id = statedata.get("new_hw").get("hw_id")
