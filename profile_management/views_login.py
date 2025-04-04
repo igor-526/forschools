@@ -5,12 +5,35 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError
+from django.views.generic import TemplateView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .forms import SignUpForm
 from .models import NewUser
 from rest_framework.decorators import api_view
+
+
+class LoginPageTemplateView(TemplateView):
+    template_name = "login.html"
+
+    def get(self, request, *args, **kwargs):
+        context = {'title': 'Авторизация'}
+        return render(request, self.template_name, context)
+
+
+class UserLoginAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return Response(status=status.HTTP_200_OK)
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 def user_login(request):

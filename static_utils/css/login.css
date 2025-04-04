@@ -8,9 +8,9 @@ body {
 
 .login_block{
     background-color: #fff;
-    height: 230px;
-    width: 420px;
-    margin: 0 auto;
+    width: 20%;
+    min-width: 200px;
+    margin: auto auto;
     margin-top: 150px;
     border-radius: 20px;
     padding: 40px;
@@ -21,18 +21,8 @@ body {
 }
 
 .login_field input{
-    width: 300px;
+    width: 90%;
     height: 35px;
     padding-left: 15px;
     border-radius: 5px;
-}
-
-button{
-    width: 200px;
-    height: 40px;
-    margin-left: 15px;
-    color: white;
-    background-color: var(--background-color);
-    border-radius: 15px;
-    border: 0;
 }

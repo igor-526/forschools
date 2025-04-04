@@ -1,6 +1,6 @@
 async function lessonsAPIAddMaterials(materials=[], lesson){
     const response = await fetch(`/api/v1/lessons/${lesson}/materials/`, {
-        method: "post",
+        method: "POST",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

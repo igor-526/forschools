@@ -7,14 +7,15 @@ from .views_api import (UserListAPIView, UserDetailAPIView,
                         DeactivateUserAPIView, ActivateUserAPIView,
                         ChangePasswordAPIView, UsersForJournalListAPIView,
                         UsersForScheduleListAPIView, ProfileEventsJournalListAPIView)
-from .views_login import (user_login, user_logout,
-                          register_view, AdminLoginAPIView)
+from .views_login import (user_login, user_logout, LoginPageTemplateView,
+                          register_view, AdminLoginAPIView, UserLoginAPIView)
 from lesson.views_api import UserLessonListAPIView
 from homework.views_api import UserHWListAPIView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='dashboard')),
-    path('login', user_login, name='login'),
+    path('login/', LoginPageTemplateView.as_view(), name='login'),
+    path('auth/', UserLoginAPIView.as_view()),
     path('logout', user_logout, name='logout'),
     path('register/', register_view, name='register'),
     path('dashboard', DashboardPageTemplateView.as_view(), name='dashboard'),
