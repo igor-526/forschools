@@ -17,7 +17,7 @@ async def generate_settings_message(message: types.Message = None, callback: Cal
         'notifications_lessons_hour': tg_note.setting_notifications_lessons_hour,
         'notifications_tg_connecting': tg_note.setting_notifications_tg_connecting
         if await tg_note.user.groups.filter(name="Admin").aexists() else None,
-        'notifications_lessons_email': tg_note.setting_notifications_lessons_email
+        'notifications_lessons_email': tg_note.user.setting_notifications_email
         if (tg_note.user.email and tg_note.user.email) != '' else None,
     }
     if message:
