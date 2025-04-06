@@ -124,7 +124,7 @@ function materialsUtilsPreview(matID){
         return pdf
     }
 
-    function getWord(href){
+    function getOffice(href){
         const word = document.createElement("iframe")
         word.src = `https://view.officeapps.live.com/op/embed.aspx?src=${location.origin}${href}`
         word.style = "width: 100%; height: 700px;"
@@ -162,7 +162,10 @@ function materialsUtilsPreview(matID){
                     elem: getPDF(href)}
             case "word_formats":
                 return {title: "Документ Word",
-                    elem: getWord(href)}
+                    elem: getOffice(href)}
+            case "presentation_formats":
+                return {title: "Презентация",
+                    elem: getOffice(href)}
             default:
                 return {title: "Не поддерживается",
                     elem: getUnsupported()}
@@ -233,7 +236,7 @@ function materialsUtilsFilePreviewByHref(type, href){
         return pdf
     }
 
-    function getWord(href){
+    function getOffice(href){
         const word = document.createElement("iframe")
         word.src = `https://view.officeapps.live.com/op/embed.aspx?src=${href}`
         word.style = "width: 100%; height: 700px;"
@@ -268,7 +271,10 @@ function materialsUtilsFilePreviewByHref(type, href){
                     elem: getPDF(href)}
             case "word_formats":
                 return {title: "Документ Word",
-                    elem: getWord(href)}
+                    elem: getOffice(href)}
+            case "presentation_formats":
+                return {title: "Презентация",
+                    elem: getOffice(href)}
             case "text_formats":
                 return {title: "Текст",
                     elem: getText(href)}
