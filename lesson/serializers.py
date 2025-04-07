@@ -18,6 +18,7 @@ class LessonTeacherReviewSerializer(serializers.ModelSerializer):
 
 class LessonSerializer(serializers.ModelSerializer):
     replace_teacher = NewUserNameOnlyListSerializer(required=False)
+    additional_listeners = NewUserNameOnlyListSerializer(required=False, many=True)
     materials = MaterialListSerializer(many=True, required=False)
     homeworks = serializers.SerializerMethodField(read_only=True)
     lesson_teacher_review = serializers.SerializerMethodField(read_only=True)
@@ -89,7 +90,7 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        exclude = ['materials', 'homeworks']
+        exclude = ['materials', 'homeworks', 'additional_listeners']
 
     def get_awaiting_action(self, obj):
         return can_set_passed(self.context.get('request'), obj)

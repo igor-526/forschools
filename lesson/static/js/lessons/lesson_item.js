@@ -70,6 +70,20 @@ function lessonItemSetInfo(lesson){
         return btn
     }
 
+    function getAddListenersButton(){
+        const li = document.createElement("li")
+        li.classList.add("list-group-item", "lesson-item-not-passed")
+        const btn = document.createElement("btn")
+        btn.type = "button"
+        btn.classList.add("btn", "btn-outline-primary", "btn-sm", "ms-2")
+        btn.innerHTML = 'Доп. ученики <i class="bi bi-person-gear"></i>'
+        btn.addEventListener("click", function () {
+            lessonAdditionalListenersModalSet(lessonID, true)
+        })
+        li.insertAdjacentElement("beforeend", btn)
+        return li
+    }
+
     if (lesson.date && lesson.start_time && lesson.end_time){
         lessonItemMainInfo.insertAdjacentElement("beforeend", getListElement(
             "Время", getLessonDateTimeRangeString(lesson)
@@ -113,6 +127,18 @@ function lessonItemSetInfo(lesson){
             "Ученик", getUsersString([listener])
         ))
     })
+
+    lesson.additional_listeners.forEach(listener => {
+        lessonItemParticipants.insertAdjacentElement("beforeend", getListElement(
+            "Ученик (доп.)", getUsersString([listener])
+        ))
+        lessonAdditionalListenersSelected.push(listener.id)
+    })
+
+    if (lessonItemCanSetReplace){
+        lessonItemParticipants.insertAdjacentElement("beforeend", getAddListenersButton())
+    }
+
 
     if (lesson.learning_plan.methodist) {
         lessonItemParticipants.insertAdjacentElement("beforeend", getListElement(
@@ -269,7 +295,7 @@ function lessonItemSetMaterials(materials, del=false){
     }}
 
 function lessonItemSetHomeworks(homeworks, del=false){
-    function getHomeworklElement(homework){
+    function getHomeworkElement(homework){
         const li = document.createElement("li")
         const a = document.createElement("a")
         const button = document.createElement("button")
@@ -301,7 +327,7 @@ function lessonItemSetHomeworks(homeworks, del=false){
         case false:
             homeworks.forEach(homework => {
                 if (homework.status !== 6){
-                    lessonItemHomeworkList.insertAdjacentElement("beforeend", getHomeworklElement(homework))
+                    lessonItemHomeworkList.insertAdjacentElement("beforeend", getHomeworkElement(homework))
                 }
             })
     }}

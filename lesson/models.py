@@ -3,7 +3,7 @@ from django.utils import timezone
 from material.models import Material
 from homework.models import Homework
 from learning_program.models import LearningProgramLesson
-
+from profile_management.models import NewUser
 
 LESSON_STATUS_CHOICES = (
     (0, 'Не проведён'),
@@ -104,6 +104,9 @@ class Lesson(models.Model):
                                         null=True,
                                         blank=True,
                                         related_name='replace_teacher')
+    additional_listeners = models.ManyToManyField("profile_management.NewUser",
+                                                  verbose_name='Дополнительные ученики',
+                                                  related_name='additional_listeners')
     materials = models.ManyToManyField(Material,
                                        verbose_name='Материалы',
                                        related_name='lesson',
@@ -162,12 +165,16 @@ class Lesson(models.Model):
             return lp.teacher
 
     def get_listeners(self):
-        return self.get_learning_plan().listeners.all()
+        return NewUser.objects.filter(id__in=[*[listener.get("id") for listener in
+                                                self.get_learning_plan().listeners.all().values("id")],
+                                              *[listener.get("id") for listener in
+                                                self.additional_listeners.all().values("id")]])
 
     async def aget_listeners(self):
         learning_phase = await self.learningphases_set.afirst()
         learning_plan = await learning_phase.learningplan_set.afirst()
-        return [listener async for listener in learning_plan.listeners.all()]
+        return [*[listener async for listener in learning_plan.listeners.all()],
+                *[listener async for listener in self.additional_listeners.all()]]
 
     def get_hw_teacher(self):
         default_hw_teacher = self.get_learning_plan().default_hw_teacher

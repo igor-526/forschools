@@ -207,3 +207,15 @@ async function lessonsAPISetAdminComment(lessonID, fd){
     const request = await fetch(url, init)
     return await APIPostPatchToObject(request)
 }
+
+async function lessonsAPISetAdditionalListeners(lessonID, fd){
+    const request = await fetch(`/api/v1/lessons/${lessonID}/set_additional/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return await APIPostPatchToObject(request)
+}

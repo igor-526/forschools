@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-xxl mt-4 mb-3">
+        <h1>Неотправленные сообщения</h1>
+    </div>
+    <div class="container-xxl">
+        <div class="container-xxl">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Пользователи</th>
+                        <th scope="col">Время</th>
+                        <th scope="col">Сообщение</th>
+                        <th scope="col">Влож.</th>
+                        <th scope="col">Действие</th>
+                    </tr>
+                </thead>
+                <tbody id="chatUnsentTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+{% block static_js %}
+    <script src="{% static 'js/chat/chatAPI.js' %}"></script>
+    <script src="{% static 'js/chat/chat_unsent.js' %}"></script>
+{% endblock %}

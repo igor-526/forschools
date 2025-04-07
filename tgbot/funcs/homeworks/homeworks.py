@@ -4,7 +4,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
 from lesson.models import Lesson
-from material.models import Material
 from tgbot.funcs.lessons import get_lesson_can_be_passed
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCuratorCallback
 from tgbot.keyboards.homework import (get_homeworks_buttons, get_homework_menu_buttons,
@@ -19,7 +18,6 @@ from profile_management.models import NewUser
 from homework.models import Homework, HomeworkLog, HomeworkGroups
 from tgbot.create_bot import bot
 from tgbot.utils import get_group_and_perms, get_user
-from material.utils.get_type import get_type
 from user_logs.models import UserLog
 from user_logs.serializers import get_role_ru
 from user_logs.utils import aget_role_from_plan

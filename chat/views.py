@@ -26,3 +26,12 @@ class ChatAdminPageTemplateView(CanSeeAdminChats, TemplateView):
                    'menu': get_menu(request.user),
                    'material_formats': MATERIAL_FORMATS}
         return render(request, self.template_name, context)
+
+
+class ChatUnsentPageTemplateView(CanSeeAdminChats, TemplateView):
+    template_name = "chats_unsent.html"
+
+    def get(self, request, *args, **kwargs):
+        context = {'title': 'Неотправленные сообщения',
+                   'menu': get_menu(request.user)}
+        return render(request, self.template_name, context)

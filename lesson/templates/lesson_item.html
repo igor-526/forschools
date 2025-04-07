@@ -103,6 +103,7 @@
     </div>
     {% if can_set_replace %}
         {% include "modal_set_replace.html" %}
+        {% include "modal_set_additional_listeners.html" %}
     {% endif %}
 {% endblock %}
 {% block static_js %}
@@ -118,6 +119,7 @@
         </script>
         <script src="{% static 'js/users/users_api.js' %}"></script>
         <script src="{% static 'js/users/users_replace_teacher.js' %}"></script>
+        <script src="{% static 'js/lessons/modal_additional_listeners.js' %}"></script>
     {% else %}
         <script>
             const lessonItemCanSetReplace = false

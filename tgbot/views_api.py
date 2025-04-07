@@ -169,7 +169,11 @@ class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
                 user=tg_note.user,
                 initiator=request.user
             )
-            tg_note.delete()
+            users_count = tg_note.allowed_users.count()
+            if users_count > 1:
+                tg_note.allowed_users.remove(tg_note.user)
+            else:
+                tg_note.delete()
         else:
             tg_notes = Telegram.objects.filter(user=tg_note.user)
             ProfileEventsJournal.objects.create(

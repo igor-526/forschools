@@ -62,3 +62,8 @@ async function chatAPICreateGroup(fd){
     })
     return await APIPostPatchToObject(request)
 }
+
+async function chatAPIGetUnsent(){
+    const request = await fetch('/api/v1/messages/unsent/')
+    return await APIGetToObject(request)
+}

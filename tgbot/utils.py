@@ -30,10 +30,12 @@ class AsyncClass:
     async def send_tg_file_sync(self, tg_id, file_object):
         await send_file(tg_id, file_object)
 
-    async def check_unsend_messages(self):
+    async def check_unsent_messages(self, notify=True):
         all_users = [{"tg_id": tg_note.tg_id,
-                      "full_name": f'{tg_note.user.first_name} {tg_note.user.last_name}'} async for tg_note in
+                      "full_name": f'{tg_note.user.first_name} {tg_note.user.last_name}'}
+                     async for tg_note in
                      Telegram.objects.select_related("user").all()]
+        unsent_messages = []
         now = datetime.now()
         for user in all_users:
             state_with: FSMContext = FSMContext(
@@ -45,12 +47,24 @@ class AsyncClass:
             state = await state_with.get_state()
             if state == "ChatsFSM:send_message":
                 data = await state_with.get_data()
-                if data.get("start_time"):
+                unsent_messages.append({
+                    "user": {
+                        "full_name": user.get("full_name"),
+                        "tg_id": user.get("tg_id")
+                    },
+                    "message": "\n".join(data.get("comment")),
+                    "start_time": datetime.strptime(data.get("start_time"), '%d.%m.%YT%H:%M')
+                    if data.get("start_time") else None,
+                    "attachments": len(data.get("files")),
+                })
+                if notify and data.get("start_time"):
                     st = datetime.strptime(data.get("start_time"), '%d.%m.%YT%H:%M')
                     minutes_ago = (now - st).seconds // 60
                     if minutes_ago > 5:
                         await bot.send_message(chat_id=user.get("tg_id"),
-                                               text="Ваше сообщение не отправлено!\nДля отправки необходимо нажать кнопку <b>ОТПРАВИТЬ</b>")
+                                               text="Ваше сообщение не отправлено!\nДля отправки необходимо "
+                                                    "нажать кнопку <b>ОТПРАВИТЬ</b>")
+        return unsent_messages
 
     async def restore_file(self, file_tg_id, extension: str):
         file = await bot.get_file(file_id=file_tg_id)

@@ -24,6 +24,7 @@ def get_menu(user):
         {'name': f'Cообщения ({unread_messages_count})', 'type': 'dropdown', 'menu': [
             {'name': 'Cообщения', 'url': reverse('chats')},
             {'name': 'Cообщения администратору', 'url': reverse('admin_chats')},
+            {'name': 'Неотправленные сообщения', 'url': reverse('unsent_chats')},
         ]},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},
@@ -53,6 +54,7 @@ def get_menu(user):
         {'name': f'Cообщения ({unread_messages_count})', 'type': 'dropdown', 'menu': [
             {'name': 'Cообщения', 'url': reverse('chats')},
             {'name': 'Cообщения администратору', 'url': reverse('admin_chats')},
+            {'name': 'Неотправленные сообщения', 'url': reverse('unsent_chats')},
         ]},
         {'name': 'Материалы', 'url': reverse('materials'), 'type': 'main'},
         {'name': 'Шаблоны уроков', 'url': reverse('learning_programs'), 'type': 'main'},

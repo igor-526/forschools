@@ -6,8 +6,11 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
 from rest_framework import status
+from rest_framework.views import APIView
+
 from profile_management.models import NewUser, Telegram
 from chat.models import GroupChats, AdminMessage
+from tgbot.utils import sync_funcs
 from .models import Message
 from .permissions import can_see_chat, CanSeeAdminChats
 from .serializers import (ChatMessageSerializer, ChatGroupInfoSerializer,
@@ -192,3 +195,8 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
 
 class ChatGroupsCreateAPIView(LoginRequiredMixin, CreateAPIView):
     serializer_class = ChatGroupInfoSerializer
+
+
+class ChatUnsentAPIView(CanSeeAdminChats, APIView):
+    def get(self, request, *args, **kwargs):
+        return Response(sync_funcs.check_unsent_messages(False), status=status.HTTP_200_OK)

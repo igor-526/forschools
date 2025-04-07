@@ -651,3 +651,18 @@ class ScheduleAPIView(LoginRequiredMixin, APIView):
             "schedule": schedule,
             "count": len(lessons) if lessons else 0
         }, status=status.HTTP_200_OK)
+
+
+class LessonSetAdditionalListeners(CanReplaceTeacherMixin, APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            lesson = Lesson.objects.get(pk=kwargs.get("pk"))
+        except Lesson.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        new_add_listeners = [int(listener_id) for listener_id in request.POST.getlist("additional_listener")]
+        for listener_id in [listener.get("id") for listener in
+                         lesson.get_learning_plan().listeners.all().values("id")]:
+            if listener_id in new_add_listeners:
+                new_add_listeners.remove(listener_id)
+        lesson.additional_listeners.set(new_add_listeners)
+        return Response({"status": "success"}, status=status.HTTP_200_OK)
