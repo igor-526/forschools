@@ -16,7 +16,7 @@ function chatUnsentShow(messages){
         tdUsers.innerHTML += '<i class="bi bi-arrow-right"></i>' + (message.receiver ?
             message.receiver.full_name : '<i class="bi bi-person-fill-x"></i>')
         const tdMessageTime = document.createElement("td")
-        tdMessageTime.innerHTML = timeUtilsDateTimeToStr(message.start_time)
+        tdMessageTime.innerHTML = message.start_time ? timeUtilsDateTimeToStr(message.start_time) : ""
         const tdMessageText = document.createElement("td")
         tdMessageText.innerHTML = message.message
         const tdAttachmentsCount = document.createElement("td")
