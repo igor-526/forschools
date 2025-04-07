@@ -7,6 +7,7 @@ from .homeworks import router as router_homeworks
 from .chats import router as router_chats
 from .lessons import router as router_lessons
 from .settings import router as router_settings
+from .multiuser import router as router_multiuser
 
 
 router = Router()
@@ -15,4 +16,5 @@ router.include_routers(router_commands,
                        router_homeworks,
                        router_chats,
                        router_lessons,
-                       router_settings)
+                       router_settings,
+                       router_multiuser)

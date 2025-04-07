@@ -8,6 +8,7 @@ from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks.homeworks import homeworks_send_menu
 from tgbot.funcs.chats import chats_show, chats_type_message
+from tgbot.funcs.multiuser import f_multiuser_generate_message
 from tgbot.funcs.settings import generate_settings_message
 
 router = Router(name=__name__)
@@ -42,6 +43,12 @@ async def h_mainmenu_chats(message: types.Message, state: FSMContext) -> None:
                 F.text == "Настройки")
 async def h_mainmenu_settings(message: types.Message) -> None:
     await generate_settings_message(message)
+
+
+@router.message(StateFilter(None),
+                F.text == "Сменить аккаунт")
+async def h_mainmenu_multiuser(message: types.Message) -> None:
+    await f_multiuser_generate_message(message)
 
 
 @router.message(StateFilter(None),

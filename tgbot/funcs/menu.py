@@ -42,9 +42,10 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
         lessons = True
         messages = True
         settings = True
+    multiuser = await tg_note.allowed_users.acount() > 1
     await state.clear()
     await bot.send_message(chat_id=user_tg_id,
                            text=custom_text,
                            reply_markup=get_menu_keyboard(await aget_unread_messages_count(tg_note),
                                                           materials, homeworks,
-                                                          lessons, messages, settings))
+                                                          lessons, messages, settings, multiuser))
