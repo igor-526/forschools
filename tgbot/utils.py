@@ -475,3 +475,23 @@ def notify_lesson_passed(tg_id: int,
     sync_funcs.send_tg_message_sync(tg_id=tg_id,
                                     message=text,
                                     reply_markup=rm)
+
+
+def notification_log_journal(recipient: NewUser, event: int, result_status: str,
+                             msg_text: str | None, msg_id: int | None,
+                             usertype: str | None, errors: list | None = None) -> TgBotJournal:
+    if errors is None:
+        errors = []
+    tg_note = TgBotJournal.objects.create(
+        recipient=recipient,
+        event=event,
+        data={
+            "status": result_status,
+            "text": msg_text,
+            "msg_id": msg_id,
+            "usertype": usertype,
+            "errors": errors,
+            "attachments": []
+        }
+    )
+    return tg_note

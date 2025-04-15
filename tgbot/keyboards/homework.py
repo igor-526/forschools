@@ -262,3 +262,18 @@ def get_hw_log_delete_file_button(hw_log_id: int, file_id: int) -> InlineKeyboar
     )
     builder.adjust(1)
     return builder.as_markup()
+
+
+def get_homework_notification_menu_buttons() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Открыть список ДЗ",
+        web_app=WebAppInfo(
+            url=keyboard_anti_cache_url("/ma/homeworks/"))
+    )
+    builder.button(
+        text=f"Открыть список в TG",
+        callback_data=HomeworkMenuCallback(action="check")
+    )
+    builder.adjust(1)
+    return builder.as_markup()
