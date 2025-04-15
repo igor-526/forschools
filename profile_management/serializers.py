@@ -87,7 +87,7 @@ class NewUserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewUser
-        fields = ['id', 'first_name', 'last_name', 'patronymic', 'city',
+        fields = ['id', 'first_name', 'last_name', 'patronymic',
                   'username', 'groups', 'is_active',
                   'can_edit', 'tg']
 
