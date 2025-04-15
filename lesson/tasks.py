@@ -1,3 +1,4 @@
+from django.db.models import Q
 from dls.celery import app
 from profile_management.models import Telegram
 from profile_management.utils import send_email_message
@@ -231,12 +232,12 @@ def notification_tomorrow_schedule():
         listeners_str = ', '.join([str(listener) for listener in listeners])
         if notifications_t.get(teacher_tg_id.tg_id):
             notifications_t[teacher_tg_id.tg_id]["msg"] += (f"\n<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                                f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}")
+                                                            f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}")
         else:
             notifications_t[teacher_tg_id.tg_id] = {"msg": (f"<b>Ваше расписание на завтра:</b>\n"
-                                                                f"<b>{lesson.start_time.strftime('%H:%M')}-"
-                                                                f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}"),
-                                                        "usr_id": teacher.id}
+                                                            f"<b>{lesson.start_time.strftime('%H:%M')}-"
+                                                            f"{lesson.end_time.strftime('%H:%M')}</b>: {listeners_str}"),
+                                                    "usr_id": teacher.id}
     for tg_id in notifications_t:
         msg_result = tg.send_tg_message_sync(
             tg_id=tg_id,
@@ -271,3 +272,91 @@ def notification_tomorrow_schedule():
                     "attachments": []
                 }
             )
+
+
+@app.task
+def notification_teachers_lessons_not_passed():
+    today = datetime.datetime.today() - datetime.timedelta(days=1)
+    lessons = [{"id": lesson.id,
+                "name": lesson.name,
+                "listeners": lesson.get_listeners(),
+                "teacher": lesson.get_teacher(),
+                "date": lesson.date} for lesson in
+               Lesson.objects.filter(Q(
+                   learningphases__learningplan__teacher__is_active=True,
+                   status=0,
+                   date__lte=today,
+                   replace_teacher__isnull=True) | Q(
+                   status=0,
+                   date__lte=today,
+                   replace_teacher__isnull=False
+               )).order_by('-date')]
+    grouped_lessons = {}
+    for lesson in lessons:
+        lesson_info = {
+                "id": lesson.get("id"),
+                "name": lesson.get("name"),
+                "listeners": lesson.get("listeners"),
+                "date": lesson.get("date")
+            }
+        if not lesson.get("teacher") in grouped_lessons:
+            grouped_lessons[lesson.get("teacher")] = []
+        grouped_lessons[lesson.get("teacher")].append(lesson_info)
+    for teacher in grouped_lessons:
+        teacher_telegram = Telegram.objects.filter(user=teacher).first()
+        if not teacher_telegram:
+            TgBotJournal.objects.create(
+                recipient=teacher,
+                event=12,
+                data={
+                    "status": "error",
+                    "text": None,
+                    "msg_id": None,
+                    "usertype": None,
+                    "errors": ["У пользователя не привязан Telegram"],
+                    "attachments": []
+                }
+            )
+            continue
+        message = "Следующие занятия не проведены:\n"
+
+        for lesson in grouped_lessons[teacher][:15]:
+            message += (f"{lesson['name']} "
+                        f"({','.join([f'{listener.first_name} {listener.last_name}' for listener in lesson['listeners']])})"
+                        f" от {lesson['date'].strftime('%d.%m')}\n")
+        if len(grouped_lessons[teacher]) > 15:
+            message += f'И ещё {len(grouped_lessons[teacher]) - 15}'
+        msg_result = tg.send_tg_message_sync(
+            tg_id=teacher_telegram.tg_id,
+            message=message
+        )
+        logging.log(level=logging.INFO, msg=f'[NOT_PASSED_LESSONS]\n'
+                                            f'tg_id: {teacher_telegram.tg_id}\n'
+                                            f'status: {msg_result.get("status")}\n')
+        if msg_result.get("status") == "success":
+            TgBotJournal.objects.create(
+                recipient_id=teacher_telegram.tg_id,
+                event=1,
+                data={
+                    "status": "success",
+                    "text": message,
+                    "msg_id": msg_result.get("msg_id"),
+                    "usertype": None,
+                    "errors": [],
+                    "attachments": []
+                }
+            )
+        else:
+            TgBotJournal.objects.create(
+                recipient_id=teacher_telegram.tg_id,
+                event=1,
+                data={
+                    "status": "error",
+                    "text": message,
+                    "msg_id": None,
+                    "usertype": None,
+                    "errors": msg_result.get("errors"),
+                    "attachments": []
+                }
+            )
+

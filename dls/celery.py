@@ -29,5 +29,10 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour='8, 9, 10, 11, 12, 13, 14, '
                                  '15, 16, 17, 18, 19, 20, 21, 22, 23',
                             minute='0, 20, 40')
+    },
+    'notification_teachers_lessons_not_passed_task': {
+        'task': 'lesson.tasks.notification_teachers_lessons_not_passed',
+        'schedule': crontab(hour='20',
+                            minute='3')
     }
 }
