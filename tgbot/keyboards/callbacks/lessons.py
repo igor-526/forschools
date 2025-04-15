@@ -6,4 +6,4 @@ class LessonScheduleListCallback(CallbackData, prefix="lesson_schedule"):
 
 
 class LessonPlaceCallback(CallbackData, prefix="lesson_place"):
-    place_id: int
+    lesson_id: int
