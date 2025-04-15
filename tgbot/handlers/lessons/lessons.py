@@ -23,4 +23,4 @@ async def h_lessons_users_search(message: types.Message, state: FSMContext) -> N
 @router.callback_query(LessonPlaceCallback.filter())
 async def h_lessons_place_show_callback(callback: CallbackQuery,
                                         callback_data: LessonPlaceCallback) -> None:
-    await f_lessons_show_place_access_info(callback_data.place_id, callback.from_user.id)
+    await f_lessons_show_place_access_info(callback_data.lesson_id, callback.from_user.id)

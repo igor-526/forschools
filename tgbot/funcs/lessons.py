@@ -119,22 +119,26 @@ async def lessons_search_users(message: types.Message, state: FSMContext):
                              reply_markup=lessons_get_users_buttons(userlist))
 
 
-def get_lesson_can_be_passed(lesson: Lesson):
+def get_lesson_can_be_passed(lesson: Lesson) -> bool:
     today = datetime.datetime.now()
     return lesson.date <= today.date()
 
 
-async def f_lessons_show_place_access_info(place_id, tg_id):
+async def f_lessons_show_place_access_info(lesson_id, tg_id) -> None:
     try:
-        place = await Place.objects.aget(id=place_id)
-    except Place.DoesNotExist:
-        await bot.send_message(chat_id=tg_id, text="Произошла ошибка. Место проведения не найдено")
-        return
+        lesson = await Lesson.objects.select_related("place").aget(id=lesson_id)
+    except Lesson.DoesNotExist:
+        await bot.send_message(chat_id=tg_id, text="Произошла ошибка. Занятие не найдено")
+        return None
+    if lesson.place is None:
+        await bot.send_message(chat_id=tg_id, text="Произошла ошибка. Место проведения отсуствует")
+        return None
+
     msg = "Данные для подключения к занятию:\n"
-    if place.url:
-        msg += f'<b>Ссылка: </b>{place.url}\n'
-    if place.conf_id:
-        msg += f'<b>Идентификатор конференции: </b>{place.conf_id}\n'
-    if place.access_code:
-        msg += f'<b>Код для подключения: </b>{place.access_code}\n'
+    if lesson.place.url:
+        msg += f'<b>Ссылка: </b>{lesson.place.url}\n'
+    if lesson.place.conf_id:
+        msg += f'<b>Идентификатор конференции: </b>{lesson.place.conf_id}\n'
+    if lesson.place.access_code:
+        msg += f'<b>Код для подключения: </b>{lesson.place.access_code}\n'
     await bot.send_message(chat_id=tg_id, text=msg)

@@ -37,16 +37,11 @@ def get_schedule_ma_button(self=True) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_lesson_place_button(url: str, place_id: int = None) -> InlineKeyboardMarkup:
+def get_lesson_place_button(lesson_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="Открыть ссылку",
-        url=url
+        text="Показать",
+        callback_data=LessonPlaceCallback(lesson_id=lesson_id)
     )
-    if place_id:
-        builder.button(
-            text="Код доступа",
-            callback_data=LessonPlaceCallback(place_id=place_id)
-        )
     builder.adjust(1)
     return builder.as_markup()

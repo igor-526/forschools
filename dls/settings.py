@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'celery',
     'django_celery_results',
     'corsheaders',
+
     'learning_plan',
     'automatic_fields',
     'learning_program',

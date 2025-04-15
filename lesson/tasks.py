@@ -1,6 +1,6 @@
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from dls.celery import app
-from profile_management.models import Telegram
+from profile_management.models import Telegram, NewUser
 from profile_management.utils import send_email_message
 from tgbot.keyboards.lessons import get_lesson_place_button
 from .models import Lesson
@@ -50,9 +50,7 @@ def notification_listeners_lessons():
             for telegram in telegram_ids:
 
                 if lesson.place:
-                    rm = get_lesson_place_button(url=lesson.place.url,
-                                                 place_id=lesson.place.id if lesson.place.conf_id or
-                                                                             lesson.place.access_code else None)
+                    rm = get_lesson_place_button(lesson.id)
                 result = tg.send_tg_message_sync(
                     tg_id=telegram.get("tg_id"),
                     message=msg,
@@ -116,9 +114,7 @@ def notification_listeners_lessons():
                f"{', '.join([f'<b>{listener.first_name} {listener.last_name}</b>' for listener in listeners])}\n\n")
         rm = None
         if lesson.place:
-            rm = get_lesson_place_button(url=lesson.place.url,
-                                         place_id=lesson.place.id if lesson.place.conf_id or lesson.place.access_code
-                                         else None)
+            rm = get_lesson_place_button(lesson.id)
         result = tg.send_tg_message_sync(
             tg_id=teacher_tg_id,
             message=msg,
@@ -128,6 +124,27 @@ def notification_listeners_lessons():
                                             f'teacher_id: {teacher.id}\n'
                                             f'tg_id: {teacher_tg_id}\n'
                                             f'status: {result.get("status")}\n')
+
+
+@app.task
+def notification_lessons_soon():
+    def notify_listeners_telegram(lesson_: Lesson, listeners_: QuerySet, teacher_: NewUser) -> None:
+        message_text = (f"<b>Напоминание о занятии</b>\n"
+                        f"<b>Сегодня</b> в {lesson_.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+                        f"преподавателем <b>{lesson.get_teacher()}</b>\n\n")
+        reply_markup = get_lesson_place_button(lesson_.id) if lesson_.place else None
+        for listener in listeners_:
+            pass
+
+    lessons = Lesson.objects.filter(
+        status=0,
+        date=datetime.date.today(),
+        start_time__gt=datetime.datetime.now() + datetime.timedelta(hours=1),
+        start_time__lte=datetime.datetime.now() + datetime.timedelta(hours=1, minutes=15)
+    )
+    for lesson in lessons:
+        listeners = lesson.get_listeners()
+        teacher = lesson.get_teacher()
 
 
 @app.task
@@ -294,11 +311,11 @@ def notification_teachers_lessons_not_passed():
     grouped_lessons = {}
     for lesson in lessons:
         lesson_info = {
-                "id": lesson.get("id"),
-                "name": lesson.get("name"),
-                "listeners": lesson.get("listeners"),
-                "date": lesson.get("date")
-            }
+            "id": lesson.get("id"),
+            "name": lesson.get("name"),
+            "listeners": lesson.get("listeners"),
+            "date": lesson.get("date")
+        }
         if not lesson.get("teacher") in grouped_lessons:
             grouped_lessons[lesson.get("teacher")] = []
         grouped_lessons[lesson.get("teacher")].append(lesson_info)

@@ -56,27 +56,11 @@ class EngagementChannel(models.Model):
         return self.name
 
 
-class Cities(models.Model):
-    name = models.CharField(verbose_name="Город",
-                            null=False,
-                            blank=False,
-                            unique=True)
-    tz = models.IntegerField(verbose_name="Часовой пояс",
-                             null=False,
-                             blank=False,
-                             default=0)
-
-
 class NewUser(AbstractUser):
     patronymic = models.CharField(verbose_name="Отчество",
                                   null=True,
                                   blank=True,
                                   max_length=50)
-    city = models.ForeignKey(Cities,
-                             verbose_name="Город",
-                             on_delete=models.SET_NULL,
-                             null=True,
-                             blank=True)
     photo = models.ImageField(verbose_name='Фотография профиля',
                               upload_to='profile_pictures/',
                               null=False,
@@ -125,6 +109,10 @@ class NewUser(AbstractUser):
     setting_notifications_email = models.BooleanField(verbose_name="НАСТРОЙКА: Получать уведомления на email",
                                                       null=False,
                                                       default=True)
+    tz = models.IntegerField(verbose_name="Часовой пояс",
+                             null=False,
+                             blank=False,
+                             default=3)
 
     class Meta:
         verbose_name = 'Пользователь'
