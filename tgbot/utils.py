@@ -66,6 +66,39 @@ class AsyncClass:
                                                     "нажать кнопку <b>ОТПРАВИТЬ</b>")
         return unsent_messages
 
+    async def notify_unsent_data(self):
+        all_users = [{"tg_id": tg_note.tg_id,
+                      "full_name": f'{tg_note.user.first_name} {tg_note.user.last_name}'}
+                     async for tg_note in
+                     Telegram.objects.select_related("user").all()]
+        now = datetime.now()
+        for user in all_users:
+            state_with: FSMContext = FSMContext(
+                storage=dp.storage,
+                key=StorageKey(
+                    chat_id=user.get("tg_id"),
+                    user_id=user.get("tg_id"),
+                    bot_id=bot.id))
+            state = await state_with.get_state()
+            if state == "ChatsFSM:send_message":
+                data = await state_with.get_data()
+                if data.get("start_time"):
+                    st = datetime.strptime(data.get("start_time"), '%d.%m.%YT%H:%M')
+                    minutes_ago = (now - st).seconds // 60
+                    if minutes_ago > 5:
+                        await bot.send_message(chat_id=user.get("tg_id"),
+                                               text="Ваше сообщение не отправлено!\nДля отправки необходимо "
+                                                    "нажать кнопку <b>ОТПРАВИТЬ</b>")
+            elif state == "HomeworkFSM:send_hw_files":
+                data = await state_with.get_data()
+                if data.get("start_time"):
+                    st = datetime.strptime(data.get("start_time"), '%d.%m.%YT%H:%M')
+                    minutes_ago = (now - st).seconds // 60
+                    if minutes_ago > 5:
+                        await bot.send_message(chat_id=user.get("tg_id"),
+                                               text="Ваше ДЗ не отправлено!\nДля отправки необходимо "
+                                                    "нажать кнопку <b>ОТПРАВИТЬ</b>")
+
     async def restore_file(self, file_tg_id, extension: str):
         file = await bot.get_file(file_id=file_tg_id)
         file_path = [MEDIA_ROOT, "telegram", *file.file_path.split("/")[-2:]]

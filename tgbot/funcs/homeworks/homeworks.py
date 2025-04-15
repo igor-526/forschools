@@ -560,7 +560,8 @@ async def send_hw_answer(callback: CallbackQuery,
         await state.update_data({'files': [],
                                  'comment': [],
                                  'action': 'send',
-                                 'hw_id': callback_data.hw_id})
+                                 'hw_id': callback_data.hw_id,
+                                 'start_time': datetime.datetime.now().strftime('%d.%m.%YT%H:%M')})
     else:
         await bot.send_message(callback.from_user.id,
                                text="На данный момент Вы не можете отправить решение")
@@ -598,7 +599,8 @@ async def send_hw_check(callback: CallbackQuery,
         await state.update_data({'files': [],
                                  'comment': [],
                                  'action': callback_data.action,
-                                 'hw_id': callback_data.hw_id})
+                                 'hw_id': callback_data.hw_id,
+                                 'start_time': datetime.datetime.now().strftime('%d.%m.%YT%H:%M')})
     else:
         await bot.send_message(callback.from_user.id,
                                text="На данный момент Вы не можете проверить ДЗ")
