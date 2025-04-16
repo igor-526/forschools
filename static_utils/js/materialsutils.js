@@ -238,7 +238,7 @@ function materialsUtilsFilePreviewByHref(type, href){
 
     function getOffice(href){
         const word = document.createElement("iframe")
-        word.src = `https://view.officeapps.live.com/op/embed.aspx?src=${href}`
+        word.src = `https://view.officeapps.live.com/op/embed.aspx?src=${location.host}/${href}`
         word.style = "width: 100%; height: 700px;"
         return word
     }
