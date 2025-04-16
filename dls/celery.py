@@ -43,28 +43,28 @@ app.conf.beat_schedule = {
     },
 }
 
-app.conf.beat_schedule | generate_notification_schedule(msk_hour=9,
-                                                        task='lesson.tasks.notification_teachers_lessons_not_passed',
-                                                        prefix='mrn',
-                                                        today=False,
-                                                        minute=0)
-app.conf.beat_schedule | generate_notification_schedule(msk_hour=18,
-                                                        task='lesson.tasks.notification_teachers_lessons_not_passed',
-                                                        prefix='evn',
-                                                        today=True,
-                                                        minute=0)
-app.conf.beat_schedule | generate_notification_schedule(msk_hour=9,
-                                                        task='homework.tasks.notification_teachers_homeworks_unchecked',
-                                                        prefix='mrn',
-                                                        today=False,
-                                                        minute=5)
-app.conf.beat_schedule | generate_notification_schedule(msk_hour=18,
-                                                        task='homework.tasks.notification_teachers_homeworks_unchecked',
-                                                        prefix='evn',
-                                                        today=True,
-                                                        minute=5)
-app.conf.beat_schedule | generate_notification_schedule(msk_hour=20,
-                                                        task='lesson.tasks.notification_tomorrow_schedule',
-                                                        prefix='evn',
-                                                        today=False,
-                                                        minute=0)
+app.conf.beat_schedule = app.conf.beat_schedule | generate_notification_schedule(msk_hour=9,
+                                                                                 task='lesson.tasks.notification_teachers_lessons_not_passed',
+                                                                                 prefix='mrn',
+                                                                                 today=False,
+                                                                                 minute=0)
+app.conf.beat_schedule = app.conf.beat_schedule | generate_notification_schedule(msk_hour=18,
+                                                                                 task='lesson.tasks.notification_teachers_lessons_not_passed',
+                                                                                 prefix='evn',
+                                                                                 today=True,
+                                                                                 minute=0)
+app.conf.beat_schedule = app.conf.beat_schedule | generate_notification_schedule(msk_hour=9,
+                                                                                 task='homework.tasks.notification_teachers_homeworks_unchecked',
+                                                                                 prefix='mrn',
+                                                                                 today=False,
+                                                                                 minute=5)
+app.conf.beat_schedule = app.conf.beat_schedule | generate_notification_schedule(msk_hour=18,
+                                                                                 task='homework.tasks.notification_teachers_homeworks_unchecked',
+                                                                                 prefix='evn',
+                                                                                 today=True,
+                                                                                 minute=5)
+app.conf.beat_schedule = app.conf.beat_schedule | generate_notification_schedule(msk_hour=20,
+                                                                                 task='lesson.tasks.notification_tomorrow_schedule',
+                                                                                 prefix='evn',
+                                                                                 today=False,
+                                                                                 minute=0)
