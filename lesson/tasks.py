@@ -40,7 +40,7 @@ def notification_lessons_soon() -> None:
     def notify_teacher_telegram(lesson_: Lesson, listeners_: QuerySet, teacher_: NewUser) -> None:
         message_text = (f"Напоминание о занятии\n"
                         f"Сегодня в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
-                        f"{'учеником' if len(listeners_) == 1 else 'учениками'}"
+                        f"{'учеником ' if len(listeners_) == 1 else 'учениками '}"
                         f"{', '.join([f'<b>{listener.first_name} {listener.last_name}</b>' for listener in listeners_])}")
         reply_markup = get_lesson_place_button(lesson_.id) if lesson_.place else None
         telegram = teacher_.telegram.first()
@@ -221,7 +221,7 @@ def notification_teachers_lessons_not_passed(tz=3, today=False) -> None:
                             "Не забывайте отправлять домашнее задание не позднее 12 часов с окончания урока\n\n")
             for lesson in lessons_info_[teacher][:15]:
                 message_text += (f"{lesson['name']} "
-                                 f"({','.join([f'{listener.first_name} {listener.last_name}' for listener in lesson['listeners']])})"
+                                 f"({', '.join([f'{listener.first_name} {listener.last_name}' for listener in lesson['listeners']])})"
                                  f" от {lesson['date'].strftime('%d.%m')}\n")
             if len(lessons_info_[teacher]) > 15:
                 message_text += f'И ещё {len(lessons_info_[teacher]) - 15}'

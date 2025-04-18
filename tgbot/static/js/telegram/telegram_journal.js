@@ -99,6 +99,10 @@ function tgJournalGetEventStr(event){
             return "Сообщения администратору"
         case 11:
             return "Привязка/отвязка Telegram"
+        case 12:
+            return "Напоминание о непроведённом занятии"
+        case 13:
+            return "Напоминание о непроверенном ДЗ"
         default:
             return ""
     }
