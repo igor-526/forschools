@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'celery',
     'django_celery_results',
     'corsheaders',
+    'django_user_agents',
 
     'learning_plan',
     'automatic_fields',
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

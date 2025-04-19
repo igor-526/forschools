@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from tgbot.keyboards.callbacks.settings import SettingsCallback
+from tgbot.keyboards.callbacks.settings import SettingsCallback, SetTimezoneCallback
 
 
 def get_settings_keyboard(settings: dict) -> InlineKeyboardMarkup:
@@ -69,6 +69,16 @@ def get_settings_keyboard(settings: dict) -> InlineKeyboardMarkup:
             callback_data=SettingsCallback(action="notifications_lessons_email")
         )
 
+    def set_timezone_setting_button():
+        if settings.get("timezone") is None:
+            return None
+        text = "Часовой пояс: "
+        text += f'+{settings.get("timezone")}' if settings.get("timezone") > 0 else str(settings.get("timezone"))
+        builder.button(
+            text=text,
+            callback_data=SettingsCallback(action="set_timezone")
+        )
+
     def set_cancel_button():
         builder.button(
             text="Отмена",
@@ -81,6 +91,27 @@ def get_settings_keyboard(settings: dict) -> InlineKeyboardMarkup:
     set_notifications_lessons_hour()
     set_notifications_tg_connecting()
     set_notifications_lessons_email()
+    set_timezone_setting_button()
     set_cancel_button()
     builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_settings_timezone_keyboard(current: int = None) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for tz in range(-12, 15):
+        if current == tz:
+            text = "\u2705 "
+        else:
+            text = ""
+        text += str(tz) if tz <= 0 else f"+{tz}"
+        builder.button(
+            text=text,
+            callback_data=SetTimezoneCallback(new_tz=tz)
+        )
+    builder.button(
+        text="Отмена",
+        callback_data=SetTimezoneCallback(new_tz="cancel")
+    )
+    builder.adjust(4)
     return builder.as_markup()

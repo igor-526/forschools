@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
 from rest_framework import serializers
 from material.serializers import FileSerializer
@@ -43,7 +44,8 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             for attachment in attachments:
                 file = File.objects.create(name="Сообщение",
                                            owner=request.user,
-                                           path=attachment)
+                                           path=attachment,
+                                           extension=attachment.name.split(".")[-1])
                 att_list.append(file)
             message.files.set(att_list)
             message.save()
@@ -140,7 +142,8 @@ class ChatAdminMessageSerializer(serializers.ModelSerializer):
             for attachment in attachments:
                 file = File.objects.create(name="Сообщение администратору",
                                            owner=request.user,
-                                           path=attachment)
+                                           path=attachment,
+                                           extension=attachment.name.split(".")[-1])
                 att_list.append(file)
             message.files.set(att_list)
             message.save()

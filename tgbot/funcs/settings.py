@@ -2,7 +2,7 @@ from aiogram.types import CallbackQuery
 from profile_management.models import Telegram
 from tgbot.create_bot import bot
 from aiogram import types
-from tgbot.keyboards.settings import get_settings_keyboard
+from tgbot.keyboards.settings import get_settings_keyboard, get_settings_timezone_keyboard
 
 
 async def generate_settings_message(message: types.Message = None, callback: CallbackQuery = None):
@@ -19,6 +19,7 @@ async def generate_settings_message(message: types.Message = None, callback: Cal
         if await tg_note.user.groups.filter(name="Admin").aexists() else None,
         'notifications_lessons_email': tg_note.user.setting_notifications_email
         if (tg_note.user.email and tg_note.user.email) != '' else None,
+        'timezone': tg_note.user.tz
     }
     if message:
         await message.answer(text="Выберите пункт:",
@@ -80,14 +81,27 @@ async def settings_switch_notifications_tg_connecting(callback: CallbackQuery):
 
 
 async def settings_switch_notifications_email(callback: CallbackQuery):
-    tg_note = await Telegram.objects.aget(tg_id=callback.from_user.id)
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=callback.from_user.id)
     if tg_note.user.setting_notifications_email:
         tg_note.user.setting_notifications_email = False
-        await callback.answer(text="Уведомления теперь будут приходить на email")
+        await callback.answer(text="Уведомления больше не будут приходить на email")
     else:
         tg_note.user.setting_notifications_email = True
-        await callback.answer(text="Уведомления больше не будут приходить на email")
-    await tg_note.asave()
+        await callback.answer(text="Уведомления теперь будут приходить на email")
+    await tg_note.user.asave()
+    await generate_settings_message(callback=callback)
+
+
+async def settings_set_timezone_message(callback: CallbackQuery):
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=callback.from_user.id)
+    await callback.message.edit_text(text="От часового пояса зависит время уведомлений\nВыберите Ваш часовой пояс",
+                                     reply_markup=get_settings_timezone_keyboard(tg_note.user.tz))
+
+
+async def settings_set_timezone(callback: CallbackQuery, new_timezone: int):
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=callback.from_user.id)
+    tg_note.user.tz = new_timezone
+    await tg_note.user.asave()
     await generate_settings_message(callback=callback)
 
 

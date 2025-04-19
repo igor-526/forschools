@@ -22,7 +22,10 @@ class LessonPage(LoginRequiredMixin, TemplateView):
 
 
 class LessonItemPage(CanSeeLessonMixin, TemplateView):
-    template_name = "lesson_item.html"
+    def get_template_names(self):
+        if self.request.user_agent.is_mobile:
+            return 'mobile/lesson_item.html'
+        return 'lesson_item.html'
 
     def get(self, request, *args, **kwargs):
         lesson = Lesson.objects.get(pk=kwargs.get("pk"))
@@ -53,4 +56,4 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
             if hwdeadline:
                 hwdeadline = hwdeadline.strftime('%Y-%m-%d')
             context["hwdeadline"] = hwdeadline
-        return render(request, self.template_name, context)
+        return render(request, self.get_template_names(), context)
