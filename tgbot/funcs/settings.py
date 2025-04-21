@@ -6,11 +6,9 @@ from tgbot.keyboards.settings import get_settings_keyboard, get_settings_timezon
 
 
 async def generate_settings_message(message: types.Message = None, callback: CallbackQuery = None):
-    tg_note = Telegram()
-    if message:
-        tg_note = await Telegram.objects.select_related("user").aget(tg_id=message.from_user.id)
-    elif callback:
-        tg_note = await Telegram.objects.select_related("user").aget(tg_id=callback.from_user.id)
+    tg_id = message.from_user.id if message else callback.from_user.id
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=tg_id)
+    is_teacher = await tg_note.user.groups.filter(name="Teacher").aexists()
     settings = {
         'show_hw_materials': tg_note.setting_show_hw_materials,
         'notifications_lesson_day': tg_note.setting_notifications_lesson_day,
@@ -19,7 +17,8 @@ async def generate_settings_message(message: types.Message = None, callback: Cal
         if await tg_note.user.groups.filter(name="Admin").aexists() else None,
         'notifications_lessons_email': tg_note.user.setting_notifications_email
         if (tg_note.user.email and tg_note.user.email) != '' else None,
-        'timezone': tg_note.user.tz
+        'timezone': tg_note.user.tz,
+        'lesson_review_mode': tg_note.setting_lesson_review_form_mode if is_teacher else None,
     }
     if message:
         await message.answer(text="Выберите пункт:",
@@ -89,6 +88,18 @@ async def settings_switch_notifications_email(callback: CallbackQuery):
         tg_note.user.setting_notifications_email = True
         await callback.answer(text="Уведомления теперь будут приходить на email")
     await tg_note.user.asave()
+    await generate_settings_message(callback=callback)
+
+
+async def settings_switch_lesson_review(callback: CallbackQuery):
+    tg_note = await Telegram.objects.select_related("user").aget(tg_id=callback.from_user.id)
+    if tg_note.setting_lesson_review_form_mode == 0:
+        tg_note.setting_lesson_review_form_mode = 1
+        await callback.answer(text="Теперь форма ревью занятия будет в виде чата")
+    else:
+        tg_note.setting_lesson_review_form_mode = 0
+        await callback.answer(text="Теперь форма ревью занятия будет в окне мини-браузера")
+    await tg_note.asave()
     await generate_settings_message(callback=callback)
 
 

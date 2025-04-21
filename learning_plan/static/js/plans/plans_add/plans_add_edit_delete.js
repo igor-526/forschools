@@ -145,7 +145,7 @@ function plansAddEditCreate(go = false){
                         learningPlansMain()
                         showSuccessToast("Успешно", "План обучения успешно изменён")
                         if (go === true){
-                            window.open(`/learning_plans/${request.response.id}`)
+                            window.open(`/learning_plans/${request.response.id}/`)
                         }
                         break
                     case 400:
@@ -165,7 +165,7 @@ function plansAddEditCreate(go = false){
                         learningPlansMain()
                         showSuccessToast("Успешно", "План обучения успешно добавлен")
                         if (go === true){
-                            window.open(`/learning_plans/${request.response.id}`)
+                            window.open(`/learning_plans/${request.response.id}/`)
                         }
                         break
                     case 400:

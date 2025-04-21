@@ -11,7 +11,7 @@ menu_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, keyboard=[[materials_b
 
 def get_menu_keyboard(chats: int, materials=False, homeworks=False,
                       lessons=False, messages=False, settings=False,
-                      multiuser=False):
+                      multiuser=False) -> ReplyKeyboardMarkup:
     keys = []
     if materials:
         keys.append([materials_button])

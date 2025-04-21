@@ -4,6 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from learning_plan.models import LearningPlan
 from lesson.models import Lesson
+from profile_management.models import NewUser
 
 
 class CanReplaceTeacherMixin(LoginRequiredMixin):
@@ -96,6 +97,14 @@ def can_set_passed(request, lesson: Lesson):
     if "Admin" in user_groups:
         return True
     if lesson.get_learning_plan().metodist == request.user:
+        return True
+    return False
+
+
+async def a_can_set_passed_perm(user: NewUser, lesson: Lesson):
+    if lesson.status != 0 or lesson.date > timezone.now().date():
+        return False
+    if await lesson.aget_teacher() == user:
         return True
     return False
 

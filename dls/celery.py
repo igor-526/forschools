@@ -8,7 +8,7 @@ def generate_notification_schedule(msk_hour: int, task: str, prefix: str = "", t
     schedule = {}
     for tz in range(-12, 15):
         task_name = f'{prefix}_{task.split(".")[-1]}_{str(tz).replace("-", "m")}'
-        local_hour = (msk_hour - 3 + tz) % 24
+        local_hour = (msk_hour - 3 - tz) % 24
         schedule[task_name] = {
             'task': task,
             'schedule': crontab(hour=str(local_hour), minute=str(minute)),

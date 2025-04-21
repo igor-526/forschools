@@ -13,6 +13,11 @@ PROFILE_EVENT_CHOICES = (
     (3, 'Отвязка родительского Telegram'),
 )
 
+LESSON_REVIEW_FORM_MODE_CHOICES = (
+    (0, 'Telegram WebApp'),
+    (1, 'Telegram Chat'),
+)
+
 
 class Level(models.Model):
     name = models.CharField(verbose_name='Наименование',
@@ -564,6 +569,11 @@ class Telegram(models.Model):
     setting_show_hw_materials = models.BooleanField(verbose_name="НАСТРОЙКА: Показывать материалы ДЗ",
                                                     null=False,
                                                     default=True)
+    setting_lesson_review_form_mode = models.IntegerField(verbose_name="НАСТРОЙКА: Режим заполнения формы",
+                                                          null=False,
+                                                          blank=False,
+                                                          default=0,
+                                                          choices=LESSON_REVIEW_FORM_MODE_CHOICES)
     usertype = models.CharField(verbose_name="Тип пользователя",
                                 null=False,
                                 blank=False,

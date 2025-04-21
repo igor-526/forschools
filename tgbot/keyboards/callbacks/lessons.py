@@ -7,3 +7,7 @@ class LessonScheduleListCallback(CallbackData, prefix="lesson_schedule"):
 
 class LessonPlaceCallback(CallbackData, prefix="lesson_place"):
     lesson_id: int
+
+
+class LessonFormReviewCallback(CallbackData, prefix="lesson_form_review"):
+    lesson_id: int

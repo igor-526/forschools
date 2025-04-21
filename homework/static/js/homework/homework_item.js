@@ -111,7 +111,7 @@ function homeworkItemSetLessonInfo(lesson_info){
         hwItemPlanInfoHeader.innerHTML = `
             <div class="btn-group" role="group">
                 <a href="/user_logs/#plan_id=${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button"><i class="bi bi-card-list"></i> логи</a>
-                <a href="/learning_plans/${lesson_info.plan.id}" class="btn btn-sm btn-outline-primary mt-1" role="button">План обучения</a>
+                <a href="/learning_plans/${lesson_info.plan.id}/" class="btn btn-sm btn-outline-primary mt-1" role="button">План обучения</a>
             </div>`
 
         if (lesson_info.plan.teacher) {

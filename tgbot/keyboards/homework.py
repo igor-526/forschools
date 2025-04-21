@@ -4,6 +4,7 @@ from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkMenuCa
                                                 HomeworkNewCallback, HomeworkNewSelectDateCallback,
                                                 HomeworkCuratorCallback, HomeworkNewSelectDateFakeCallback,
                                                 HomeworkLogEditingCallback)
+from tgbot.keyboards.callbacks.lessons import LessonFormReviewCallback
 from tgbot.keyboards.utils import keyboard_anti_cache_url
 
 
@@ -211,7 +212,8 @@ def get_homework_curator_button(hw_id: int, for_curator_status=True) -> InlineKe
 
 def get_homework_add_ready_buttons(hw_id: int = None,
                                    lesson_id: int = None,
-                                   for_curator_status: bool = None) -> InlineKeyboardMarkup:
+                                   for_curator_status: bool = None,
+                                   form_review_mode: int = 0) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if hw_id:
         builder.button(
@@ -219,10 +221,16 @@ def get_homework_add_ready_buttons(hw_id: int = None,
             web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/homeworks/{hw_id}/"))
         )
     if lesson_id:
-        builder.button(
-            text="ФОРМА ЗАНЯТИЯ",
-            web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/lessons/{lesson_id}/form/"))
-        )
+        if form_review_mode == 0:
+            builder.button(
+                text="ФОРМА ЗАНЯТИЯ",
+                web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/lessons/{lesson_id}/form/"))
+            )
+        elif form_review_mode == 1:
+            builder.button(
+                text="ФОРМА ЗАНЯТИЯ",
+                callback_data=LessonFormReviewCallback(lesson_id=lesson_id)
+            )
     if for_curator_status is not None:
         btn_curator_text = "\u2705" if for_curator_status else "\u274C"
         btn_curator_text += " кураторы работают с ДЗ"

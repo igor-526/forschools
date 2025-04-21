@@ -8,7 +8,7 @@ from .views_api import (PlansListCreateAPIView, PlanPhasesListCreateAPIView,
 
 urlpatterns = [
     path('', PlansPageView.as_view(), name='learning_plans'),
-    path('<int:pk>', PlansItemPageView.as_view(), name='learning_plans_add'),
+    path('<int:pk>/', PlansItemPageView.as_view(), name='learning_plans_add'),
 ]
 
 apiv1patterns = [

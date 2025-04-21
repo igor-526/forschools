@@ -5,7 +5,7 @@ from tgbot.funcs.settings import (settings_switch_show_hw_materials,
                                   settings_switch_notifications_lessons_hour,
                                   settings_switch_notifications_tg_connecting,
                                   settings_switch_notifications_email, generate_settings_message,
-                                  settings_set_timezone_message, settings_set_timezone)
+                                  settings_set_timezone_message, settings_set_timezone, settings_switch_lesson_review)
 from tgbot.keyboards.callbacks.settings import SettingsCallback, SetTimezoneCallback
 
 router = Router(name=__name__)
@@ -39,6 +39,11 @@ async def h_settings_set_notifications_lessons_email(callback: CallbackQuery) ->
 @router.callback_query(SettingsCallback.filter(F.action == 'set_timezone'))
 async def h_settings_set_timezone_menu(callback: CallbackQuery) -> None:
     await settings_set_timezone_message(callback)
+
+
+@router.callback_query(SettingsCallback.filter(F.action == 'set_lesson_review'))
+async def h_settings_set_lesson_review(callback: CallbackQuery) -> None:
+    await settings_switch_lesson_review(callback)
 
 
 @router.callback_query(SetTimezoneCallback.filter())

@@ -14,7 +14,7 @@ from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
 from tgbot.utils import get_tg_id
-from profile_management.models import NewUser
+from profile_management.models import NewUser, Telegram
 from homework.models import Homework, HomeworkLog, HomeworkGroups
 from tgbot.create_bot import bot
 from tgbot.utils import get_group_and_perms, get_user
@@ -178,13 +178,15 @@ async def add_homework_set_homework_ready(state: FSMContext,
                             f"согласование методисту после заполнения формы занятия")
                 rm = get_homework_add_ready_buttons(hw_id=hw.id,
                                                     lesson_id=lesson.id,
-                                                    for_curator_status=True if curators_ids else None)
+                                                    for_curator_status=True if curators_ids else None,
+                                                    form_review_mode=tg_note.setting_lesson_review_form_mode)
             elif lesson.status == 0 and lesson_can_be_passed and methodist is None:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет задано после "
                             f"заполнения формы занятия")
                 rm = get_homework_add_ready_buttons(hw_id=hw.id,
                                                     lesson_id=lesson.id,
-                                                    for_curator_status=True if curators_ids else None)
+                                                    for_curator_status=True if curators_ids else None,
+                                                    form_review_mode=tg_note.setting_lesson_review_form_mode)
             elif lesson.status == 0 and not lesson_can_be_passed:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет задано после "
                             f"проведения занятия")
@@ -317,7 +319,9 @@ async def add_homework_set_homework_ready(state: FSMContext,
     hw_id = statedata.get("new_hw").get("hw_id")
     current_deadline = statedata.get("new_hw").get("deadline")
 
-    user = await get_user(callback.from_user.id) if callback else await get_user(message.from_user.id)
+    tg_note = await Telegram.objects.select_related("user").aget(
+        tg_id=callback.from_user.id if callback else message.from_user.id)
+    user = tg_note.user
     current_deadline_dt = datetime.datetime(
         current_deadline.get("year"),
         current_deadline.get("month"),

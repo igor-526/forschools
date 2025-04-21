@@ -34,7 +34,7 @@ async function plansAPIGet(offset=0, q_all=null, part_only=null, name=null, teac
 }
 
 async function plansAPIGetItem(planID){
-    const request = await fetch(`/api/v1/learning_plans/${planID}`)
+    const request = await fetch(`/api/v1/learning_plans/${planID}/`)
     return APIGetToObject(request)
 }
 

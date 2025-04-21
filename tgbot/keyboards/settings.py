@@ -17,6 +17,20 @@ def get_settings_keyboard(settings: dict) -> InlineKeyboardMarkup:
             callback_data=SettingsCallback(action="show_hw_materials")
         )
 
+    def set_lesson_review_mode_button():
+        review_mode = settings.get("lesson_review_mode")
+        if review_mode is None:
+            return None
+        text = "Режим ревью занятия: "
+        if review_mode == 0:
+            text += "WEB APP"
+        elif review_mode == 1:
+            text += "TG"
+        builder.button(
+            text=text,
+            callback_data=SettingsCallback(action="set_lesson_review")
+        )
+
     def set_notifications_lesson_day():
         if settings.get("notifications_lesson_day") is None:
             return None
@@ -87,6 +101,7 @@ def get_settings_keyboard(settings: dict) -> InlineKeyboardMarkup:
 
     builder = InlineKeyboardBuilder()
     set_show_hw_materials_action()
+    set_lesson_review_mode_button()
     set_notifications_lesson_day()
     set_notifications_lessons_hour()
     set_notifications_tg_connecting()
