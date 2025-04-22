@@ -1,0 +1,26 @@
+{% extends 'base_mobile.html' %}
+{% load static %}
+{% block content %}
+    <div id="homeworkMobileTabs" class="mb-3 d-flex" style="overflow-x: scroll;"></div>
+    <ul class="list-group px-0" id="homeworksMobileList"></ul>
+    {% include "mobile/homeworks_set_fields.html" %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        const homeworkMobileSettingAgreementFilter = {% if settings.show_agreement_filter %}true{% else %}false{% endif %}
+        const homeworkMobileTabsInfo = []
+        {% for tab in tabs %}
+            homeworkMobileTabsInfo.push({
+                name: "{{ tab.name }}",
+                statuses: [{% for status in tab.statuses %}{{ status }},{% endfor %}],
+                agreement: [{% for agreement in tab.agreement %}"{{ agreement }}",{% endfor %}],
+            })
+        {% endfor %}
+    </script>
+    <script src="{% static 'js/homework/homework_utils.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    <script src="{% static 'js/homework/mobile/homeworks.js' %}"></script>
+    <script src="{% static 'js/homework/mobile/homeworks_filter.js' %}"></script>
+    <script src="{% static 'js/homework/mobile/homeworks_set_fields.js' %}"></script>
+{% endblock %}

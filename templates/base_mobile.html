@@ -12,35 +12,22 @@
     {% block static_css %} {% endblock %}
 </head>
 <body>
-<div class="container" >
-    <div class="row">
+<div class="container" id="mobileContainer">
+    <div class="row" id="mobileTitle">
+        <h1 class="page_title">{{ title }}</h1>
+    </div>
+    <div class="row" id="mobileContent">
         {% block content %} {% endblock %}
     </div>
     <div class="row">
-        <nav class="mobile-nav">
-            <div class="bloc-icon">
-                <a href="#">
-                    <i class="bi bi-arrow-up-square-fill"></i>
-                </a>
+        <nav id="mobileNavbar" class="mobile-nav">
+            <div id="mobileNavbarLessonsButton" class="bloc-icon{% if menu == "lesson" %} active{% endif %}">
+                <img {% if menu == "lesson" %}id="mobileNavbarActiveButton"{% endif %} src="{% static 'icons/lesson.svg' %}" alt="Занятия">
                 <span>Занятия</span>
             </div>
-            <div class="bloc-icon">
-                <a href="#">
-                    <i class="bi bi-arrow-up-square-fill"></i>
-                </a>
+            <div id="mobileNavbarHomeworkButton" class="bloc-icon{% if menu == "hw" %} active{% endif %}">
+                <img{% if menu == "hw" %} id="mobileNavbarActiveButton"{% endif %} src="{% static 'icons/homework.svg' %}" alt="ДЗ">
                 <span>ДЗ</span>
-            </div>
-            <div class="bloc-icon">
-                <a href="#">
-                    <i class="bi bi-arrow-up-square-fill"></i>
-                </a>
-                <span>Сообщения</span>
-            </div>
-            <div class="bloc-icon">
-                <a href="#">
-                    <i class="bi bi-arrow-up-square-fill"></i>
-                </a>
-                <span>Профиль</span>
             </div>
         </nav>
     </div>
@@ -52,9 +39,11 @@
 <script>
     const csrftoken = '{{ csrf_token }}'
 </script>
+<script src="{% static 'js/mobile_template_engine.js' %}"></script>
 <script src="{% static 'js/userutils.js' %}"></script>
 <script src="{% static 'js/timeutils.js' %}"></script>
 <script src="{% static 'js/hashutils.js' %}"></script>
+<script src="{% static 'js/cookies_utils.js' %}"></script>
 <script src="{% static 'js/apitostr.js' %}"></script>
 <script src="{% static 'js/support/support_api.js' %}"></script>
 <script src="{% static 'js/support/support.js' %}"></script>

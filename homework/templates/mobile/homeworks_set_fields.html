@@ -1,0 +1,46 @@
+<div class="modal modal-lg fade" tabindex="-1" id="hwMobileSetFieldsModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Настройка полей</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="hwMobileSetFieldsModalLastStatusDateSwitch">
+                    <label class="form-check-label" for="hwMobileSetFieldsModalLastStatusDateSwitch">Дата последнего изменения</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="hwMobileSetFieldsModalLessonNameSwitch">
+                    <label class="form-check-label" for="hwMobileSetFieldsModalLessonNameSwitch">Наименование занятия</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="hwMobileSetFieldsModalLessonDateSwitch">
+                    <label class="form-check-label" for="hwMobileSetFieldsModalLessonDateSwitch">Дата занятия</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="hwMobileSetFieldsModalListenerSwitch">
+                    <label class="form-check-label" for="hwMobileSetFieldsModalListenerSwitch">Ученик</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="hwMobileSetFieldsModalTeacherSwitch">
+                    <label class="form-check-label" for="hwMobileSetFieldsModalTeacherSwitch">Преподаватель</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="hwMobileSetFieldsModalAssignedDateSwitch">
+                    <label class="form-check-label" for="hwMobileSetFieldsModalAssignedDateSwitch">Задано (дата)</label>
+                </div>
+                {% if had_tg %}
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="hwMobileSetFieldsModalTGButtonSwitch">
+                    <label class="form-check-label" for="hwMobileSetFieldsModalTGButtonSwitch">Кнопка отправки в TG</label>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="hwMobileSetFieldsModalAcceptButton" type="button" class="btn btn-success">Применить</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -8,7 +8,7 @@ function compareTime(start, end){
     return te <= ts
 }
 
-function timeUtilsDateTimeToStr(dt){
+function timeUtilsDateTimeToStr(dt, time=true){
     const date = new Date(dt)
     const month = date.getMonth() === 12 ? 1 : date.getMonth()+1
     let datestring
@@ -17,16 +17,18 @@ function timeUtilsDateTimeToStr(dt){
         .setHours(0,0,0,0)) / (1000 * 60 * 60 * 24)
     switch (difference){
         case 0:
-            datestring = "сегодня в "
+            datestring = time ? "сегодня в " : "сегодня"
             break
         case 1:
-            datestring = "вчера в "
+            datestring = time ? "вчера в " : "вчера"
             break
         default:
             datestring = `${date.getDate().toString().padStart(2, "0")}.${month.toString().padStart(2, "0")}`
             break
     }
-    datestring += ` ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`
+    if (time){
+        datestring += ` ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`
+    }
     return datestring
 }
 

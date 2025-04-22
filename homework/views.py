@@ -11,20 +11,23 @@ from .utils import get_homework_list_settings
 
 
 class HomeworksPage(LoginRequiredMixin, TemplateView):
-    template_name = "homeworks.html"
+    def get_template_names(self):
+        if self.request.user_agent.is_mobile:
+            return 'mobile/homeworks_list.html'
+        return 'homeworks_list.html'
 
     def get(self, request, *args, **kwargs):
         user_groups = [group.name for group in request.user.groups.all()]
         settings = get_homework_list_settings(user_groups)
         context = {'title': 'Домашние задания',
-                   'menu': get_menu(request.user),
+                   'menu': "hw" if self.request.user_agent.is_mobile else get_menu(request.user),
                    'can_add_hw': True,
                    'is_admin_or_metodist': "Admin" in user_groups or "Metodist" in user_groups,
                    'is_teacher': "Teacher" in user_groups,
                    "tabs": settings["tabs"],
                    "settings": settings["settings"],
                    'material_formats': MATERIAL_FORMATS}
-        return render(request, self.template_name, context)
+        return render(request, self.get_template_names(), context)
 
 
 class HomeworkItemPage(LoginRequiredMixin, TemplateView):
