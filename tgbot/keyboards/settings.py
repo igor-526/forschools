@@ -114,12 +114,42 @@ def get_settings_keyboard(settings: dict) -> InlineKeyboardMarkup:
 
 def get_settings_timezone_keyboard(current: int = None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    tz_locations = {
+        -12: "О. Бейкер (США)",
+        -11: "Острова Мидуэй",
+        -10: "Гавайи",
+        -9: "Анкоридж",
+        -8: "Аляска",
+        -7: "Тихоокеанское время",
+        -6: "Чиуауа",
+        -5: "Нью-Йорк",
+        -4: "Венесуэла",
+        -3: "Канада",
+        -2: "Среднеатлантический",
+        -1: "Гренландия",
+        0: "Лондон",
+        1: "Париж",
+        2: "Каир",
+        3: "Москва",
+        4: "Дубай",
+        5: "Исламабад",
+        6: "Дакка",
+        7: "Красноярск",
+        8: "Китай",
+        9: "Токио",
+        10: "Сидней",
+        11: "Н. Каледония",
+        12: "Окленд",
+        13: "Апиа",
+        14: "Киритимати",
+    }
     for tz in range(-12, 15):
         if current == tz:
             text = "\u2705 "
         else:
             text = ""
-        text += str(tz) if tz <= 0 else f"+{tz}"
+        text += f'GMT{tz}' if tz < 0 else f"GMT+{tz}"
+        text += f' ({tz_locations[tz]})'
         builder.button(
             text=text,
             callback_data=SetTimezoneCallback(new_tz=tz)
@@ -128,5 +158,5 @@ def get_settings_timezone_keyboard(current: int = None) -> InlineKeyboardMarkup:
         text="Отмена",
         callback_data=SetTimezoneCallback(new_tz="cancel")
     )
-    builder.adjust(4)
+    builder.adjust(1)
     return builder.as_markup()
