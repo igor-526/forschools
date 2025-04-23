@@ -58,25 +58,26 @@ function lessonTimeRangeToStr(timeStart, timeEnd){
 }
 
 
-function getLessonDateTimeRangeString(lesson){
-    let dt = ""
-    if (lesson.start_time !== null){
-        const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
-        const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
-        const dateDay = st.getDate().toString().padStart(2, "0")
-        const dateMonth = (st.getMonth()+1).toString().padStart(2, "0")
+function getLessonDateTimeRangeString(lesson, date=true, time=true){
+    let dateString = ""
+    let timeString = ""
+    const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
+    const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
+    if (date){
+        const date = new Date(lesson.date)
+        const dateDay = date.getDate().toString().padStart(2, "0")
+        const dateMonth = (date.getMonth()+1).toString().padStart(2, "0")
+        dateString = `${dateDay}.${dateMonth}`
+    }
+
+    if (time && lesson.start_time !== null) {
         const stH = st.getHours().toString().padStart(2, "0")
         const stM = st.getMinutes().toString().padStart(2, "0")
         const etH = et.getHours().toString().padStart(2, "0")
         const etM = et.getMinutes().toString().padStart(2, "0")
-        dt = `${dateDay}.${dateMonth} ${stH}:${stM}-${etH}:${etM}`
-    } else if (lesson.date !== null){
-        const date = new Date(lesson.date)
-        const dateDay = date.getDate().toString().padStart(2, "0")
-        const dateMonth = (date.getMonth()+1).toString().padStart(2, "0")
-        dt = `${dateDay}.${dateMonth}`
+        timeString = `${stH}:${stM}-${etH}:${etM}`
     }
-    return dt
+    return `${dateString} ${timeString}`
 }
 
 

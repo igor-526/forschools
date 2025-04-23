@@ -1,0 +1,66 @@
+<div class="modal modal-lg fade" tabindex="-1" id="lessonsMobileFiltersModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Настройка полей</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <label for="basic-url" class="form-label">Дата</label>
+                <div class="input-group mb-3">
+                    <input id="lessonsMobileFiltersModalDateFromField" type="date" class="form-control" aria-label="">
+                    <span class="input-group-text" id="basic-addon1">-</span>
+                    <input id="lessonsMobileFiltersModalDateToField" type="date" class="form-control" aria-label="">
+                </div>
+
+                <div class="input-group mb-3">
+                    <button disabled id="lessonsMobileFiltersModalSelectPlacesButton" class="btn btn-outline-primary w-100" type="button">Место проведения (0)</button>
+                </div>
+
+                <div class="input-group mb-3">
+                    <button disabled id="lessonsMobileFiltersModalSelectTeachersButton" class="btn btn-outline-primary w-100" type="button">Преподаватель (0)</button>
+                </div>
+
+                <div class="input-group mb-3">
+                    <button disabled id="lessonsMobileFiltersModalSelectListenersButton" class="btn btn-outline-primary w-100" type="button">Ученик (0)</button>
+                </div>
+
+                <label for="basic-url" class="form-label">Наличие ДЗ</label><br>
+                <div class="btn-group mb-3 w-100" role="group" aria-label="">
+                    <input type="radio" class="btn-check" name="has_hw" id="lessonsMobileFiltersModalHWAllButton" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="lessonsMobileFiltersModalHWAllButton">Все</label>
+
+                    <input type="radio" class="btn-check" name="has_hw" id="lessonsMobileFiltersModalHWYesButton" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="lessonsMobileFiltersModalHWYesButton">С ДЗ</label>
+
+                    <input type="radio" class="btn-check" name="has_hw" id="lessonsMobileFiltersModalHWNoButton" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="lessonsMobileFiltersModalHWNoButton">Без ДЗ</label>
+                </div>
+
+                {% if is_admin %}
+                <label for="basic-url" class="form-label">Наличие комментария</label><br>
+                <div class="btn-group mb-3 w-100" role="group" aria-label="">
+                    <input type="radio" class="btn-check" name="has_comment" id="lessonsMobileFiltersModalAdminCommentAllButton" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="lessonsMobileFiltersModalAdminCommentAllButton">Все</label>
+
+                    <input type="radio" class="btn-check" name="has_comment" id="lessonsMobileFiltersModalAdminCommentYesButton" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="lessonsMobileFiltersModalAdminCommentYesButton">С комм.</label>
+
+                    <input type="radio" class="btn-check" name="has_comment" id="lessonsMobileFiltersModalAdminCommentNoButton" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="lessonsMobileFiltersModalAdminCommentNoButton">Без комм.</label>
+                </div>
+                {% endif %}
+
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <button id="lessonsMobileFiltersModalResetButton" type="button" class="btn btn-danger w-100">Сбросить всё</button>
+                    </div>
+                    <div class="col-6">
+                        <button id="lessonsMobileFiltersModalAcceptButton" type="button" class="btn btn-success w-100">Применить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

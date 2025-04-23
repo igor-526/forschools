@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LessonPage, LessonItemPage
+from .views import LessonsListPage, LessonItemPage
 from .views_api import (LessonListAPIView, LessonSetMaterialsAPIView,
                         LessonReplaceTeacherAPIView, LessonAPIView,
                         LessonSetPassedAPIView, PlansItemRescheduling,
@@ -9,7 +9,7 @@ from .views_api import (LessonListAPIView, LessonSetMaterialsAPIView,
 from .views_ma import LessonMAReviewFormPage, LessonItemMAPage, ScheduleSelectMAPage, ScheduleMAPage
 
 urlpatterns = [
-    path('', LessonPage.as_view(), name='lessons'),
+    path('', LessonsListPage.as_view(), name='lessons'),
     path('<int:pk>', LessonItemPage.as_view()),
 ]
 

@@ -21,14 +21,14 @@ function mobileTemplateEngine(){
         if (mobileNavbarLessonsButton.classList.contains("active") && window.scrollY > 0){
             window.scrollTo(0, 0)
         } else {
-            location.href = "/lessons"
+            location.assign("/lessons")
         }
     })
     mobileNavbarHomeworkButton.addEventListener("click", function () {
         if (mobileNavbarHomeworkButton.classList.contains("active") && window.scrollY > 0){
             window.scrollTo(0, 0)
         } else {
-            location.href = "/homeworks"
+            location.assign("/homeworks")
         }
     })
 
@@ -42,5 +42,6 @@ const mobileNavbarActiveButtonSrc = mobileNavbarActiveButton.src
 const startMobileTitleBlockHeight = mobileTitleBlock.clientHeight
 const mobileNavbarLessonsButton = document.querySelector("#mobileNavbarLessonsButton")
 const mobileNavbarHomeworkButton = document.querySelector("#mobileNavbarHomeworkButton")
+const mobileTitleH = document.querySelector("#mobileTitleH")
 
 mobileTemplateEngine()

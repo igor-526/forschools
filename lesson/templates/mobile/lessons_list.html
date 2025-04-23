@@ -1,0 +1,70 @@
+{% extends 'base_mobile.html' %}
+{% load static %}
+{% block content %}
+    <div id="lessonMobileListBlock">
+        <div class="mb-3 d-flex" style="overflow-x: scroll;">
+            <button id="lessonsMobileSetFieldsButton" type="button" class="btn btn-sm btn-outline-primary mx-1"><i class="bi bi-gear"></i></button>
+            <button id="lessonsMobileSetFiltersButton" type="button" class="btn btn-sm btn-outline-primary mx-1"><i class="bi bi-funnel"></i></button>
+            <button id="lessonsMobileSetAllButton" type="button" class="btn btn-sm btn-outline-primary mx-1 active">Все</button>
+            <button id="lessonsMobileSetPassedButton" type="button" class="btn btn-sm btn-outline-primary mx-1">Проведённые</button>
+        </div>
+        <div>
+            <div class="input-group mb-3">
+                <input id="lessonsMobileFilterNameField" type="text" class="form-control form-control-sm" placeholder="Поиск по наименованию" aria-label="">
+                <button id="lessonsMobileFilterNameFieldErase" class="btn btn-sm btn-outline-danger" type="button"><i class="bi bi-eraser"></i></button>
+            </div>
+        </div>
+        <ul class="list-group px-0" id="lessonsMobileList"></ul>
+    </div>
+
+    <div id="lessonMobileItemBlock" class="d-none">
+        <div class="mb-3 d-flex w-100">
+            <button id="lessonMobileItemBackButton" type="button" class="btn btn-sm btn-outline-primary mx-1"><i class="bi bi-chevron-left"></i></button>
+            <nav id="lessonMobileItemNavigation" class="d-flex" style="overflow-x: scroll;">
+                <button id="" type="button" class="btn btn-sm btn-outline-primary mx-1">Основная информация</button>
+                <button id="" type="button" class="btn btn-sm btn-outline-primary mx-1">Домашние задания</button>
+                <button id="" type="button" class="btn btn-sm btn-outline-primary mx-1">Ревью занятия</button>
+                <button id="" type="button" class="btn btn-sm btn-outline-primary mx-1">План обучения</button>
+            </nav>
+        </div>
+
+        <div id="lessonMobileItemContent">
+            <h2>Основная информация</h2>
+            Дата: 28.04.2025 09-00-10:00<br>
+            Преподаватель: Екатерина 6<br>
+            Замещающий препод: К сожалению отсутствует<br>
+            Ученик: Злоебучая Ева<br>
+            Ученик: Злоебучая Ева (одной мало)<br>
+        </div>
+    </div>
+
+    <div id="lessonsMobileListLoadingSpinner" class="d-flex justify-content-center w-100 d-none">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+
+    {% include "mobile/lessons_set_fields.html" %}
+    {% include "mobile/lessons_set_filters.html" %}
+    {% if is_admin %}
+        {% include "mobile/lessons_list_admin_comment.html" %}
+    {% endif %}
+{% endblock %}
+{% block static_js %}
+    <script>
+        const lessonsMobileParamsIsAdmin = {% if is_admin %} true {% else %} false {% endif %}
+    </script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/collections/collections_api.js' %}"></script>
+    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+    <script src="{% static 'js/homework/homework_utils.js' %}"></script>
+    <script src="{% static 'js/homework/homework_api.js' %}"></script>
+    <script src="{% static 'js/lessons/mobile/lessons_list_element.js' %}"></script>
+    <script src="{% static 'js/lessons/mobile/lessons_list_filters.js' %}"></script>
+    <script src="{% static 'js/lessons/mobile/lessons_list_set_fields.js' %}"></script>
+    <script src="{% static 'js/lessons/mobile/lesson_item.js' %}"></script>
+    {% if is_admin %}
+        <script src="{% static 'js/lessons/mobile/lessons_list_admin_comment.js' %}"></script>
+    {% endif %}
+    <script src="{% static 'js/lessons/mobile/lessons_list.js' %}"></script>
+{% endblock %}

@@ -1,93 +1,6 @@
 function homeworkMobileMain(){
-    homeworksMobileInitFieldsSettings()
+    homeworksMobileFilterCurrentLesson = getHashValue("lesson_id")
     homeworksMobileInitTabsAndButtons()
-}
-
-function homeworksMobileInitFieldsSettings(){
-    switch (homeworksMobileFieldsSettingsLastStatusDate) {
-        case "0":
-            homeworksMobileFieldsSettingsLastStatusDate = false
-            break
-        case "1":
-            homeworksMobileFieldsSettingsLastStatusDate = true
-            break
-        case null:
-            cookiesUtilsSet("hwMobFieldLastStatusDate", "1")
-            homeworksMobileFieldsSettingsLastStatusDate = true
-            break
-    }
-    switch (homeworksMobileFieldsSettingsLessonName) {
-        case "0":
-            homeworksMobileFieldsSettingsLessonName = false
-            break
-        case "1":
-            homeworksMobileFieldsSettingsLessonName = true
-            break
-        case null:
-            cookiesUtilsSet("hwMobFieldLessonName", "1")
-            homeworksMobileFieldsSettingsLessonName = true
-            break
-    }
-    switch (homeworksMobileFieldsSettingsLessonDate) {
-        case "0":
-            homeworksMobileFieldsSettingsLessonDate = false
-            break
-        case "1":
-            homeworksMobileFieldsSettingsLessonDate = true
-            break
-        case null:
-            cookiesUtilsSet("hwMobFieldLessonDate", "1")
-            homeworksMobileFieldsSettingsLessonDate = true
-            break
-    }
-    switch (homeworksMobileFieldsSettingsListener) {
-        case "0":
-            homeworksMobileFieldsSettingsListener = false
-            break
-        case "1":
-            homeworksMobileFieldsSettingsListener = true
-            break
-        case null:
-            cookiesUtilsSet("hwMobFieldListener", "1")
-            homeworksMobileFieldsSettingsListener = true
-            break
-    }
-    switch (homeworksMobileFieldsSettingsTeacher) {
-        case "0":
-            homeworksMobileFieldsSettingsTeacher = false
-            break
-        case "1":
-            homeworksMobileFieldsSettingsTeacher = true
-            break
-        case null:
-            cookiesUtilsSet("hwMobFieldTeacher", "1")
-            homeworksMobileFieldsSettingsTeacher = true
-            break
-    }
-    switch (homeworksMobileFieldsSettingsAssignedDate) {
-        case "0":
-            homeworksMobileFieldsSettingsAssignedDate = false
-            break
-        case "1":
-            homeworksMobileFieldsSettingsAssignedDate = true
-            break
-        case null:
-            cookiesUtilsSet("hwMobFieldAssignedDate", "1")
-            homeworksMobileFieldsSettingsAssignedDate = true
-            break
-    }
-    switch (homeworksMobileFieldsSettingsTGButton) {
-        case "0":
-            homeworksMobileFieldsSettingsTGButton = false
-            break
-        case "1":
-            homeworksMobileFieldsSettingsTGButton = true
-            break
-        case null:
-            cookiesUtilsSet("hwMobFieldTGButton", "1")
-            homeworksMobileFieldsSettingsTGButton = true
-            break
-    }
 }
 
 function homeworksMobileInitTabsAndButtons(){
@@ -146,8 +59,12 @@ function homeworksMobileInitTabsAndButtons(){
 }
 
 function homeworkMobileGet(more=false){
+    homeworkMobileListLoadingSpinner.classList.remove("d-none")
     if (!more && homeworksMobileCurrentOffset !== 0){
         homeworksMobileCurrentOffset = 0
+    }
+    if (!more){
+        homeworksMobileList.innerHTML = ""
     }
     homeworkAPIGet(homeworksMobileCurrentOffset, homeworksMobileFilterCurrentLesson,
         homeworksMobileFilterCurrentStatus, homeworksMobileFilterSelectedTeachers,
@@ -155,6 +72,7 @@ function homeworkMobileGet(more=false){
         homeworksMobileFilterDateTo, homeworksMobileFilterDateChangedFrom,
         homeworksMobileFilterDateChangedTo, homeworksMobileFilterName,
         homeworksMobileFilterCurrentAgreement).then(request => {
+        homeworkMobileListLoadingSpinner.classList.add("d-none")
         switch (request.status){
             case 200:
                 homeworksMobileShow(request.response, !more)
@@ -168,7 +86,7 @@ function homeworkMobileGet(more=false){
     })
 }
 
-function homeworksMobileShow(homeworks=[], clear=true){
+function homeworksMobileShow(homeworks=[]){
     function tgSendListener(hwID){
 
     }
@@ -179,24 +97,24 @@ function homeworksMobileShow(homeworks=[], clear=true){
 
     function setMoreInfoText(hw, elem){
         const inner = []
-        if (hw.lesson_info && (homeworksMobileFieldsSettingsLessonName || homeworksMobileFieldsSettingsLessonDate)){
+        if (hw.lesson_info && (cookiesUtilsGet("hwMobFieldLessonName") === "1" || cookiesUtilsGet("hwMobFieldLessonDate") === "1")){
             inner.push(`
             <img src="/static/icons/lesson_grey.svg" alt="Занятие" style="height: 20px;" class="me-1">
             `)
-            if (homeworksMobileFieldsSettingsLessonName){
+            if (cookiesUtilsGet("hwMobFieldLessonName") === "1"){
                 inner[inner.length-1] += `<span class="fw-bold">${hw.lesson_info.name}</span>`
             }
-            if (homeworksMobileFieldsSettingsLessonDate){
+            if (cookiesUtilsGet("hwMobFieldLessonDate") === "1"){
                 inner[inner.length-1] += ` от ${timeUtilsDateTimeToStr(hw.lesson_info.date, false)}`
             }
         }
-        if (homeworksMobileFieldsSettingsTeacher){
+        if (cookiesUtilsGet("hwMobFieldTeacher") === "1"){
             inner.push(`
             <img src="/static/icons/teacher_grey.svg" alt="Преподаватель" style="height: 20px;" class="me-1">
             ${hw.teacher.first_name} ${hw.teacher.first_name}            
             `)
         }
-        if (homeworksMobileFieldsSettingsListener){
+        if (cookiesUtilsGet("hwMobFieldListener") === "1"){
             inner.push(`
             <img src="/static/icons/student_grey.svg" alt="Ученик" style="height: 20px;" class="me-1">
             ${hw.listener.first_name} ${hw.listener.first_name}
@@ -206,9 +124,11 @@ function homeworksMobileShow(homeworks=[], clear=true){
     }
 
     function getElement(hw){
-        console.log(hw)
         const li = document.createElement("li")
         li.classList.add("list-group-item")
+        if (hw.color){
+            li.classList.add(`list-group-item-${hw.color}`)
+        }
 
         const mainInfoDiv = document.createElement("div")
         mainInfoDiv.classList.add("d-flex", "justify-content-between", "mb-2")
@@ -216,7 +136,7 @@ function homeworksMobileShow(homeworks=[], clear=true){
         mainInfoName.classList.add("ms-2", "me-auto", "fw-bold")
         mainInfoName.innerHTML = hw.name
 
-        if (homeworksMobileFieldsSettingsAssignedDate && hw.assigned){
+        if (cookiesUtilsGet("hwMobFieldAssignedDate") === "1" && hw.assigned){
             mainInfoName.innerHTML += ` (${timeUtilsDateTimeToStr(hw.assigned)})`
         }
 
@@ -224,7 +144,7 @@ function homeworksMobileShow(homeworks=[], clear=true){
         mainInfoStatus.style.color = "grey"
         mainInfoStatus.innerHTML = homeworkItemShowLogsStrStatus(hw.status.status)
 
-        if (homeworksMobileFieldsSettingsLastStatusDate){
+        if (cookiesUtilsGet("hwMobFieldLastStatusDate") === "1"){
             mainInfoStatus.innerHTML += ` (${timeUtilsDateTimeToStr(hw.status.dt)})`
         }
 
@@ -245,7 +165,7 @@ function homeworksMobileShow(homeworks=[], clear=true){
         moreInfoButtons.insertAdjacentElement("beforeend", moreInfoButtonsInfo)
         moreInfoButtons.insertAdjacentElement("beforeend", moreInfoButtonsButtons)
 
-        if (homeworksMobileFieldsSettingsTGButton){
+        if (cookiesUtilsGet("hwMobFieldTGButton") === "1"){
             const moreInfoButtonsSendTG = document.createElement("button")
             moreInfoButtonsSendTG.classList.add("btn", "btn-outline-primary", "mx-1")
             moreInfoButtonsSendTG.type = "button"
@@ -275,10 +195,6 @@ function homeworksMobileShow(homeworks=[], clear=true){
         return li
     }
 
-    if (clear){
-        homeworksMobileList.innerHTML = ""
-    }
-
     homeworks.forEach(hw => {
         homeworksMobileList.insertAdjacentElement("beforeend", getElement(hw))
     })
@@ -286,10 +202,11 @@ function homeworksMobileShow(homeworks=[], clear=true){
 
 const homeworksMobileList = document.querySelector("#homeworksMobileList")
 const homeworkMobileTabs = document.querySelector("#homeworkMobileTabs")
+const homeworkMobileListLoadingSpinner = document.querySelector("#homeworkMobileListLoadingSpinner")
 
 //Filtering
 let homeworksMobileCurrentOffset = 0
-let homeworksMobileFilterCurrentLesson
+let homeworksMobileFilterCurrentLesson = null
 let homeworksMobileFilterName = null
 let homeworksMobileFilterCurrentStatus = []
 let homeworksMobileFilterCurrentAgreement = []
@@ -299,14 +216,5 @@ let homeworksMobileFilterDateFrom = null
 let homeworksMobileFilterDateTo = null
 let homeworksMobileFilterDateChangedFrom = null
 let homeworksMobileFilterDateChangedTo = null
-
-//FieldsSettings
-let homeworksMobileFieldsSettingsLastStatusDate = cookiesUtilsGet("hwMobFieldLastStatusDate")
-let homeworksMobileFieldsSettingsLessonName = cookiesUtilsGet("hwMobFieldLessonName")
-let homeworksMobileFieldsSettingsLessonDate = cookiesUtilsGet("hwMobFieldLessonDate")
-let homeworksMobileFieldsSettingsListener = cookiesUtilsGet("hwMobFieldListener")
-let homeworksMobileFieldsSettingsTeacher = cookiesUtilsGet("hwMobFieldTeacher")
-let homeworksMobileFieldsSettingsAssignedDate = cookiesUtilsGet("hwMobFieldAssignedDate")
-let homeworksMobileFieldsSettingsTGButton = cookiesUtilsGet("hwMobFieldTGButton")
 
 homeworkMobileMain()

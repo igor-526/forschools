@@ -10,22 +10,22 @@ from .permissions import (CanSeeLessonMixin, hw_perm_can_set_replace,
                           can_add_homework, can_set_passed)
 
 
-class LessonPage(LoginRequiredMixin, TemplateView):
-    template_name = "lessons.html"
+class LessonsListPage(LoginRequiredMixin, TemplateView):
+    def get_template_names(self):
+        if self.request.user_agent.is_mobile:
+            return 'mobile/lessons_list.html'
+        return 'lessons_list.html'
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Занятия',
-                   'menu': get_menu(request.user),
+                   'menu': "lesson" if self.request.user_agent.is_mobile else get_menu(request.user),
                    'plans_button': plans_button(request),
                    'is_admin': request.user.groups.filter(name='Admin').exists()}
-        return render(request, self.template_name, context)
+        return render(request, self.get_template_names(), context)
 
 
 class LessonItemPage(CanSeeLessonMixin, TemplateView):
-    def get_template_names(self):
-        if self.request.user_agent.is_mobile:
-            return 'mobile/lesson_item.html'
-        return 'lesson_item.html'
+    template_name = 'lesson_item.html'
 
     def get(self, request, *args, **kwargs):
         lesson = Lesson.objects.get(pk=kwargs.get("pk"))
@@ -56,4 +56,4 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
             if hwdeadline:
                 hwdeadline = hwdeadline.strftime('%Y-%m-%d')
             context["hwdeadline"] = hwdeadline
-        return render(request, self.get_template_names(), context)
+        return render(request, self.template_name, context)

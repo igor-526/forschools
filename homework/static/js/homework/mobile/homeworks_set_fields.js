@@ -22,18 +22,7 @@ function homeworksMobileSetFieldsAccept(){
     cookiesUtilsSet("hwMobFieldListener", hwMobileSetFieldsModalListenerSwitch.checked ? "1" : "0")
     cookiesUtilsSet("hwMobFieldTeacher", hwMobileSetFieldsModalTeacherSwitch.checked ? "1" : "0")
     cookiesUtilsSet("hwMobFieldAssignedDate", hwMobileSetFieldsModalAssignedDateSwitch.checked ? "1" : "0")
-    if (hwMobileSetFieldsModalTGButtonSwitch){
-        cookiesUtilsSet("hwMobFieldTGButton", hwMobileSetFieldsModalTGButtonSwitch.checked ? "1" : "0")
-    }
-    homeworksMobileFieldsSettingsLastStatusDate = hwMobileSetFieldsModalLastStatusDateSwitch.checked
-    homeworksMobileFieldsSettingsLessonName = hwMobileSetFieldsModalLessonNameSwitch.checked
-    homeworksMobileFieldsSettingsLessonDate = hwMobileSetFieldsModalLessonDateSwitch.checked
-    homeworksMobileFieldsSettingsListener = hwMobileSetFieldsModalListenerSwitch.checked
-    homeworksMobileFieldsSettingsTeacher = hwMobileSetFieldsModalTeacherSwitch.checked
-    homeworksMobileFieldsSettingsAssignedDate = hwMobileSetFieldsModalAssignedDateSwitch.checked
-    if (hwMobileSetFieldsModalTGButtonSwitch){
-        homeworksMobileFieldsSettingsTGButton = hwMobileSetFieldsModalTGButtonSwitch.checked
-    }
+    cookiesUtilsSet("hwMobFieldTGButton", hwMobileSetFieldsModalTGButtonSwitch.checked ? "1" : "0")
     bsHwMobileSetFieldsModal.hide()
     homeworkMobileGet()
 }
