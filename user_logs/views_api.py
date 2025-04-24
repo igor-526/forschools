@@ -156,6 +156,9 @@ class UserLogsActionsAPIView(LoginRequiredMixin, APIView):
         return UserLogsSerializer(user_logs_queryset, many=True).data
 
     def get(self, request, *args, **kwargs):
+        self.all_users_id = None
+        self.plan_info = {}
+        self.lp = None
         if kwargs.get('plan_pk'):
             self.set_plan_info_and_all_users_ids(kwargs.get('plan_pk'))
         hw_logs = self.get_hw_logs(kwargs.get('plan_pk')) if request.query_params.get('homeworks') == 'true' else []
