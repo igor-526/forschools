@@ -155,10 +155,11 @@ class HomeworkListSerializer(serializers.ModelSerializer):
 
 class HomeworkLogListSerializer(serializers.ModelSerializer):
     user = NewUserNameOnlyListSerializer(many=False, read_only=True)
+    files = FileSerializer(many=True, read_only=True)
 
     class Meta:
         model = HomeworkLog
-        fields = ["id", "user", "comment", "status", "dt", "agreement"]
+        fields = ["id", "user", "comment", "status", "dt", "agreement", "files"]
 
     def create(self, validated_data):
         def cr_obj(accepting=False):

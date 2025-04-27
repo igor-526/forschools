@@ -26,6 +26,7 @@ class LessonSerializer(serializers.ModelSerializer):
     deletable = serializers.SerializerMethodField(read_only=True)
     can_set_not_held = serializers.SerializerMethodField(read_only=True)
     learning_plan = serializers.SerializerMethodField(read_only=True)
+    awaiting_action = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Lesson
@@ -61,6 +62,9 @@ class LessonSerializer(serializers.ModelSerializer):
 
     def get_can_set_not_held(self, obj):
         return can_set_not_held(self.context.get('request'), obj)
+
+    def get_awaiting_action(self, obj):
+        return can_set_passed(self.context.get('request'), obj)
 
     def update(self, instance, validated_data):
         place = self.context.get('request').POST.get("place")

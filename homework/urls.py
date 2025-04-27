@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomeworksPage, HomeworkItemPage
+from .views import HomeworksListPage, HomeworkItemPage
 from .views_api import (HomeworkListCreateAPIView, HomeworkLogListCreateAPIView,
                         HomeworkReplaceTeacherAPIView, HomeworkSetCancelledAPIView,
                         HomeworkItemPageInfoAPIView, HomeworkItemPageSendTGAPIView,
@@ -8,7 +8,7 @@ from .views_api import (HomeworkListCreateAPIView, HomeworkLogListCreateAPIView,
 from .views_ma import HomeworkItemMAPage, HomeworkListMAPage
 
 urlpatterns = [
-    path('', HomeworksPage.as_view(), name='homeworks'),
+    path('', HomeworksListPage.as_view(), name='homeworks'),
     path('<int:pk>', HomeworkItemPage.as_view()),
 ]
 

@@ -10,7 +10,7 @@ from .permissions import (get_send_hw_permission, get_can_check_hw_permission,
 from .utils import get_homework_list_settings
 
 
-class HomeworksPage(LoginRequiredMixin, TemplateView):
+class HomeworksListPage(LoginRequiredMixin, TemplateView):
     def get_template_names(self):
         if self.request.user_agent.is_mobile:
             return 'mobile/homeworks_list.html'
@@ -22,6 +22,7 @@ class HomeworksPage(LoginRequiredMixin, TemplateView):
         context = {'title': 'Домашние задания',
                    'menu': "hw" if self.request.user_agent.is_mobile else get_menu(request.user),
                    'can_add_hw': True,
+                   'is_admin': "Admin" in user_groups,
                    'is_admin_or_metodist': "Admin" in user_groups or "Metodist" in user_groups,
                    'is_teacher': "Teacher" in user_groups,
                    "tabs": settings["tabs"],

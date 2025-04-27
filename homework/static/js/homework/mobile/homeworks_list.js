@@ -91,36 +91,56 @@ function homeworksMobileShow(homeworks=[]){
 
     }
 
-    function menuListener(hwID){
-
-    }
-
     function setMoreInfoText(hw, elem){
-        const inner = []
         if (hw.lesson_info && (cookiesUtilsGet("hwMobFieldLessonName") === "1" || cookiesUtilsGet("hwMobFieldLessonDate") === "1")){
-            inner.push(`
-            <img src="/static/icons/lesson_grey.svg" alt="Занятие" style="height: 20px;" class="me-1">
-            `)
+            const lessonP = document.createElement("p")
+            lessonP.style.color = "#0d6efd"
+            const lessonIcon = iconUtilsGetIcon(
+                "lesson_grey.svg", "Занятие"
+            )
+            lessonIcon.classList.add("me-1")
+            lessonP.classList.add("mb-0")
+            lessonP.insertAdjacentElement("beforeend", lessonIcon)
+            lessonP.addEventListener("click", function () {
+                lessonShowOffcanvas(hw.lesson_info.id, homeworksMobileParamsIsAdmin)
+            })
+
             if (cookiesUtilsGet("hwMobFieldLessonName") === "1"){
-                inner[inner.length-1] += `<span class="fw-bold">${hw.lesson_info.name}</span>`
+                const lessonNameSpan = document.createElement("span")
+                lessonNameSpan.classList.add("fw-bold")
+                lessonNameSpan.innerHTML = hw.lesson_info.name
+                lessonP.insertAdjacentElement("beforeend", lessonNameSpan)
             }
             if (cookiesUtilsGet("hwMobFieldLessonDate") === "1"){
-                inner[inner.length-1] += ` от ${timeUtilsDateTimeToStr(hw.lesson_info.date, false)}`
+                const lessonDTSpan = document.createElement("span")
+                lessonDTSpan.innerHTML = ` от ${timeUtilsDateTimeToStr(hw.lesson_info.date, false)}`
+                lessonP.insertAdjacentElement("beforeend", lessonDTSpan)
             }
+            elem.insertAdjacentElement("beforeend", lessonP)
         }
         if (cookiesUtilsGet("hwMobFieldTeacher") === "1"){
-            inner.push(`
-            <img src="/static/icons/teacher_grey.svg" alt="Преподаватель" style="height: 20px;" class="me-1">
-            ${hw.teacher.first_name} ${hw.teacher.first_name}            
-            `)
+
+            const teacherP = document.createElement("p")
+            teacherP.classList.add("mb-0")
+            const teacherIcon = iconUtilsGetIcon(
+                "teacher_grey.svg", "Преподавтаель"
+            )
+            teacherIcon.classList.add("me-1")
+            teacherP.insertAdjacentElement("beforeend", teacherIcon)
+            teacherP.innerHTML += `${hw.teacher.first_name} ${hw.teacher.last_name}`
+            elem.insertAdjacentElement("beforeend", teacherP)
         }
         if (cookiesUtilsGet("hwMobFieldListener") === "1"){
-            inner.push(`
-            <img src="/static/icons/student_grey.svg" alt="Ученик" style="height: 20px;" class="me-1">
-            ${hw.listener.first_name} ${hw.listener.first_name}
-            `)
+            const listenerIcon = iconUtilsGetIcon(
+                "student_grey.svg", "Ученик"
+            )
+            listenerIcon.classList.add("me-1")
+            const listenerP = document.createElement("span")
+            listenerP.classList.add("mb-0")
+            listenerP.insertAdjacentElement("beforeend", listenerIcon)
+            listenerP.innerHTML += `${hw.listener.first_name} ${hw.listener.last_name}`
+            elem.insertAdjacentElement("beforeend", listenerP)
         }
-        elem.innerHTML = inner.join("<br>")
     }
 
     function getElement(hw){
@@ -185,7 +205,7 @@ function homeworksMobileShow(homeworks=[]){
         moreInfoButtonsMenu.style.width = "50px"
         moreInfoButtonsMenu.innerHTML = '<i class="bi bi-list"></i>'
         moreInfoButtonsMenu.addEventListener("click", function () {
-            menuListener(hw.id)
+            homeworkItemShowOffcanvas(hw.id)
         })
         moreInfoButtonsButtons.insertAdjacentElement("beforeend", moreInfoButtonsMenu)
 

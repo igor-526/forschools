@@ -100,7 +100,7 @@ function lessonListGetElement(lesson){
     moreInfoButtonsMenuButton.style.width = "50px"
     moreInfoButtonsMenuButton.innerHTML = '<i class="bi bi-list"></i>'
     moreInfoButtonsMenuButton.addEventListener("click", function () {
-        lessonMobileItemSet(lesson.id)
+        lessonShowOffcanvas(lesson.id)
     })
 
     li.insertAdjacentElement("beforeend", moreInfoButtonsDiv)
