@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView
+from rest_framework.generics import (RetrieveUpdateDestroyAPIView,
+                                     ListCreateAPIView)
 from profile_management.models import (EngagementChannel,
                                        Level)
 from material.models import MaterialCategory, MaterialLevel
@@ -26,7 +27,8 @@ class MaterialCategoryListAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = MaterialCategorySerializer
 
 
-class MaterialCategoryAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+class MaterialCategoryAPIView(LoginRequiredMixin,
+                              RetrieveUpdateDestroyAPIView):
     queryset = MaterialCategory.objects.all()
     serializer_class = MaterialCategorySerializer
 
@@ -36,7 +38,8 @@ class EngagementChannelListAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = EngagementChannelSerializer
 
 
-class EngagementChannelAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+class EngagementChannelAPIView(LoginRequiredMixin,
+                               RetrieveUpdateDestroyAPIView):
     queryset = EngagementChannel.objects.all()
     serializer_class = EngagementChannelSerializer
 
@@ -56,6 +59,7 @@ class MaterialLevelListAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = MaterialLevelSerializer
 
 
-class MaterialLevelAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+class MaterialLevelAPIView(LoginRequiredMixin,
+                           RetrieveUpdateDestroyAPIView):
     queryset = MaterialLevel.objects.all()
     serializer_class = MaterialLevelSerializer

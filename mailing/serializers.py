@@ -25,13 +25,15 @@ class MailingUsersListSerializer(serializers.Serializer):
         return f'{obj.first_name} {obj.last_name}'
 
     def get_role(self, obj):
-        return [get_role_ru(group.name, lc=True) for group in obj.groups.all()]
+        return [get_role_ru(group.name, lc=True)
+                for group in obj.groups.all()]
 
     def get_email(self, obj):
         return obj.email if obj.email else None
 
     def get_telegram(self, obj):
-        return ['Основной' if tg.usertype == "main" else f'{tg.usertype}' for tg in obj.telegram.all()]
+        return ['Основной' if tg.usertype == "main" else f'{tg.usertype}'
+                for tg in obj.telegram.all()]
 
 
 class GroupMailingTasksListSerializer(serializers.ModelSerializer):
@@ -46,7 +48,8 @@ class GroupMailingTasksListSerializer(serializers.ModelSerializer):
         if obj.result_info.get('info') is None:
             return {"all": None,
                     "info": 0}
-        count_all = obj.result_info['info']['errors'] + obj.result_info['info']['success']
+        count_all = (obj.result_info['info']['errors'] +
+                     obj.result_info['info']['success'])
         return {"all": count_all,
                 "info": 2 if obj.result_info['info']['errors'] == 0 else 1}
 
@@ -56,4 +59,5 @@ class GroupMailingTasksItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GroupMailingTasks
-        fields = ['id', 'name', 'messages', 'result_info', 'initiator', 'dt', 'users']
+        fields = ['id', 'name', 'messages', 'result_info',
+                  'initiator', 'dt', 'users']

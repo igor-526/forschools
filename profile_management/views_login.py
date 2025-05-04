@@ -63,21 +63,43 @@ def register_view(request):
             groups = request.POST.getlist('role')
             try:
                 if len(groups) == 0:
-                    raise ValidationError({'role': 'Необходимо выбрать хотя бы одну роль'})
-                if ("Admin" in groups) and (not request.user.has_perm('auth.register_admin')):
-                    raise ValidationError({'role': 'Вы не можете дать роль администратора'})
-                if ("Metodist" in groups) and (not request.user.has_perm('auth.register_metodist')):
-                    raise ValidationError({'role': 'Вы не можете дать роль методиста'})
-                if ("Curator" in groups) and (not request.user.has_perm('auth.register_curator')):
-                    raise ValidationError({'role': 'Вы не можете дать роль куратора'})
-                if ("Teacher" in groups) and (not request.user.has_perm('auth.register_teacher')):
-                    raise ValidationError({'role': 'Вы не можете дать роль преподавателя'})
-                if ("Listener" in groups) and (not request.user.has_perm('auth.edit_listener')):
-                    raise ValidationError({'role': 'Вы не можете редактировать учеников'})
+                    raise ValidationError(
+                        {'role': 'Необходимо выбрать хотя бы одну роль'}
+                    )
+                if (("Admin" in groups) and
+                        (not request.user.has_perm('auth.register_admin'))):
+                    raise ValidationError(
+                        {'role': 'Вы не можете дать роль администратора'}
+                    )
+                if (("Metodist" in groups) and
+                        (not request.user.has_perm('auth.register_metodist'))):
+                    raise ValidationError(
+                        {'role': 'Вы не можете дать роль методиста'}
+                    )
+                if (("Curator" in groups) and
+                        (not request.user.has_perm('auth.register_curator'))):
+                    raise ValidationError(
+                        {'role': 'Вы не можете дать роль куратора'}
+                    )
+                if (("Teacher" in groups) and
+                        (not request.user.has_perm('auth.register_teacher'))):
+                    raise ValidationError(
+                        {'role': 'Вы не можете дать роль преподавателя'}
+                    )
+                if (("Listener" in groups) and
+                        (not request.user.has_perm('auth.edit_listener'))):
+                    raise ValidationError(
+                        {'role': 'Вы не можете редактировать учеников'}
+                    )
                 email = request.POST.get('email')
                 username = request.POST.get('username')
-                if email and username and NewUser.objects.filter(email=email).exclude(username=username).exists():
-                    raise ValidationError({"email": "Пользователь с таким email уже существует"})
+                if email and username and NewUser.objects.filter(
+                        email=email
+                ).exclude(username=username).exists():
+                    raise ValidationError(
+                        {"email": "Пользователь с таким email "
+                                  "уже существует"}
+                    )
                 user = form.save()
                 user.update_tg_code()
                 status_groups = user.set_groups(groups)
@@ -85,19 +107,24 @@ def register_view(request):
                     raise ValidationError({'role': status_groups})
             except ValidationError as err:
                 return Response(dict(err), status=400)
-            return Response({'status': 'success'})
+            return Response(data={'status': 'success'})
         else:
-            return Response(form.errors, status=400)
+            return Response(data=form.errors, status=400)
 
 
 class AdminLoginAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
-        if request.user.user_permissions.filter(codename="can_login").exists():
+        if request.user.user_permissions.filter(
+                codename="can_login"
+        ).exists():
             user = NewUser.objects.get(pk=kwargs.get('pk'))
             logout(request)
             login(request, user)
             return Response({"status": "OK"},
                             status=status.HTTP_200_OK)
         else:
-            return Response({"error": "У вас нет прав для авторизации под этим пользователем"},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                data={"error": "У вас нет прав для авторизации под "
+                               "этим пользователем"},
+                status=status.HTTP_403_FORBIDDEN
+            )

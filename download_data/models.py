@@ -20,9 +20,11 @@ class GenerateFilesTasks(models.Model):
                                    null=False,
                                    blank=False,
                                    auto_now_add=True)
-    task_complete = models.DateTimeField(verbose_name='Дата и время выполнения',
-                                         null=True,
-                                         blank=True)
+    task_complete = models.DateTimeField(
+        verbose_name='Дата и время выполнения',
+        null=True,
+        blank=True
+    )
     output_file = models.FileField(verbose_name="Готовый файл",
                                    null=True,
                                    blank=True)

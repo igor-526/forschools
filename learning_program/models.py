@@ -8,10 +8,12 @@ class LearningProgramHomework(models.Model):
                             max_length=200,
                             null=False,
                             blank=False)
-    materials = models.ManyToManyField(Material,
-                                       verbose_name='Материалы',
-                                       related_name='learning_program_homework',
-                                       blank=True)
+    materials = models.ManyToManyField(
+        Material,
+        verbose_name='Материалы',
+        related_name='learning_program_homework',
+        blank=True
+    )
     description = models.TextField(verbose_name='Описание',
                                    null=True,
                                    blank=True,
@@ -138,9 +140,14 @@ class LearningProgram(models.Model):
         homeworks_counter = 0
         phases_ids = [p.id for p in self.phases.all()]
         phase_counter = len(phases_ids)
-        lessons_ids = [l.id for l in LearningProgramLesson.objects.filter(learningprogramphase__in=phases_ids)]
+        lessons_ids = [l.id for l in LearningProgramLesson.objects.filter(
+            learningprogramphase__in=phases_ids
+        )]
         lessons_counter = len(lessons_ids)
-        homeworks_ids = [hw.id for hw in LearningProgramHomework.objects.filter(learningprogramlesson__in=lessons_ids)]
+        homeworks_ids = [hw.id for hw in
+                         LearningProgramHomework.objects.filter(
+                             learningprogramlesson__in=lessons_ids
+                         )]
         homeworks_counter = len(homeworks_ids)
         return {
             "phases": phase_counter,
@@ -149,4 +156,6 @@ class LearningProgram(models.Model):
         }
 
     def get_lessons_count(self):
-        return LearningProgramLesson.objects.filter(learningprogramphase__learningprogram=self).count()
+        return LearningProgramLesson.objects.filter(
+            learningprogramphase__learningprogram=self
+        ).count()

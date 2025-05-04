@@ -104,10 +104,12 @@ class LearningPlan(models.Model):
                                       null=True,
                                       blank=True,
                                       max_length=1000)
-    can_report_lesson_name_only = models.BooleanField(verbose_name="Заполнять только наименование занятия",
-                                                      null=False,
-                                                      blank=False,
-                                                      default=False)
+    can_report_lesson_name_only = models.BooleanField(
+        verbose_name="Заполнять только наименование занятия",
+        null=False,
+        blank=False,
+        default=False
+    )
 
     class Meta:
         verbose_name = 'План обучения'
@@ -125,4 +127,8 @@ class LearningPlan(models.Model):
         return lesson
 
     def get_is_closed(self):
-        return not Lesson.objects.filter(learningphases__learningplan=self, status=0).exists() and Lesson.objects.filter(learningphases__learningplan=self).exists()
+        return (not Lesson.objects.filter(learningphases__learningplan=self,
+                                          status=0).exists() and
+                Lesson.objects.filter(
+                    learningphases__learningplan=self
+                ).exists())

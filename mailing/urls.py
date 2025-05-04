@@ -1,7 +1,9 @@
 from django.urls import path
 from .views import MailingPage, MailingNewPage
-from .views_api import (MailingUserListAPIView, MailingStartAPIView,
-                        MailingInitiatorsListAPIView, GroupMailingTasksListAPIView,
+from .views_api import (MailingUserListAPIView,
+                        MailingStartAPIView,
+                        MailingInitiatorsListAPIView,
+                        GroupMailingTasksListAPIView,
                         GroupMailingTasksRetrieveAPIView)
 
 urlpatterns = [

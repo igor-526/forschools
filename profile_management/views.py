@@ -63,15 +63,19 @@ class ProfilePageTemplateView(LoginRequiredMixin, TemplateView):
                     user_object['note'] = puser.note
             if role == 'Teacher':
                 user_object['role'] = 'Преподаватель'
-                user_object['private_lessons'] = True if puser.private_lessons else False
-                user_object['group_lessons'] = True if puser.group_lessons else False
+                user_object['private_lessons'] = \
+                    True if puser.private_lessons else False
+                user_object['group_lessons'] = \
+                    True if puser.group_lessons else False
                 user_object['level'] = puser.level
                 if 'auth.see_moreinfo_teacher' in perms:
                     user_object['note'] = puser.note
             if role == 'Listener':
                 user_object['role'] = 'Ученик'
-                user_object['private_lessons'] = True if puser.private_lessons else False
-                user_object['group_lessons'] = True if puser.group_lessons else False
+                user_object['private_lessons'] = \
+                    True if puser.private_lessons else False
+                user_object['group_lessons'] = \
+                    True if puser.group_lessons else False
                 user_object['level'] = puser.level
                 if 'auth.see_moreinfo_listener' in perms:
                     user_object['note'] = puser.note
@@ -93,7 +97,11 @@ class UsersPageTemplateView(CanSeeUserPageMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = {'title': 'Пользователи',
                    'menu': get_menu(request.user),
-                   'perms': dumps({'permissions': list(request.user.get_all_permissions())})}
+                   'perms': dumps({
+                       'permissions': list(
+                           request.user.get_all_permissions()
+                       )
+                   })}
         return render(request, self.template_name, context)
 
 

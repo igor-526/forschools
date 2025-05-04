@@ -5,8 +5,10 @@ from dls.settings import MATERIAL_FORMATS
 from dls.utils import get_menu
 from lesson.permissions import hw_perm_can_set_replace
 from .models import Homework
-from .permissions import (get_send_hw_permission, get_can_check_hw_permission,
-                          get_can_cancel_hw_permission, get_can_edit_hw_permission)
+from .permissions import (get_send_hw_permission,
+                          get_can_check_hw_permission,
+                          get_can_cancel_hw_permission,
+                          get_can_edit_hw_permission)
 from .utils import get_homework_list_settings
 
 
@@ -19,15 +21,19 @@ class HomeworksListPage(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         user_groups = [group.name for group in request.user.groups.all()]
         settings = get_homework_list_settings(user_groups)
-        context = {'title': 'Домашние задания',
-                   'menu': "hw" if self.request.user_agent.is_mobile else get_menu(request.user),
-                   'can_add_hw': True,
-                   'is_admin': "Admin" in user_groups,
-                   'is_admin_or_metodist': "Admin" in user_groups or "Metodist" in user_groups,
-                   'is_teacher': "Teacher" in user_groups,
-                   "tabs": settings["tabs"],
-                   "settings": settings["settings"],
-                   'material_formats': MATERIAL_FORMATS}
+        context = {
+            'title': 'Домашние задания',
+            'menu': "hw" if self.request.user_agent.is_mobile
+            else get_menu(request.user),
+            'can_add_hw': True,
+            'is_admin': "Admin" in user_groups,
+            'is_admin_or_metodist': "Admin" in user_groups or
+                                    "Metodist" in user_groups,
+            'is_teacher': "Teacher" in user_groups,
+            "tabs": settings["tabs"],
+            "settings": settings["settings"],
+            'material_formats': MATERIAL_FORMATS
+        }
         return render(request, self.get_template_names(), context)
 
 

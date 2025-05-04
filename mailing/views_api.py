@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from mailing.models import GroupMailingTasks
 from mailing.permissions import MailingAccessMixin
-from mailing.serializers import (MailingUsersListSerializer, GroupMailingTasksListSerializer,
+from mailing.serializers import (MailingUsersListSerializer,
+                                 GroupMailingTasksListSerializer,
                                  GroupMailingTasksItemSerializer)
 from mailing.tasks import MailingGroupTask
 from profile_management.models import NewUser, Telegram
@@ -35,9 +36,11 @@ class MailingUserListAPIView(MailingAccessMixin, APIView):
         elif active == "false":
             query["is_active"] = False
         if tg == "main":
-            query["id__in"] = [tgnote.user.id for tgnote in Telegram.objects.filter(usertype="main")]
+            query["id__in"] = [tgnote.user.id for tgnote in
+                               Telegram.objects.filter(usertype="main")]
         elif tg == "parents":
-            query["id__in"] = [tgnote.user.id for tgnote in Telegram.objects.exclude(usertype="main")]
+            query["id__in"] = [tgnote.user.id for tgnote in
+                               Telegram.objects.exclude(usertype="main")]
         elif tg == "false":
             query["tg_count"] = 0
         queryset = queryset.filter(**query).exclude(**exclude)
@@ -49,24 +52,33 @@ class MailingUserListAPIView(MailingAccessMixin, APIView):
                 q |= Q(last_name__icontains=query)
                 q |= Q(patronymic__icontains=query)
             queryset = queryset.filter(q)
-        return queryset.order_by("-is_active", "first_name").distinct() if queryset else None
+        return queryset.order_by("-is_active", "first_name").distinct() \
+            if queryset else None
 
     def get_queryset(self):
-        queryset = NewUser.objects.annotate(tg_count=Count("telegram")).filter(Q(email__gte=1) |
-                                                                                Q(tg_count__gt=0))
+        queryset = NewUser.objects.annotate(
+            tg_count=Count("telegram")
+        ).filter(Q(email__gte=1) |
+                 Q(tg_count__gt=0))
         queryset = self.filter_queryset_all(queryset)
         return queryset
 
     def get(self, request, *args, **kwargs):
-        serializer = MailingUsersListSerializer(many=True, instance=self.get_queryset())
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = MailingUsersListSerializer(
+            many=True,
+            instance=self.get_queryset()
+        )
+        return Response(data=serializer.data,
+                        status=status.HTTP_200_OK)
 
 
 class MailingInitiatorsListAPIView(MailingAccessMixin, ListAPIView):
     serializer_class = NewUserNameOnlyListSerializer
 
     def get_queryset(self):
-        return (NewUser.objects.annotate(mailing_count=Count("groupmailingtasks__initiator"))
+        return (NewUser.objects.annotate(
+            mailing_count=Count("groupmailingtasks__initiator")
+        )
                 .order_by("first_name").filter(mailing_count__gt=0)).distinct()
 
 
@@ -76,7 +88,8 @@ class GroupMailingTasksListAPIView(MailingAccessMixin, ListAPIView):
     def get_mailing_status(self, mailing: GroupMailingTasks):
         if mailing.result_info.get('info') is None:
             return "processing"
-        return "success" if mailing.result_info['info']['errors'] == 0 else "part"
+        return "success" if mailing.result_info['info']['errors'] == 0 \
+            else "part"
 
     def get_queryset(self):
         initiator = self.request.query_params.getlist("initiator")
@@ -99,10 +112,12 @@ class GroupMailingTasksListAPIView(MailingAccessMixin, ListAPIView):
         queryset = GroupMailingTasks.objects.filter(**query_params)
         if result:
             res_ids = [mailing.id for mailing in list(filter(
-                lambda mailing: self.get_mailing_status(mailing) == result, queryset))]
+                lambda mailing: self.get_mailing_status(mailing) == result,
+                queryset))]
             queryset = queryset.filter(id__in=res_ids)
         offset = int(offset) if offset else 0
-        return queryset.order_by("-dt").distinct()[offset:offset + 50] if queryset else None
+        return (queryset.order_by("-dt").distinct()[offset:offset + 50]
+                if queryset else None)
 
 
 class GroupMailingTasksRetrieveAPIView(MailingAccessMixin, RetrieveAPIView):
@@ -127,4 +142,5 @@ class MailingStartAPIView(MailingAccessMixin, APIView):
         )
         t = MailingGroupTask(task.id)
         t.execute()
-        return Response({"status": "success"}, status=status.HTTP_200_OK)
+        return Response(data={"status": "success"},
+                        status=status.HTTP_200_OK)

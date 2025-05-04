@@ -3,19 +3,27 @@ from django.db.models import Q
 from django.http import Http404
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (ListCreateAPIView,
+                                     RetrieveUpdateDestroyAPIView)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from download_data.models import GenerateFilesTasks
 from homework.models import Homework, HomeworkLog
 from lesson.models import Lesson
 from user_logs.models import UserLog
-from .permissions import can_edit_plan, can_generate_from_program, CanDownloadPlan, get_can_edit_pre_hw_comment
+from .permissions import (can_edit_plan,
+                          can_generate_from_program,
+                          CanDownloadPlan,
+                          get_can_edit_pre_hw_comment)
 from .models import LearningPlan, LearningPhases
-from .serializers import LearningPlanListSerializer, LearningPhasesListSerializer, \
-    LearningPlanParticipantsOnlyListSerializer
+from .serializers import (LearningPlanListSerializer,
+                          LearningPhasesListSerializer,
+                          LearningPlanParticipantsOnlyListSerializer)
 from .tasks import plans_download
-from .utils import plan_calculated_info, ProgramSetter, get_schedule, AddLessons
+from .utils import (plan_calculated_info,
+                    ProgramSetter,
+                    get_schedule,
+                    AddLessons)
 from learning_program.models import LearningProgram
 from datetime import datetime
 
@@ -24,23 +32,33 @@ class PlansItemStatusAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
         plan = LearningPlan.objects.get(pk=kwargs.get('pk'))
         phases_passed = 0
-        lessons_all = Lesson.objects.filter(learningphases__learningplan=plan).count()
-        lessons_passed = Lesson.objects.filter(learningphases__learningplan=plan,
-                                               status__in=[1, 2]).count()
+        lessons_all = Lesson.objects.filter(
+            learningphases__learningplan=plan
+        ).count()
+        lessons_passed = Lesson.objects.filter(
+            learningphases__learningplan=plan,
+            status__in=[1, 2]
+        ).count()
         return Response({
             "phases_passed": phases_passed,
             "lessons_all": lessons_all,
             "lessons_passed": lessons_passed,
             "can_close": lessons_all != lessons_passed and
-                         request.user.groups.filter(name__in=["Metodist", "Admin"]).exists()
+                         request.user.groups.filter(
+                             name__in=["Metodist", "Admin"]
+                         ).exists()
         })
 
     def post(self, request, *args, **kwargs):
         plan = LearningPlan.objects.get(pk=kwargs.get('pk'))
         lessons = Lesson.objects.filter(learningphases__learningplan=plan,
                                         status=0).all()
-        homeworks = Homework.objects.filter(lesson__in=[l.id for l in lessons])
-        hwlogs = HomeworkLog.objects.filter(homework__in=[h.id for h in homeworks])
+        homeworks = Homework.objects.filter(
+            lesson__in=[l.id for l in lessons]
+        )
+        hwlogs = HomeworkLog.objects.filter(
+            homework__in=[h.id for h in homeworks]
+        )
         for hwlog in hwlogs:
             hwlog.delete()
         for homework in homeworks:
@@ -51,7 +69,8 @@ class PlansItemStatusAPIView(LoginRequiredMixin, APIView):
         for phase in all_phases:
             if phase.lessons.count() == 0:
                 phase.delete()
-        return Response({"status": "success"}, status=200)
+        return Response(data={"status": "success"},
+                        status=200)
 
 
 class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -98,11 +117,17 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         if q_status and queryset:
             filtered_plans = []
             if q_status == "processing":
-                filtered_plans.extend(list(filter(lambda plan: not plan.get_is_closed(), queryset)))
+                filtered_plans.extend(list(filter(
+                    lambda plan: not plan.get_is_closed(), queryset
+                )))
             if q_status == "closed":
-                filtered_plans.extend(list(filter(lambda plan: plan.get_is_closed(), queryset)))
+                filtered_plans.extend(list(filter(
+                    lambda plan: plan.get_is_closed(), queryset
+                )))
             if filtered_plans:
-                queryset = queryset.filter(id__in=[plan.id for plan in filtered_plans])
+                queryset = queryset.filter(
+                    id__in=[plan.id for plan in filtered_plans]
+                )
         return queryset
 
     def order_by_name(self, queryset):
@@ -114,11 +139,14 @@ class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             order_query.append("-name")
         offset = int(self.request.query_params.get("offset")) if (
             self.request.query_params.get("offset")) else 0
-        return queryset.order_by(*order_query).distinct()[offset:offset + 50] if queryset else None
+        return queryset.order_by(*order_query).distinct()[offset:offset + 50] \
+            if queryset else None
 
     def get_queryset(self):
         queryset = None
-        if self.request.user.groups.filter(name__in=["Admin", "Metodist"]).exists():
+        if self.request.user.groups.filter(
+                name__in=["Admin", "Metodist"]
+        ).exists():
             queryset = LearningPlan.objects.all()
         elif self.request.user.groups.filter(name="Teacher").exists():
             queryset = LearningPlan.objects.filter(teacher=self.request.user)
@@ -145,7 +173,9 @@ class PlanPhasesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     serializer_class = LearningPhasesListSerializer
 
     def get_queryset(self, *args, **kwargs):
-        queryset = LearningPlan.objects.get(pk=kwargs.get("plan_pk")).phases.all()
+        queryset = LearningPlan.objects.get(
+            pk=kwargs.get("plan_pk")
+        ).phases.all()
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -183,9 +213,11 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
         except LearningPhases.DoesNotExist:
             raise Http404
         if can_edit_plan(request, phase=phase):
-            serializer = self.get_serializer(data=request.data,
-                                             instance=phase,
-                                             context={"plan": phase.learningplan_set.first()})
+            serializer = self.get_serializer(
+                data=request.data,
+                instance=phase,
+                context={"plan": phase.learningplan_set.first()}
+            )
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(serializer.data, status=201)
@@ -208,42 +240,55 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
 
 class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
-        program = LearningProgram.objects.get(pk=request.query_params.get("programID"))
+        program = LearningProgram.objects.get(
+            pk=request.query_params.get("programID")
+        )
         return Response(plan_calculated_info(
-            datetime.strptime(request.query_params.get("date_start"), "%Y-%m-%d"),
+            datetime.strptime(request.query_params.get("date_start"),
+                              "%Y-%m-%d"),
             get_schedule(request.query_params),
             program
         ), status=200)
 
     def post(self, request, *args, **kwargs):
-        program = LearningProgram.objects.get(pk=request.POST.get("programID"))
+        program = LearningProgram.objects.get(
+            pk=request.POST.get("programID")
+        )
         plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
         if can_generate_from_program(request, plan):
             setter = ProgramSetter(
-                datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
+                datetime.strptime(request.POST.get("date_start"),
+                                  "%Y-%m-%d"),
                 get_schedule(request.POST),
                 program,
                 plan
             )
             setter.set_program()
-            return Response({"status": "ok"}, status=201)
+            return Response(data={"status": "ok"}, status=201)
         else:
-            return Response({"error": "Вы не можете сгенерировать план на основе программы"}, status=400)
+            return Response(data={
+                "error": "Вы не можете сгенерировать план на основе программы"
+            }, status=400)
 
 
 class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
         plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
         generator_query = {
-            "first_date": datetime.strptime(request.POST.get("date_start"), "%Y-%m-%d"),
+            "first_date": datetime.strptime(request.POST.get("date_start"),
+                                            "%Y-%m-%d"),
             "schedule": get_schedule(request.POST),
             "plan": plan,
         }
         end_type = request.POST.get("end_type")
         if end_type == 'date':
-            generator_query['last_lesson_date'] = datetime.strptime(request.POST.get("end_date"), "%Y-%m-%d")
+            generator_query['last_lesson_date'] = datetime.strptime(
+                request.POST.get("end_date"), "%Y-%m-%d"
+            )
         elif end_type == 'count':
-            generator_query['lessons_count'] = int(request.POST.get("end_count"))
+            generator_query['lessons_count'] = int(
+                request.POST.get("end_count")
+            )
         lessons_generator = AddLessons(**generator_query)
         lessons_generator.add_lessons()
         UserLog.objects.create(log_type=3,

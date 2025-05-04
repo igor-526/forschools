@@ -49,10 +49,12 @@ class Material(models.Model):
                                        auto_now_add=True,
                                        null=False,
                                        blank=True)
-    last_used_at = models.DateTimeField(verbose_name='Последнее использование',
-                                        auto_now_add=True,
-                                        null=False,
-                                        blank=True)
+    last_used_at = models.DateTimeField(
+        verbose_name='Последнее использование',
+        auto_now_add=True,
+        null=False,
+        blank=True
+    )
     category = models.ManyToManyField(MaterialCategory,
                                       verbose_name='Категория',
                                       related_name='material',
@@ -105,7 +107,9 @@ class Material(models.Model):
         cat_list = []
         for cat in categories:
             if cat.strip(" ") != "":
-                cat_list.append(MaterialCategory.objects.get_or_create(name=cat)[0])
+                cat_list.append(
+                    MaterialCategory.objects.get_or_create(name=cat)[0]
+                )
         self.category.set(cat_list)
 
     def set_level(self, levels: list):
@@ -114,7 +118,9 @@ class Material(models.Model):
         level_list = []
         for level in levels:
             if level.strip(" ") != "":
-                level_list.append(MaterialLevel.objects.get_or_create(name=level)[0])
+                level_list.append(
+                    MaterialLevel.objects.get_or_create(name=level)[0]
+                )
         self.level.set(level_list)
 
 
@@ -145,10 +151,12 @@ class File(models.Model):
                                        auto_now_add=True,
                                        null=False,
                                        blank=True)
-    last_used_at = models.DateTimeField(verbose_name='Последнее использование',
-                                        auto_now_add=True,
-                                        null=False,
-                                        blank=True)
+    last_used_at = models.DateTimeField(
+        verbose_name='Последнее использование',
+        auto_now_add=True,
+        null=False,
+        blank=True
+    )
     tg_url = models.CharField(verbose_name="ID файла в Telegram",
                               null=True,
                               blank=True)

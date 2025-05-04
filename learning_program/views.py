@@ -13,6 +13,3 @@ class LearningProgramsPageView(LoginRequiredMixin, TemplateView):
             'menu': get_menu(request.user),
             'material_formats': MATERIAL_FORMATS
         })
-
-
-

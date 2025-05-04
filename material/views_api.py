@@ -6,10 +6,12 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Material
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (ListCreateAPIView,
+                                     RetrieveUpdateDestroyAPIView)
 from .serializers import MaterialSerializer
 from .utils.get_type import get_type
-from learning_program.models import LearningProgramLesson, LearningProgramPhase
+from learning_program.models import (LearningProgramLesson,
+                                     LearningProgramPhase)
 
 
 class MaterialListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -23,11 +25,17 @@ class MaterialListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         if lessons:
             return queryset.filter(learning_program_lesson__in=lessons)
         if phases:
-            lessons = LearningProgramLesson.objects.filter(learningprogramphase__id__in=phases)
+            lessons = LearningProgramLesson.objects.filter(
+                learningprogramphase__id__in=phases
+            )
             return queryset.filter(learning_program_lesson__in=lessons)
         if progs:
-            phases = LearningProgramPhase.objects.filter(learningprogram__id__in=progs)
-            lessons = LearningProgramLesson.objects.filter(learningprogramphase__id__in=phases)
+            phases = LearningProgramPhase.objects.filter(
+                learningprogram__id__in=progs
+            )
+            lessons = LearningProgramLesson.objects.filter(
+                learningprogramphase__id__in=phases
+            )
             return queryset.filter(learning_program_lesson__in=lessons)
         return queryset
 
@@ -45,7 +53,9 @@ class MaterialListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = queryset.filter(level__in=q_lvl)
         if q_mat_type:
             filtered = [m.id for m in
-                        list(filter(lambda mat: get_type(mat.file.path.split(".")[-1]) in q_mat_type, queryset))]
+                        list(filter(lambda mat: get_type(
+                            mat.file.path.split(".")[-1]
+                        ) in q_mat_type, queryset))]
             queryset = queryset.filter(id__in=filtered)
         return queryset
 
@@ -57,7 +67,9 @@ class MaterialListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             else:
                 raise PermissionDenied
         elif param_type == "2":
-            queryset = Material.objects.filter(type=2, owner=self.request.user, visible=True)
+            queryset = Material.objects.filter(
+                type=2, owner=self.request.user, visible=True
+            )
         else:
             queryset = None
         queryset = self.filter_queryset_programs(queryset)
@@ -65,7 +77,8 @@ class MaterialListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        offset = int(request.query_params.get('offset')) if request.query_params.get('offset') else 0
+        offset = int(request.query_params.get('offset')) if (
+            request.query_params.get('offset')) else 0
         queryset = self.get_queryset()[offset:offset+15]
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -79,7 +92,8 @@ class MaterialAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
         material = self.get_object()
         material.visible = False
         material.save()
-        return Response({"status": 'success'}, status=status.HTTP_200_OK)
+        return Response(data={"status": 'success'},
+                        status=status.HTTP_200_OK)
 
 
 class MaterialFileTextAPIView(APIView):

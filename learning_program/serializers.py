@@ -1,4 +1,7 @@
-from .models import LearningProgram, LearningProgramPhase, LearningProgramLesson, LearningProgramHomework
+from .models import (LearningProgram,
+                     LearningProgramPhase,
+                     LearningProgramLesson,
+                     LearningProgramHomework)
 from material.serializers import MaterialListSerializer
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from rest_framework import serializers
@@ -31,7 +34,8 @@ class LearningProgramHomeworkSerializer(serializers.ModelSerializer):
         instance.save()
         for material in instance.materials.all():
             material.set_category(["ДЗ"])
-        return super(LearningProgramHomeworkSerializer, self).update(instance, validated_data)
+        return (super(LearningProgramHomeworkSerializer, self)
+                .update(instance, validated_data))
 
 
 class LearningProgramLessonSerializer(serializers.ModelSerializer):
@@ -62,7 +66,8 @@ class LearningProgramLessonSerializer(serializers.ModelSerializer):
         instance.homeworks.set(homeworks)
         instance.materials.set(materials)
         instance.save()
-        return super(LearningProgramLessonSerializer, self).update(instance, validated_data)
+        return (super(LearningProgramLessonSerializer, self)
+                .update(instance, validated_data))
 
 
 class LearningProgramPhaseSerializer(serializers.ModelSerializer):
@@ -78,10 +83,12 @@ class LearningProgramPhaseSerializer(serializers.ModelSerializer):
         validated_data.pop("visibility")
         validated_data.pop('lessons_order')
         lessons = request.POST.getlist('lessons_order')
-        phase = LearningProgramPhase.objects.create(**validated_data,
-                                                    owner=request.user,
-                                                    visibility=True,
-                                                    lessons_order=list(lessons))
+        phase = LearningProgramPhase.objects.create(
+            **validated_data,
+            owner=request.user,
+            visibility=True,
+            lessons_order=list(lessons)
+        )
         if lessons:
             phase.lessons.set(lessons)
             phase.save()
@@ -93,7 +100,8 @@ class LearningProgramPhaseSerializer(serializers.ModelSerializer):
         validated_data['lessons_order'] = list(lessons)
         instance.lessons.set(lessons)
         instance.save()
-        return super(LearningProgramPhaseSerializer, self).update(instance, validated_data)
+        return (super(LearningProgramPhaseSerializer, self)
+                .update(instance, validated_data))
 
 
 class LearningProgramSerializer(serializers.ModelSerializer):
@@ -128,4 +136,5 @@ class LearningProgramSerializer(serializers.ModelSerializer):
         validated_data['phases_order'] = list(phases)
         instance.phases.set(phases)
         instance.save()
-        return super(LearningProgramSerializer, self).update(instance, validated_data)
+        return (super(LearningProgramSerializer, self)
+                .update(instance, validated_data))

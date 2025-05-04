@@ -1,9 +1,14 @@
 from django.urls import path
 from lesson.views_api import LessonListCreateAPIView
 from .views import PlansPageView, PlansItemPageView
-from .views_api import (PlansListCreateAPIView, PlanPhasesListCreateAPIView,
-                        PlanPhaseItemAPIView, PlansItemAPIView, PlansItemSetProgramAPIView,
-                        PlanItemAddLessonsAPIView, PlansItemStatusAPIView, PlansDownloadAPIView,
+from .views_api import (PlansListCreateAPIView,
+                        PlanPhasesListCreateAPIView,
+                        PlanPhaseItemAPIView,
+                        PlansItemAPIView,
+                        PlansItemSetProgramAPIView,
+                        PlanItemAddLessonsAPIView,
+                        PlansItemStatusAPIView,
+                        PlansDownloadAPIView,
                         PlansItemPreHWCommentAPIView)
 
 urlpatterns = [

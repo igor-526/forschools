@@ -1,7 +1,6 @@
 from django.db.models import Q, QuerySet
 from dls.celery import app
 from profile_management.models import Telegram, NewUser
-from profile_management.utils import send_email_message
 from tgbot.keyboards.lessons import get_lesson_place_button
 from .models import Lesson
 from tgbot.utils import sync_funcs as tg, notification_log_journal
@@ -10,62 +9,117 @@ import datetime
 
 @app.task
 def notification_lessons_soon() -> None:
-    def notify_listeners_telegram(lesson_: Lesson, listeners_: QuerySet, teacher_: NewUser) -> None:
+    def notify_listeners_telegram(lesson_: Lesson,
+                                  listeners_: QuerySet,
+                                  teacher_: NewUser) -> None:
         message_text = (f"<b>Напоминание о занятии</b>\n"
-                        f"<b>Сегодня</b> в {lesson_.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+                        f"<b>Сегодня</b> в "
+                        f"{lesson_.start_time.strftime('%H:%M')} "
+                        f"у Вас запланировано занятие с "
                         f"преподавателем <b>{teacher_}</b>\n\n")
-        reply_markup = get_lesson_place_button(lesson_.id) if lesson_.place else None
+        reply_markup = get_lesson_place_button(lesson_.id) if lesson_.place \
+            else None
         for listener in listeners_:
-            telegrams = listener.telegram_allowed.all().values("tg_id", "usertype",
-                                                               "setting_notifications_lessons_hour")
+            telegrams = listener.telegram_allowed.all().values(
+                "tg_id", "usertype",
+                "setting_notifications_lessons_hour"
+            )
             if not telegrams:
-                notification_log_journal(listener, 2, "error", message_text, None, None,
-                                         ["У пользователя не привязан ни один Telegram"])
+                notification_log_journal(
+                    recipient=listener,
+                    event=2,
+                    result_status="error",
+                    msg_text=message_text,
+                    msg_id=None,
+                    usertype=None,
+                    errors=["У пользователя не привязан ни один Telegram"]
+                )
                 continue
             for telegram in telegrams:
                 if not telegram.get("setting_notifications_lessons_hour"):
-                    notification_log_journal(listener, 2, "error", message_text, None,
-                                             telegram.get("usertype"),
-                                             ["У пользователя выключены уведомления за час до занятия"])
+                    notification_log_journal(
+                        recipient=listener,
+                        event=2,
+                        result_status="error",
+                        msg_text=message_text,
+                        msg_id=None,
+                        usertype=telegram.get("usertype"),
+                        errors=["У пользователя выключены уведомления за "
+                                "час до занятия"]
+                    )
                     continue
                 result = tg.send_tg_message_sync(
                     tg_id=telegram.get("tg_id"),
-                    message=message_text if telegram.get("usertype") == "main" else
-                    f'{message_text}\n\nУченик: {listener}',
+                    message=message_text if telegram.get("usertype") == "main"
+                    else f'{message_text}\n\nУченик: {listener}',
                     reply_markup=reply_markup
                 )
-                notification_log_journal(listener, 2, result.get('status'), message_text,
-                                         result.get('msg_id'), telegram.get("usertype"), result.get('errors'))
+                notification_log_journal(recipient=listener,
+                                         event=2,
+                                         result_status=result.get('status'),
+                                         msg_text=message_text,
+                                         msg_id=result.get('msg_id'),
+                                         usertype=telegram.get("usertype"),
+                                         errors=result.get('errors'))
 
-    def notify_teacher_telegram(lesson_: Lesson, listeners_: QuerySet, teacher_: NewUser) -> None:
-        message_text = (f"Напоминание о занятии\n"
-                        f"Сегодня в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
-                        f"{'учеником ' if len(listeners_) == 1 else 'учениками '}"
-                        f"{', '.join([f'<b>{listener.first_name} {listener.last_name}</b>' for listener in listeners_])}")
-        reply_markup = get_lesson_place_button(lesson_.id) if lesson_.place else None
+    def notify_teacher_telegram(lesson_: Lesson,
+                                listeners_: QuerySet,
+                                teacher_: NewUser) -> None:
+        message_text = (
+            f"Напоминание о занятии\n"
+            f"Сегодня в {lesson.start_time.strftime('%H:%M')} у Вас "
+            f"запланировано занятие с "
+            f"{'учеником ' if len(listeners_) == 1 else 'учениками '}"
+            f"{', '.join([f'<b>{listener.first_name} {listener.last_name}</b>' for listener in listeners_])}"
+        )
+        reply_markup = get_lesson_place_button(lesson_.id) if lesson_.place \
+            else None
         telegram = teacher_.telegram.first()
         if not telegram:
-            notification_log_journal(teacher_, 2, "error", message_text, None, None,
-                                     ["У пользователя не привязан Telegram"])
+            notification_log_journal(
+                recipient=teacher_,
+                event=2,
+                result_status="error",
+                msg_text=message_text,
+                msg_id=None,
+                usertype=None,
+                errors=["У пользователя не привязан Telegram"]
+            )
             return None
         if not telegram.setting_notifications_lessons_hour:
-            notification_log_journal(teacher_, 2, "error", message_text, None,
-                                     telegram.usertype,
-                                     ["У пользователя выключены уведомления за час до занятия"])
+            notification_log_journal(
+                recipient=teacher_,
+                event=2,
+                result_status="error",
+                msg_text=message_text,
+                msg_id=None,
+                usertype=telegram.usertype,
+                errors=["У пользователя выключены уведомления за час "
+                        "до занятия"]
+            )
             return None
         result = tg.send_tg_message_sync(
             tg_id=telegram.tg_id,
             message=message_text,
             reply_markup=reply_markup
         )
-        notification_log_journal(teacher_, 2, result.get('status'), message_text, result.get('msg_id'),
-                                 telegram.usertype, result.get('errors'))
+        notification_log_journal(
+            recipient=teacher_,
+            event=2,
+            result_status=result.get('status'),
+            msg_text=message_text,
+            msg_id=result.get('msg_id'),
+            usertype=telegram.usertype,
+            errors=result.get('errors')
+        )
 
     lessons = Lesson.objects.filter(
         status=0,
         date=datetime.date.today(),
-        start_time__gt=datetime.datetime.now() + datetime.timedelta(hours=1),
-        start_time__lte=datetime.datetime.now() + datetime.timedelta(hours=1, minutes=15)
+        start_time__gt=(datetime.datetime.now() +
+                        datetime.timedelta(hours=1)),
+        start_time__lte=(datetime.datetime.now() +
+                         datetime.timedelta(hours=1, minutes=15))
     )
     for lesson in lessons:
         listeners = lesson.get_listeners()
@@ -86,27 +140,54 @@ def notification_listeners_tomorrow_lessons() -> None:
         teacher = lesson.get_teacher()
         listeners = lesson.get_listeners()
         message_text = (f"<b>Напоминание о занятии</b>\n"
-                        f"<b>Завтра</b> в {lesson.start_time.strftime('%H:%M')} у Вас запланировано занятие с "
+                        f"<b>Завтра</b> в "
+                        f"{lesson.start_time.strftime('%H:%M')} у Вас "
+                        f"запланировано занятие с "
                         f"преподавателем <b>{teacher}</b>\n\n")
         for listener in listeners:
-            telegrams = listener.telegram_allowed.all().values("tg_id", "usertype", "setting_notifications_lesson_day")
+            telegrams = listener.telegram_allowed.all().values(
+                "tg_id", "usertype", "setting_notifications_lesson_day"
+            )
             if not telegrams:
-                notification_log_journal(listener, 2, "error", message_text, None, None,
-                                         ["У пользователя не привязан ни один Telegram"])
+                notification_log_journal(
+                    recipient=listener,
+                    event=2,
+                    result_status="error",
+                    msg_text=message_text,
+                    msg_id=None,
+                    usertype=None,
+                    errors=["У пользователя не привязан ни "
+                            "один Telegram"]
+                )
                 continue
             for telegram in telegrams:
                 if not telegram.get("setting_notifications_lesson_day"):
-                    notification_log_journal(listener, 1, "error", message_text, None,
-                                             telegram.get("usertype"),
-                                             ["У пользователя выключены уведомления за сутки до занятия"])
+                    notification_log_journal(
+                        recipient=listener,
+                        event=1,
+                        result_status="error",
+                        msg_text=message_text,
+                        msg_id=None,
+                        usertype=telegram.get("usertype"),
+                        errors=["У пользователя выключены уведомления "
+                                "за сутки до занятия"]
+                    )
                     continue
                 result = tg.send_tg_message_sync(
                     tg_id=telegram.get("tg_id"),
-                    message=message_text if telegram.get("usertype") == "main" else
+                    message=message_text if
+                    telegram.get("usertype") == "main" else
                     f'{message_text}\n\nУченик: {listener}',
                 )
-                notification_log_journal(listener, 1, result.get('status'), message_text,
-                                         result.get('msg_id'), telegram.get("usertype"), result.get('errors'))
+                notification_log_journal(
+                    recipient=listener,
+                    event=1,
+                    result_status=result.get('status'),
+                    msg_text=message_text,
+                    msg_id=result.get('msg_id'),
+                    usertype=telegram.get("usertype"),
+                    errors=result.get('errors')
+                )
 
 
 @app.task
@@ -120,17 +201,33 @@ def notification_tomorrow_schedule(tz=3) -> None:
             telegram = Telegram.objects.filter(user__id=teacher.id,
                                                usertype="main").first()
             if not telegram:
-                notification_log_journal(teacher, 1, "error", None, None, None,
-                                         ["У пользователя не привязан Telegram"])
+                notification_log_journal(
+                    recipient=teacher,
+                    event=1,
+                    result_status="error",
+                    msg_text=None,
+                    msg_id=None,
+                    usertype=None,
+                    errors=["У пользователя не привязан Telegram"]
+                )
                 continue
             if not telegram.setting_notifications_lesson_day:
-                notification_log_journal(teacher, 1, "error", None, None,
-                                         telegram.usertype,
-                                         ["У пользователя выключены уведомления за сутки до занятия"])
+                notification_log_journal(
+                    recipient=teacher,
+                    event=1,
+                    result_status="error",
+                    msg_text=None,
+                    msg_id=None,
+                    usertype=telegram.usertype,
+                    errors=["У пользователя выключены уведомления за "
+                            "сутки до занятия"])
                 continue
             listeners = lesson.get_listeners()
-            schedule_string = (f"<b>{lesson.start_time.strftime('%H:%M')}-{lesson.end_time.strftime('%H:%M')}</b>: "
-                               f"{', '.join([str(listener) for listener in listeners])}")
+            schedule_string = (
+                f"<b>{lesson.start_time.strftime('%H:%M')}-"
+                f"{lesson.end_time.strftime('%H:%M')}</b>: "
+                f"{', '.join([str(listener) for listener in listeners])}"
+            )
             if result.get(teacher) is None:
                 result[teacher] = {"tg_id": telegram.tg_id,
                                    "schedule": []}
@@ -145,8 +242,15 @@ def notification_tomorrow_schedule(tz=3) -> None:
                 tg_id=schedule_[teacher].get("tg_id"),
                 message=message_text
             )
-            notification_log_journal(teacher, 1, result.get('status'), message_text,
-                                     result.get('msg_id'), "main", result.get('errors'))
+            notification_log_journal(
+                recipient=teacher,
+                event=1,
+                result_status=result.get('status'),
+                msg_text=message_text,
+                msg_id=result.get('msg_id'),
+                usertype="main",
+                errors=result.get('errors')
+            )
 
     lessons = Lesson.objects.filter(
         status=0,
@@ -214,23 +318,41 @@ def notification_teachers_lessons_not_passed(tz=3, today=False) -> None:
         for teacher in lessons_info_:
             telegram = Telegram.objects.filter(user=teacher).first()
             if not telegram:
-                notification_log_journal(teacher, 12, "error", None, None, None,
-                                         ["У пользователя не привязан Telegram"])
+                notification_log_journal(
+                    recipient=teacher,
+                    event=12,
+                    result_status="error",
+                    msg_text=None,
+                    msg_id=None,
+                    usertype=None,
+                    errors=["У пользователя не привязан Telegram"]
+                )
                 continue
-            message_text = ("\u203C\uFE0FУ вас остались ученики, которые не получили <b>ДЗ</b>\u203C\uFE0F\n"
-                            "Не забывайте отправлять домашнее задание не позднее 12 часов с окончания урока\n\n")
+            message_text = ("\u203C\uFE0FУ вас остались ученики, которые "
+                            "не получили <b>ДЗ</b>\u203C\uFE0F\n"
+                            "Не забывайте отправлять домашнее задание не "
+                            "позднее 12 часов с окончания урока\n\n")
             for lesson in lessons_info_[teacher][:15]:
-                message_text += (f"{lesson['name']} "
-                                 f"({', '.join([f'{listener.first_name} {listener.last_name}' for listener in lesson['listeners']])})"
-                                 f" от {lesson['date'].strftime('%d.%m')}\n")
+                message_text += (
+                    f"{lesson['name']} "
+                    f"({', '.join([f'{listener.first_name} {listener.last_name}' for listener in lesson['listeners']])})"
+                    f" от {lesson['date'].strftime('%d.%m')}\n"
+                )
             if len(lessons_info_[teacher]) > 15:
                 message_text += f'И ещё {len(lessons_info_[teacher]) - 15}'
             result = tg.send_tg_message_sync(
                 tg_id=telegram.tg_id,
                 message=message_text
             )
-            notification_log_journal(teacher, 12, result.get('status'), message_text,
-                                     result.get('msg_id'), "main", result.get('errors'))
+            notification_log_journal(
+                recipient=teacher,
+                event=12,
+                result_status=result.get('status'),
+                msg_text=message_text,
+                msg_id=result.get('msg_id'),
+                usertype="main",
+                errors=result.get('errors')
+            )
 
     lessons_info = collect_lessons_info()
     notify_telegram(lessons_info)

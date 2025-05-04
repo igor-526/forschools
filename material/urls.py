@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import MaterialPage, MaterialItemPage
-from .views_api import MaterialListCreateAPIView, MaterialAPIView, MaterialFileTextAPIView
+from .views_api import (MaterialListCreateAPIView,
+                        MaterialAPIView,
+                        MaterialFileTextAPIView)
 
 urlpatterns = [
     path('', MaterialPage.as_view(), name='materials'),

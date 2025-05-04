@@ -20,4 +20,3 @@ class MailingNewPage(MailingAccessMixin, TemplateView):
         context = {'title': 'Новая рассылка',
                    'menu': get_menu(request.user)}
         return render(request, self.template_name, context)
-

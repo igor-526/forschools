@@ -1,14 +1,14 @@
 import datetime
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
-from rest_framework.generics import (ListCreateAPIView, ListAPIView,
+from rest_framework.generics import (ListCreateAPIView,
+                                     ListAPIView,
                                      RetrieveDestroyAPIView)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from chat.models import Message
 from lesson.permissions import CanReplaceTeacherMixin
-from material.utils.get_type import get_type
 from material.models import File, Material
 from tgbot.funcs.homeworks.homework_show import open_homework_in_tg
 from tgbot.utils import (send_homework_tg, notify_chat_message,
@@ -16,7 +16,8 @@ from tgbot.utils import (send_homework_tg, notify_chat_message,
 from user_logs.models import UserLog
 from .models import Homework, HomeworkLog
 from .utils import status_code_to_string
-from .permissions import (get_delete_log_permission, get_can_accept_log_permission,
+from .permissions import (get_delete_log_permission,
+                          get_can_accept_log_permission,
                           get_can_edit_hw_permission)
 from .serializers import (HomeworkListSerializer, HomeworkLogListSerializer,
                           HomeworkLogSerializer, HomeworkSerializer)
@@ -32,45 +33,73 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             assigned_date_to = self.request.query_params.get("date_to")
             if assigned_date_from or assigned_date_to:
                 listed_queryset = list(queryset)
-                listed_queryset = list(filter(lambda hw: hw.get_status(True)
-                                                         is not None, listed_queryset))
+                listed_queryset = list(filter(
+                    lambda hw: hw.get_status(True) is not None,
+                    listed_queryset
+                ))
                 if assigned_date_from:
-                    assigned_date_from = datetime.datetime.strptime(assigned_date_from,
-                                                                    "%Y-%m-%d").date()
-                    listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() >=
-                                                             assigned_date_from,
-                                                  listed_queryset))
+                    assigned_date_from = datetime.datetime.strptime(
+                        assigned_date_from,
+                        "%Y-%m-%d"
+                    ).date()
+                    listed_queryset = list(filter(
+                        lambda hw: (hw.get_status(True).dt.date() >=
+                                    assigned_date_from),
+                        listed_queryset
+                    ))
                 if assigned_date_to:
-                    assigned_date_to = datetime.datetime.strptime(assigned_date_to,
-                                                                  "%Y-%m-%d").date()
-                    listed_queryset = list(filter(lambda hw: hw.get_status(True).dt.date() <=
-                                                             assigned_date_to,
-                                                  listed_queryset))
-                queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
+                    assigned_date_to = datetime.datetime.strptime(
+                        assigned_date_to,
+                        "%Y-%m-%d"
+                    ).date()
+                    listed_queryset = list(filter(
+                        lambda hw: (hw.get_status(True).dt.date() <=
+                                    assigned_date_to),
+                        listed_queryset
+                    ))
+                queryset = queryset.filter(
+                    id__in=[hw.id for hw in listed_queryset]
+                )
             return queryset
         return None
 
     def filter_queryset_date_changed(self, queryset):
         if queryset:
-            date_changed_from = self.request.query_params.get("date_changed_from")
-            date_changed_to = self.request.query_params.get("date_changed_to")
+            date_changed_from = self.request.query_params.get(
+                "date_changed_from"
+            )
+            date_changed_to = self.request.query_params.get(
+                "date_changed_to"
+            )
             if date_changed_from or date_changed_to:
                 listed_queryset = list(queryset)
-                listed_queryset = list(filter(lambda hw: hw.get_status(True) is not None,
-                                              listed_queryset))
+                listed_queryset = list(filter(
+                    lambda hw: hw.get_status(True) is not None,
+                    listed_queryset
+                ))
                 if date_changed_from:
-                    date_changed_from = datetime.datetime.strptime(date_changed_from,
-                                                                   "%Y-%m-%d").date()
-                    listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() >=
-                                                             date_changed_from,
-                                                  listed_queryset))
+                    date_changed_from = datetime.datetime.strptime(
+                        date_changed_from,
+                        "%Y-%m-%d"
+                    ).date()
+                    listed_queryset = list(filter(
+                        lambda hw: (hw.get_status().dt.date() >=
+                                    date_changed_from),
+                        listed_queryset
+                    ))
                 if date_changed_to:
-                    date_changed_to = datetime.datetime.strptime(date_changed_to,
-                                                                 "%Y-%m-%d").date()
-                    listed_queryset = list(filter(lambda hw: hw.get_status().dt.date() <=
-                                                             date_changed_to,
-                                                  listed_queryset))
-                queryset = queryset.filter(id__in=[hw.id for hw in listed_queryset])
+                    date_changed_to = datetime.datetime.strptime(
+                        date_changed_to,
+                        "%Y-%m-%d"
+                    ).date()
+                    listed_queryset = list(filter(
+                        lambda hw: (hw.get_status().dt.date() <=
+                                    date_changed_to),
+                        listed_queryset
+                    ))
+                queryset = queryset.filter(
+                    id__in=[hw.id for hw in listed_queryset]
+                )
             return queryset
         return None
 
@@ -79,11 +108,19 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             hw_status = self.request.query_params.getlist("status")
             if hw_status:
                 hw_status = [int(s) for s in hw_status]
-                listed_queryset = [{"id": hw.id,
-                                    "status": hw.get_status(accepted_only=self.request.user == hw.listener).status}
-                                   for hw in queryset]
-                listed_queryset = list(filter(lambda hw: hw.get("status") in hw_status, listed_queryset))
-                queryset = queryset.filter(id__in=[hw.get("id") for hw in listed_queryset])
+                listed_queryset = [{
+                    "id": hw.id,
+                    "status": hw.get_status(
+                        accepted_only=self.request.user == hw.listener
+                    ).status
+                }
+                    for hw in queryset]
+                listed_queryset = list(filter(
+                    lambda hw: hw.get("status") in hw_status,
+                    listed_queryset
+                ))
+                queryset = queryset.filter(id__in=[hw.get("id") for hw in
+                                                   listed_queryset])
             return queryset
         return None
 
@@ -92,7 +129,8 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             hw_agreement = self.request.query_params.getlist("agreement")
             if hw_agreement:
                 agreement_filter_perm = self.request.user.groups.filter(
-                    name__in=['Curator', 'Teacher', 'Metodist', 'Admin']).exists()
+                    name__in=['Curator', 'Teacher', 'Metodist', 'Admin']
+                ).exists()
                 if not agreement_filter_perm:
                     return queryset
                 listed_queryset = [{"id": hw.id,
@@ -100,15 +138,25 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                                    for hw in queryset]
                 filtered_queryset = []
                 if "not_accepted" in hw_agreement:
-                    filtered_queryset.extend(list(filter(lambda hw: hw.get("agreement").get("accepted") is False,
-                                                         listed_queryset)))
+                    filtered_queryset.extend(list(filter(
+                        lambda hw: (hw.get("agreement").get("accepted")
+                                    is False),
+                        listed_queryset
+                    )))
                 if "accepted" in hw_agreement:
-                    filtered_queryset.extend(list(filter(lambda hw: hw.get("agreement").get("accepted") is True,
-                                                         listed_queryset)))
+                    filtered_queryset.extend(list(filter(
+                        lambda hw: (hw.get("agreement").get("accepted")
+                                    is True),
+                        listed_queryset
+                    )))
                 if "no_need" in hw_agreement:
-                    filtered_queryset.extend(list(filter(lambda hw: hw.get("agreement") == {},
-                                                         listed_queryset)))
-                queryset = queryset.filter(id__in=[hw.get("id") for hw in filtered_queryset])
+                    filtered_queryset.extend(list(filter(
+                        lambda hw: hw.get("agreement") == {},
+                        listed_queryset
+                    )))
+                queryset = queryset.filter(
+                    id__in=[hw.get("id") for hw in filtered_queryset]
+                )
             return queryset
         return None
 
@@ -141,13 +189,15 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         if "Admin" in user_groups:
             return self.filter_queryset_all(Homework.objects.all())
         if "Metodist" in user_groups:
-            q |= Q(lesson__learningphases__learningplan__metodist=self.request.user)
+            q |= Q(lesson__learningphases__learningplan__metodist=
+                   self.request.user)
         if "Teacher" in user_groups:
             q |= Q(teacher=self.request.user)
         if "Listener" in user_groups:
             q |= Q(listener=self.request.user)
         if "Curator" in user_groups:
-            q |= Q(lesson__learningphases__learningplan__curators=self.request.user)
+            q |= Q(lesson__learningphases__learningplan__curators=
+                   self.request.user)
         return self.filter_queryset_all(Homework.objects.filter(q))
 
     def create(self, request, *args, **kwargs):
@@ -163,8 +213,11 @@ class HomeworkRetrieveUpdateDestroyAPIView(APIView):
     serializer_class = HomeworkSerializer
 
     def get(self, request, *args, **kwargs):
-        serializer = HomeworkSerializer(Homework.objects.get(pk=kwargs.get("pk")), many=False,
-                                        context={"request": request})
+        serializer = HomeworkSerializer(
+            Homework.objects.get(pk=kwargs.get("pk")),
+            many=False,
+            context={"request": request}
+        )
         return Response(serializer.data)
 
 
@@ -173,7 +226,9 @@ class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
         hw = Homework.objects.get(pk=kwargs.get('pk'))
         hw_status = hw.get_status().status
         can_edit = (hw.teacher == request.user or
-                    request.user.groups.filter(name__in=["Metodist", "Admin"]).exists())
+                    request.user.groups.filter(
+                        name__in=["Metodist", "Admin"]
+                    ).exists())
         can_add_materials_tg = can_edit and request.user.telegram.exists()
         return Response({
             "status": hw_status,
@@ -194,10 +249,12 @@ class HomeworkItemPageSendTGAPIView(LoginRequiredMixin, APIView):
         else:
             tg_note = request.user.telegram.filter(usertype="main").first()
             if not tg_note:
-                return Response({"error": "Telegram не привязан"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(data={"error": "Telegram не привязан"},
+                                status=status.HTTP_400_BAD_REQUEST)
             tg_id = tg_note.tg_id
         open_homework_in_tg(tg_id, hw.id)
-        return Response({}, status=status.HTTP_200_OK)
+        return Response(data={},
+                        status=status.HTTP_200_OK)
 
 
 class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -239,7 +296,8 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         files = []
-        if request.data.getlist('files') and len(request.data.getlist('files')[0]) > 0:
+        if (request.data.getlist('files') and
+                len(request.data.getlist('files')[0]) > 0):
             for file in request.data.getlist('files'):
                 f = File.objects.create(path=file,
                                         owner=request.user,
@@ -274,7 +332,8 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                     q = {
                         "log_type": 4,
                         "learning_plan": plan,
-                        "title": f"Из ДЗ '{instance.homework.name}' удалён статус",
+                        "title": f"Из ДЗ '{instance.homework.name}' удалён "
+                                 f"статус",
                         "content": {
                             "list": [
                                 {
@@ -287,24 +346,30 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                                 },
                                 {
                                     "name": "Статус",
-                                    "val": status_code_to_string(instance.status)
+                                    "val":
+                                        status_code_to_string(instance.status)
                                 },
                                 {
                                     "name": "Дата присвоения статуса",
                                     "val": instance.dt.strftime("%d.%m.%Y")
                                 }
                             ],
-                            "text": [instance.comment] if instance.comment else [],
+                            "text": [instance.comment] if instance.comment
+                            else [],
                         },
-                        "buttons": [{"inner": "ДЗ",
-                                     "href": f"/homeworks/{instance.homework.id}"},
-                                    {"inner": "Занятие",
-                                     "href": f"/lessons/{lesson.id}"}],
+                        "buttons": [
+                            {"inner": "ДЗ",
+                             "href": f"/homeworks/{instance.homework.id}"},
+                            {"inner": "Занятие",
+                             "href": f"/lessons/{lesson.id}"}
+                        ],
                         "user": request.user,
                         "color": "danger"
                     }
                     ul = UserLog.objects.create(**q)
-                    ul.files_db.add(*[file.id for file in instance.files.all()])
+                    ul.files_db.add(*[
+                        file.id for file in instance.files.all()
+                    ])
                 instance.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -317,12 +382,15 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
         if instance:
             if instance.status == 7:
                 hw_group = instance.homework.homeworkgroups_set.first()
-                hws = hw_group.homeworks.all() if hw_group else [instance.homework]
+                hws = hw_group.homeworks.all() if hw_group \
+                    else [instance.homework]
             else:
                 hws = [instance.homework]
-            to_agreement = HomeworkLog.objects.filter(homework__id__in=[hw.id for hw in hws],
-                                                      dt__lte=instance.dt,
-                                                      agreement__accepted=False)
+            to_agreement = HomeworkLog.objects.filter(
+                homework__id__in=[hw.id for hw in hws],
+                dt__lte=instance.dt,
+                agreement__accepted=False
+            )
             accepted_dt = datetime.datetime.now()
             lesson = hws[0].lesson_set.first()
             agreement = {
@@ -339,10 +407,14 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                 "log_type": 1,
                 "learning_plan": lesson.get_learning_plan(),
                 "content": {"list": [],
-                            "text": [f'Методист обработал действие преподавателя по ДЗ к занятию '
-                                     f'"{lesson.name}" от {lesson.date.strftime("%d.%m.%Y")}',
-                                     f'Проверяющий ДЗ: {hws[0].teacher.first_name} '
-                                     f'{hws[0].teacher.last_name}']},
+                            "text": [
+                                f'Методист обработал действие преподавателя '
+                                f'по ДЗ к занятию '
+                                f'"{lesson.name}" от '
+                                f'{lesson.date.strftime("%d.%m.%Y")}',
+                                f'Проверяющий ДЗ: {hws[0].teacher.first_name} '
+                                f'{hws[0].teacher.last_name}'
+                            ]},
                 "user": request.user,
                 "buttons": []}
             if request.POST.get('action') == 'accept':
@@ -351,21 +423,29 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                 user_log["color"] = "info"
                 if instance.status == 7:
                     for hw in hws:
-                        send_homework_tg(initiator=instance.homework.teacher,
-                                         listener=instance.homework.listener,
-                                         homeworks=[hw])
-                    send_homework_tg(initiator=instance.homework.get_lesson()
-                                     .get_learning_plan().metodist,
-                                     listener=instance.homework.teacher,
-                                     homeworks=hws,
-                                     text="Следующие ДЗ были согласованы и заданы")
+                        send_homework_tg(
+                            initiator=instance.homework.teacher,
+                            listener=instance.homework.listener,
+                            homeworks=[hw]
+                        )
+                    send_homework_tg(
+                        initiator=instance.homework.get_lesson()
+                        .get_learning_plan().metodist,
+                        listener=instance.homework.teacher,
+                        homeworks=hws,
+                        text="Следующие ДЗ были согласованы и заданы"
+                    )
                 else:
                     if instance.status == 4:
-                        teacher_msg_text = "Ответ на решение согласован. ДЗ принято"
-                        send_homework_answer_tg(instance.homework.listener, hws[0], 4)
+                        teacher_msg_text = ("Ответ на решение согласован. "
+                                            "ДЗ принято")
+                        send_homework_answer_tg(instance.homework.listener,
+                                                hws[0], 4)
                     elif instance.status == 5:
-                        teacher_msg_text = "Ответ на решение согласован. ДЗ отправлено на доработку"
-                        send_homework_answer_tg(instance.homework.listener, hws[0], 5)
+                        teacher_msg_text = ("Ответ на решение согласован. "
+                                            "ДЗ отправлено на доработку")
+                        send_homework_answer_tg(instance.homework.listener,
+                                                hws[0], 5)
                     else:
                         teacher_msg_text = "Домашнее задание согласовано"
                     send_homework_tg(initiator=instance.homework.get_lesson()
@@ -380,9 +460,11 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                                  hws, "Действие по ДЗ не согласовано")
             if request.POST.get('message'):
                 agreement['message'] = request.POST.get('message')
-                message = Message.objects.create(sender=request.user,
-                                                 receiver=instance.homework.teacher,
-                                                 message=request.POST.get('message'))
+                message = Message.objects.create(
+                    sender=request.user,
+                    receiver=instance.homework.teacher,
+                    message=request.POST.get('message')
+                )
                 notify_chat_message(message)
             for log in to_agreement:
                 log.agreement = agreement
@@ -409,8 +491,10 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                     "name": "Ученик",
                     "val": f"{hw.listener.first_name} {hw.listener.last_name}"
                 })
-                user_log['buttons'].append({"inner": f"{hw.name} ({hw.listener})",
-                                            "href": f"/homeworks/{hw.id}"})
+                user_log['buttons'].append(
+                    {"inner": f"{hw.name} ({hw.listener})",
+                     "href": f"/homeworks/{hw.id}"}
+                )
             user_log['buttons'].append({"inner": "Занятие",
                                         "href": f"/lessons/{lesson.id}"})
             if request.POST.get('message'):
@@ -419,7 +503,8 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                     "val": request.POST.get('message')
                 })
             UserLog.objects.create(**user_log)
-            return Response(data={'status': True}, status=status.HTTP_200_OK)
+            return Response(data={'status': True},
+                            status=status.HTTP_200_OK)
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
@@ -429,11 +514,14 @@ class HomeworkReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
             hw = Homework.objects.get(pk=kwargs.get("pk"))
             hw.teacher_id = request.data.get('teacher_id')
             hw.save()
-            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+            return Response(data={'status': 'ok'},
+                            status=status.HTTP_200_OK)
         except Homework.DoesNotExist:
-            return Response({'error': 'ДЗ не найдено'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'ДЗ не найдено'},
+                            status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserHWListAPIView(LoginRequiredMixin, ListAPIView):
@@ -461,8 +549,11 @@ class HomeworkSetCancelledAPIView(LoginRequiredMixin, APIView):
             comment="Домашнее задание отменено",
             status=6
         )
-        serializer = HomeworkLogSerializer(hl, many=False, context={'request': request})
-        return Response({'status': 'ok', 'log': serializer.data}, status=status.HTTP_200_OK)
+        serializer = HomeworkLogSerializer(hl, many=False,
+                                           context={'request': request})
+        return Response(data={'status': 'ok',
+                              'log': serializer.data},
+                        status=status.HTTP_200_OK)
 
 
 class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
@@ -470,41 +561,48 @@ class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
         try:
             hw = Homework.objects.get(pk=kwargs.get('hw_id'))
         except Homework.DoesNotExist:
-            return Response({"error": "ДЗ не найдено"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"error": "ДЗ не найдено"},
+                            status=status.HTTP_404_NOT_FOUND)
         perm = get_can_edit_hw_permission(hw, request)
         if not perm:
-            return Response({"error": "Нет прав для редактирования ДЗ"},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(data={
+                "error": "Нет прав для редактирования ДЗ"
+            },
+                status=status.HTTP_403_FORBIDDEN)
         try:
             hw.materials.set(hw.materials.exclude(pk=kwargs.get('mat_id')))
             lesson = hw.get_lesson()
             plan = lesson.get_learning_plan() if lesson else None
             if plan:
                 mat = Material.objects.get(pk=kwargs.get('mat_id'))
-                ul = UserLog.objects.create(log_type=4,
-                                       learning_plan=plan,
-                                       title="Из домашнего задания удалён материал",
-                                       content={
-                                           "list": [{
-                                               "name": "Наименование занятия",
-                                               "val": lesson.name
-                                           },
-                                               {
-                                                   "name": "Дата занятия",
-                                                   "val": lesson.date.strftime("%d.%m.%Y")
-                                               }
-                                           ],
-                                           "text": []
-                                       },
-                                       buttons=[{"inner": "ДЗ",
-                                                 "href": f"/homeworks/{hw.id}"},
-                                                {"inner": "Занятие",
-                                                 "href": f"/lessons/{lesson.id}"}],
-                                       user=request.user,
-                                       color="danger")
+                ul = UserLog.objects.create(
+                    log_type=4,
+                    learning_plan=plan,
+                    title="Из домашнего задания удалён материал",
+                    content={
+                        "list": [{
+                            "name": "Наименование занятия",
+                            "val": lesson.name
+                        },
+                            {
+                                "name": "Дата занятия",
+                                "val": lesson.date.strftime("%d.%m.%Y")
+                            }
+                        ],
+                        "text": []
+                    },
+                    buttons=[{"inner": "ДЗ",
+                              "href": f"/homeworks/{hw.id}"},
+                             {"inner": "Занятие",
+                              "href": f"/lessons/{lesson.id}"}],
+                    user=request.user,
+                    color="danger"
+                )
                 ul.materials_db.add(mat.id)
                 ul.save()
 
-            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+            return Response(data={'status': 'ok'},
+                            status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)

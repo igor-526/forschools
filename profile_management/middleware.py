@@ -4,8 +4,10 @@ import logging
 
 logger = logging.getLogger('wsgi')
 logger.setLevel(logging.DEBUG)
-log_format = logging.Formatter('[%(asctime)s WSGI] %(message)s', datefmt='%H:%M:%S')
-file_handler = logging.FileHandler('logs/wsgi_platform.log', 'a')
+log_format = logging.Formatter('[%(asctime)s WSGI] %(message)s',
+                               datefmt='%H:%M:%S')
+file_handler = logging.FileHandler('logs/wsgi_platform.log',
+                                   'a')
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(log_format)
 logger.addHandler(file_handler)
@@ -47,7 +49,8 @@ class ErrorLogsMiddleware:
                 data = None
             if response.status_code != 404 and request.user is not None:
                 WSGIErrorsLog.objects.create(
-                    user=request.user if request.user.is_authenticated else None,
+                    user=request.user if request.user.is_authenticated
+                    else None,
                     path_info=request.path_info,
                     method=request.method,
                     status_code=response.status_code,
@@ -60,8 +63,12 @@ class ErrorLogsMiddleware:
         if not request.user.is_authenticated:
             return None
         tb = exception.__traceback__
-        traceback_log = traceback.format_exception(type(exception), exception, tb)
-        traceback_log = list(filter(lambda s: len(s) != s.count("^")+s.count(" "), traceback_log))
+        traceback_log = traceback.format_exception(type(exception),
+                                                   exception,
+                                                   tb)
+        traceback_log = list(filter(
+            lambda s: len(s) != s.count("^")+s.count(" "), traceback_log
+        ))
         params = {}
         try:
             if request.method == "GET":

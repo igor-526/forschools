@@ -10,7 +10,8 @@ class ChatPageSelectUserMATemplateView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Сообщения',
-                   'can_see_other_users_messages': can_see_other_users_messages(request),
+                   'can_see_other_users_messages':
+                       can_see_other_users_messages(request),
                    "is_authenticated": request.user.is_authenticated}
         return render(request, self.template_name, context)
 
@@ -20,7 +21,8 @@ class ChatPageChatMATemplateView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Сообщения',
-                   'can_see_other_users_messages': can_see_other_users_messages(request),
+                   'can_see_other_users_messages':
+                       can_see_other_users_messages(request),
                    "is_authenticated": request.user.is_authenticated,
                    "chat_id": kwargs.get('chat_id'),
                    'material_formats': MATERIAL_FORMATS}

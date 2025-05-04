@@ -1,19 +1,20 @@
 from _operator import itemgetter
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView, ListAPIView, CreateAPIView
+from rest_framework.generics import (ListCreateAPIView,
+                                     ListAPIView,
+                                     CreateAPIView)
 from rest_framework import status
 from rest_framework.views import APIView
-
 from profile_management.models import NewUser, Telegram
 from chat.models import GroupChats, AdminMessage
 from tgbot.utils import sync_funcs
 from .models import Message
 from .permissions import can_see_chat, CanSeeAdminChats
-from .serializers import (ChatMessageSerializer, ChatGroupInfoSerializer,
+from .serializers import (ChatMessageSerializer,
+                          ChatGroupInfoSerializer,
                           ChatAdminMessageSerializer)
 
 
@@ -22,7 +23,9 @@ class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
         query = self.request.query_params.get('search')
         if not chats or query is None:
             return chats
-        return list(filter(lambda user: query in user.get('name').lower(), chats))
+        return list(filter(
+            lambda user: query in user.get('name').lower(), chats
+        ))
 
     def list(self, request, *args, **kwargs):
         from_user = self.request.query_params.get('from_user')
@@ -47,18 +50,31 @@ class ChatAdminUsersListAPIView(CanSeeAdminChats, ListAPIView):
         query = self.request.query_params.get('search')
         if not chats or query is None:
             return chats
-        return list(filter(lambda user: query in user.get('name').lower(), chats))
+        return list(filter(
+            lambda user: query in user.get('name').lower(), chats
+        ))
 
     def list(self, request, *args, **kwargs):
         def _sort_users_for_chat(users):
             filtered_users = users
-            unread_list = list(filter(lambda u: u.get("unread"), filtered_users))
-            has_messages_list = list(
-                filter(lambda u: u.get("last_message_text") is not None and u not in unread_list, filtered_users))
-            no_messages_list = list(filter(lambda u: u.get("last_message_text") is None, filtered_users))
-            unread_list = sorted(unread_list, key=itemgetter("last_message_date"), reverse=True)
-            has_messages_list = sorted(has_messages_list, key=itemgetter("last_message_date"), reverse=True)
-            no_messages_list = sorted(no_messages_list, key=itemgetter("name"))
+            unread_list = list(filter(
+                lambda u: u.get("unread"), filtered_users
+            ))
+            has_messages_list = list(filter(
+                lambda u: (u.get("last_message_text") is not None and
+                           u not in unread_list), filtered_users
+            ))
+            no_messages_list = list(filter(
+                lambda u: u.get("last_message_text") is None, filtered_users
+            ))
+            unread_list = sorted(unread_list,
+                                 key=itemgetter("last_message_date"),
+                                 reverse=True)
+            has_messages_list = sorted(has_messages_list,
+                                       key=itemgetter("last_message_date"),
+                                       reverse=True)
+            no_messages_list = sorted(no_messages_list,
+                                      key=itemgetter("name"))
             return [*unread_list, *has_messages_list, *no_messages_list]
 
         def get_info(u):
@@ -74,11 +90,14 @@ class ChatAdminUsersListAPIView(CanSeeAdminChats, ListAPIView):
                 Q(sender=u, receiver=None) | Q(receiver=u)
             ).order_by('-date').first()
             if last_message:
-                info["last_message_text"] = last_message.message[:50] if last_message.message else ""
+                info["last_message_text"] = last_message.message[:50] if (
+                    last_message.message) else ""
                 info["last_message_date"] = last_message.date
             return info
 
-        users = NewUser.objects.filter(admin_message_sender__isnull=False).exclude(groups__name="Admin").distinct()
+        users = NewUser.objects.filter(
+            admin_message_sender__isnull=False
+        ).exclude(groups__name="Admin").distinct()
         users = [get_info(user) for user in users] if users else []
         users = self.filter_chats(users)
         users = _sort_users_for_chat(users)
@@ -126,7 +145,8 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         elif self.chat_type == "Admin":
             if self.request.user.groups.filter(name="Admin").exists():
                 queryset = AdminMessage.objects.filter(
-                    Q(sender=self.kwargs.get("user")) | Q(receiver=self.kwargs.get("user"))
+                    Q(sender=self.kwargs.get("user")) |
+                    Q(receiver=self.kwargs.get("user"))
                 ).order_by('-date')
             else:
                 queryset = AdminMessage.objects.filter(
@@ -166,7 +186,8 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             username = f'{usr.first_name} {usr.last_name}'
         elif self.chat_type == "Telegram":
             tgnote = Telegram.objects.get(pk=self.kwargs.get("user"))
-            username = f'{tgnote.user.first_name} {tgnote.user.last_name} [{tgnote.usertype}]'
+            username = (f'{tgnote.user.first_name} {tgnote.user.last_name} '
+                        f'[{tgnote.usertype}]')
         elif self.chat_type == "Group":
             group_chat = GroupChats.objects.get(pk=self.kwargs.get("user"))
             username = group_chat.name
@@ -176,10 +197,15 @@ class ChatMessagesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                 username = f'{user.first_name} {user.last_name}'
             else:
                 username = "Администратор"
-        return Response({'messages': serializer(queryset, many=True,
-                                                context={"request": request}).data,
-                         'username': username,
-                         'current_user_id': int(current_user_id)}, status=200)
+        return Response(
+            data={
+                'messages': serializer(queryset, many=True,
+                                       context={"request": request}).data,
+                'username': username,
+                'current_user_id': int(current_user_id)
+            },
+            status=200
+        )
 
     def create(self, request, *args, **kwargs):
         self.set_chat_type()
@@ -199,4 +225,5 @@ class ChatGroupsCreateAPIView(LoginRequiredMixin, CreateAPIView):
 
 class ChatUnsentAPIView(CanSeeAdminChats, APIView):
     def get(self, request, *args, **kwargs):
-        return Response(sync_funcs.check_unsent_messages(False), status=status.HTTP_200_OK)
+        return Response(data=sync_funcs.check_unsent_messages(False),
+                        status=status.HTTP_200_OK)

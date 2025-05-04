@@ -2,7 +2,6 @@ import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
-from learning_plan.models import LearningPlan
 from lesson.models import Lesson
 from profile_management.models import NewUser
 
@@ -24,7 +23,9 @@ class CanEditLessonAdminComment(LoginRequiredMixin):
 class CanSeeLessonMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         usergroups = get_usergroups(request.user)
-        if ("Admin" in usergroups) or ("Metodist" in usergroups) or ("Teacher" in usergroups):
+        if (("Admin" in usergroups) or
+                ("Metodist" in usergroups) or
+                ("Teacher" in usergroups)):
             return super().dispatch(request, *args, **kwargs)
         if "Listener" in usergroups:
             lesson = Lesson.objects.get(pk=kwargs.get('pk'))
@@ -34,7 +35,8 @@ class CanSeeLessonMixin(LoginRequiredMixin):
                 return super().dispatch(request, *args, **kwargs)
         if "Curator" in usergroups:
             lesson = Lesson.objects.get(pk=kwargs.get('pk'))
-            learning_plan = lesson.learningphases_set.first().learningplan_set.first()
+            learning_plan = (lesson.learningphases_set.first()
+                             .learningplan_set.first())
             if request.user in learning_plan.curators.all():
                 return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
@@ -61,7 +63,8 @@ def can_see_lesson_materials(request, lesson: Lesson):
     if not lp:
         return False
     if (lp.teacher == request.user or lp.metodist == request.user or
-            lesson.replace_teacher == request.user or lp.curators.filter(id=request.user.id).exists()):
+            lesson.replace_teacher == request.user or
+            lp.curators.filter(id=request.user.id).exists()):
         return True
     if lp.listeners.filter(id=request.user.id).exists():
         if not lesson.date:
@@ -72,8 +75,9 @@ def can_see_lesson_materials(request, lesson: Lesson):
                 return True
             else:
                 return lesson.materials_access
-        return timezone.now().timestamp() >= (
-                lessondt - datetime.timedelta(days=lp.show_materials)).timestamp()
+        return (timezone.now().timestamp() >= (
+                lessondt - datetime.timedelta(days=lp.show_materials))
+                .timestamp())
     return False
 
 
@@ -84,7 +88,9 @@ def can_add_homework(request, lesson: Lesson):
     if "Teacher" in usergroups:
         return lesson.get_teacher() == request.user
     if "Curator" in usergroups:
-        return lesson.get_learning_plan().curators.filter(id=request.user.id).exists()
+        return lesson.get_learning_plan().curators.filter(
+            id=request.user.id
+        ).exists()
     return False
 
 

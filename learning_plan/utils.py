@@ -4,7 +4,9 @@ from learning_plan.models import LearningPlan, LearningPhases
 from lesson.models import Lesson, Place
 
 
-def plan_calculated_info(date: datetime.datetime, schedule: dict, program: LearningProgram) -> dict:
+def plan_calculated_info(date: datetime.datetime,
+                         schedule: dict,
+                         program: LearningProgram) -> dict:
     info = program.get_all_info()
     counter = info.get("lessons")
     last_date = None
@@ -31,7 +33,9 @@ def plan_calculated_info(date: datetime.datetime, schedule: dict, program: Learn
     }
 
 
-def plan_rescheduling_info(date: datetime, schedule: dict, lesson: Lesson) -> dict:
+def plan_rescheduling_info(date: datetime,
+                           schedule: dict,
+                           lesson: Lesson) -> dict:
     counter = Lesson.objects.filter(date__gte=lesson.date).count()
     counter2 = counter
     last_date = None
@@ -141,20 +145,24 @@ class ProgramSetter:
         return result
 
     def get_plan_dict(self):
-        plan = [self.program.phases.get(pk=phase) for phase in self.program.phases_order]
+        plan = [self.program.phases.get(pk=phase) for phase in
+                self.program.phases_order]
         plan = [{
             'object': phase,
-            'lessons': [phase.lessons.get(pk=lesson) for lesson in phase.lessons_order],
+            'lessons': [phase.lessons.get(pk=lesson) for lesson in
+                        phase.lessons_order],
         } for phase in plan]
 
         for key, phase in enumerate(plan):
             lessons = phase.get("lessons")
             lessons = [{
                 'object': lesson,
-                'homeworks': [{"object": hw,
-                               "deadline": self.get_next_date(show=True).get("date") +
-                                           datetime.timedelta(days=3)}
-                              for hw in lesson.homeworks.all()],
+                'homeworks': [{
+                    "object": hw,
+                    "deadline": (self.get_next_date(show=True).get("date") +
+                                 datetime.timedelta(days=3))
+                }
+                    for hw in lesson.homeworks.all()],
                 'dt': self.get_next_date()
             } for lesson in lessons]
 
@@ -199,7 +207,9 @@ class ProgramSetter:
                             from_programs_hw_id=homework.get("object").id,
                             deadline=homework.get("deadline")
                         )
-                        lp_hw.materials.set(homework.get("object").materials.all())
+                        lp_hw.materials.set(
+                            homework.get("object").materials.all()
+                        )
                         lp_hw.save()
 
 
@@ -295,7 +305,8 @@ class AddLessons:
         self.plan.save()
         return phase
 
-    def get_next_lesson_break(self, counter: int = None, next_date: datetime = None):
+    def get_next_lesson_break(self, counter: int = None,
+                              next_date: datetime = None):
         if self.last_lesson_date and next_date > self.last_lesson_date:
             return True
         if self.lessons_count and counter > self.lessons_count:
@@ -316,6 +327,8 @@ class AddLessons:
                 start_time=next_date.get("start"),
                 end_time=next_date.get("end"),
                 date=next_date.get("date"),
-                place_id=self.schedule[next_date.get("date").weekday()]["place"]
+                place_id=self.schedule[
+                    next_date.get("date").weekday()
+                ]["place"]
             )
             counter += 1

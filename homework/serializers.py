@@ -29,15 +29,25 @@ class HomeworkSerializer(serializers.ModelSerializer):
                 "name": lesson.name,
             }
             if get_can_see_plan(self.context.get('request'), plan, lesson):
-                result['plan'] = {"id": plan.id,
-                                  "teacher": NewUserNameOnlyListSerializer(plan.teacher,
-                                                                           many=False).data,
-                                  "listeners": NewUserNameOnlyListSerializer(plan.listeners.all(),
-                                                                             many=True).data,
-                                  "curators": NewUserNameOnlyListSerializer(plan.curators.all(),
-                                                                            many=True).data,
-                                  "methodist": NewUserNameOnlyListSerializer(plan.metodist,
-                                                                             many=False).data}
+                result['plan'] = {
+                    "id": plan.id,
+                    "teacher": NewUserNameOnlyListSerializer(
+                        plan.teacher,
+                        many=False
+                    ).data,
+                    "listeners": NewUserNameOnlyListSerializer(
+                        plan.listeners.all(),
+                        many=True
+                    ).data,
+                    "curators": NewUserNameOnlyListSerializer(
+                        plan.curators.all(),
+                        many=True
+                    ).data,
+                    "methodist": NewUserNameOnlyListSerializer(
+                        plan.metodist,
+                        many=False
+                    ).data
+                }
             return result
         return None
 
@@ -56,7 +66,9 @@ class HomeworkListSerializer(serializers.ModelSerializer):
                   "listener", "status", "lesson_info", "assigned", "color"]
 
     def get_status(self, obj):
-        status = obj.get_status(accepted_only=obj.listener == self.context.get("request").user)
+        status = obj.get_status(
+            accepted_only=obj.listener == self.context.get("request").user
+        )
         if status:
             return {"status": status.status,
                     "dt": status.dt}
@@ -80,12 +92,15 @@ class HomeworkListSerializer(serializers.ModelSerializer):
 
     def get_color(self, obj):
         color = None
-        hw_status = obj.get_status(accepted_only=obj.listener == self.context.get("request").user)
+        hw_status = obj.get_status(
+            accepted_only=obj.listener == self.context.get("request").user
+        )
         if hw_status.status == 6:
             color = "danger"
         elif hw_status.status == 4:
             color = "success"
-        user_groups = [g.name for g in self.context.get("request").user.groups.all()]
+        user_groups = [g.name for g in
+                       self.context.get("request").user.groups.all()]
         if "Admin" in user_groups or "Metodist" in user_groups:
             status_agreement = hw_status.agreement
             if (status_agreement.get("accepted") is not None and
@@ -107,25 +122,34 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         if lesson_id:
             try:
                 lesson = Lesson.objects.get(pk=int(lesson_id))
-                if lesson.get_learning_plan().curators.filter(id=request.user.id).exists():
+                if (lesson.get_learning_plan().curators
+                        .filter(id=request.user.id).exists()):
                     validated_data['for_curator'] = True
                 if lesson.status != 1:
                     set_assigned = False
                 listeners = lesson.get_listeners()
                 teacher = lesson.get_hw_teacher()
             except Lesson.DoesNotExist:
-                raise serializers.ValidationError({"msg": "Занятие отсутствует"})
+                raise serializers.ValidationError(
+                    {"msg": "Занятие отсутствует"}
+                )
         else:
             try:
                 lesson = None
-                listeners = NewUser.objects.filter(groups__name="Listener",
-                                                   id__in=request.POST.getlist("listeners"))
+                listeners = NewUser.objects.filter(
+                    groups__name="Listener",
+                    id__in=request.POST.getlist("listeners")
+                )
                 if not listeners:
-                    raise serializers.ValidationError({"listeners": "Ученики не найдены"})
+                    raise serializers.ValidationError(
+                        {"listeners": "Ученики не найдены"}
+                    )
                 teacher = NewUser.objects.get(groups__name="Teacher",
                                               id=request.POST.get("teacher"))
             except NewUser.DoesNotExist:
-                raise serializers.ValidationError({"teacher": "Преподаватель не найден"})
+                raise serializers.ValidationError(
+                    {"teacher": "Преподаватель не найден"}
+                )
         homeworks = []
         for listener in listeners:
             homework = Homework.objects.create(**validated_data,
@@ -136,17 +160,25 @@ class HomeworkListSerializer(serializers.ModelSerializer):
             lesson.homeworks.add(*homeworks)
             lesson.save()
         for homework in homeworks:
-            homework.materials.set(self.context.get('request').POST.getlist('materials'))
+            homework.materials.set(
+                self.context.get('request').POST.getlist('materials')
+            )
             homework.save()
             if set_assigned:
                 res = homework.set_assigned()
-                if res.get("agreement") is not None and res.get("agreement") is False:
-                    send_homework_tg(request.user, homework.listener, [homework])
+                if (res.get("agreement") is not None and
+                        res.get("agreement") is False):
+                    send_homework_tg(initiator=request.user,
+                                     listener=homework.listener,
+                                     homeworks=[homework])
                 else:
-                    send_homework_tg(initiator=homework.teacher,
-                                     listener=homework.get_lesson().get_learning_plan().metodist,
-                                     homeworks=[homework],
-                                     text="Требуется согласование действия преподавталя")
+                    send_homework_tg(
+                        initiator=homework.teacher,
+                        listener=(homework.get_lesson()
+                                  .get_learning_plan().metodist),
+                        homeworks=[homework],
+                        text="Требуется согласование действия преподавталя"
+                    )
         if len(homeworks) > 1:
             hw_group = HomeworkGroups.objects.create()
             hw_group.homeworks.add(*homeworks)
@@ -159,42 +191,55 @@ class HomeworkLogListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HomeworkLog
-        fields = ["id", "user", "comment", "status", "dt", "agreement", "files"]
+        fields = ["id", "user", "comment", "status", "dt",
+                  "agreement", "files"]
 
     def create(self, validated_data):
         def cr_obj(accepting=False):
             if accepting:
-                hwlog = HomeworkLog.objects.create(**validated_data,
-                                                   user=self.context.get("request").user,
-                                                   homework_id=self.context.get("hw_id"),
-                                                   agreement={
-                                                       "accepted_dt": None,
-                                                       "accepted": False
-                                                   })
+                hwlog = HomeworkLog.objects.create(
+                    **validated_data,
+                    user=self.context.get("request").user,
+                    homework_id=self.context.get("hw_id"),
+                    agreement={
+                        "accepted_dt": None,
+                        "accepted": False
+                    }
+                )
             else:
-                hwlog = HomeworkLog.objects.create(**validated_data,
-                                                   user=self.context.get("request").user,
-                                                   homework_id=self.context.get("hw_id"))
+                hwlog = HomeworkLog.objects.create(
+                    **validated_data,
+                    user=self.context.get("request").user,
+                    homework_id=self.context.get("hw_id")
+                )
             return hwlog
 
         hw = Homework.objects.get(pk=self.context.get("hw_id"))
         metodist = hw.get_lesson().get_learning_plan().metodist
         if metodist:
-            if (self.context.get("request").user.groups.filter(name="Admin").exists() or
+            if (self.context.get("request").user.groups
+                    .filter(name="Admin").exists() or
                     hw.get_lesson().get_learning_plan().metodist ==
                     self.context.get("request").user):
                 hwl = cr_obj(accepting=False)
-                send_homework_answer_tg(hwl.homework.listener, hwl.homework, hwl.status)
+                send_homework_answer_tg(hwl.homework.listener,
+                                        hwl.homework,
+                                        hwl.status)
             else:
                 hwl = cr_obj(accepting=True)
-                send_homework_tg(initiator=hwl.homework.teacher,
-                                 listener=hwl.homework.get_lesson().get_learning_plan().metodist,
-                                 homeworks=[hwl.homework],
-                                 text="Требуется согласование действия преподавателя")
+                send_homework_tg(
+                    initiator=hwl.homework.teacher,
+                    listener=(hwl.homework.get_lesson()
+                              .get_learning_plan().metodist),
+                    homeworks=[hwl.homework],
+                    text="Требуется согласование действия преподавателя"
+                )
 
         else:
             hwl = cr_obj(accepting=False)
-            send_homework_answer_tg(hwl.homework.listener, hwl.homework, hwl.status)
+            send_homework_answer_tg(hwl.homework.listener,
+                                    hwl.homework,
+                                    hwl.status)
         if len(self.context.get("files")) > 0:
             hwl.files.set(self.context.get("files"))
             hwl.save()

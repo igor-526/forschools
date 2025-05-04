@@ -31,7 +31,9 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
     def get_deletable(self, obj):
         if obj.phases.count() == 0:
             return True
-        return not Lesson.objects.filter(learningphases__learningplan=obj).exists()
+        return not Lesson.objects.filter(
+            learningphases__learningplan=obj
+        ).exists()
 
     def get_color(self, obj):
         if self.get_deletable(obj):
@@ -42,20 +44,26 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
 
     def validate_deadline(self, value):
         if value and value <= timezone.now().date():
-            raise serializers.ValidationError("Срок плана не может быть раньше сегодняшнего дня")
+            raise serializers.ValidationError(
+                "Срок плана не может быть раньше сегодняшнего дня"
+            )
         return value
 
     def validate_teacher(self, request, usergroups):
         req_teacher = request.POST.get('teacher')
         if ("Admin" in usergroups) or ("Metodist" in usergroups):
             if req_teacher == "":
-                raise serializers.ValidationError({"teacher": "Поле не может быть пустым"})
+                raise serializers.ValidationError(
+                    {"teacher": "Поле не может быть пустым"}
+                )
             try:
                 teacher = NewUser.objects.get(groups__name="Teacher",
                                               pk=req_teacher)
                 return teacher
             except Exception:
-                raise serializers.ValidationError({"teacher": "Преподаватель не найден"})
+                raise serializers.ValidationError(
+                    {"teacher": "Преподаватель не найден"}
+                )
         if "Teacher" in usergroups:
             return request.user
         if "Listener" in usergroups:
@@ -69,10 +77,12 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         if ("Admin" in usergroups) or ("Metodist" in usergroups):
             try:
                 metodist = NewUser.objects.get(groups__name="Metodist",
-                                              pk=metodist)
+                                               pk=metodist)
                 return metodist
             except Exception:
-                raise serializers.ValidationError({"metodist": "Методист не найден"})
+                raise serializers.ValidationError(
+                    {"metodist": "Методист не найден"}
+                )
         if "Teacher" in usergroups:
             return None
         if "Listener" in usergroups:
@@ -89,16 +99,21 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
                                               pk=req_teacher_hw)
                 return teacher
             except Exception:
-                raise serializers.ValidationError({"default_hw_teacher": "Преподаватель не найден"})
+                raise serializers.ValidationError(
+                    {"default_hw_teacher": "Преподаватель не найден"}
+                )
         if "Teacher" in usergroups:
             return request.user
         if "Listener" in usergroups:
             raise PermissionDenied("Вы не можете добалять планы обучения")
         return None
 
-    def set_new_hw_teacher(self, plan: LearningPlan, old_teacher: NewUser, new_teacher: NewUser):
-        homeworks = [{"id": hw.id,
-                      "status": hw.get_status(accepted_only=True).status} for hw in Homework.objects.filter(
+    def set_new_hw_teacher(self, plan: LearningPlan,
+                           old_teacher: NewUser, new_teacher: NewUser):
+        homeworks = [{
+            "id": hw.id,
+            "status": hw.get_status(accepted_only=True).status
+        } for hw in Homework.objects.filter(
             lesson__learningphases__learningplan=plan)]
         homeworks = [hw.get("id") for hw in list(filter(lambda hw: hw.get("status") != 4, homeworks))]
         homeworks = Homework.objects.filter(id__in=homeworks)
@@ -115,7 +130,8 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         usergroups = [group.name for group in request.user.groups.all()]
         validated_data['teacher'] = self.validate_teacher(request, usergroups)
-        validated_data['default_hw_teacher'] = self.validate_default_hw_teacher(request, usergroups)
+        validated_data['default_hw_teacher'] = (
+            self.validate_default_hw_teacher(request, usergroups))
         metodist = self.validate_metodist(request, usergroups)
         if metodist:
             validated_data['metodist'] = metodist
@@ -129,17 +145,25 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get('request')
         usergroups = [group.name for group in request.user.groups.all()]
-        validated_data['teacher'] = self.validate_teacher(request, usergroups)
-        validated_data['metodist'] = self.validate_metodist(request, usergroups)
-        validated_data['default_hw_teacher'] = self.validate_default_hw_teacher(request, usergroups)
+        validated_data['teacher'] = (
+            self.validate_teacher(request, usergroups))
+        validated_data['metodist'] = (
+            self.validate_metodist(request, usergroups))
+        validated_data['default_hw_teacher'] = (
+            self.validate_default_hw_teacher(request, usergroups))
         listeners = request.POST.getlist('listeners')
         curators = request.POST.getlist('curators')
         instance.listeners.set(listeners)
         instance.curators.set(curators)
-        if validated_data["default_hw_teacher"] != instance.default_hw_teacher:
-            self.set_new_hw_teacher(instance, instance.default_hw_teacher, validated_data["default_hw_teacher"])
+        if (validated_data["default_hw_teacher"] !=
+                instance.default_hw_teacher):
+            self.set_new_hw_teacher(instance,
+                                    instance.default_hw_teacher,
+                                    validated_data["default_hw_teacher"])
         instance.save()
-        return super(LearningPlanListSerializer, self).update(instance, validated_data)
+        return super(LearningPlanListSerializer, self).update(
+            instance, validated_data
+        )
 
     def destroy(self, instance):
         if self.get_deletable(instance):

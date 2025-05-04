@@ -18,7 +18,8 @@ class LessonTeacherReviewSerializer(serializers.ModelSerializer):
 
 class LessonSerializer(serializers.ModelSerializer):
     replace_teacher = NewUserNameOnlyListSerializer(required=False)
-    additional_listeners = NewUserNameOnlyListSerializer(required=False, many=True)
+    additional_listeners = NewUserNameOnlyListSerializer(required=False,
+                                                         many=True)
     materials = MaterialListSerializer(many=True, required=False)
     homeworks = serializers.SerializerMethodField(read_only=True)
     lesson_teacher_review = serializers.SerializerMethodField(read_only=True)
@@ -34,25 +35,43 @@ class LessonSerializer(serializers.ModelSerializer):
 
     def get_homeworks(self, obj):
         queryset = obj.homeworks.exclude(log_set__status=6)
-        return HomeworkListSerializer(queryset, many=True,
-                                      context={"request": self.context.get("request")}).data
+        return HomeworkListSerializer(
+            queryset,
+            many=True,
+            context={"request": self.context.get("request")}
+        ).data
 
     def get_learning_plan(self, obj):
         plan = obj.get_learning_plan()
         if plan:
-            return {"id": plan.id,
-                    "name": plan.name,
-                    "teacher": NewUserNameOnlyListSerializer(plan.teacher, many=False).data,
-                    "listeners": NewUserNameOnlyListSerializer(plan.listeners.all(), many=True).data,
-                    "curators": NewUserNameOnlyListSerializer(plan.curators.all(), many=True).data,
-                    "methodist": NewUserNameOnlyListSerializer(plan.metodist, many=False).data}
+            return {
+                "id": plan.id,
+                "name": plan.name,
+                "teacher": NewUserNameOnlyListSerializer(plan.teacher,
+                                                         many=False).data,
+                "listeners": NewUserNameOnlyListSerializer(
+                    plan.listeners.all(),
+                    many=True
+                ).data,
+                "curators": NewUserNameOnlyListSerializer(
+                    plan.curators.all(),
+                    many=True
+                ).data,
+                "methodist": NewUserNameOnlyListSerializer(
+                    plan.metodist,
+                    many=False
+                ).data
+            }
         else:
             return None
 
     def get_lesson_teacher_review(self, obj):
         request = self.context.get("request")
-        if request and request.user.groups.filter(name__in=["Admin", "Metodist", "Teacher"]).exists():
-            return LessonTeacherReviewSerializer(obj.lesson_teacher_review, many=False).data \
+        if request and request.user.groups.filter(
+                name__in=["Admin", "Metodist", "Teacher"]
+        ).exists():
+            return LessonTeacherReviewSerializer(obj.lesson_teacher_review,
+                                                 many=False).data \
                 if obj.lesson_teacher_review else None
         else:
             return None
@@ -71,7 +90,8 @@ class LessonSerializer(serializers.ModelSerializer):
         if place:
             instance.place = Place.objects.get(pk=place)
             instance.save()
-        return super(LessonSerializer, self).update(instance, validated_data)
+        return super(LessonSerializer, self).update(instance,
+                                                    validated_data)
 
     def destroy(self, instance):
         if instance.status == 0:
@@ -103,15 +123,23 @@ class LessonListSerializer(serializers.ModelSerializer):
         def get_color():
             if len(all_hws_statuses) == 0:
                 return "primary"
-            all_accepted = [hw.status for hw in all_hws_statuses].count(4) == len(all_hws_statuses)
+            all_accepted = [
+                               hw.status for hw in all_hws_statuses
+                           ].count(4) == len(all_hws_statuses)
             if all_accepted:
                 return 'success'
-            not_log_accepted = list(filter(lambda s: s.agreement.get("accepted") is False, all_hws_statuses))
+            not_log_accepted = list(filter(
+                lambda s: s.agreement.get("accepted") is False,
+                all_hws_statuses
+            ))
             if not_log_accepted:
                 return "warning"
             return "primary"
 
-        all_hws_statuses = [hw.get_status() for hw in obj.homeworks.exclude(log_set__status=6)]
+        all_hws_statuses = [
+            hw.get_status() for hw in
+            obj.homeworks.exclude(log_set__status=6)
+        ]
         return {"count": len(all_hws_statuses),
                 "color": get_color()}
 

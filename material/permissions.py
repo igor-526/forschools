@@ -27,4 +27,6 @@ def has_material_access(request, mat_id):
     if "Listener" in usergroups:
         if request.user in material.access.all():
             return True
-        return material.lesson.filter(learningphases__learningplan__listeners=request.user).exists()
+        return material.lesson.filter(
+            learningphases__learningplan__listeners=request.user
+        ).exists()

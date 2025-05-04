@@ -1,14 +1,24 @@
 from django.urls import path
 from django.views.generic.base import RedirectView
-from .views import (DashboardPageTemplateView, UsersPageTemplateView,
-                    ProfilePageTemplateView, EventJournalTemplateView)
-from .views_api import (UserListAPIView, UserDetailAPIView,
-                        UserPhotoAPIView, TelegramAPIView,
-                        DeactivateUserAPIView, ActivateUserAPIView,
-                        ChangePasswordAPIView, UsersForJournalListAPIView,
-                        UsersForScheduleListAPIView, ProfileEventsJournalListAPIView)
-from .views_login import (user_login, user_logout, LoginPageTemplateView,
-                          register_view, AdminLoginAPIView, UserLoginAPIView)
+from .views import (DashboardPageTemplateView,
+                    UsersPageTemplateView,
+                    ProfilePageTemplateView,
+                    EventJournalTemplateView)
+from .views_api import (UserListAPIView,
+                        UserDetailAPIView,
+                        UserPhotoAPIView,
+                        TelegramAPIView,
+                        DeactivateUserAPIView,
+                        ActivateUserAPIView,
+                        ChangePasswordAPIView,
+                        UsersForJournalListAPIView,
+                        UsersForScheduleListAPIView,
+                        ProfileEventsJournalListAPIView)
+from .views_login import (user_logout,
+                          LoginPageTemplateView,
+                          register_view,
+                          AdminLoginAPIView,
+                          UserLoginAPIView)
 from lesson.views_api import UserLessonListAPIView
 from homework.views_api import UserHWListAPIView
 
@@ -18,10 +28,13 @@ urlpatterns = [
     path('auth/', UserLoginAPIView.as_view()),
     path('logout', user_logout, name='logout'),
     path('register/', register_view, name='register'),
-    path('dashboard', DashboardPageTemplateView.as_view(), name='dashboard'),
+    path('dashboard', DashboardPageTemplateView.as_view(),
+         name='dashboard'),
     path('profile/<int:pk>', ProfilePageTemplateView.as_view()),
-    path('profile', ProfilePageTemplateView.as_view(), name='profile'),
-    path('events_journal', EventJournalTemplateView.as_view(), name='events_journal'),
+    path('profile', ProfilePageTemplateView.as_view(),
+         name='profile'),
+    path('events_journal', EventJournalTemplateView.as_view(),
+         name='events_journal'),
     path('administration/users', UsersPageTemplateView.as_view(),
          name='admin_users'),
 ]

@@ -26,7 +26,8 @@ class MaterialItemPage(CanSeeMaterialMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         material = Material.objects.get(pk=kwargs.get("pk"))
         material_type = get_type(material.file.name.split('.')[-1])
-        can_edit = material.owner == request.user or request.user.has_perm('material.add_general')
+        can_edit = (material.owner == request.user or
+                    request.user.has_perm('material.add_general'))
 
         context = {'title': material.name,
                    'material': material,

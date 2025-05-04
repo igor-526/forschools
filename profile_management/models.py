@@ -548,32 +548,46 @@ class Telegram(models.Model):
     last_name = models.CharField(verbose_name="Фамилия",
                                  null=True,
                                  blank=True)
-    setting_notifications_lesson_day = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о занятии за сутки",
-                                                           null=False,
-                                                           blank=False,
-                                                           default=True)
-    setting_notifications_lessons_hour = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о занятии за час",
-                                                             null=False,
-                                                             blank=False,
-                                                             default=True)
-    setting_notifications_tg_connecting = models.BooleanField(verbose_name="НАСТРОЙКА: Уведомление о привязке пользователя к TG",
-                                                              null=False,
-                                                              blank=False,
-                                                              default=True)
-    last_message_from_user_time = models.DateTimeField(verbose_name="Время последнего взаимодействия с ботом",
-                                                       null=True,
-                                                       blank=True)
-    last_message_from_user_id = models.IntegerField(verbose_name="ID последнего сообщения от пользователя",
-                                                    null=True,
-                                                    blank=True)
-    setting_show_hw_materials = models.BooleanField(verbose_name="НАСТРОЙКА: Показывать материалы ДЗ",
-                                                    null=False,
-                                                    default=True)
-    setting_lesson_review_form_mode = models.IntegerField(verbose_name="НАСТРОЙКА: Режим заполнения формы",
-                                                          null=False,
-                                                          blank=False,
-                                                          default=0,
-                                                          choices=LESSON_REVIEW_FORM_MODE_CHOICES)
+    setting_notifications_lesson_day = models.BooleanField(
+        verbose_name="НАСТРОЙКА: Уведомление о занятии за сутки",
+        null=False,
+        blank=False,
+        default=True
+    )
+    setting_notifications_lessons_hour = models.BooleanField(
+        verbose_name="НАСТРОЙКА: Уведомление о занятии за час",
+        null=False,
+        blank=False,
+        default=True
+    )
+    setting_notifications_tg_connecting = models.BooleanField(
+        verbose_name="НАСТРОЙКА: Уведомление о привязке пользователя к TG",
+        null=False,
+        blank=False,
+        default=True
+    )
+    last_message_from_user_time = models.DateTimeField(
+        verbose_name="Время последнего взаимодействия с ботом",
+        null=True,
+        blank=True
+    )
+    last_message_from_user_id = models.IntegerField(
+        verbose_name="ID последнего сообщения от пользователя",
+        null=True,
+        blank=True
+    )
+    setting_show_hw_materials = models.BooleanField(
+        verbose_name="НАСТРОЙКА: Показывать материалы ДЗ",
+        null=False,
+        default=True
+    )
+    setting_lesson_review_form_mode = models.IntegerField(
+        verbose_name="НАСТРОЙКА: Режим заполнения формы",
+        null=False,
+        blank=False,
+        default=0,
+        choices=LESSON_REVIEW_FORM_MODE_CHOICES
+    )
     usertype = models.CharField(verbose_name="Тип пользователя",
                                 null=False,
                                 blank=False,
@@ -583,8 +597,6 @@ class Telegram(models.Model):
                                    null=False,
                                    blank=False,
                                    default=timezone.now)
-
-
 
     class Meta:
         verbose_name = 'Привязанный Telegram'
@@ -650,12 +662,18 @@ async def aget_unread_messages_count(tgnote, sender=None, read=False):
         query['exclude']['read_data__has_key'] = f'nu{tgnote.user.id}'
         query['read']['user_id'] = tgnote.user.id
         query['read']['usertype'] = 'NewUser'
-        msgquery = [msg async for msg in tgnote.user.message_receiver.filter(**query['filter']).exclude(**query['exclude'])]
+        msgquery = [msg async for msg in
+                    tgnote.user.message_receiver.filter(
+                        **query['filter']
+                    ).exclude(**query['exclude'])]
     else:
         query['exclude']['read_data__has_key'] = f'tg{tgnote.id}'
         query['read']['user_id'] = tgnote.id
         query['read']['usertype'] = 'Telegram'
-        msgquery = [msg async for msg in tgnote.message_tg_receiver.filter(**query['filter']).exclude(**query['exclude'])]
+        msgquery = [msg async for msg in
+                    tgnote.message_tg_receiver.filter(
+                        **query['filter']
+                    ).exclude(**query['exclude'])]
     if read:
         for msg in msgquery:
             await msg.aset_read(**query['read'])

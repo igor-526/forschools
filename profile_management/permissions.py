@@ -5,7 +5,9 @@ from django.core.exceptions import PermissionDenied
 class CanSeeUserPageMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         usergroups = [group.name for group in request.user.groups.all()]
-        if ("Admin" in usergroups) or ("Metodist" in usergroups) or ("Teacher" in usergroups):
+        if (("Admin" in usergroups) or
+                ("Metodist" in usergroups) or
+                ("Teacher" in usergroups)):
             return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
 
@@ -28,7 +30,9 @@ def get_editable_perm(user, obj) -> bool:
         if ("Teacher" in objgroups) or ("Listener" in objgroups):
             return True
     if "Teacher" in usergroups:
-        if ("Admin" in objgroups) or ("Metodist" in objgroups) or ("Teacher" in objgroups):
+        if (("Admin" in objgroups) or
+                ("Metodist" in objgroups) or
+                ("Teacher" in objgroups)):
             return False
         if "Listener" in objgroups:
             return True

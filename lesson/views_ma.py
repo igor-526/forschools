@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-
 from lesson.models import Lesson
 from lesson.permissions import can_set_passed
 
@@ -45,7 +44,9 @@ class ScheduleSelectMAPage(TemplateView):
         context = {
             "title": "Пользователь",
             "is_authenticated": request.user.is_authenticated,
-            "me": request.user.groups.filter(name__in=["Teacher", "Listener"]).exists()
+            "me": request.user.groups.filter(
+                name__in=["Teacher", "Listener"]
+            ).exists()
         }
         return render(request, self.template_name, context)
 

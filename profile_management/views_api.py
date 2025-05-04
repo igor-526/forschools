@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
 from django.db.models import Q, Count
@@ -9,12 +8,15 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from chat.permissions import can_see_other_users_messages
-from .permissions import get_editable_perm, get_secretinfo_perm, CanSeeEventJournalMixin
+from .permissions import (get_editable_perm,
+                          get_secretinfo_perm,
+                          CanSeeEventJournalMixin)
 from .models import NewUser, ProfileEventsJournal
-from .serializers import (NewUserDetailSerializer, NewUserListSerializer,
-                          NewUserNameOnlyListSerializer, NewUserLastMessageDateListSerializer,
+from .serializers import (NewUserDetailSerializer,
+                          NewUserListSerializer,
+                          NewUserNameOnlyListSerializer,
+                          NewUserLastMessageDateListSerializer,
                           ProfileEventsJournalSerializer)
 
 
@@ -28,7 +30,10 @@ class DeactivateUserAPIView(LoginRequiredMixin, APIView):
             else:
                 raise PermissionDenied
         except Exception as ex:
-            return Response({'status': 'error', 'errors': ex}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                data={'status': 'error', 'errors': ex},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def patch(self, request, *args, **kwargs):
         try:
@@ -36,11 +41,17 @@ class DeactivateUserAPIView(LoginRequiredMixin, APIView):
             if get_secretinfo_perm(request.user, user) and user.get_info_deactivate().get('can_deactivate') is True:
                 user.is_active = False
                 user.save()
-                return Response({'status': 'success'}, status=status.HTTP_200_OK)
+                return Response(
+                    data={'status': 'success'},
+                    status=status.HTTP_200_OK
+                )
             else:
                 raise PermissionDenied
         except Exception as ex:
-            return Response({'status': 'error', 'errors': ex}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                data={'status': 'error', 'errors': ex},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class ActivateUserAPIView(LoginRequiredMixin, APIView):
@@ -50,11 +61,17 @@ class ActivateUserAPIView(LoginRequiredMixin, APIView):
             if get_editable_perm(request.user, user):
                 user.is_active = True
                 user.save()
-                return Response({'status': 'success'}, status=status.HTTP_200_OK)
+                return Response(
+                    data={'status': 'success'},
+                    status=status.HTTP_200_OK
+                )
             else:
                 raise PermissionDenied
         except Exception as ex:
-            return Response({'status': 'error', 'errors': ex}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                data={'status': 'error', 'errors': ex},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class ChangePasswordAPIView(LoginRequiredMixin, APIView):
@@ -68,9 +85,15 @@ class ChangePasswordAPIView(LoginRequiredMixin, APIView):
                 user.save()
             else:
                 raise PermissionDenied
-            return Response({'status': 'success'}, status=status.HTTP_200_OK)
+            return Response(
+                data={'status': 'success'},
+                status=status.HTTP_200_OK
+            )
         except ValidationError as ex:
-            return Response({'status': 'error', 'password': ex.messages}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                data={'status': 'error', 'password': ex.messages},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserListAPIView(LoginRequiredMixin, ListAPIView):
@@ -87,9 +110,13 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
     def filter_tg(self, queryset):
         q_tg = self.request.query_params.get('tg_status')
         if q_tg == "connected":
-            queryset = queryset.annotate(tg_count=Count("telegram")).filter(tg_count__gt=0)
+            queryset = queryset.annotate(
+                tg_count=Count("telegram")
+            ).filter(tg_count__gt=0)
         elif q_tg == "disconnected":
-            queryset = queryset.annotate(tg_count=Count("telegram")).filter(tg_count=0)
+            queryset = queryset.annotate(
+                tg_count=Count("telegram")
+            ).filter(tg_count=0)
         return queryset
 
     def filter_fullname(self, queryset):
@@ -118,7 +145,9 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
         exclude_me = self.request.query_params.get('exclude_me')
         if query:
             if exclude_me == "True":
-                return queryset.filter(**query).exclude(id=self.request.user.id)
+                return queryset.filter(**query).exclude(
+                    id=self.request.user.id
+                )
             else:
                 return queryset.filter(**query)
         else:
@@ -146,9 +175,12 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
         return queryset.order_by(*order_query)
 
     def get_queryset_read_all_messages(self):
-        user_groups = [group.name for group in self.request.user.groups.all()]
+        user_groups = [group.name for group in
+                       self.request.user.groups.all()]
         if "Admin" in user_groups:
-            queryset = NewUser.objects.all().exclude(id=self.request.user.id)
+            queryset = NewUser.objects.all().exclude(
+                id=self.request.user.id
+            )
         elif "Metodist" in user_groups:
             queryset = NewUser.objects.filter(
                 Q(plan_listeners__metodist=self.request.user,
@@ -167,7 +199,8 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
         if setting == 'messagesadmin':
             return self.get_queryset_read_all_messages()
         else:
-            user_groups = [group.name for group in self.request.user.groups.all()]
+            user_groups = [group.name for group in
+                           self.request.user.groups.all()]
             if "Admin" in user_groups:
                 queryset = NewUser.objects.all()
             elif "Metodist" in user_groups:
@@ -231,7 +264,8 @@ class UsersForJournalListAPIView(LoginRequiredMixin, ListAPIView):
             return NewUser.objects.filter(
                 Q(plan_listeners__teacher=self.request.user,
                   is_active=True) |
-                Q(plan_listeners__phases__lessons__replace_teacher=self.request.user,
+                Q(plan_listeners__phases__lessons__replace_teacher=
+                  self.request.user,
                   is_active=True) |
                 Q(id=self.request.user.id)
             ).distinct()
@@ -255,9 +289,15 @@ class UserPhotoAPIView(LoginRequiredMixin, APIView):
             try:
                 user.photo = data.get('photo')
                 user.save()
-                return Response({"status": "success"}, status=200)
+                return Response(
+                    data={"status": "success"},
+                    status=200
+                )
             except Exception as ex:
-                return Response({"status": "error", "errors": str(ex)}, status=400)
+                return Response(
+                    data={"status": "error", "errors": str(ex)},
+                    status=400
+                )
         else:
             raise PermissionDenied
 
@@ -266,9 +306,15 @@ class UserPhotoAPIView(LoginRequiredMixin, APIView):
         if get_editable_perm(request.user, user):
             try:
                 user.delete_photo()
-                return Response({"status": "success"}, status=204)
+                return Response(
+                    data={"status": "success"},
+                    status=204
+                )
             except Exception as ex:
-                return Response({"status": "error", "errors": str(ex)}, status=400)
+                return Response(
+                    data={"status": "error", "errors": str(ex)},
+                    status=400
+                )
 
 
 class TelegramAPIView(LoginRequiredMixin, APIView):
@@ -277,20 +323,31 @@ class TelegramAPIView(LoginRequiredMixin, APIView):
             user = NewUser.objects.get(id=kwargs.get('pk'))
             if get_editable_perm(request.user, user):
                 user.telegram.first().delete()
-                return Response({'status': 'disconnected'}, status=status.HTTP_204_NO_CONTENT)
+                return Response(
+                    data={'status': 'disconnected'},
+                    status=status.HTTP_204_NO_CONTENT
+                )
             else:
                 raise PermissionDenied
         except Exception as ex:
-            return Response({"status": "error", "errors": ex}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                data={"status": "error", "errors": ex},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def get(self, request, *args, **kwargs):
         user = NewUser.objects.get(id=kwargs.get('pk'))
         if user.telegram.exists():
-            return Response({"status": "connected"}, status=status.HTTP_200_OK)
+            return Response(
+                data={"status": "connected"},
+                status=status.HTTP_200_OK
+            )
         else:
-            return Response({"status": "disconnected",
-                             "code": user.tg_code},
-                            status=status.HTTP_200_OK)
+            return Response(
+                data={"status": "disconnected",
+                      "code": user.tg_code},
+                status=status.HTTP_200_OK
+            )
 
 
 class UsersForScheduleListAPIView(LoginRequiredMixin, ListAPIView):
@@ -325,16 +382,20 @@ class UsersForScheduleListAPIView(LoginRequiredMixin, ListAPIView):
         usergroups = [g.name for g in self.request.user.groups.all()]
         queryset = None
         if "Admin" in usergroups:
-            queryset = NewUser.objects.filter(groups__name__in=["Teacher", "Listener"],
-                                              is_active=True).exclude(pk=self.request.user.id)
+            queryset = NewUser.objects.filter(
+                groups__name__in=["Teacher", "Listener"],
+                is_active=True
+            ).exclude(pk=self.request.user.id)
         elif "Metodist" in usergroups:
-            queryset = NewUser.objects.filter(Q(groups__name__in=["Teacher", "Listener"],
-                                                is_active=True,
-                                                plan_listeners__metodist=self.request.user.id) |
-                                              Q(groups__name__in=["Teacher", "Listener"],
-                                                is_active=True,
-                                                plan_teacher__metodist=self.request.user.id
-                                                )).exclude(pk=self.request.user.id)
+            queryset = NewUser.objects.filter(
+                Q(groups__name__in=["Teacher", "Listener"],
+                  is_active=True,
+                  plan_listeners__metodist=self.request.user.id) |
+                Q(groups__name__in=["Teacher", "Listener"],
+                  is_active=True,
+                  plan_teacher__metodist=self.request.user.id
+                  )
+            ).exclude(pk=self.request.user.id)
         elif "Teacher" in usergroups:
             queryset = NewUser.objects.filter(
                 groups__name="Listener",
@@ -349,7 +410,8 @@ class UsersForScheduleListAPIView(LoginRequiredMixin, ListAPIView):
         return queryset.distinct() if queryset else None
 
 
-class ProfileEventsJournalListAPIView(CanSeeEventJournalMixin, ListAPIView):
+class ProfileEventsJournalListAPIView(CanSeeEventJournalMixin,
+                                      ListAPIView):
     serializer_class = ProfileEventsJournalSerializer
 
     def filter_queryset_all(self, queryset):
@@ -366,12 +428,15 @@ class ProfileEventsJournalListAPIView(CanSeeEventJournalMixin, ListAPIView):
         if initiator:
             query_params['initiator__in'] = initiator
         if date_start:
-            date_start = datetime.strptime(date_start, "%Y-%m-%d")
+            date_start = datetime.strptime(date_start,
+                                           "%Y-%m-%d")
             query_params['dt__date__gte'] = date_start
         if date_end:
-            date_end = datetime.strptime(date_end, "%Y-%m-%d")
+            date_end = datetime.strptime(date_end,
+                                         "%Y-%m-%d")
             query_params['dt__date__lte'] = date_end
-        return queryset.filter(**query_params).distinct() if queryset else None
+        return (queryset.filter(**query_params).distinct() if
+                queryset else None)
 
     def get_queryset(self):
         queryset = ProfileEventsJournal.objects.all()

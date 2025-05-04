@@ -20,7 +20,9 @@ class CanDownloadPlan(LoginRequiredMixin):
 
 def plans_button(request):
     usergroups = [group.name for group in request.user.groups.all()]
-    return ("Admin" in usergroups) or ("Metodist" in usergroups) or ("Teacher" in usergroups)
+    return (("Admin" in usergroups) or
+            ("Metodist" in usergroups) or
+            ("Teacher" in usergroups))
 
 
 def can_edit_plan(request, plan=None, phase=None):

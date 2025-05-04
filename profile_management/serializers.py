@@ -2,8 +2,11 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from .models import NewUser, Telegram, ProfileEventsJournal
 from django.contrib.auth.models import Group
-from data_collections.serializers import EngagementChannelSerializer, LevelSerializer
-from .permissions import get_editable_perm, get_can_add_new_engch_lvl_prg_perm, get_secretinfo_perm
+from data_collections.serializers import (EngagementChannelSerializer,
+                                          LevelSerializer)
+from .permissions import (get_editable_perm,
+                          get_can_add_new_engch_lvl_prg_perm,
+                          get_secretinfo_perm)
 
 
 class TelegramSerializer(serializers.ModelSerializer):
@@ -26,7 +29,8 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewUser
-        exclude = ['password', 'is_superuser', 'is_staff', 'tg_code', 'user_permissions']
+        exclude = ['password', 'is_superuser', 'is_staff', 'tg_code',
+                   'user_permissions']
 
     def get_can_edit(self, obj):
         request = self.context.get('request')
@@ -36,17 +40,34 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         groups = request.POST.getlist('role')
         if len(groups) == 0:
-            raise ValidationError({'role': 'Необходимо выбрать хотя бы одну роль'})
-        if ("Admin" in groups) and (not request.user.has_perm('auth.register_admin')):
-            raise ValidationError({'role': 'Вы не можете дать роль администратора'})
-        if ("Metodist" in groups) and (not request.user.has_perm('auth.register_metodist')):
-            raise ValidationError({'role': 'Вы не можете дать роль методиста'})
-        if ("Teacher" in groups) and (not request.user.has_perm('auth.register_teacher')):
-            raise ValidationError({'role': 'Вы не можете дать роль преподавателя'})
-        if ("Curator" in groups) and (not request.user.has_perm('auth.register_curator')):
-            raise ValidationError({'role': 'Вы не можете дать роль куратора'})
-        if ("Listener" in groups) and (not request.user.has_perm('auth.edit_listener')):
-            raise ValidationError({'role': 'Вы не можете редактировать учеников'})
+            raise ValidationError(
+                {'role': 'Необходимо выбрать хотя бы одну роль'}
+            )
+        if (("Admin" in groups) and
+                (not request.user.has_perm('auth.register_admin'))):
+            raise ValidationError(
+                {'role': 'Вы не можете дать роль администратора'}
+            )
+        if (("Metodist" in groups) and
+                (not request.user.has_perm('auth.register_metodist'))):
+            raise ValidationError(
+                {'role': 'Вы не можете дать роль методиста'}
+            )
+        if (("Teacher" in groups) and
+                (not request.user.has_perm('auth.register_teacher'))):
+            raise ValidationError(
+                {'role': 'Вы не можете дать роль преподавателя'}
+            )
+        if (("Curator" in groups) and
+                (not request.user.has_perm('auth.register_curator'))):
+            raise ValidationError(
+                {'role': 'Вы не можете дать роль куратора'}
+            )
+        if (("Listener" in groups) and
+                (not request.user.has_perm('auth.edit_listener'))):
+            raise ValidationError(
+                {'role': 'Вы не можете редактировать учеников'}
+            )
         status = instance.set_groups(groups)
         if status != "success":
             raise ValidationError({'role': status})
@@ -54,14 +75,16 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
     def set_engagement_channel(self, instance: NewUser, can_create):
         request = self.context.get("request")
         eng_ch = request.POST.get('eng_channel') \
-            if request.POST.get('eng_channel') else request.POST.get('eng_channel_new')
+            if request.POST.get('eng_channel') \
+            else request.POST.get('eng_channel_new')
         status = instance.set_engagement_channel(eng_ch, can_create)
         if status != "success":
             raise ValidationError({'eng_channel': status})
 
     def set_level(self, instance: NewUser, can_create):
         request = self.context.get("request")
-        level = request.POST.get('lvl') if request.POST.get('lvl') else request.POST.get('lvl_new')
+        level = request.POST.get('lvl') if request.POST.get('lvl') \
+            else request.POST.get('lvl_new')
         status = instance.set_level(level, can_create)
         if status != "success":
             raise ValidationError({'lvl': status})
@@ -75,7 +98,8 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
             self.set_engagement_channel(instance, can_create)
             instance.set_lessons_type(request.POST.get('private_lessons'),
                                       request.POST.get('group_lessons'))
-            return super(NewUserDetailSerializer, self).update(instance, validated_data)
+            return (super(NewUserDetailSerializer, self)
+                    .update(instance, validated_data))
         else:
             raise PermissionDenied
 
@@ -125,8 +149,12 @@ class TelegramListSerializer(serializers.ModelSerializer):
 
 
 class ProfileEventsJournalSerializer(serializers.ModelSerializer):
-    user = NewUserListSerializer(read_only=True, many=False, required=False)
-    initiator = NewUserListSerializer(read_only=True, many=False, required=False)
+    user = NewUserListSerializer(read_only=True,
+                                 many=False,
+                                 required=False)
+    initiator = NewUserListSerializer(read_only=True,
+                                      many=False,
+                                      required=False)
 
     class Meta:
         model = ProfileEventsJournal

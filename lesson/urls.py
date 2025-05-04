@@ -1,12 +1,20 @@
 from django.urls import path
 from .views import LessonsListPage, LessonItemPage
-from .views_api import (LessonListAPIView, LessonSetMaterialsAPIView,
-                        LessonReplaceTeacherAPIView, LessonAPIView,
-                        LessonSetPassedAPIView, PlansItemRescheduling,
-                        LessonSetNotHeldAPIView, LessonRestoreAPIView,
-                        ScheduleAPIView, LessonAdminCommentAPIView,
+from .views_api import (LessonListAPIView,
+                        LessonSetMaterialsAPIView,
+                        LessonReplaceTeacherAPIView,
+                        LessonAPIView,
+                        LessonSetPassedAPIView,
+                        PlansItemRescheduling,
+                        LessonSetNotHeldAPIView,
+                        LessonRestoreAPIView,
+                        ScheduleAPIView,
+                        LessonAdminCommentAPIView,
                         LessonSetAdditionalListeners)
-from .views_ma import LessonMAReviewFormPage, LessonItemMAPage, ScheduleSelectMAPage, ScheduleMAPage
+from .views_ma import (LessonMAReviewFormPage,
+                       LessonItemMAPage,
+                       ScheduleSelectMAPage,
+                       ScheduleMAPage)
 
 urlpatterns = [
     path('', LessonsListPage.as_view(), name='lessons'),

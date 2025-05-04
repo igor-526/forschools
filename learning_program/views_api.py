@@ -1,13 +1,20 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (ListCreateAPIView,
+                                     RetrieveUpdateDestroyAPIView)
 from rest_framework.response import Response
-from .models import LearningProgramHomework, LearningProgram, LearningProgramLesson, LearningProgramPhase
-from .serializers import (LearningProgramSerializer, LearningProgramHomeworkSerializer,
-                          LearningProgramLessonSerializer, LearningProgramPhaseSerializer)
+from .models import (LearningProgramHomework,
+                     LearningProgram,
+                     LearningProgramLesson,
+                     LearningProgramPhase)
+from .serializers import (LearningProgramSerializer,
+                          LearningProgramHomeworkSerializer,
+                          LearningProgramLessonSerializer,
+                          LearningProgramPhaseSerializer)
 
 
-class LearningProgramHomeworkListAPIView(LoginRequiredMixin, ListCreateAPIView):
+class LearningProgramHomeworkListAPIView(LoginRequiredMixin,
+                                         ListCreateAPIView):
     serializer_class = LearningProgramHomeworkSerializer
     model = LearningProgramHomework
 
@@ -15,7 +22,8 @@ class LearningProgramHomeworkListAPIView(LoginRequiredMixin, ListCreateAPIView):
         return LearningProgramHomework.objects.filter(visibility=True)
 
 
-class LearningProgramHomeworkDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+class LearningProgramHomeworkDetailAPIView(LoginRequiredMixin,
+                                           RetrieveUpdateDestroyAPIView):
     serializer_class = LearningProgramHomeworkSerializer
     model = LearningProgramHomework
 
@@ -26,7 +34,8 @@ class LearningProgramHomeworkDetailAPIView(LoginRequiredMixin, RetrieveUpdateDes
         instance = self.get_object()
         instance.visibility = False
         instance.save()
-        return Response({'status': "success"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(data={'status': "success"},
+                        status=status.HTTP_204_NO_CONTENT)
 
 
 class LearningProgramLessonListAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -40,10 +49,13 @@ class LearningProgramLessonListAPIView(LoginRequiredMixin, ListCreateAPIView):
         return queryset.distinct()
 
     def get_queryset(self):
-        return self.filter_queryset(LearningProgramLesson.objects.filter(visibility=True))
+        return self.filter_queryset(
+            LearningProgramLesson.objects.filter(visibility=True)
+        )
 
 
-class LearningProgramLessonDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+class LearningProgramLessonDetailAPIView(LoginRequiredMixin,
+                                         RetrieveUpdateDestroyAPIView):
     serializer_class = LearningProgramLessonSerializer
     model = LearningProgramLesson
 
@@ -54,10 +66,12 @@ class LearningProgramLessonDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestr
         instance = self.get_object()
         instance.visibility = False
         instance.save()
-        return Response({'status': "success"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(data={'status': "success"},
+                        status=status.HTTP_204_NO_CONTENT)
 
 
-class LearningProgramPhaseListAPIView(LoginRequiredMixin, ListCreateAPIView):
+class LearningProgramPhaseListAPIView(LoginRequiredMixin,
+                                      ListCreateAPIView):
     serializer_class = LearningProgramPhaseSerializer
     model = LearningProgramPhase
 
@@ -68,10 +82,13 @@ class LearningProgramPhaseListAPIView(LoginRequiredMixin, ListCreateAPIView):
         return queryset.distinct()
 
     def get_queryset(self):
-        return self.filter_queryset(LearningProgramPhase.objects.filter(visibility=True))
+        return self.filter_queryset(LearningProgramPhase.objects.filter(
+            visibility=True
+        ))
 
 
-class LearningProgramPhaseDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+class LearningProgramPhaseDetailAPIView(LoginRequiredMixin,
+                                        RetrieveUpdateDestroyAPIView):
     serializer_class = LearningProgramPhaseSerializer
     model = LearningProgramPhase
 
@@ -82,7 +99,8 @@ class LearningProgramPhaseDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestro
         instance = self.get_object()
         instance.visibility = False
         instance.save()
-        return Response({'status': "success"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(data={'status': "success"},
+                        status=status.HTTP_204_NO_CONTENT)
 
 
 class LearningProgramListAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -93,7 +111,8 @@ class LearningProgramListAPIView(LoginRequiredMixin, ListCreateAPIView):
         return LearningProgram.objects.filter(visibility=True)
 
 
-class LearningProgramDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
+class LearningProgramDetailAPIView(LoginRequiredMixin,
+                                   RetrieveUpdateDestroyAPIView):
     serializer_class = LearningProgramSerializer
     model = LearningProgram
 
@@ -104,4 +123,5 @@ class LearningProgramDetailAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIV
         instance = self.get_object()
         instance.visibility = False
         instance.save()
-        return Response({'status': "success"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(data={'status': "success"},
+                        status=status.HTTP_204_NO_CONTENT)

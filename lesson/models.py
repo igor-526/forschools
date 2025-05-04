@@ -98,15 +98,19 @@ class Lesson(models.Model):
     description = models.TextField(verbose_name='Описание занятия',
                                    null=True,
                                    blank=True)
-    replace_teacher = models.ForeignKey("profile_management.NewUser",
-                                        verbose_name='Замещающий преподаватель',
-                                        on_delete=models.SET_NULL,
-                                        null=True,
-                                        blank=True,
-                                        related_name='replace_teacher')
-    additional_listeners = models.ManyToManyField("profile_management.NewUser",
-                                                  verbose_name='Дополнительные ученики',
-                                                  related_name='additional_listeners')
+    replace_teacher = models.ForeignKey(
+        to="profile_management.NewUser",
+        verbose_name='Замещающий преподаватель',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='replace_teacher'
+    )
+    additional_listeners = models.ManyToManyField(
+        to="profile_management.NewUser",
+        verbose_name='Дополнительные ученики',
+        related_name='additional_listeners'
+    )
     materials = models.ManyToManyField(Material,
                                        verbose_name='Материалы',
                                        related_name='lesson',
@@ -129,19 +133,25 @@ class Lesson(models.Model):
                                  null=False,
                                  blank=True,
                                  choices=LESSON_STATUS_CHOICES)
-    from_program_lesson = models.ForeignKey(LearningProgramLesson,
-                                            verbose_name="Шаблон урока программы",
-                                            null=True,
-                                            blank=True,
-                                            on_delete=models.DO_NOTHING)
-    lesson_teacher_review = models.ForeignKey(LessonTeacherReview,
-                                              verbose_name="Отзыв преподавателя",
-                                              null=True,
-                                              blank=True,
-                                              on_delete=models.SET_NULL)
-    admin_comment = models.TextField(verbose_name="комментарий администратора",
-                                     null=True,
-                                     blank=True)
+    from_program_lesson = models.ForeignKey(
+        LearningProgramLesson,
+        verbose_name="Шаблон урока программы",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING
+    )
+    lesson_teacher_review = models.ForeignKey(
+        LessonTeacherReview,
+        verbose_name="Отзыв преподавателя",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+    admin_comment = models.TextField(
+        verbose_name="комментарий администратора",
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'Занятие'
@@ -165,16 +175,20 @@ class Lesson(models.Model):
             return lp.teacher
 
     def get_listeners(self):
-        return NewUser.objects.filter(id__in=[*[listener.get("id") for listener in
-                                                self.get_learning_plan().listeners.all().values("id")],
-                                              *[listener.get("id") for listener in
-                                                self.additional_listeners.all().values("id")]])
+        return NewUser.objects.filter(
+            id__in=[*[listener.get("id") for listener in
+                      self.get_learning_plan().listeners.all().values("id")],
+                    *[listener.get("id") for listener in
+                      self.additional_listeners.all().values("id")]]
+        )
 
     async def aget_listeners(self):
         learning_phase = await self.learningphases_set.afirst()
         learning_plan = await learning_phase.learningplan_set.afirst()
-        return [*[listener async for listener in learning_plan.listeners.all()],
-                *[listener async for listener in self.additional_listeners.all()]]
+        return [*[listener async for listener in
+                  learning_plan.listeners.all()],
+                *[listener async for listener in
+                  self.additional_listeners.all()]]
 
     def get_hw_teacher(self):
         default_hw_teacher = self.get_learning_plan().default_hw_teacher
@@ -188,8 +202,11 @@ class Lesson(models.Model):
 
     async def aget_learning_plan(self):
         learning_phase = await self.learningphases_set.afirst()
-        learning_plan = await (learning_phase.learningplan_set.select_related("teacher")
-                               .select_related("metodist").select_related("default_hw_teacher").afirst())
+        learning_plan = await (
+            learning_phase.learningplan_set.select_related("teacher")
+            .select_related("metodist").select_related("default_hw_teacher")
+            .afirst()
+        )
         return learning_plan
 
     def get_hw_deadline(self):

@@ -49,11 +49,13 @@ class Homework(models.Model):
     deadline = models.DateField(verbose_name='Срок',
                                 null=True,
                                 blank=True)
-    from_programs_hw = models.ForeignKey(LearningProgramHomework,
-                                         verbose_name="Шаблон домашнего задания",
-                                         null=True,
-                                         blank=True,
-                                         on_delete=models.SET_NULL)
+    from_programs_hw = models.ForeignKey(
+        LearningProgramHomework,
+        verbose_name="Шаблон домашнего задания",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
 
     class Meta:
         verbose_name = 'Домашнее задание'
@@ -67,7 +69,10 @@ class Homework(models.Model):
         lesson = self.get_lesson()
         name_str = self.name
         name_str += f" от {lesson.date.strftime('%d.%m')}"
-        if "Teacher" in groups or "Metodist" in groups or "Curator" in groups or "Admin" in groups:
+        if ("Teacher" in groups or
+                "Metodist" in groups or
+                "Curator" in groups or
+                "Admin" in groups):
             name_str += f" ({self.listener})"
         return name_str
 
@@ -76,7 +81,10 @@ class Homework(models.Model):
         name_str = self.name
         if lesson:
             name_str += f" от {lesson.date.strftime('%d.%m')}"
-        if "Teacher" in groups or "Metodist" in groups or "Curator" in groups or "Admin" in groups:
+        if ("Teacher" in groups or
+                "Metodist" in groups or
+                "Curator" in groups or
+                "Admin" in groups):
             name_str += f" ({self.listener})"
         return name_str
 
@@ -87,20 +95,26 @@ class Homework(models.Model):
         if assigned:
             filter_params['status'] = 7
         if accepted_only:
-            return HomeworkLog.objects.filter(Q(**filter_params,
-                                                agreement__accepted=True) |
-                                              Q(**filter_params,
-                                                agreement={})).order_by("-dt").first()
-        return HomeworkLog.objects.filter(**filter_params).order_by("-dt").first()
+            return HomeworkLog.objects.filter(
+                Q(**filter_params,
+                  agreement__accepted=True) |
+                Q(**filter_params,
+                  agreement={})
+            ).order_by("-dt").first()
+        return (HomeworkLog.objects.filter(**filter_params)
+                .order_by("-dt").first())
 
     async def aget_status(self, accepted_only=False):
         if accepted_only:
-            return await (HomeworkLog.objects.filter(Q(homework=self,
-                                                       agreement__accepted=True) |
-                                                     Q(homework=self,
-                                                       agreement={})).select_related("user")
+            return await (HomeworkLog.objects.filter(
+                Q(homework=self,
+                  agreement__accepted=True) |
+                Q(homework=self,
+                  agreement={})
+            ).select_related("user")
                           .order_by("-dt").afirst())
-        return await (HomeworkLog.objects.filter(homework=self).select_related("user")
+        return await (HomeworkLog.objects.filter(homework=self)
+                      .select_related("user")
                       .order_by("-dt").afirst())
 
     def open(self):
@@ -119,7 +133,8 @@ class Homework(models.Model):
         return self.lesson_set.first()
 
     async def aget_lesson(self):
-        return await self.lesson_set.select_related("replace_teacher").afirst()
+        return await (self.lesson_set.select_related("replace_teacher")
+                      .afirst())
 
     def set_assigned(self):
         if self.get_status().status != 6:
@@ -153,25 +168,31 @@ class Homework(models.Model):
                 if lesson:
                     lp = await lesson.aget_learning_plan()
                 if lp and lp.metodist:
-                    await HomeworkLog.objects.acreate(homework=self,
-                                                      user=self.teacher,
-                                                      comment="Домашнее задание задано",
-                                                      status=7,
-                                                      agreement={
-                                                          "accepted_dt": None,
-                                                          "accepted": False
-                                                      })
+                    await HomeworkLog.objects.acreate(
+                        homework=self,
+                        user=self.teacher,
+                        comment="Домашнее задание задано",
+                        status=7,
+                        agreement={
+                            "accepted_dt": None,
+                            "accepted": False
+                        }
+                    )
 
                     return {"agreement": True}
-                await HomeworkLog.objects.acreate(homework=self,
-                                                  user=self.teacher,
-                                                  comment="Домашнее задание задано",
-                                                  status=7)
+                await HomeworkLog.objects.acreate(
+                    homework=self,
+                    user=self.teacher,
+                    comment="Домашнее задание задано",
+                    status=7
+                )
                 return {"agreement": False}
-            await HomeworkLog.objects.acreate(homework=self,
-                                              user=self.teacher,
-                                              comment="Домашнее задание задано",
-                                              status=7)
+            await HomeworkLog.objects.acreate(
+                homework=self,
+                user=self.teacher,
+                comment="Домашнее задание задано",
+                status=7
+            )
             return {"agreement": False}
         return None
 
