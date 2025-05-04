@@ -12,7 +12,7 @@ from lesson.permissions import CanReplaceTeacherMixin
 from material.models import File, Material
 from tgbot.funcs.homeworks.homework_show import open_homework_in_tg
 from tgbot.utils import (send_homework_tg, notify_chat_message,
-                         send_homework_answer_tg)
+                         send_homework_answer_tg, sync_funcs)
 from user_logs.models import UserLog
 from .models import Homework, HomeworkLog
 from .utils import status_code_to_string
@@ -201,6 +201,16 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         return self.filter_queryset_all(Homework.objects.filter(q))
 
     def create(self, request, *args, **kwargs):
+        tg_id = request.POST.get("tg_id")
+        lesson_id = request.POST.get("lesson_id")
+        if tg_id and lesson_id:
+            result = sync_funcs.add_hw(tg_id, lesson_id)
+            if result['status'] is False:
+                return Response(data={"status": "error",
+                                      "error": result['error']},
+                                status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"status": "ok"},
+                            status=status.HTTP_200_OK)
         serializer = self.get_serializer(data=request.data,
                                          context={'request': request})
         serializer.is_valid(raise_exception=True)

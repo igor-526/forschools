@@ -1,5 +1,11 @@
-from django.db.models import Q, QuerySet
+from celery import shared_task
+from django.db.models import Q, QuerySet, Count
+from datetime import datetime, date, timedelta
+from django.utils import timezone
 from dls.celery import app
+from download_data.models import GenerateFilesTasks
+from download_data.utils import ExcelFileMaker
+from learning_plan.models import LearningPlan
 from profile_management.models import Telegram, NewUser
 from tgbot.keyboards.lessons import get_lesson_place_button
 from .models import Lesson
@@ -356,3 +362,306 @@ def notification_teachers_lessons_not_passed(tz=3, today=False) -> None:
 
     lessons_info = collect_lessons_info()
     notify_telegram(lessons_info)
+
+
+class LessonsDataCreator:
+    queryset: QuerySet | None
+    filter_query: {}
+    fields_ru = []
+    data = []
+
+    def __init__(self, filter_query: dict, fields: list):
+        self.filter_query = filter_query
+        self.queryset = None
+        self.get_queryset()
+        self.set_fields_ru(fields)
+        if self.queryset is not None:
+            for lesson in self.queryset:
+                lesson_info = {}
+                learning_plan = lesson.get_learning_plan()
+                hw_info = [hw.get_status() for hw in lesson.homeworks.all()]
+                if "name_plan" in fields:
+                    lesson_info["Наименование (план обучения)"] = (
+                        self.get_field_name_plan_value(lesson)
+                    )
+                if "name_fact" in fields:
+                    lesson_info["Наименование (фактическое)"] = (
+                        self.get_field_name_fact_value(lesson)
+                    )
+                if "date" in fields:
+                    lesson_info["Дата"] = (
+                        self.get_field_date_value(lesson)
+                    )
+                if "time" in fields:
+                    lesson_info["Время"] = (
+                        self.get_field_time_value(lesson)
+                    )
+                if "teacher" in fields:
+                    lesson_info["Преподаватель"] = (
+                        self.get_field_teacher_value(lesson)
+                    )
+                if "listeners" in fields:
+                    lesson_info["Ученики"] = (
+                        self.get_field_listeners_value(lesson)
+                    )
+                if "methodist" in fields:
+                    lesson_info["Методист"] = (
+                        self.get_field_methodist_value(learning_plan)
+                    )
+                if "curators" in fields:
+                    lesson_info["Кураторы"] = (
+                        self.get_field_curators_value(learning_plan)
+                    )
+                if "status" in fields:
+                    lesson_info["Статус"] = (
+                        self.get_field_status_value(lesson)
+                    )
+                if "review" in fields:
+                    lesson_info["Ревью"] = (
+                        self.get_field_review_value(lesson)
+                    )
+                if "admin_comment" in fields:
+                    lesson_info["Комментарий администратора"] = (
+                        self.get_field_admin_comment_value(lesson)
+                    )
+                if "hw_all" in fields:
+                    lesson_info["ДЗ (общее количество)"] = (
+                        self.get_field_hw_all_value(hw_info)
+                    )
+                if "hw_agreement" in fields:
+                    lesson_info["ДЗ (ожидает согласования)"] = (
+                        self.get_field_hw_agreement_value(hw_info)
+                    )
+                if "hw_processing" in fields:
+                    lesson_info["ДЗ (ожидает выполнения)"] = (
+                        self.get_field_hw_processing_value(hw_info)
+                    )
+                if "hw_checking" in fields:
+                    lesson_info["ДЗ (ожидает проверки)"] = (
+                        self.get_field_hw_checking_value(hw_info)
+                    )
+                if "hw_accepted" in fields:
+                    lesson_info["ДЗ (принято)"] = (
+                        self.get_field_hw_accepted_value(hw_info)
+                    )
+                self.data.append(lesson_info)
+
+    def set_fields_ru(self, fields: list):
+        if "name_plan" in fields:
+            self.fields_ru.append("Наименование (план обучения)")
+        if "name_fact" in fields:
+            self.fields_ru.append("Наименование (фактическое)")
+        if "date" in fields:
+            self.fields_ru.append("Дата")
+        if "time" in fields:
+            self.fields_ru.append("Время")
+        if "teacher" in fields:
+            self.fields_ru.append("Преподаватель")
+        if "listeners" in fields:
+            self.fields_ru.append("Ученики")
+        if "methodist" in fields:
+            self.fields_ru.append("Методист")
+        if "curators" in fields:
+            self.fields_ru.append("Кураторы")
+        if "status" in fields:
+            self.fields_ru.append("Статус")
+        if "review" in fields:
+            self.fields_ru.append("Ревью")
+        if "admin_comment" in fields:
+            self.fields_ru.append("Комментарий администратора")
+        if "hw_all" in fields:
+            self.fields_ru.append("ДЗ (общее количество)")
+        if "hw_agreement" in fields:
+            self.fields_ru.append("ДЗ (ожидает согласования)")
+        if "hw_processing" in fields:
+            self.fields_ru.append("ДЗ (ожидает выполнения)")
+        if "hw_checking" in fields:
+            self.fields_ru.append("ДЗ (ожидает проверки)")
+        if "hw_accepted" in fields:
+            self.fields_ru.append("ДЗ (принято)")
+
+    def get_field_name_plan_value(self, lesson: Lesson) -> str:
+        return lesson.name if lesson.name else "Отсутствует"
+
+    def get_field_name_fact_value(self, lesson: Lesson) -> str:
+        return lesson.name_fact if lesson.name_fact else "Отсутствует"
+
+    def get_field_date_value(self, lesson: Lesson) -> str:
+        return lesson.date.strftime('%d.%m.%Y') if lesson.date \
+            else "Отсутствует"
+
+    def get_field_time_value(self, lesson: Lesson) -> str:
+        return (f"{lesson.start_time.strftime('%H:%M')} - "
+                f"{lesson.end_time.strftime('%H:%M')}") if \
+            (lesson.start_time and lesson.end_time) \
+            else "Отсутствует"
+
+    def get_field_teacher_value(self, lesson: Lesson) -> str:
+        teacher = lesson.get_teacher()
+        return f"{teacher.first_name} {teacher.last_name}" if teacher else ""
+
+    def get_field_listeners_value(self, lesson: Lesson) -> str:
+        listeners = [f'{listener.first_name} {listener.last_name}'
+                     for listener in lesson.get_listeners()]
+        return "\n".join(listeners) if listeners \
+            else "Отсутствует"
+
+    def get_field_methodist_value(self, learning_plan: LearningPlan) -> str:
+        return (f'{learning_plan.metodist.first_name} '
+                f'{learning_plan.metodist.last_name}') if (
+            learning_plan.metodist) else "Отсутствует"
+
+    def get_field_curators_value(self, learning_plan: LearningPlan) -> str:
+        curators = [f'{curator.first_name} {curator.last_name}'
+                    for curator in learning_plan.curators.all()]
+        return "\n".join(curators) if curators else "Отсутствуют"
+
+    def get_field_status_value(self, lesson: Lesson) -> str:
+        if lesson.status == 0:
+            return "Не проведён"
+        if lesson.status == 1:
+            return "Проведён"
+        if lesson.status == 2:
+            return "Отменён"
+
+    def get_field_review_value(self, lesson: Lesson) -> str:
+        if lesson.lesson_teacher_review is None:
+            return "Отсутствует"
+        review_text = []
+        if lesson.lesson_teacher_review.materials is not None:
+            review_text.append(f"Используемые материалы: "
+                               f"{lesson.lesson_teacher_review.materials}")
+        if lesson.lesson_teacher_review.lexis is not None:
+            review_text.append(f"Лексика: "
+                               f"{lesson.lesson_teacher_review.lexis}")
+        if lesson.lesson_teacher_review.grammar is not None:
+            review_text.append(f"Грамматика: "
+                               f"{lesson.lesson_teacher_review.grammar}")
+        if lesson.lesson_teacher_review.note is not None:
+            review_text.append(f"Примечание: "
+                               f"{lesson.lesson_teacher_review.note}")
+        if lesson.lesson_teacher_review.org is not None:
+            review_text.append(f"Орг. моменты и поведение ученика: "
+                               f"{lesson.lesson_teacher_review.org}")
+        if lesson.lesson_teacher_review.dt is not None:
+            review_text.append(
+                f"Дата и время заполнения: "
+                f"{lesson.lesson_teacher_review.dt.strftime('%d.%m.%Y %H:%M')}"
+            )
+        return "\n".join(review_text)
+
+    def get_field_admin_comment_value(self, lesson: Lesson) -> str:
+        if lesson.admin_comment is None:
+            return "Отсутствует"
+        return lesson.admin_comment
+
+    def get_field_hw_all_value(self, hw_info: list) -> str:
+        return str(len(hw_info))
+
+    def get_field_hw_agreement_value(self, hw_info: list) -> str:
+        return str(len(list(filter(
+            lambda info: info.agreement.get("accepted") is False, hw_info
+        ))))
+
+    def get_field_hw_processing_value(self, hw_info: list) -> str:
+        return str(len(list(filter(
+            lambda info: info.status in [1, 2, 5, 7], hw_info
+        ))))
+
+    def get_field_hw_checking_value(self, hw_info: list) -> str:
+        return str(len(list(filter(
+            lambda info: info.status == 3, hw_info
+        ))))
+
+    def get_field_hw_accepted_value(self, hw_info: list) -> str:
+        return str(len(list(filter(
+            lambda info: info.status == 4, hw_info
+        ))))
+
+    def filter_hw(self, lesson: Lesson, hw_statuses, hw_agreement):
+        homework_statuses = [hw.get_status() for hw in lesson.homeworks.all()]
+        for hw_status in homework_statuses:
+            if hw_agreement and hw_status.agreement.get("accepted") is False:
+                return True
+            if (hw_statuses and hw_status.status in
+                    [int(st) for st in hw_statuses]):
+                return True
+        return False
+
+    def get_queryset(self):
+        query = dict()
+        lesson_status = self.filter_query.get("filter_status")
+        ds = self.filter_query.get("filter_date_start")
+        de = self.filter_query.get("filter_date_end")
+        teachers = self.filter_query.get("filter_list_teachers")
+        listeners = self.filter_query.get("filter_list_listeners")
+        has_hw = self.filter_query.get("filter_hw")
+        name = self.filter_query.get("filter_name")
+        has_comment = self.filter_query.get("filter_admin_comment")
+        hw_agreement = self.filter_query.get("filter_hw_agreement_status")
+        hw_statuses = self.filter_query.get("filter_list_hw_statuses")
+        lesson_places = self.filter_query.get("filter_list_places")
+        if lesson_status:
+            query['status'] = lesson_status
+        if ds:
+            query['date__gte'] = ds
+        if de:
+            query['date__lte'] = de
+        if listeners:
+            query['learningphases__learningplan__listeners__in'] = listeners
+        if has_hw == "false":
+            query['hw_count'] = 0
+        elif has_hw == "true":
+            query['hw_count__gt'] = 0
+        if name:
+            query['name__icontains'] = name
+        if lesson_places:
+            query['place__in'] = lesson_places
+        if has_comment == "false":
+            query['admin_comment__isnull'] = True
+        elif has_comment == "true":
+            query['admin_comment__isnull'] = False
+        if teachers:
+            queryset = Lesson.objects.annotate(
+                hw_count=Count("homeworks")
+            ).filter(
+                Q(learningphases__learningplan__teacher_id__in=teachers,
+                  **query) |
+                Q(replace_teacher_id__in=teachers,
+                  **query)
+            )
+        else:
+            queryset = Lesson.objects.annotate(
+                hw_count=Count("homeworks")
+            ).filter(**query)
+        if queryset and (hw_agreement or hw_statuses):
+            listed_queryset = list(queryset)
+            filtered_queryset = list(filter(
+                lambda lesson: self.filter_hw(lesson,
+                                              hw_statuses,
+                                              hw_agreement),
+                listed_queryset
+            ))
+            if not filtered_queryset:
+                return None
+            queryset = Lesson.objects.filter(
+                id__in=[lesson.id for lesson in filtered_queryset]
+            )
+        self.queryset = queryset
+
+
+@shared_task
+def lessons_download(filter_query: dict,
+                     fields: list,
+                     note_id: int):
+    data = LessonsDataCreator(filter_query, fields)
+    file = ExcelFileMaker(
+        data=data.data,
+        columns=data.fields_ru,
+        filename=f'Занятия_'
+                 f'{datetime.date.today().strftime("%d.%m.%Y")}'
+    )
+    note = GenerateFilesTasks.objects.get(pk=note_id)
+    note.task_complete = timezone.now()
+    note.output_file = file.filepath_db
+    note.save()

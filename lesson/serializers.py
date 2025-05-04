@@ -83,7 +83,17 @@ class LessonSerializer(serializers.ModelSerializer):
         return can_set_not_held(self.context.get('request'), obj)
 
     def get_awaiting_action(self, obj):
-        return can_set_passed(self.context.get('request'), obj)
+        plan = obj.get_learning_plan()
+        can_set_passed_ = can_set_passed(
+            self.context.get('request'), obj
+        )
+        if ((can_set_passed_ and plan and plan.can_report_lesson_name_only) or
+                (can_set_passed_ and self.context.get(
+                    'request').user.groups.filter(name="Admin").exists())):
+            return "name_only"
+        if can_set_passed_ and plan and not plan.can_report_lesson_name_only:
+            return "full"
+        return False
 
     def update(self, instance, validated_data):
         place = self.context.get('request').POST.get("place")

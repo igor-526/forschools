@@ -9,7 +9,7 @@ function lessonsMobileSetFieldsSetModal(){
     lessonsMobileSetFieldsModalListenersSwitch.checked = cookiesUtilsGet("lessonsMobFieldListeners") === "1"
     lessonsMobileSetFieldsModalHWButtonSwitch.checked = cookiesUtilsGet("lessonsMobFieldHWButton") === "1"
     lessonsMobileSetFieldsModalHWCountSwitch.checked = cookiesUtilsGet("lessonsMobFieldHWCount") === "1"
-    if (lessonsMobileParamsIsAdmin){
+    if (isAdmin){
         lessonsMobileSetFieldsModalAdminCommentSwitch.checked = cookiesUtilsGet("lessonsMobFieldAdminComment") === "1"
     }
 
@@ -24,7 +24,7 @@ function lessonsMobileSetFieldsAccept(){
     cookiesUtilsSet("lessonsMobFieldHWButton", lessonsMobileSetFieldsModalHWButtonSwitch.checked ? "1" : "0")
     cookiesUtilsSet("lessonsMobFieldHWCount", lessonsMobileSetFieldsModalHWCountSwitch.checked ? "1" : "0")
 
-    if (lessonsMobileParamsIsAdmin) {
+    if (isAdmin) {
         cookiesUtilsSet("lessonsMobFieldAdminComment", lessonsMobileSetFieldsModalAdminCommentSwitch.checked ? "1" : "0")
     }
     bsLessonsMobileSetFieldsModal.hide()

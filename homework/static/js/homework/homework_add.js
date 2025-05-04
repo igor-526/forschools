@@ -37,7 +37,7 @@ function HWAddSetTeachersListeners(){
 
     const selectedListener = getHashValue("listener")?Number(getHashValue("listener")):null
     const selectedTeacher = getHashValue("teacher")?Number(getHashValue("teacher")):null
-    if (isAdminOrMetodist){
+    if (isAdmin || isMethodist){
         usersAPIGetTeachers().then(request => {
             switch (request.status){
                 case 200:

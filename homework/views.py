@@ -2,7 +2,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from dls.settings import MATERIAL_FORMATS
-from dls.utils import get_menu
 from lesson.permissions import hw_perm_can_set_replace
 from .models import Homework
 from .permissions import (get_send_hw_permission,
@@ -23,13 +22,7 @@ class HomeworksListPage(LoginRequiredMixin, TemplateView):
         settings = get_homework_list_settings(user_groups)
         context = {
             'title': 'Домашние задания',
-            'menu': "hw" if self.request.user_agent.is_mobile
-            else get_menu(request.user),
             'can_add_hw': True,
-            'is_admin': "Admin" in user_groups,
-            'is_admin_or_metodist': "Admin" in user_groups or
-                                    "Metodist" in user_groups,
-            'is_teacher': "Teacher" in user_groups,
             "tabs": settings["tabs"],
             "settings": settings["settings"],
             'material_formats': MATERIAL_FORMATS
@@ -46,7 +39,6 @@ class HomeworkItemPage(LoginRequiredMixin, TemplateView):
         if hw_status == 1 and hw.listener == request.user:
             hw.open()
         context = {'title': hw.name,
-                   'menu': get_menu(request.user),
                    "hw": hw,
                    "can_send": get_send_hw_permission(hw, request),
                    "can_check": get_can_check_hw_permission(hw, request),

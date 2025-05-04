@@ -1,11 +1,11 @@
-function lessonShowOffcanvas(lessonID, isAdmin=lessonsMobileParamsIsAdmin){
+function lessonShowOffcanvas(lessonID){
     lessonShowOffcanvasSelectedLessonID = lessonID
     lessonsAPIGetItem(lessonID).then(request => {
         switch (request.status){
             case 200:
                 const lessonOffcanvas = mobileInfoOffcanvasSet(request.response.name)
                 mobileInfoOffcanvasAddData("Основные данные", lessonOffcanvas,
-                    lessonShowGetMainInfoContent(request.response, isAdmin))
+                    lessonShowGetMainInfoContent(request.response, lessonOffcanvas))
                 if (request.response.lesson_teacher_review){
                     mobileInfoOffcanvasAddData("Ревью", lessonOffcanvas,
                         lessonShowGetReviewContent(request.response.lesson_teacher_review))
@@ -18,7 +18,7 @@ function lessonShowOffcanvas(lessonID, isAdmin=lessonsMobileParamsIsAdmin){
                 addMaterialsButton.disabled = true
                 mobileInfoOffcanvasAddData("Материалы", lessonOffcanvas, [materialsInfo, addMaterialsButton])
                 mobileInfoOffcanvasAddData("Домашние задания", lessonOffcanvas,
-                    lessonShowGetHomeworksContent(request.response.homeworks, isAdmin))
+                    lessonShowGetHomeworksContent(request.response.homeworks, lessonID, lessonOffcanvas))
                 mobileInfoOffcanvasAddData("План обучения", lessonOffcanvas,
                     lessonShowGetLearningPlanContent(request.response.learning_plan))
                 break
@@ -29,7 +29,7 @@ function lessonShowOffcanvas(lessonID, isAdmin=lessonsMobileParamsIsAdmin){
     })
 }
 
-function lessonShowGetMainInfoContent(lesson, isAdmin){
+function lessonShowGetMainInfoContent(lesson, lessonOffcanvas){
     const elements = []
 
     const dateTimeP = document.createElement("p")
@@ -100,7 +100,7 @@ function lessonShowGetMainInfoContent(lesson, isAdmin){
         passLessonButton.classList.add("btn", "btn-success", "w-100", "my-3")
         passLessonButton.innerHTML = "Провести занятие"
         passLessonButton.addEventListener("click", function () {
-            lessonItemSetPassedOffcanvas(lesson.id, false)
+            lessonItemSetPassedOffcanvas(lesson.id, lesson.awaiting_action === "name_only", lessonOffcanvas)
         })
         elements.push(passLessonButton)
     }
@@ -108,7 +108,7 @@ function lessonShowGetMainInfoContent(lesson, isAdmin){
     return elements
 }
 
-function lessonShowGetHomeworksContent(homeworks, isAdmin){
+function lessonShowGetHomeworksContent(homeworks, lessonID, lessonOffcanvas){
     const ul = document.createElement("ul")
     ul.classList.add("list-group", "list-group-flush")
 
@@ -121,7 +121,7 @@ function lessonShowGetHomeworksContent(homeworks, isAdmin){
             a.classList.add(`list-group-item-${hw.color}`)
         }
         a.addEventListener("click", function () {
-            homeworkItemShowOffcanvas(hw.id, isAdmin)
+            homeworkItemShowOffcanvas(hw.id)
         })
         ul.insertAdjacentElement("beforeend", a)
     })
@@ -130,7 +130,9 @@ function lessonShowGetHomeworksContent(homeworks, isAdmin){
     newHWButton.classList.add("btn", "btn-primary", "my-3")
     newHWButton.type = "button"
     newHWButton.innerHTML = "Задать ДЗ"
-    newHWButton.disabled = true
+    newHWButton.addEventListener("click", function () {
+        lessonItemSetAddHWOffcanvas(lessonID, lessonOffcanvas)
+    })
     ul.insertAdjacentElement("beforeend", newHWButton)
 
     return [ul]
@@ -235,7 +237,7 @@ function lessonShowGetReviewContent(review){
     return elements
 }
 
-function lessonItemSetPassedOffcanvas(lessonID, onlyName=false){
+function lessonItemSetPassedOffcanvas(lessonID, onlyName=false, lessonOffcanvas){
     const lessonSetPassedOffcanvas = mobileInfoOffcanvasSet("Провести занятие")
     let validateInfo = []
 
@@ -260,6 +262,7 @@ function lessonItemSetPassedOffcanvas(lessonID, onlyName=false){
     nameDiv.insertAdjacentElement("beforeend", nameHelp)
     nameDiv.insertAdjacentElement("beforeend", nameError)
     validateInfo.push({
+        name: "name",
         inputElement: nameInput,
         errorElement: nameError,
         error: null,
@@ -288,6 +291,7 @@ function lessonItemSetPassedOffcanvas(lessonID, onlyName=false){
         materialsDiv.insertAdjacentElement("beforeend", materialsHelp)
         materialsDiv.insertAdjacentElement("beforeend", materialsError)
         validateInfo.push({
+            name: "materials",
             inputElement: materialsInput,
             errorElement: materialsError,
             error: null,
@@ -315,6 +319,7 @@ function lessonItemSetPassedOffcanvas(lessonID, onlyName=false){
         lexisDiv.insertAdjacentElement("beforeend", lexisHelp)
         lexisDiv.insertAdjacentElement("beforeend", lexisError)
         validateInfo.push({
+            name: "lexis",
             inputElement: lexisInput,
             errorElement: lexisError,
             error: null,
@@ -342,6 +347,7 @@ function lessonItemSetPassedOffcanvas(lessonID, onlyName=false){
         grammarDiv.insertAdjacentElement("beforeend", grammarHelp)
         grammarDiv.insertAdjacentElement("beforeend", grammarError)
         validateInfo.push({
+            name: "grammar",
             inputElement: grammarInput,
             errorElement: grammarError,
             error: null,
@@ -369,6 +375,7 @@ function lessonItemSetPassedOffcanvas(lessonID, onlyName=false){
         noteDiv.insertAdjacentElement("beforeend", noteHelp)
         noteDiv.insertAdjacentElement("beforeend", noteError)
         validateInfo.push({
+            name: "note",
             inputElement: noteInput,
             errorElement: noteError,
             error: null,
@@ -396,6 +403,7 @@ function lessonItemSetPassedOffcanvas(lessonID, onlyName=false){
         orgDiv.insertAdjacentElement("beforeend", orgHelp)
         orgDiv.insertAdjacentElement("beforeend", orgError)
         validateInfo.push({
+            name: "org",
             inputElement: orgInput,
             errorElement: orgError,
             error: null,
@@ -409,14 +417,82 @@ function lessonItemSetPassedOffcanvas(lessonID, onlyName=false){
     passButton.type = "button"
     passButton.innerHTML = "Провести занятие"
     passButton.addEventListener("click", function (){
-        lessonItemSetPassed(lessonID, validateInfo, form)
+        lessonItemSetPassed(lessonID, validateInfo, form, lessonSetPassedOffcanvas, lessonOffcanvas)
     })
 
     mobileInfoOffcanvasAddData("", lessonSetPassedOffcanvas, [form, passButton])
 }
 
-function lessonItemSetPassed(lessonID, validateInfo, form) {
-    universalFieldValidatior(validateInfo)
+function lessonItemSetPassed(lessonID, validateInfo, form, lessonSetPassedOffcanvas, lessonOffcanvas) {
+    function getFormData(){
+        const fd = new FormData(form)
+        if (tgID){
+            fd.append("notify_tg_id", tgID)
+        }
+        return fd
+    }
+
+    if (universalFieldValidatior(validateInfo)){
+        lessonsAPISetPassed(lessonID, getFormData()).then(request => {
+            switch (request.status){
+                case 200:
+                    mobileInfoOffcanvasClose(lessonSetPassedOffcanvas)
+                    mobileInfoOffcanvasClose(lessonOffcanvas)
+                    lessonShowOffcanvas(lessonShowOffcanvasSelectedLessonID)
+                    break
+                case 400:
+                    if (request.response.hasOwnProperty("errors")){
+                        validateInfo.forEach(field => {
+                            if (request.response.errors.hasOwnProperty(field.name)){
+                                field.error = request.response.errors[field.name]
+                            }
+                        })
+                        universalFieldValidatior(validateInfo)
+                    }
+                    break
+                default:
+                    mobileInfoOffcanvasClose(lessonSetPassedOffcanvas)
+                    showErrorToast()
+                    break
+            }
+        })
+    }
+}
+
+function lessonItemSetAddHWOffcanvas(lessonID, lessonOffcanvas){
+    const lessonAddHWOffcanvas = mobileInfoOffcanvasSet("Новое ДЗ")
+    const content = []
+
+    if (tgID){
+        const tgButton = document.createElement("button")
+        tgButton.classList.add("btn", "btn-primary", "w-100")
+        tgButton.innerHTML = "Задать через TG"
+        tgButton.type = "button"
+        tgButton.addEventListener("click", function () {
+            const fd = new FormData()
+            fd.append("lesson_id", lessonID)
+            fd.append("tg_id", tgID)
+            homeworkAPIAdd(fd).then(request => {
+                mobileInfoOffcanvasClose(lessonAddHWOffcanvas)
+                mobileInfoOffcanvasClose(lessonOffcanvas)
+                switch (request.status){
+                    case 200:
+                        showSuccessToast("Перейдите в Telegram")
+                        break
+                    case 400:
+                        showErrorToast(request.response.error)
+                        break
+                    default:
+                        showErrorToast()
+                        break
+                }
+            })
+        })
+        content.push(tgButton)
+    }
+
+    mobileInfoOffcanvasAddData("", lessonAddHWOffcanvas,
+        content)
 }
 
 let lessonShowOffcanvasSelectedLessonID = null

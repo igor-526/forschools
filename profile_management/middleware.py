@@ -13,6 +13,9 @@ file_handler.setFormatter(log_format)
 logger.addHandler(file_handler)
 
 
+
+
+
 class LastActivityMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response

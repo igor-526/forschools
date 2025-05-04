@@ -16,7 +16,7 @@ function lessonListGetElement(lesson){
                 `)
             })
         }
-        if (lessonsMobileParamsIsAdmin && cookiesUtilsGet("lessonsMobFieldAdminComment") === "1"){
+        if (isAdmin && cookiesUtilsGet("lessonsMobFieldAdminComment") === "1"){
             let adminComment = lesson.admin_comment ? lesson.admin_comment : "Без комментария"
             if (adminComment.length > 15){
                 adminComment = adminComment.substring(0, 12) + "..."

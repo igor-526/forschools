@@ -1,4 +1,4 @@
-function homeworkItemShowOffcanvas(homeworkID, isAdmin=homeworksMobileParamsIsAdmin){
+function homeworkItemShowOffcanvas(homeworkID){
     homeworkItemShowOffcanvasSelectedHWID = homeworkID
     homeworkAPIGetItem(homeworkID).then(request => {
         switch (request.status){
@@ -67,7 +67,7 @@ function homeworkItemShowOffcanvasGetMainInfoContent(hw, isAdmin){
         lessonP.innerHTML += `<span class="fw-bold">Занятие: </span> ${hw.lesson_info.name}`
         lessonP.style.color = "#0d6efd"
         lessonP.addEventListener("click", function () {
-            lessonShowOffcanvas(hw.lesson_info.id, isAdmin)
+            lessonShowOffcanvas(hw.lesson_info.id)
         })
         elements.push(lessonP)
     }

@@ -10,6 +10,8 @@ class GenerateFilesTasksListSerializer(serializers.ModelSerializer):
     def get_type(self, obj):
         if obj.type == 1:
             return "Все планы обучения"
+        if obj.type == 2:
+            return "Занятия"
         return "Неизвестно"
 
     class Meta:

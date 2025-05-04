@@ -2,7 +2,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from .models import Material
-from dls.utils import get_menu
 from .utils.get_type import get_type
 from dls.settings import MATERIAL_FORMATS
 from .permissions import CanSeeMaterialMixin
@@ -14,7 +13,6 @@ class MaterialPage(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = {
             'title': 'Материалы',
-            'menu': get_menu(request.user),
             'material_formats': MATERIAL_FORMATS
         }
         return render(request, self.template_name, context)
@@ -31,7 +29,6 @@ class MaterialItemPage(CanSeeMaterialMixin, TemplateView):
 
         context = {'title': material.name,
                    'material': material,
-                   'menu': get_menu(request.user),
                    'material_type': material_type,
                    'can_edit': can_edit,
                    'material_formats': MATERIAL_FORMATS}

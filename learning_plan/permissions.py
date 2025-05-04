@@ -6,7 +6,7 @@ from lesson.models import Lesson
 
 class CanSeePlansPageMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
-        if plans_button(request):
+        if request.user.groups.filter(name__in=['Admin', 'Metodist']):
             return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
 
@@ -16,13 +16,6 @@ class CanDownloadPlan(LoginRequiredMixin):
         if can_download_plan(request):
             return super().dispatch(request, *args, **kwargs)
         raise PermissionDenied('Permission denied')
-
-
-def plans_button(request):
-    usergroups = [group.name for group in request.user.groups.all()]
-    return (("Admin" in usergroups) or
-            ("Metodist" in usergroups) or
-            ("Teacher" in usergroups))
 
 
 def can_edit_plan(request, plan=None, phase=None):

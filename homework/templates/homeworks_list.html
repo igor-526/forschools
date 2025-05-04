@@ -7,7 +7,7 @@
                 <h1>Домашние задания</h1>
             </div>
             <div class="col-auto">
-                {% if is_admin_or_metodist or is_teacher %}
+                {% if is_admin or id_methodist or is_teacher %}
                     <button id="homeworksAddOffcanvasButton" type="button" class="btn btn-primary mt-1"><i class="bi bi-plus-lg"></i></button>
                     {% include "homework_add_offcanvas.html" %}
                     {% include "materials_embed_modal.html" %}
@@ -106,8 +106,6 @@
 {% endblock %}
 {% block static_js %}
     <script>
-        const isAdminOrMetodist = {% if is_admin_or_metodist %}true{% else %}false{% endif %}
-        const isTeacher = {% if is_teacher %}true{% else %}false{% endif %}
         const userObj = {
             id: {{ request.user.id }},
             first_name: "{{ request.user.first_name }}",
@@ -130,7 +128,7 @@
     <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/homework/homeworks.js' %}"></script>
     <script src="{% static 'js/homework/homeworks_filter.js' %}"></script>
-    {% if is_admin_or_metodist or is_teacher %}
+    {% if is_admin or is_methodist or is_teacher %}
         <script>
             const materialEmbedAction = "addToHW_"
             const see_general = {% if perms.material.see_all_general %}true{% else %}false{% endif %}

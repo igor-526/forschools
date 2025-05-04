@@ -1,4 +1,7 @@
+from typing import List
+
 from django.db import models
+from django.db.models import QuerySet
 from django.utils import timezone
 from material.models import Material
 from homework.models import Homework
@@ -81,10 +84,14 @@ class LessonTeacherReview(models.Model):
 
 
 class Lesson(models.Model):
-    name = models.CharField(verbose_name='Наименование',
+    name = models.CharField(verbose_name='Наименование по плану',
                             max_length=200,
                             null=False,
                             blank=False)
+    name_fact = models.CharField(verbose_name='Наименование фактическое',
+                                 max_length=200,
+                                 null=True,
+                                 blank=True)
     start_time = models.TimeField(verbose_name='Начало занятия',
                                   null=True,
                                   blank=True)
@@ -161,20 +168,20 @@ class Lesson(models.Model):
     def __str__(self):
         return f'{self.name} - {self.date}'
 
-    def get_teacher(self):
+    def get_teacher(self) -> NewUser:
         if self.replace_teacher:
             return self.replace_teacher
         else:
             return self.get_learning_plan().teacher
 
-    async def aget_teacher(self):
+    async def aget_teacher(self) -> NewUser:
         if self.replace_teacher:
             return self.replace_teacher
         else:
             lp = await self.aget_learning_plan()
             return lp.teacher
 
-    def get_listeners(self):
+    def get_listeners(self) -> QuerySet[NewUser]:
         return NewUser.objects.filter(
             id__in=[*[listener.get("id") for listener in
                       self.get_learning_plan().listeners.all().values("id")],
@@ -182,7 +189,7 @@ class Lesson(models.Model):
                       self.additional_listeners.all().values("id")]]
         )
 
-    async def aget_listeners(self):
+    async def aget_listeners(self) -> List[NewUser]:
         learning_phase = await self.learningphases_set.afirst()
         learning_plan = await learning_phase.learningplan_set.afirst()
         return [*[listener async for listener in

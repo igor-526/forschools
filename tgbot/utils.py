@@ -1,20 +1,25 @@
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import os
+from typing import Dict
+
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 from django.db.models import Q
 from chat.models import Message, AdminMessage
 from dls.settings import MEDIA_ROOT
+from lesson.models import Lesson
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
 from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot, dp
 import async_to_sync as sync
+
+from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.fileutils import send_file
 from tgbot.keyboards.chats import chats_get_answer_message_button
 from tgbot.keyboards.lessons import get_lesson_ma_button
 from tgbot.keyboards.materials import get_materials_keyboard_query
-from tgbot.keyboards.homework import get_homeworks_buttons
+from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_editing_buttons
 from dls.utils import get_tg_id_sync
 from tgbot.models import TgBotJournal
 
@@ -107,6 +112,58 @@ class AsyncClass:
         file_path_new = os.path.join(MEDIA_ROOT, *file_path_new_db)
         os.rename(os.path.join(*file_path), file_path_new)
         return os.path.join(*file_path_new_db)
+
+    async def add_hw(self, tg_id, lesson_id) -> Dict[str, bool] | Dict[str, str | bool]:
+        try:
+            lesson = await Lesson.objects.aget(id=lesson_id)
+            state: FSMContext = FSMContext(
+                storage=dp.storage,
+                key=StorageKey(
+                    chat_id=tg_id,
+                    user_id=tg_id,
+                    bot_id=bot.id))
+
+            last_count = await Homework.objects.acount()
+            deadline = date.today() + timedelta(days=6)
+            plan = await lesson.aget_learning_plan()
+            await state.update_data({
+                "new_hw": {
+                    "hw_id": None,
+                    'lesson_id': lesson_id,
+                    "name": f'ДЗ {last_count + 1}',
+                    "description": None,
+                    "materials": [],
+                    "deadline": {
+                        'day': deadline.day,
+                        'month': deadline.month,
+                        'year': deadline.year
+                    },
+                },
+                "messages_to_delete": []
+            })
+
+            await state.set_state(HomeworkNewFSM.change_menu)
+            listeners = await lesson.aget_listeners()
+            listeners_str = ', '.join([f'{listener.first_name} {listener.last_name}' for listener in listeners])
+            msg_text = (f"Вы задаёте ДЗ к занятию от {lesson.date.strftime('%d.%m')}\n"
+                        f"{'Ученик: ' if len(listeners) == 1 else 'Ученики: '}: "
+                        f"{listeners_str}")
+            if plan.pre_hw_comment:
+                msg_text += (f'\n\n<b>Необходимо учесть следующий комментарий:</b>'
+                             f'\n{plan.pre_hw_comment}')
+            msg_text += ("\n\nПерешлите сюда или прикрепите материал, или напишите сообщение\n"
+                         "Когда будет готово, нажмите кнопку <b>'Подтвердить ДЗ'</b>")
+            await bot.send_message(chat_id=tg_id,
+                                   text=msg_text,
+                                   reply_markup=get_homework_editing_buttons())
+            return {"status": True}
+        except Lesson.DoesNotExist:
+            return {"status": False,
+                    "error": "Занятие не найдено"}
+        except Exception as e:
+            print(e)
+            return {"status": False,
+                    "error": str(e)}
 
 
 sync_funcs = sync.methods(AsyncClass())

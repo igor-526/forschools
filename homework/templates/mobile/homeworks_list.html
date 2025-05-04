@@ -16,7 +16,6 @@
 {% endblock %}
 {% block static_js %}
     <script>
-        const homeworksMobileParamsIsAdmin = {% if is_admin %} true {% else %} false {% endif %}
         const homeworkMobileSettingAgreementFilter = {% if settings.show_agreement_filter %}true{% else %}false{% endif %}
         const homeworkMobileTabsInfo = []
         {% for tab in tabs %}

@@ -11,6 +11,23 @@ function lessonsMain(){
         lessonsCurrentOffset += 50
         lessonsGet(true)
     })
+    if (lessonsDownloadDataButton){
+        lessonsDownloadDataButton.addEventListener("click", function () {
+            downloadDataEngineSetModal("lessons", {
+                filter_name: lessonsTableFilterName,
+                filter_admin_comment: lessonsTableFilterComment,
+                filter_list_teachers: lessonsTableFilterTeachersSelected,
+                filter_list_listeners: lessonsTableFilterListenersSelected,
+                filter_date_start: lessonsTableFilterDateStart,
+                filter_date_end: lessonsTableFilterDateEnd,
+                filter_list_places: lessonsTableFilterPlaces,
+                filter_hw: lessonsTableFilterHW,
+                filter_list_hw_statuses: lessonsTableFilterHWStatuses,
+                filter_hw_agreement_status: lessonsTableFilterHWAgreementStatus,
+                filter_status: lessonsCurrentStatus
+            })
+        })
+    }
 }
 
 function lessonsOpenHomeworksButtonListeners(){
@@ -189,10 +206,10 @@ function lessonsShow(lessons, clear=true, replace_element=null){
         replace_element.replaceWith(getLessonElement(lessons, collapse))
     } else {
         lessons.forEach(lesson => {
-        const collapse = getCollapseElement(lesson.id)
-        lessonsTableBody.insertAdjacentElement("beforeend", getLessonElement(lesson, collapse.collapse))
-        lessonsTableBody.insertAdjacentElement("beforeend", collapse.tr)
-    })
+            const collapse = getCollapseElement(lesson.id)
+            lessonsTableBody.insertAdjacentElement("beforeend", getLessonElement(lesson, collapse.collapse))
+            lessonsTableBody.insertAdjacentElement("beforeend", collapse.tr)
+        })
     }
 }
 
@@ -315,6 +332,9 @@ function lessonsShowHomeworkCollapse(collapses, action="toggle"){
         }
     })
 }
+
+//Buttons
+const lessonsDownloadDataButton = document.querySelector("#lessonsDownloadDataButton")
 
 //Tabs
 const lessonsTabUpcoming = document.querySelector("#LessonsTabUpcoming")

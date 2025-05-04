@@ -63,7 +63,7 @@ function lessonsMobileFiltersSet(){
     } else if (lessonsMobileFiltersModalHWNoButton.checked) {
         lessonsMobileFilterHW = "false"
     }
-    if (lessonsMobileParamsIsAdmin){
+    if (isAdmin){
         if (lessonsMobileFiltersModalAdminCommentAllButton.checked){
             lessonsMobileFilterComment = null
         } else if (lessonsMobileFiltersModalAdminCommentYesButton.checked) {
@@ -94,7 +94,7 @@ function lessonsMobileFiltersReset(){
     lessonsMobileFiltersModalHWAllButton.checked = true
     lessonsMobileFiltersModalHWYesButton.checked = false
     lessonsMobileFiltersModalHWNoButton.checked = false
-    if (lessonsMobileParamsIsAdmin){
+    if (isAdmin){
         lessonsMobileFiltersModalAdminCommentAllButton.checked = true
         lessonsMobileFiltersModalAdminCommentYesButton.checked = false
         lessonsMobileFiltersModalAdminCommentNoButton.checked = false

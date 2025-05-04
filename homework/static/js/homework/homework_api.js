@@ -19,7 +19,7 @@ async function homeworkAPIAddToLesson(lessonID, formData){
 
 async function homeworkAPIAdd(formData){
     const response = await fetch('/api/v1/homeworks/', {
-        method: "post",
+        method: "POST",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

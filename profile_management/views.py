@@ -1,7 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from dls.utils import get_menu
 from json import dumps
 from django.http import Http404
 from .permissions import CanSeeUserPageMixin, CanSeeEventJournalMixin
@@ -12,7 +11,7 @@ class DashboardPageTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Дэшборд', 'menu': get_menu(request.user)}
+        context = {'title': 'Дэшборд'}
         return render(request, self.template_name, context)
 
 
@@ -84,7 +83,6 @@ class ProfilePageTemplateView(LoginRequiredMixin, TemplateView):
             raise Http404
 
         context = {'title': f"Профиль: {puser}",
-                   'menu': get_menu(request.user),
                    'puser': user_object,
                    'can_see_data': True,
                    'self': puser == request.user}
@@ -96,7 +94,6 @@ class UsersPageTemplateView(CanSeeUserPageMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Пользователи',
-                   'menu': get_menu(request.user),
                    'perms': dumps({
                        'permissions': list(
                            request.user.get_all_permissions()
@@ -109,6 +106,5 @@ class EventJournalTemplateView(CanSeeEventJournalMixin, TemplateView):
     template_name = "events_journal/events_journal_main.html"
 
     def get(self, request, *args, **kwargs):
-        context = {'title': 'Журнал событий пользователей',
-                   'menu': get_menu(request.user)}
+        context = {'title': 'Журнал событий пользователей'}
         return render(request, self.template_name, context)

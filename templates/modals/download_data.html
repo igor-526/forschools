@@ -1,0 +1,23 @@
+<div class="modal" tabindex="-1" id="downloadDataModal">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="downloadDataModalHeader"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="downloadDataModalForm">
+                    <div class="form-check form-switch">
+                        <input name="listeners_level" class="form-check-input" type="checkbox" id="downloadDataModalFormListenersLevel" checked>
+                        <label class="form-check-label" for="downloadDataModalFormListenersLevel">Ученики (Уровень)</label>
+                    </div>
+                </form>
+                <div id="downloadDataModalErrors" class="alert alert-danger d-none" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button id="downloadDataModalDownloadButton" type="button" class="btn btn-warning">Создать задание</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -284,6 +284,58 @@ class LessonReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
 
 
 class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
+    def notify_users(self, plan_, lesson_: Lesson,
+                     user_: NewUser, tg_id: str | None) -> None:
+        for listener in plan_.listeners.all():
+            for hw in lesson_.homeworks.filter(listener=listener):
+                res = hw.set_assigned()
+                if res and res.get("agreement") is False:
+                    send_homework_tg(user_,
+                                     listener,
+                                     [hw])
+                    if hw.for_curator:
+                        for curator in plan_.curators.all():
+                            send_homework_tg(
+                                initiator=user_,
+                                listener=curator,
+                                homeworks=[hw],
+                                text="Преподаватель задал ДЗ"
+                            )
+                else:
+                    send_homework_tg(
+                        initiator=user_,
+                        listener=plan_.metodist,
+                        homeworks=[hw],
+                        text="Преподаватель задал ДЗ. "
+                             "Требуется согласование"
+                    )
+        if tg_id:
+            notify_lesson_passed(
+                tg_id=int(tg_id),
+                text="Занятие успешно проведено!",
+                lesson_id=lesson_.id
+            )
+
+    def log_admin(self, lesson_: Lesson, user_: NewUser) -> None:
+        UserLog.objects.create(
+            log_type=2,
+            color="success",
+            learning_plan=lesson_.get_learning_plan(),
+            title=f"Занятие '{lesson_.name}' от "
+                  f"{lesson_.date.strftime('%d.%m.%Y')} "
+                  f"проведено",
+            content={
+                "list": [],
+                "text": ["Занятие было помечено проведённым "
+                         "АДМИНИСТРАТОРОМ"]
+            },
+            buttons=[{
+                "href": f"/lessons/{lesson_.id}",
+                "inner": "Занятие"
+            }],
+            user=user_
+        )
+
     def post(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
@@ -299,88 +351,34 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
             return Response(data={'error': "Необходимо задать ДЗ"},
                             status=status.HTTP_400_BAD_REQUEST)
         if can_set_passed(request, lesson):
-            validation = validate_lesson_review_form(request.POST)
+            validation = validate_lesson_review_form(
+                data=request.POST,
+                name_only=plan.can_report_lesson_name_only or is_admin
+            )
             review = LessonTeacherReview.objects.create(
                 **validation.get("review")
-            ) if validation.get("status") else None
+            ) if (validation.get("status") and plan.can_report_lesson_name_only)\
+                else None
             lesson_name = request.POST.get("name").strip(" ") if (
                 request.POST.get("name")) else None
-            if is_admin:
-                if lesson_name:
-                    if len(lesson_name) < 200:
-                        lesson.name = lesson_name
-                    else:
-                        return Response(
-                            data={'error': 'Наименование занятия не может '
-                                           'быть более 200 символов'},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
-                if review:
-                    lesson.lesson_teacher_review = review
-                else:
-                    UserLog.objects.create(
-                        log_type=2,
-                        color="success",
-                        learning_plan=lesson.get_learning_plan(),
-                        title=f"Занятие '{lesson.name}' от "
-                              f"{lesson.date.strftime('%d.%m.%Y')} "
-                              f"проведено",
-                        content={
-                            "list": [],
-                            "text": ["Занятие было помечено проведённым "
-                                     "АДМИНИСТРАТОРОМ"]
-                        },
-                        buttons=[{
-                            "href": f"/lessons/{lesson.id}",
-                            "inner": "Занятие"
-                        }],
-                        user=request.user
-                    )
+            if validation.get("status"):
+                lesson.name_fact = lesson_name
+                lesson.lesson_teacher_review = review
                 lesson.status = 1
                 lesson.save()
+                if is_admin:
+                    self.log_admin(lesson, request.user)
+                self.notify_users(plan_=plan,
+                                  lesson_=lesson,
+                                  user_=request.user,
+                                  tg_id=request.POST.get("notify_tg_id"))
             else:
-                if validation.get("status"):
-                    lesson.name = lesson_name
-                    lesson.lesson_teacher_review = review
-                    lesson.status = 1
-                    lesson.save()
-                else:
-                    return Response(
-                        data={'error': "\n".join(validation.get("errors"))},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            for listener in plan.listeners.all():
-                for hw in lesson.homeworks.filter(listener=listener):
-                    res = hw.set_assigned()
-                    if (res and res.get("agreement") is not None
-                            and res.get("agreement") is False):
-                        send_homework_tg(request.user,
-                                         listener,
-                                         [hw])
-                        if hw.for_curator:
-                            for curator in plan.curators.all():
-                                send_homework_tg(
-                                    initiator=hw.teacher,
-                                    listener=curator,
-                                    homeworks=[hw],
-                                    text="Преподаватель задал ДЗ"
-                                )
-                    else:
-                        send_homework_tg(
-                            initiator=hw.teacher,
-                            listener=plan.metodist,
-                            homeworks=[hw],
-                            text="Преподаватель задал ДЗ. "
-                                 "Требуется согласование"
-                        )
-            if request.POST.get("notify_tg_id"):
-                notify_lesson_passed(
-                    tg_id=int(request.POST.get("notify_tg_id")),
-                    text="Занятие успешно проведено!",
-                    lesson_id=lesson.id
+                return Response(
+                    data={'errors': validation.get("errors")},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
             return Response(data={'status': 'ok'},
-                            status=status.HTTP_201_CREATED)
+                            status=status.HTTP_200_OK)
         else:
             return Response(data={'error': "Недостаточно прав для "
                                            "изменения статуса занятия"},

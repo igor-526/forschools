@@ -1,8 +1,16 @@
 from datetime import datetime
-from rest_framework.generics import ListAPIView
+
+from rest_framework import status
+
 from download_data.models import GenerateFilesTasks
 from download_data.permissions import CanSeeGeneratedData
 from download_data.serializers import GenerateFilesTasksListSerializer
+
+from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from lesson.tasks import lessons_download
 
 
 class GeneratedListAPIView(CanSeeGeneratedData, ListAPIView):
@@ -31,3 +39,32 @@ class GeneratedListAPIView(CanSeeGeneratedData, ListAPIView):
         elif task_complete == "true":
             query['task_complete__isnull'] = False
         return GenerateFilesTasks.objects.filter(**query)
+
+
+class GenerateNewData(CanSeeGeneratedData, APIView):
+    def post(self, request, *args, **kwargs):
+        filter_query = {}
+        fields = []
+
+        try:
+            for key in request.POST.keys():
+                if "filter_list_" in key:
+                    filter_query[key] = request.POST.getlist(key)
+                    continue
+                if "filter_" in key:
+                    filter_query[key] = request.POST.get(key)
+                if request.POST.get(key) == "on":
+                    fields.append(key)
+
+            if kwargs.get("mode") == "lessons":
+                task = GenerateFilesTasks.objects.create(
+                    type=2,
+                    initiator=request.user
+                )
+                lessons_download(filter_query, fields, task.id)
+            return Response(data={"status": "ok"},
+                            status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(data={"status": "error",
+                                  "errors": [str(e)]},
+                            status=status.HTTP_400_BAD_REQUEST)

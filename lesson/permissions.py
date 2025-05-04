@@ -97,10 +97,9 @@ def can_add_homework(request, lesson: Lesson):
 def can_set_passed(request, lesson: Lesson):
     if lesson.status != 0 or lesson.date > timezone.now().date():
         return False
-    if lesson.get_teacher() == request.user:
+    if lesson.get_teacher() == request.user and lesson.homeworks.count():
         return True
-    user_groups = get_usergroups(request.user)
-    if "Admin" in user_groups:
+    if request.user.groups.filter(name="Admin").exists():
         return True
     if lesson.get_learning_plan().metodist == request.user:
         return True

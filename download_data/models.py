@@ -3,6 +3,7 @@ from profile_management.models import NewUser
 
 TASKS_TYPES = (
     (1, 'Все планы обучения'),
+    (2, 'Занятия'),
 )
 
 

@@ -219,3 +219,15 @@ async function lessonsAPISetAdditionalListeners(lessonID, fd){
     })
     return await APIPostPatchToObject(request)
 }
+
+async function lessonsAPIDownloadData(fd){
+    const request = await fetch(`/api/v1/generated/download/lessons/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
+}

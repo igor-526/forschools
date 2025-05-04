@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from dls.utils import get_menu
 from .permissions import (CanSeePlansPageMixin,
                           can_edit_plan,
                           can_generate_from_program,
@@ -20,7 +19,6 @@ class PlansPageView(CanSeePlansPageMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = {'title': 'Планы обучения',
-                   'menu': get_menu(request.user),
                    'can_download': can_download_plan(request),
                    'can_set_teacher': self.get_teacher_set_permission()}
         return render(request, self.template_name, context)
@@ -33,7 +31,6 @@ class PlansItemPageView(CanSeePlansPageMixin, TemplateView):
         plan = LearningPlan.objects.get(pk=kwargs.get("pk"))
         context = {
             'title': plan.name,
-            'menu': get_menu(request.user),
             'plan': plan,
             'can_edit_plan': can_edit_plan(request, plan),
             'can_generate_from_program':

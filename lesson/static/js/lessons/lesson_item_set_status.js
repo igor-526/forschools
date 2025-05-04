@@ -347,7 +347,7 @@ function lessonItemSetStatusPassedSet(){
         lessonsAPISetPassed(lessonID,
             new FormData(lessonItemStatusPassedModalForm)).then(request => {
             switch (request.status){
-                case 201:
+                case 200:
                     bsLessonItemStatusPassedModal.hide()
                     showSuccessToast("Занятие успешно проведено!")
                     lessonItemStatus.innerHTML = "Занятие проведено"

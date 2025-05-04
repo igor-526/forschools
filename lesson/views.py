@@ -1,9 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from learning_plan.permissions import plans_button, get_can_see_plan
+from learning_plan.permissions import get_can_see_plan
 from .models import Lesson
-from dls.utils import get_menu
 from dls.settings import MATERIAL_FORMATS
 from .permissions import (CanSeeLessonMixin,
                           hw_perm_can_set_replace,
@@ -22,11 +21,9 @@ class LessonsListPage(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = {
             'title': 'Занятия',
-            'menu': "lesson" if self.request.user_agent.is_mobile else
-            get_menu(request.user),
-            'plans_button': plans_button(request),
-            'is_admin': request.user.groups.filter(name='Admin').exists()
         }
+        if self.request.user_agent.is_mobile:
+            context['menu'] = 'lesson'
         return render(request, self.get_template_names(), context)
 
 
@@ -47,7 +44,6 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
         if get_can_see_plan(request, lp, lesson):
             plan_button = lp.id
         context = {
-            'menu': get_menu(request.user),
             'lesson': lesson,
             'can_set_replace': hw_perm_can_set_replace(request),
             'can_see_materials': can_see_lesson_materials(request, lesson),
@@ -56,7 +52,6 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
             'can_set_passed': can_set_passed(request, lesson),
             'hw_curator_button': hw_curator_button,
             'material_formats': MATERIAL_FORMATS,
-            'is_admin': request.user.groups.filter(name="Admin").exists(),
             'plan_button': plan_button
         }
         if can_add_hw:

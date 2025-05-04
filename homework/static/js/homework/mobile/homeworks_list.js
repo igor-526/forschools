@@ -102,7 +102,7 @@ function homeworksMobileShow(homeworks=[]){
             lessonP.classList.add("mb-0")
             lessonP.insertAdjacentElement("beforeend", lessonIcon)
             lessonP.addEventListener("click", function () {
-                lessonShowOffcanvas(hw.lesson_info.id, homeworksMobileParamsIsAdmin)
+                lessonShowOffcanvas(hw.lesson_info.id)
             })
 
             if (cookiesUtilsGet("hwMobFieldLessonName") === "1"){

@@ -216,7 +216,7 @@ function maLessonReviewSend() {
     if (maLessonReviewValidate()) {
         lessonsAPISetPassed(lessonID, getFD()).then(request => {
             switch (request.status) {
-                case 201:
+                case 200:
                     tgAPI.close()
                     break
                 case 400:

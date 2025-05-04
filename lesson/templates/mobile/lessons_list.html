@@ -33,9 +33,6 @@
     {% endif %}
 {% endblock %}
 {% block static_js %}
-    <script>
-        const lessonsMobileParamsIsAdmin = {% if is_admin %} true {% else %} false {% endif %}
-    </script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/universal_field_validator.js' %}"></script>
     <script src="{% static 'js/collections/collections_api.js' %}"></script>

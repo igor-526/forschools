@@ -66,6 +66,14 @@ function mobileInfoOffcanvasAddData(header, offcanvas, content=[]){
 }
 
 
+function mobileInfoOffcanvasClose(offcanvas) {
+    offcanvas.bsElement.hide()
+    setTimeout(() => {
+        offcanvas.element.remove()
+    }, 1000)
+}
+
+
 function mobileInfoMaterialsGetBlock(materials=[]){
     const mainDiv = document.createElement("div")
     mainDiv.classList.add("d-flex")

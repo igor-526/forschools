@@ -38,6 +38,12 @@
 <script src="https://unpkg.com/@jarstone/dselect/dist/js/dselect.js"></script>
 <script>
     const csrftoken = '{{ csrf_token }}'
+    const isAdmin = {% if is_admin %}true{% else %}false{% endif %}
+    const isMethodist = {% if is_methodist %}true{% else %}false{% endif %}
+    const isTeacher = {% if is_teacher %}true{% else %}false{% endif %}
+    const isCurator = {% if is_curator %}true{% else %}false{% endif %}
+    const isListener = {% if is_listener %}true{% else %}false{% endif %}
+    const tgID = {% if tg_id %} {{ tg_id }}{% else %}null{% endif %}
 </script>
 <script src="{% static 'js/icon_utils.js' %}"></script>
 <script src="{% static 'js/materials_preview.js' %}"></script>
