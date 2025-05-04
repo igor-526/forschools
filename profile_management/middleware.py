@@ -36,23 +36,24 @@ class ErrorLogsMiddleware:
                     params = dict(request.POST)
                 else:
                     params = {}
-            except Exception as e:
+            except Exception:
                 params = None
             try:
                 if request.method in ["POST", "PATCH"]:
                     data = response.data
                 else:
                     data = None
-            except Exception as e:
+            except Exception:
                 data = None
-            WSGIErrorsLog.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                path_info=request.path_info,
-                method=request.method,
-                status_code=response.status_code,
-                params=params,
-                response=data,
-            )
+            if response.status_code != 404 and request.user is not None:
+                WSGIErrorsLog.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    path_info=request.path_info,
+                    method=request.method,
+                    status_code=response.status_code,
+                    params=params,
+                    response=data,
+                )
         return response
 
     def process_exception(self, request, exception):
@@ -67,7 +68,7 @@ class ErrorLogsMiddleware:
                 params = dict(request.GET)
             elif request.method == "POST":
                 params = dict(request.POST)
-        except Exception as e:
+        except Exception:
             params = None
         WSGIErrorsLog.objects.create(
             user=request.user if request.user.is_authenticated else None,

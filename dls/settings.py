@@ -172,7 +172,7 @@ MATERIAL_FORMATS = {
     'pdf_formats': ['pdf'],
     'word_formats': ['doc', 'docx'],
     'voice_formats': ['ogg', 'oga'],
-    'audio_formats': ['mp3', 'm4a', 'wma'],
+    'audio_formats': ['mp3', 'm4a', 'wma', 'wav'],
     'text_formats': ['txt'],
     'presentation_formats': ['pptx'],
 }
