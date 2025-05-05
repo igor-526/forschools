@@ -416,9 +416,29 @@ class LessonsDataCreator:
                     lesson_info["Статус"] = (
                         self.get_field_status_value(lesson)
                     )
-                if "review" in fields:
-                    lesson_info["Ревью"] = (
-                        self.get_field_review_value(lesson)
+                if "review_materials" in fields:
+                    lesson_info["Ревью (Материалы)"] = (
+                        self.get_field_review_materials_value(lesson)
+                    )
+                if "review_lexis" in fields:
+                    lesson_info["Ревью (Лексика)"] = (
+                        self.get_field_review_lexis_value(lesson)
+                    )
+                if "review_grammar" in fields:
+                    lesson_info["Ревью (Грамматика)"] = (
+                        self.get_field_review_grammar_value(lesson)
+                    )
+                if "review_note" in fields:
+                    lesson_info["Ревью (Примечание)"] = (
+                        self.get_field_review_note_value(lesson)
+                    )
+                if "review_org" in fields:
+                    lesson_info["Ревью (Орг. моменты и поведение ученика)"] = (
+                        self.get_field_review_org_value(lesson)
+                    )
+                if "review_dt" in fields:
+                    lesson_info["Ревью (Дата и время заполнения)"] = (
+                        self.get_field_review_dt_value(lesson)
                     )
                 if "admin_comment" in fields:
                     lesson_info["Комментарий администратора"] = (
@@ -465,8 +485,18 @@ class LessonsDataCreator:
             self.fields_ru.append("Кураторы")
         if "status" in fields:
             self.fields_ru.append("Статус")
-        if "review" in fields:
-            self.fields_ru.append("Ревью")
+        if "review_materials" in fields:
+            self.fields_ru.append("Ревью (Материалы)")
+        if "review_lexis" in fields:
+            self.fields_ru.append("Ревью (Лексика)")
+        if "review_grammar" in fields:
+            self.fields_ru.append("Ревью (Грамматика)")
+        if "review_note" in fields:
+            self.fields_ru.append("Ревью (Примечание)")
+        if "review_org" in fields:
+            self.fields_ru.append("Ревью (Орг. моменты и поведение ученика)")
+        if "review_dt" in fields:
+            self.fields_ru.append("Ревью (Дата и время заполнения)")
         if "admin_comment" in fields:
             self.fields_ru.append("Комментарий администратора")
         if "hw_all" in fields:
@@ -503,7 +533,7 @@ class LessonsDataCreator:
     def get_field_listeners_value(self, lesson: Lesson) -> str:
         listeners = [f'{listener.first_name} {listener.last_name}'
                      for listener in lesson.get_listeners()]
-        return "\n".join(listeners) if listeners \
+        return ", ".join(listeners) if listeners \
             else "Отсутствует"
 
     def get_field_methodist_value(self, learning_plan: LearningPlan) -> str:
@@ -514,7 +544,7 @@ class LessonsDataCreator:
     def get_field_curators_value(self, learning_plan: LearningPlan) -> str:
         curators = [f'{curator.first_name} {curator.last_name}'
                     for curator in learning_plan.curators.all()]
-        return "\n".join(curators) if curators else "Отсутствуют"
+        return ", ".join(curators) if curators else "Отсутствуют"
 
     def get_field_status_value(self, lesson: Lesson) -> str:
         if lesson.status == 0:
@@ -524,31 +554,42 @@ class LessonsDataCreator:
         if lesson.status == 2:
             return "Отменён"
 
-    def get_field_review_value(self, lesson: Lesson) -> str:
-        if lesson.lesson_teacher_review is None:
+    def get_field_review_materials_value(self, lesson: Lesson) -> str:
+        if (lesson.lesson_teacher_review is None or
+                lesson.lesson_teacher_review.materials is None):
             return "Отсутствует"
-        review_text = []
-        if lesson.lesson_teacher_review.materials is not None:
-            review_text.append(f"Используемые материалы: "
-                               f"{lesson.lesson_teacher_review.materials}")
-        if lesson.lesson_teacher_review.lexis is not None:
-            review_text.append(f"Лексика: "
-                               f"{lesson.lesson_teacher_review.lexis}")
-        if lesson.lesson_teacher_review.grammar is not None:
-            review_text.append(f"Грамматика: "
-                               f"{lesson.lesson_teacher_review.grammar}")
-        if lesson.lesson_teacher_review.note is not None:
-            review_text.append(f"Примечание: "
-                               f"{lesson.lesson_teacher_review.note}")
-        if lesson.lesson_teacher_review.org is not None:
-            review_text.append(f"Орг. моменты и поведение ученика: "
-                               f"{lesson.lesson_teacher_review.org}")
-        if lesson.lesson_teacher_review.dt is not None:
-            review_text.append(
-                f"Дата и время заполнения: "
-                f"{lesson.lesson_teacher_review.dt.strftime('%d.%m.%Y %H:%M')}"
-            )
-        return "\n".join(review_text)
+        return lesson.lesson_teacher_review.materials
+
+    def get_field_review_lexis_value(self, lesson: Lesson) -> str:
+        if (lesson.lesson_teacher_review is None or
+                lesson.lesson_teacher_review.lexis is None):
+            return "Отсутствует"
+        return lesson.lesson_teacher_review.lexis
+
+    def get_field_review_grammar_value(self, lesson: Lesson) -> str:
+        if (lesson.lesson_teacher_review is None or
+                lesson.lesson_teacher_review.grammar is None):
+            return "Отсутствует"
+        return lesson.lesson_teacher_review.grammar
+
+    def get_field_review_note_value(self, lesson: Lesson) -> str:
+        if (lesson.lesson_teacher_review is None or
+                lesson.lesson_teacher_review.note is None):
+            return "Отсутствует"
+        return lesson.lesson_teacher_review.note
+
+    def get_field_review_org_value(self, lesson: Lesson) -> str:
+        if (lesson.lesson_teacher_review is None or
+                lesson.lesson_teacher_review.org is None):
+            return "Отсутствует"
+        return lesson.lesson_teacher_review.org
+
+    def get_field_review_dt_value(self, lesson: Lesson) -> str:
+        if (lesson.lesson_teacher_review is None or
+                lesson.lesson_teacher_review.dt is None):
+            return "Отсутствует"
+        return (f"Дата и время заполнения: "
+                f"{lesson.lesson_teacher_review.dt.strftime('%d.%m.%Y %H:%M')}")
 
     def get_field_admin_comment_value(self, lesson: Lesson) -> str:
         if lesson.admin_comment is None:

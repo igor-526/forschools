@@ -1,6 +1,7 @@
 volumes:
   kitaischool_pgdata:
   kitaischool_redisdata:
+  kitaischool_localbot:
 
 services:
   kitaischool_database:
@@ -23,7 +24,7 @@ services:
         - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
     volumes:
       - ${TELEGRAM_FILES_PATH}:/src/tgdata
-      - /home/sdo/kitaischool/bin:/usr/local/bin
+      - kitaischool_localbot:/usr/local/bin
     entrypoint: bash -c "telegram-bot-api --api-id=${TELEGRAM_API_ID} --api-hash=${TELEGRAM_API_HASH} --http-ip-address=0.0.0.0 --http-port=8083 --dir=/src --local";
     restart: always
 

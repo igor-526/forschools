@@ -41,6 +41,7 @@ function downloadDataEngineSetModal(mode="", params={}){
             addSwitch("review_grammar", "Ревью (Грамматика)")
             addSwitch("review_note", "Ревью (Примечание)")
             addSwitch("review_org", "Ревью (Орг. моменты и поведение ученика)")
+            addSwitch("review_dt", "Ревью (Дата и время заполнения)")
             addSwitch("admin_comment", "Комментарий администратора")
             addSwitch("hw_all", "ДЗ (общее количество)")
             addSwitch("hw_agreement", "ДЗ (ожидает согласования)")
@@ -104,9 +105,14 @@ function downloadDataStart(){
         switch (downloadDataCurrentMode){
             case "lessons":
                 lessonsAPIDownloadData(fd).then(request => {
+                    bsDownloadDataModal.hide()
                     switch (request.status){
+                        case 200:
+                            showSuccessToast("Задание успешно создано")
+                            break
                         default:
-                            console.log(request.response)
+                            showErrorToast()
+                            break
                     }
                 })
         }
