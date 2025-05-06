@@ -87,6 +87,8 @@ class LessonSerializer(serializers.ModelSerializer):
         can_set_passed_ = can_set_passed(
             self.context.get('request'), obj
         )
+        if not can_set_passed_:
+            return "CANT"
         if ((can_set_passed_ and plan and plan.can_report_lesson_name_only) or
                 (can_set_passed_ and self.context.get(
                     'request').user.groups.filter(name="Admin").exists())):
