@@ -357,7 +357,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
             )
             review = LessonTeacherReview.objects.create(
                 **validation.get("review")
-            ) if (validation.get("status") and len(validation.get("review") > 0))\
+            ) if (validation.get("status") and len(validation.get("review")) > 0)\
                 else None
             lesson_name = request.POST.get("name").strip(" ") if (
                 request.POST.get("name")) else None
