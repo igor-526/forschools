@@ -13,7 +13,7 @@ from material.models import Material
 from profile_management.models import NewUser
 from tgbot.utils import (send_homework_tg,
                          send_materials,
-                         notify_lesson_passed)
+                         notify_lesson_passed, sync_funcs)
 from user_logs.models import UserLog
 from .models import Lesson, Place, LessonTeacherReview
 from .serializers import LessonListSerializer, LessonSerializer
@@ -286,7 +286,7 @@ class LessonReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
 class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
     def notify_users(self, plan_, lesson_: Lesson,
                      user_: NewUser, tg_id: str | None) -> None:
-        for listener in plan_.listeners.all():
+        for listener in lesson_.get_listeners():
             for hw in lesson_.homeworks.filter(listener=listener):
                 res = hw.set_assigned()
                 if res and res.get("agreement") is False:
@@ -819,3 +819,18 @@ class LessonSetAdditionalListeners(CanReplaceTeacherMixin, APIView):
         lesson.additional_listeners.set(new_add_listeners)
         return Response(data={"status": "success"},
                         status=status.HTTP_200_OK)
+
+
+class LessonSendPlaceTGAPIVIew(LoginRequiredMixin, APIView):
+    def post(self, request, *args, **kwargs):
+        if not request.POST.get("tg_id"):
+            return Response(data={"status": "error",
+                                  "error": "Отсутвует информация о Telegram"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        result = sync_funcs.send_lesson_place(kwargs["pk"], request.POST.get("tg_id"))
+        if result['status']:
+            return Response(data={"status": "success"},
+                            status=status.HTTP_200_OK)
+        return Response(data={"status": "error",
+                              "error": result['error']},
+                        status=status.HTTP_400_BAD_REQUEST)

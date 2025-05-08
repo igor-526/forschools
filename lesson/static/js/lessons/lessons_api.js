@@ -231,3 +231,15 @@ async function lessonsAPIDownloadData(fd){
     })
     return APIPostPatchToObject(request)
 }
+
+async function lessonsAPISendPlace(lessonID, fd){
+    const request = await fetch(`/api/v1/lessons/${lessonID}/send_tg_place/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
+}

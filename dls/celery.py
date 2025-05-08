@@ -68,6 +68,24 @@ app.conf.beat_schedule = (app.conf.beat_schedule |
 app.conf.beat_schedule = (app.conf.beat_schedule |
                           generate_notification_schedule(
                               msk_hour=9,
+                              task='homework.tasks.notification_methodists_'
+                                   'homeworks_unaccepted',
+                              prefix='mrn',
+                              today=False,
+                              minute=3)
+                          )
+app.conf.beat_schedule = (app.conf.beat_schedule |
+                          generate_notification_schedule(
+                              msk_hour=18,
+                              task='homework.tasks.notification_methodists_'
+                                   'homeworks_unaccepted',
+                              prefix='evn',
+                              today=True,
+                              minute=3)
+                          )
+app.conf.beat_schedule = (app.conf.beat_schedule |
+                          generate_notification_schedule(
+                              msk_hour=9,
                               task='homework.tasks.notification_teachers_'
                                    'homeworks_unchecked',
                               prefix='mrn',

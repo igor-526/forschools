@@ -1,3 +1,5 @@
+from typing import Dict
+
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from .models import Lesson, Place, LessonTeacherReview
@@ -41,7 +43,7 @@ class LessonSerializer(serializers.ModelSerializer):
             context={"request": self.context.get("request")}
         ).data
 
-    def get_learning_plan(self, obj):
+    def get_learning_plan(self, obj) -> Dict[str, str] | None:
         plan = obj.get_learning_plan()
         if plan:
             return {
@@ -65,7 +67,7 @@ class LessonSerializer(serializers.ModelSerializer):
         else:
             return None
 
-    def get_lesson_teacher_review(self, obj):
+    def get_lesson_teacher_review(self, obj) -> Dict[str, str] | None:
         request = self.context.get("request")
         if request and request.user.groups.filter(
                 name__in=["Admin", "Metodist", "Teacher"]
@@ -76,19 +78,19 @@ class LessonSerializer(serializers.ModelSerializer):
         else:
             return None
 
-    def get_deletable(self, obj):
+    def get_deletable(self, obj) -> bool:
         return obj.status == 0
 
-    def get_can_set_not_held(self, obj):
+    def get_can_set_not_held(self, obj) -> bool:
         return can_set_not_held(self.context.get('request'), obj)
 
-    def get_awaiting_action(self, obj):
-        plan = obj.get_learning_plan()
+    def get_awaiting_action(self, obj) -> str | bool:
         can_set_passed_ = can_set_passed(
             self.context.get('request'), obj
         )
         if not can_set_passed_:
-            return "CANT"
+            return False
+        plan = obj.get_learning_plan()
         if ((can_set_passed_ and plan and plan.can_report_lesson_name_only) or
                 (can_set_passed_ and self.context.get(
                     'request').user.groups.filter(name="Admin").exists())):

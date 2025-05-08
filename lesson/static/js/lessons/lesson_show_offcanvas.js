@@ -1,4 +1,13 @@
 function lessonShowOffcanvas(lessonID){
+    function getAddMaterialsButton(){
+        const addMaterialsButton = document.createElement("button")
+        addMaterialsButton.classList.add("btn", "btn-primary", "mt-2", "mx-1", "w-100")
+        addMaterialsButton.type = "button"
+        addMaterialsButton.innerHTML = '<i class="bi bi-plus-lg me-1"></i> Добавить материалы'
+        addMaterialsButton.disabled = true
+        return addMaterialsButton
+    }
+
     lessonShowOffcanvasSelectedLessonID = lessonID
     lessonsAPIGetItem(lessonID).then(request => {
         switch (request.status){
@@ -10,13 +19,13 @@ function lessonShowOffcanvas(lessonID){
                     mobileInfoOffcanvasAddData("Ревью", lessonOffcanvas,
                         lessonShowGetReviewContent(request.response.lesson_teacher_review))
                 }
-                const materialsInfo = mobileInfoMaterialsGetBlock(request.response.materials)
-                const addMaterialsButton = document.createElement("button")
-                addMaterialsButton.classList.add("btn", "btn-primary", "mt-2", "mx-1", "w-100")
-                addMaterialsButton.type = "button"
-                addMaterialsButton.innerHTML = "Добавить материалы"
-                addMaterialsButton.disabled = true
-                mobileInfoOffcanvasAddData("Материалы", lessonOffcanvas, [materialsInfo, addMaterialsButton])
+                if (request.response.place){
+                    mobileInfoOffcanvasAddData("Место проведения", lessonOffcanvas,
+                        lessonShowGetPlaceContent(lessonID, request.response.place))
+                }
+                mobileInfoOffcanvasAddData("Материалы", lessonOffcanvas,
+                    [mobileInfoMaterialsGetBlock(request.response.materials),
+                        getAddMaterialsButton()])
                 mobileInfoOffcanvasAddData("Домашние задания", lessonOffcanvas,
                     lessonShowGetHomeworksContent(request.response.homeworks, lessonID, lessonOffcanvas))
                 mobileInfoOffcanvasAddData("План обучения", lessonOffcanvas,
@@ -129,7 +138,7 @@ function lessonShowGetHomeworksContent(homeworks, lessonID, lessonOffcanvas){
     const newHWButton = document.createElement("button")
     newHWButton.classList.add("btn", "btn-primary", "my-3")
     newHWButton.type = "button"
-    newHWButton.innerHTML = "Задать ДЗ"
+    newHWButton.innerHTML = '<i class="bi bi-plus-lg me-1"></i> Задать ДЗ'
     newHWButton.addEventListener("click", function () {
         lessonItemSetAddHWOffcanvas(lessonID, lessonOffcanvas)
     })
@@ -235,6 +244,69 @@ function lessonShowGetReviewContent(review){
     elements.push(orgP)
 
     return elements
+}
+
+function lessonShowGetPlaceContent(lessonID, place){
+    const content = []
+    if (place.conf_id){
+        const infoConfID = document.createElement("div")
+        infoConfID.innerHTML = `<b>ID конференции: </b>${place.conf_id}`
+        content.push(infoConfID)
+    }
+    if (place.access_code){
+        const infoAccessCode = document.createElement("div")
+        infoAccessCode.innerHTML = `<b>Код подключения: </b>${place.access_code}`
+        content.push(infoAccessCode)
+    }
+
+    const copyButton = document.createElement("button")
+    copyButton.classList.add("btn", "btn-primary", "w-100", "my-2")
+    copyButton.innerHTML = '<i class="bi bi-copy me-1"></i> Копировать ссылку'
+    copyButton.type = "button"
+    copyButton.addEventListener("click", function () {
+        navigator.clipboard.writeText(place.url)
+        copyButton.classList.remove("btn-primary")
+        copyButton.classList.add("btn-success")
+        setTimeout(function (){
+            copyButton.classList.add("btn-primary")
+            copyButton.classList.remove("btn-success")
+        }, 500)
+    })
+    content.push(copyButton)
+
+    const goButton = document.createElement("button")
+    goButton.classList.add("btn", "btn-primary", "w-100", "my-2")
+    goButton.innerHTML = '<i class="bi bi-globe2 me-1"></i> Перейти'
+    goButton.type = "button"
+    goButton.addEventListener("click", function () {
+        location.assign(place.url)
+    })
+    content.push(goButton)
+
+    if (tgID){
+        const tgButton = document.createElement("button")
+        tgButton.classList.add("btn", "btn-primary", "w-100", "my-2")
+        tgButton.innerHTML = '<i class="bi bi-telegram me-1"></i> Отправить себе'
+        content.push(tgButton)
+        const fd = new FormData()
+        fd.set("tg_id", tgID)
+        tgButton.addEventListener("click", function () {
+            lessonsAPISendPlace(lessonID, fd).then(request => {
+                switch (request.status){
+                    case 200:
+                        showSuccessToast("Проверьте Telegram")
+                        break
+                    case 400:
+                        showErrorToast(request.response.errors)
+                        break
+                    default:
+                        showErrorToast()
+                        break
+                }
+            })
+        })
+    }
+    return content
 }
 
 function lessonItemSetPassedOffcanvas(lessonID, onlyName=false, lessonOffcanvas){
@@ -415,7 +487,7 @@ function lessonItemSetPassedOffcanvas(lessonID, onlyName=false, lessonOffcanvas)
     const passButton = document.createElement("button")
     passButton.classList.add("btn", "btn-success", "w-100")
     passButton.type = "button"
-    passButton.innerHTML = "Провести занятие"
+    passButton.innerHTML = '<i class="bi bi-card-checklist me-1"></i> Провести занятие'
     passButton.addEventListener("click", function (){
         lessonItemSetPassed(lessonID, validateInfo, form, lessonSetPassedOffcanvas, lessonOffcanvas)
     })

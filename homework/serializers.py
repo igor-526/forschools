@@ -1,4 +1,8 @@
+from typing import List
+
 from rest_framework import serializers
+
+from learning_plan.models import LearningPlan
 from learning_plan.permissions import get_can_see_plan
 from lesson.models import Lesson
 from profile_management.serializers import NewUserNameOnlyListSerializer
@@ -6,7 +10,7 @@ from profile_management.models import NewUser
 from material.serializers import MaterialListSerializer
 from material.serializers import FileSerializer
 from tgbot.utils import send_homework_answer_tg, send_homework_tg
-from .permissions import get_delete_log_permission
+from .permissions import get_delete_log_permission, get_can_accept_log_permission
 from .models import Homework, HomeworkLog, HomeworkGroups
 
 
@@ -15,6 +19,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
     teacher = NewUserNameOnlyListSerializer()
     materials = MaterialListSerializer(many=True)
     lesson_info = serializers.SerializerMethodField(read_only=True)
+    actions = serializers.SerializerMethodField()
 
     class Meta:
         model = Homework
@@ -50,6 +55,48 @@ class HomeworkSerializer(serializers.ModelSerializer):
                 }
             return result
         return None
+
+    def get_actions(self, obj: Homework):
+        def get_agreement_actions(last_log_: HomeworkLog) -> List[str]:
+            if not last_log_.agreement.get("accepted") is False:
+                return []
+            if get_can_accept_log_permission(obj, self.context.get('request')):
+                return ["agreement"]
+            return []
+
+        def get_send_actions(last_log_: HomeworkLog, plan_: LearningPlan) -> List[str]:
+            if ((last_log_.status in [1, 2, 3, 5, 7]) and
+                    obj.listener == self.context.get("request").user):
+                return ["send"]
+            hw_status = last_log_.status in [3, 5, 7]
+            if not hw_status:
+                return []
+            if (obj.teacher == self.context.get("request").user or
+                    (plan_ and plan_.metodist == self.context.get("request").user) or
+                    (plan_ and plan_.curators.filter(id=self.context.get("request").user.id).exists())):
+                return ["check"]
+            return []
+
+        def get_cancel_actions(last_log_: HomeworkLog, plan_: LearningPlan) -> List[str]:
+            hw_status = last_log_.status in [1, 2, 3, 5, 7]
+            if not hw_status:
+                return []
+            if (obj.teacher == self.context.get("request").user or
+                    (plan_ and plan_.metodist == self.context.get("request").user) or
+                    self.context.get("request").user.groups.filter(name__in=["Admin"]).exists()):
+                return ["cancel"]
+            return []
+
+        actions = []
+        last_log = obj.get_status(
+            accepted_only=self.context.get('request').user == obj.listener
+        )
+        lesson = obj.get_lesson()
+        plan = lesson.get_learning_plan() if lesson else None
+        actions.extend(get_agreement_actions(last_log))
+        actions.extend(get_send_actions(last_log, plan))
+        actions.extend(get_cancel_actions(last_log, plan))
+        return actions
 
 
 class HomeworkListSerializer(serializers.ModelSerializer):

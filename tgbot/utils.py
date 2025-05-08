@@ -16,6 +16,7 @@ import async_to_sync as sync
 
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.fileutils import send_file
+from tgbot.funcs.lessons import f_lessons_show_place_access_info
 from tgbot.keyboards.chats import chats_get_answer_message_button
 from tgbot.keyboards.lessons import get_lesson_ma_button
 from tgbot.keyboards.materials import get_materials_keyboard_query
@@ -162,6 +163,14 @@ class AsyncClass:
                     "error": "Занятие не найдено"}
         except Exception as e:
             print(e)
+            return {"status": False,
+                    "error": str(e)}
+
+    async def send_lesson_place(self, lesson_id, tg_id) -> Dict[str, bool] | Dict[str, str | bool]:
+        try:
+            await f_lessons_show_place_access_info(lesson_id, tg_id)
+            return {"status": True}
+        except Exception as e:
             return {"status": False,
                     "error": str(e)}
 
@@ -567,7 +576,7 @@ def notify_lesson_passed(tg_id: int,
                                     reply_markup=rm)
 
 
-def notification_log_journal(recipient: NewUser, event: int, result_status: str,
+def notification_log_journal(recipient: NewUser | int, event: int, result_status: str,
                              msg_text: str | None, msg_id: int | None,
                              usertype: str | None, errors: list | None = None) -> TgBotJournal:
     if errors is None:

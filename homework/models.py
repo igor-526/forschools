@@ -17,6 +17,52 @@ HOMEWORK_STATUS_CHOISES = (
 )
 
 
+class HomeworkLog(models.Model):
+    homework = models.ForeignKey(to="homework.Homework",
+                                 verbose_name='Домашнее задание',
+                                 on_delete=models.CASCADE,
+                                 null=False,
+                                 blank=False,
+                                 related_name='log',
+                                 related_query_name='log_set')
+    user = models.ForeignKey(NewUser,
+                             verbose_name='Пользователь',
+                             on_delete=models.CASCADE,
+                             null=False,
+                             blank=False,
+                             related_name='hw_log',
+                             related_query_name='hw_log_set')
+    dt = models.DateTimeField(verbose_name='Дата и время',
+                              auto_now_add=True,
+                              null=False)
+    files = models.ManyToManyField(File,
+                                   verbose_name='Файлы',
+                                   related_name='hw_log',
+                                   related_query_name='hw_log_set',
+                                   blank=True)
+    comment = models.TextField(verbose_name='Комментарий',
+                               null=True,
+                               blank=True,
+                               max_length=2000)
+    status = models.IntegerField(verbose_name='Статус',
+                                 choices=HOMEWORK_STATUS_CHOISES,
+                                 default=1,
+                                 null=False,
+                                 blank=False)
+    agreement = models.JSONField(verbose_name="Согласование",
+                                 null=True,
+                                 blank=True,
+                                 default=dict)
+
+    class Meta:
+        verbose_name = 'Лог ДЗ'
+        verbose_name_plural = 'Логи ДЗ'
+        ordering = ['-dt']
+
+    def __str__(self):
+        return f'{self.user} - {self.status}'
+
+
 class Homework(models.Model):
     name = models.CharField(verbose_name='Наименование',
                             max_length=200,
@@ -88,7 +134,7 @@ class Homework(models.Model):
             name_str += f" ({self.listener})"
         return name_str
 
-    def get_status(self, assigned=False, accepted_only=False):
+    def get_status(self, assigned=False, accepted_only=False) -> HomeworkLog | None:
         filter_params = {
             'homework': self
         }
@@ -197,50 +243,7 @@ class Homework(models.Model):
         return None
 
 
-class HomeworkLog(models.Model):
-    homework = models.ForeignKey(Homework,
-                                 verbose_name='Домашнее задание',
-                                 on_delete=models.CASCADE,
-                                 null=False,
-                                 blank=False,
-                                 related_name='log',
-                                 related_query_name='log_set')
-    user = models.ForeignKey(NewUser,
-                             verbose_name='Пользователь',
-                             on_delete=models.CASCADE,
-                             null=False,
-                             blank=False,
-                             related_name='hw_log',
-                             related_query_name='hw_log_set')
-    dt = models.DateTimeField(verbose_name='Дата и время',
-                              auto_now_add=True,
-                              null=False)
-    files = models.ManyToManyField(File,
-                                   verbose_name='Файлы',
-                                   related_name='hw_log',
-                                   related_query_name='hw_log_set',
-                                   blank=True)
-    comment = models.TextField(verbose_name='Комментарий',
-                               null=True,
-                               blank=True,
-                               max_length=2000)
-    status = models.IntegerField(verbose_name='Статус',
-                                 choices=HOMEWORK_STATUS_CHOISES,
-                                 default=1,
-                                 null=False,
-                                 blank=False)
-    agreement = models.JSONField(verbose_name="Согласование",
-                                 null=True,
-                                 blank=True,
-                                 default=dict)
 
-    class Meta:
-        verbose_name = 'Лог ДЗ'
-        verbose_name_plural = 'Логи ДЗ'
-        ordering = ['-dt']
-
-    def __str__(self):
-        return f'{self.user} - {self.status}'
 
 
 class HomeworkGroups(models.Model):

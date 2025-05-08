@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from tgbot.keyboards.callbacks.lessons import LessonScheduleListCallback, LessonPlaceCallback
 from tgbot.keyboards.utils import keyboard_anti_cache_url
@@ -45,6 +45,12 @@ def get_lesson_place_button(lesson_id: int) -> InlineKeyboardMarkup:
     )
     builder.adjust(1)
     return builder.as_markup()
+
+
+def get_lesson_place_url_button(url: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[[InlineKeyboardButton(text="Перейти по ссылке",
+                                               url=url)]])
 
 
 def get_lesson_review_field_keyboard(state_data: dict, current: str) -> ReplyKeyboardMarkup | None:

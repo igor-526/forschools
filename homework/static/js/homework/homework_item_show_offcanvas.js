@@ -3,9 +3,10 @@ function homeworkItemShowOffcanvas(homeworkID){
     homeworkAPIGetItem(homeworkID).then(request => {
         switch (request.status){
             case 200:
+                console.log(request.response)
                 const homeworkOffcanvas = mobileInfoOffcanvasSet(request.response.name)
                 mobileInfoOffcanvasAddData("Основные данные", homeworkOffcanvas,
-                    homeworkItemShowOffcanvasGetMainInfoContent(request.response, isAdmin))
+                    homeworkItemShowOffcanvasGetMainInfoContent(request.response))
                 const materialsInfo = mobileInfoMaterialsGetBlock(request.response.materials)
                 const addMaterialsButton = document.createElement("button")
                 addMaterialsButton.classList.add("btn", "btn-primary", "mt-2", "mx-1", "w-100")
@@ -39,7 +40,7 @@ function homeworkItemShowOffcanvas(homeworkID){
     })
 }
 
-function homeworkItemShowOffcanvasGetMainInfoContent(hw, isAdmin){
+function homeworkItemShowOffcanvasGetMainInfoContent(hw){
     const elements = []
 
     const teacherP = document.createElement("p")

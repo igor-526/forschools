@@ -10,7 +10,8 @@ from tgbot.keyboards.chats import chats_get_show_message_page_button, chats_get_
 from tgbot.keyboards.default import get_chat_typing_keyboard
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
-from tgbot.utils import get_tg_id, get_user
+from tgbot.utils import get_tg_id
+from tgbot.tg_user_utils import get_user
 from tgbot.create_bot import bot
 from chat.models import Message, GroupChats, AdminMessage
 

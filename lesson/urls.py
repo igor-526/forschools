@@ -10,7 +10,8 @@ from .views_api import (LessonListAPIView,
                         LessonRestoreAPIView,
                         ScheduleAPIView,
                         LessonAdminCommentAPIView,
-                        LessonSetAdditionalListeners)
+                        LessonSetAdditionalListeners,
+                        LessonSendPlaceTGAPIVIew)
 from .views_ma import (LessonMAReviewFormPage,
                        LessonItemMAPage,
                        ScheduleSelectMAPage,
@@ -33,7 +34,7 @@ apiv1patterns = [
     path('<int:pk>/restore/', LessonRestoreAPIView.as_view()),
     path('schedule/<int:pk>/', ScheduleAPIView.as_view()),
     path('<int:pk>/set_admin_comment/', LessonAdminCommentAPIView.as_view()),
-
+    path('<int:pk>/send_tg_place/', LessonSendPlaceTGAPIVIew.as_view()),
 ]
 
 ma_patterns = [

@@ -2,14 +2,11 @@ import datetime
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from django.db.models import Q
-from lesson.models import Lesson, Place
+from lesson.models import Lesson
 from profile_management.models import NewUser
 from tgbot.create_bot import bot
-from tgbot.finite_states.lessons import LessonsFSM
-from tgbot.funcs.menu import send_menu
-from tgbot.keyboards.default import cancel_keyboard
-from tgbot.keyboards.lessons import lessons_get_users_buttons, get_schedule_ma_button
-from tgbot.utils import get_user, get_group_and_perms
+from tgbot.keyboards.lessons import lessons_get_users_buttons, get_schedule_ma_button, get_lesson_place_url_button
+from tgbot.tg_user_utils import get_user
 
 
 async def lessons_generate_schedule_message(lessons: list[Lesson], monday: datetime.date,
@@ -136,9 +133,13 @@ async def f_lessons_show_place_access_info(lesson_id, tg_id) -> None:
 
     msg = "Данные для подключения к занятию:\n"
     if lesson.place.url:
-        msg += f'<b>Ссылка: </b>{lesson.place.url}\n'
+        msg += f'<b>Ссылка: </b><code>{lesson.place.url}</code>\n'
     if lesson.place.conf_id:
-        msg += f'<b>Идентификатор конференции: </b>{lesson.place.conf_id}\n'
+        msg += f'<b>Идентификатор конференции: </b><code>{lesson.place.conf_id}</code>\n'
     if lesson.place.access_code:
-        msg += f'<b>Код для подключения: </b>{lesson.place.access_code}\n'
-    await bot.send_message(chat_id=tg_id, text=msg)
+        msg += f'<b>Код для подключения: </b><code>{lesson.place.access_code}</code>\n'
+    await bot.send_message(chat_id=tg_id,
+                           text=msg,
+                           reply_markup=get_lesson_place_url_button(
+                               url=lesson.place.url
+                           ))
