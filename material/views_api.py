@@ -1,11 +1,16 @@
 import os.path
+from typing import List, Dict
+from rest_framework.request import Request
+from django.core.exceptions import BadRequest
 from dls.settings import BASE_DIR
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Material
+from homework.models import Homework, HomeworkLog
+from lesson.models import Lesson
+from .models import Material, File
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView)
 from .serializers import MaterialSerializer
@@ -101,12 +106,170 @@ class MaterialFileTextAPIView(APIView):
         folder = request.query_params.get('folder')
         file = request.query_params.get('file')
         path = os.path.join(BASE_DIR, "media", folder, file)
-        try:
-            with open(path, "r", encoding="utf-16") as textfile:
-                result = textfile.read()
-        except (UnicodeDecodeError, UnicodeError):
-            with open(path, "r", encoding="utf-8") as textfile:
-                result = textfile.read()
-        except FileNotFoundError:
+        if not os.path.exists(path):
             return Response(status=status.HTTP_404_NOT_FOUND)
-        return Response(result, status=status.HTTP_200_OK)
+        data = "Не удалось определить кодировку"
+        for encmode in ["utf-8", "utf-16", "cp1251"]:
+            try:
+                with open(path, "r", encoding=encmode) as f:
+                    data = f.read()
+                    break
+            except (UnicodeDecodeError, UnicodeError):
+                continue
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+class MaterialEditObjectAPIView(LoginRequiredMixin, APIView):
+    def get_object(self, obj: str, pk: int) -> Homework | HomeworkLog | Lesson | None:
+        model = None
+        if obj == "hw":
+            model = Homework
+        elif obj == "hw_log":
+            model = HomeworkLog
+        elif obj == "lesson":
+            model = Lesson
+        if model is None:
+            raise BadRequest("Модель данных не определена")
+        return model.objects.get(pk=pk)
+
+    def get_data(self, obj: str) -> List[int]:
+        result = []
+        model = None
+        if obj in ("hw", "lesson"):
+            model = Material
+        elif obj == "hw_log":
+            model = File
+        if model is None:
+            raise BadRequest("Модель данных не определена")
+        for file in self.request.FILES.getlist("files"):
+            query = {
+                "owner": self.request.user,
+                "name": ".".join(file.name.split(".")[:-1]),
+                "extension": file.name.split(".")[-1],
+                "is_animation": get_type(file.name.split(".")[-1]) == "animation_formats"
+            }
+            if model == Material:
+                query['file'] = file
+            elif model == File:
+                query['path'] = file
+            mat = model.objects.create(**query)
+            result.append(mat.id)
+        if model == Material:
+            for text in self.request.POST.getlist("text_materials"):
+                name = f'{text[:35]}.txt'
+                file = f"materials/{name}"
+                try:
+                    with open(f"media/{file}", 'w', encoding="utf-8") as f:
+                        f.write(text)
+                except Exception:
+                    name = f'text_file{Material.objects.count() + 1}.txt'
+                    file = f"materials/{name}"
+                    with open(f"media/{file}", 'w', encoding="utf-8") as f:
+                        f.write(text)
+                mat = Material.objects.create(
+                    owner=self.request.user,
+                    name=name,
+                    extension="txt",
+                    is_animation=False,
+                    file=file
+                )
+                result.append(mat.id)
+        return result
+
+    def add_data(self, file_ids: List[int],
+                 obj: Homework | HomeworkLog | Lesson) \
+            -> Dict[str, bool] | Dict[str, str | bool]:
+        try:
+            if isinstance(obj, (Homework, Lesson)):
+                obj.materials.add(*file_ids)
+                return {
+                    "status": True
+                }
+            if isinstance(obj, HomeworkLog):
+                obj.files.add(*file_ids)
+                return {
+                    "status": True
+                }
+            raise BadRequest("Не удалось добавить файлы")
+        except BadRequest as e:
+            return {
+                "status": False,
+                "error": str(e)
+            }
+        except Exception as e:
+            return {
+                "status": False,
+                "error": str(e)
+            }
+
+    def delete_data(self,
+                    obj: Homework | HomeworkLog | Lesson) \
+            -> Dict[str, bool] | Dict[str, str | bool]:
+        try:
+            file_ids = [int(pk) for pk in self.request.data.getlist("pk")]
+            if isinstance(obj, (Homework, Lesson)):
+                obj.materials.remove(*file_ids)
+                return {
+                    "status": True
+                }
+            if isinstance(obj, HomeworkLog):
+                obj.files.remove(*file_ids)
+                return {
+                    "status": True
+                }
+            raise BadRequest("Не удалось удалить файлы")
+        except BadRequest as e:
+            return {
+                "status": False,
+                "error": str(e)
+            }
+        except Exception as e:
+            return {
+                "status": False,
+                "error": str(e)
+            }
+
+    def post(self, request: Request, obj_name: str, pk: int, *args, **kwargs):
+        try:
+            obj = self.get_object(obj_name, pk)
+        except BadRequest as e:
+            return Response(data={"error": str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+        except Homework.DoesNotExist:
+            return Response(data={"error": "Домашнее задание не найдено"},
+                            status=status.HTTP_404_NOT_FOUND)
+        except HomeworkLog.DoesNotExist:
+            return Response(data={"error": "История ДЗ не найдена"},
+                            status=status.HTTP_404_NOT_FOUND)
+        except Lesson.DoesNotExist:
+            return Response(data={"error": "Занятие не найдено"},
+                            status=status.HTTP_404_NOT_FOUND)
+        data_ids = self.get_data(obj_name)
+        result = self.add_data(data_ids, obj)
+        if result['status']:
+            return Response(data={"status": 'ok'},
+                            status=status.HTTP_200_OK)
+        return Response(data={"error": result['error']},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request: Request, obj_name: str, pk: int, *args, **kwargs):
+        try:
+            obj = self.get_object(obj_name, pk)
+        except BadRequest as e:
+            return Response(data={"error": str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+        except Homework.DoesNotExist:
+            return Response(data={"error": "Домашнее задание не найдено"},
+                            status=status.HTTP_404_NOT_FOUND)
+        except HomeworkLog.DoesNotExist:
+            return Response(data={"error": "История ДЗ не найдена"},
+                            status=status.HTTP_404_NOT_FOUND)
+        except Lesson.DoesNotExist:
+            return Response(data={"error": "Занятие не найдено"},
+                            status=status.HTTP_404_NOT_FOUND)
+        result = self.delete_data(obj)
+        if result['status']:
+            return Response(data={"status": 'ok'},
+                            status=status.HTTP_204_NO_CONTENT)
+        return Response(data={"error": result['error']},
+                        status=status.HTTP_400_BAD_REQUEST)

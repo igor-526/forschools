@@ -8,7 +8,8 @@ from .views_api import (HomeworkListCreateAPIView,
                         HomeworkItemPageSendTGAPIView,
                         HomeworkLogAPIView,
                         HomeworkRetrieveUpdateDestroyAPIView,
-                        HomeworkItemDeleteMaterialAPIView)
+                        HomeworkItemDeleteMaterialAPIView,
+                        HomeworkItemAgreementAPIView)
 from .views_ma import HomeworkItemMAPage, HomeworkListMAPage
 
 urlpatterns = [
@@ -24,6 +25,8 @@ apiv1patterns = [
     path('<int:pk>/logs/', HomeworkLogListCreateAPIView.as_view()),
     path('<int:pk>/rt/', HomeworkReplaceTeacherAPIView.as_view()),
     path('<int:pk>/set_cancelled/', HomeworkSetCancelledAPIView.as_view()),
+    path('<int:pk>/agreement/<str:action>/',
+         HomeworkItemAgreementAPIView.as_view()),
     path('logs/<int:pk>/', HomeworkLogAPIView.as_view()),
     path('<int:hw_id>/mat/<int:mat_id>/',
          HomeworkItemDeleteMaterialAPIView.as_view()),

@@ -80,6 +80,7 @@ TEMPLATES = [
                 'dls.context_processors.get_roles_context',
                 'dls.context_processors.get_menu_context',
                 'dls.context_processors.get_telegram_context',
+                'dls.context_processors.get_supported_extensions_context'
             ],
         },
     },
@@ -169,7 +170,7 @@ CACHES = {
 
 MATERIAL_FORMATS = {
     'image_formats': ['bmp', 'jpg', 'jpeg', 'png', 'heic'],
-    'video_formats': ['webm', 'mp4'],
+    'video_formats': ['webm', 'mp4', 'mkv'],
     'animation_formats': ['gif'],
     'archive_formats': ['rar', 'zip', '7z'],
     'pdf_formats': ['pdf'],

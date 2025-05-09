@@ -1,7 +1,7 @@
 async function homeworkAPIAddToLesson(lessonID, formData){
     formData.append("lesson", lessonID)
     const response = await fetch('/api/v1/homeworks/', {
-        method: "post",
+        method: "POST",
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,
@@ -62,7 +62,7 @@ async function homeworkAPIAnswerLog(log_id, fd){
         },
         body: fd
     })
-    return APIDeleteToObject(request)
+    return APIPostPatchToObject(request)
 }
 
 async function homeworkAPIDeleteLog(log_id){
@@ -74,6 +74,18 @@ async function homeworkAPIDeleteLog(log_id){
         },
     })
     return APIDeleteToObject(request)
+}
+
+async function homeworkAPIUpdateLog(log_id, fd){
+    const request = await fetch(`/api/v1/homeworks/logs/${log_id}/`, {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: {
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
 }
 
 async function homeworkAPISend(homeworkID, fd){
@@ -189,4 +201,16 @@ async function homeworkAPIDeleteMaterial(homeworkID, materialID){
         },
     })
     return APIDeleteToObject(request)
+}
+
+async function homeworkAPIAgreement(homeworkID, action, fd){
+    const request = await fetch(`/api/v1/homeworks/${homeworkID}/agreement/${action}/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
 }

@@ -504,12 +504,12 @@ function lessonItemSetPassed(lessonID, validateInfo, form, lessonSetPassedOffcan
         return fd
     }
 
-    if (universalFieldValidatior(validateInfo)){
+    if (universalFieldValidator(validateInfo)){
         lessonsAPISetPassed(lessonID, getFormData()).then(request => {
             switch (request.status){
                 case 200:
-                    mobileInfoOffcanvasClose(lessonSetPassedOffcanvas)
-                    mobileInfoOffcanvasClose(lessonOffcanvas)
+                    lessonSetPassedOffcanvas.close()
+                    lessonOffcanvas.close()
                     lessonShowOffcanvas(lessonShowOffcanvasSelectedLessonID)
                     break
                 case 400:
@@ -519,11 +519,11 @@ function lessonItemSetPassed(lessonID, validateInfo, form, lessonSetPassedOffcan
                                 field.error = request.response.errors[field.name]
                             }
                         })
-                        universalFieldValidatior(validateInfo)
+                        universalFieldValidator(validateInfo)
                     }
                     break
                 default:
-                    mobileInfoOffcanvasClose(lessonSetPassedOffcanvas)
+                    lessonSetPassedOffcanvas.close()
                     showErrorToast()
                     break
             }
@@ -545,8 +545,8 @@ function lessonItemSetAddHWOffcanvas(lessonID, lessonOffcanvas){
             fd.append("lesson_id", lessonID)
             fd.append("tg_id", tgID)
             homeworkAPIAdd(fd).then(request => {
-                mobileInfoOffcanvasClose(lessonAddHWOffcanvas)
-                mobileInfoOffcanvasClose(lessonOffcanvas)
+                lessonAddHWOffcanvas.close()
+                lessonOffcanvas.close()
                 switch (request.status){
                     case 200:
                         showSuccessToast("Перейдите в Telegram")

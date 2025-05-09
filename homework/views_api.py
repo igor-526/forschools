@@ -1,15 +1,17 @@
 import datetime
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.generics import (ListCreateAPIView,
                                      ListAPIView,
-                                     RetrieveDestroyAPIView)
+                                     RetrieveUpdateDestroyAPIView)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from chat.models import Message
+from lesson.models import Lesson
 from lesson.permissions import CanReplaceTeacherMixin
 from material.models import File, Material
+from material.utils.get_type import get_type
 from tgbot.funcs.homeworks.homework_show import open_homework_in_tg
 from tgbot.utils import (send_homework_tg, notify_chat_message,
                          send_homework_answer_tg, sync_funcs)
@@ -21,6 +23,7 @@ from .permissions import (get_delete_log_permission,
                           get_can_edit_hw_permission)
 from .serializers import (HomeworkListSerializer, HomeworkLogListSerializer,
                           HomeworkLogSerializer, HomeworkSerializer)
+from rest_framework.request import Request
 
 
 class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -325,12 +328,25 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
+class HomeworkLogAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
     model = HomeworkLog
     serializer_class = HomeworkLogSerializer
 
     def get_queryset(self, *args, **kwargs):
         return HomeworkLog.objects.all()
+
+    def get_files(self):
+        result = []
+        for file in self.request.data.getlist('files'):
+            f = File.objects.create(
+                owner=self.request.user,
+                name=".".join(file.name.split(".")[:-1]),
+                extension=file.name.split(".")[-1],
+                is_animation=get_type(file.name.split(".")[-1]) == "animation_formats",
+                path=file
+            )
+            result.append(f.id)
+        return result
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -517,6 +533,18 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveDestroyAPIView):
                             status=status.HTTP_200_OK)
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+    def patch(self, request: Request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            instance.comment = request.POST.get('comment')
+            instance.files.add(*self.get_files())
+            instance.save()
+            return Response(data={"status": "ok"},
+                            status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(data={"error": str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+
 
 class HomeworkReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
     def patch(self, request, *args, **kwargs):
@@ -616,3 +644,148 @@ class HomeworkItemDeleteMaterialAPIView(LoginRequiredMixin, APIView):
         except Exception as e:
             return Response(data={'error': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class HomeworkItemAgreementAPIView(LoginRequiredMixin, APIView):
+    def add_log(self,
+                homeworks_: QuerySet(Homework),
+                lesson_: Lesson,
+                to_agreement_: QuerySet(HomeworkLog),
+                **kwargs) -> None:
+        user_log = {
+            "log_type": 1,
+            "learning_plan": lesson_.get_learning_plan(),
+            "content": {"list": [],
+                        "text": [
+                            f'Методист обработал действие преподавателя '
+                            f'по ДЗ к занятию '
+                            f'"{lesson_.name}" от '
+                            f'{lesson_.date.strftime("%d.%m.%Y")}',
+                            f'Проверяющий ДЗ: {homeworks_[0].teacher.first_name} '
+                            f'{homeworks_[0].teacher.last_name}'
+                        ]},
+            "user": self.request.user,
+            "buttons": []}
+        if kwargs.get('action') == 'accept':
+            user_log["title"] = "Действие преподавателя согласовано"
+            user_log["color"] = "info"
+        elif kwargs.get('action') == 'decline':
+            user_log["title"] = "Действие преподавателя НЕ согласовано"
+            user_log["color"] = "warning"
+        for l_ in to_agreement_:
+            if l_.status == 7:
+                user_log['content']['list'].append({
+                    "name": "Тип события",
+                    "val": "согласование ДЗ"
+                })
+            elif l_.status == 4:
+                user_log['content']['list'].append({
+                    "name": "Тип события",
+                    "val": "принятие ДЗ"
+                })
+            elif l_.status == 5:
+                user_log['content']['list'].append({
+                    "name": "Тип события",
+                    "val": "отправка ДЗ на доработку"
+                })
+        for hw in homeworks_:
+            user_log['content']['list'].append({
+                "name": "Ученик",
+                "val": f"{hw.listener.first_name} {hw.listener.last_name}"
+            })
+            user_log['buttons'].append(
+                {"inner": f"{hw.name} ({hw.listener})",
+                 "href": f"/homeworks/{hw.id}"}
+            )
+        user_log['buttons'].append({"inner": "Занятие",
+                                    "href": f"/lessons/{lesson_.id}"})
+        if self.request.POST.get('comment'):
+            user_log['content']['list'].append({
+                "name": "Комментарий",
+                "val": self.request.POST.get('comment')
+            })
+        UserLog.objects.create(**user_log)
+
+    def notify(self, hw_log_: HomeworkLog):
+        if self.kwargs['action'] == 'accept':
+            if hw_log_.status == 7:
+                send_homework_tg(
+                    initiator=hw_log_.homework.teacher,
+                    listener=hw_log_.homework.listener,
+                    homeworks=[hw_log_.homework]
+                )
+                send_homework_tg(
+                    initiator=hw_log_.homework.get_lesson()
+                    .get_learning_plan().metodist,
+                    listener=hw_log_.homework.teacher,
+                    homeworks=[hw_log_.homework],
+                    text="ДЗ было согласовано и задано"
+                )
+            else:
+                if hw_log_.status == 4:
+                    teacher_msg_text = ("Ответ на решение согласован. "
+                                        "ДЗ принято")
+                    send_homework_answer_tg(hw_log_.homework.listener,
+                                            hw_log_.homework, 4)
+                elif hw_log_.status == 5:
+                    teacher_msg_text = ("Ответ на решение согласован. "
+                                        "ДЗ отправлено на доработку")
+                    send_homework_answer_tg(hw_log_.homework.listener,
+                                            hw_log_.homework, 5)
+                else:
+                    teacher_msg_text = "Домашнее задание согласовано"
+                send_homework_tg(initiator=hw_log_.homework.get_lesson()
+                                 .get_learning_plan().metodist,
+                                 listener=hw_log_.homework.teacher,
+                                 homeworks=[hw_log_.homework],
+                                 text=teacher_msg_text)
+        elif self.kwargs['action'] == 'decline':
+            send_homework_tg(initiator=self.request.user,
+                             listener=hw_log_.homework.teacher,
+                             homeworks=[hw_log_.homework],
+                             text="Действие по ДЗ не согласовано")
+
+    def post(self, request, *args, **kwargs):
+        try:
+            homework = Homework.objects.get(pk=kwargs['pk'])
+        except Homework.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if not get_can_accept_log_permission(homework, request):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        last_status = homework.get_status().status
+        if last_status == 7:
+            hw_group = homework.homeworkgroups_set.first()
+            hws = hw_group.homeworks.all() if hw_group \
+                else [homework]
+        else:
+            hws = [homework]
+        to_agreement = HomeworkLog.objects.filter(
+                homework__id__in=[hw.id for hw in hws],
+                agreement__accepted=False
+            )
+        accepted_dt = datetime.datetime.now()
+        lesson = homework.get_lesson()
+        agreement = {
+            "accepted_dt": {
+                "year": accepted_dt.year,
+                "month": accepted_dt.month,
+                "day": accepted_dt.day,
+                "hour": accepted_dt.hour,
+                "minute": accepted_dt.minute
+            },
+            "accepted": True if kwargs['action'] == "accept" else False,
+            "message": request.POST.get('comment')
+        }
+        for hw_log in to_agreement:
+            hw_log.agreement = agreement
+            hw_log.save()
+            self.notify(hw_log)
+        if self.request.POST.get('comment'):
+            message = Message.objects.create(
+                sender=request.user,
+                receiver=homework.teacher,
+                message=request.POST.get('comment')
+            )
+            notify_chat_message(message)
+        return Response(data={'status': True},
+                        status=status.HTTP_200_OK)

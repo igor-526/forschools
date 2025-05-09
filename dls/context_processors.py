@@ -1,4 +1,5 @@
 from dls.utils import get_menu
+from dls.settings import MATERIAL_FORMATS
 
 
 def get_roles_context(request) -> dict:
@@ -26,3 +27,10 @@ def get_menu_context(request) -> dict:
         return {}
     return ({} if request.user_agent.is_mobile
             else {"menu": get_menu(request.user)})
+
+
+def get_supported_extensions_context(request) -> dict:
+    supported_extensions = []
+    for media_type in MATERIAL_FORMATS:
+        supported_extensions.extend(MATERIAL_FORMATS[media_type])
+    return {"supported_extensions": MATERIAL_FORMATS}

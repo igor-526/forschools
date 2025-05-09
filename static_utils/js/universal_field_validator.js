@@ -1,4 +1,4 @@
-function universalFieldValidatior(validateInfo = []){
+function universalFieldValidator(validateInfo = []){
     function resetValidation(){
         validateInfo.forEach(field => {
             if (field.inputElement){
@@ -44,4 +44,19 @@ function universalFieldValidatior(validateInfo = []){
     })
 
     return validationStatus
+}
+
+function universalFileValidator(file){
+    const splitFileName = file.name.split(".")
+    if (splitFileName.length < 2){
+        return false
+    }
+    const fileExtension = splitFileName[splitFileName.length - 1]
+    let result = false
+    Object.keys(supportedExtensions).forEach(fileType => {
+        if (supportedExtensions[fileType].includes(fileExtension.toLowerCase())){
+            result = fileType
+        }
+    })
+    return result
 }

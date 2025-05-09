@@ -5,7 +5,6 @@ function cookiesInit(){
     !cookiesUtilsGet("hwMobFieldListener") ? cookiesUtilsSet("hwMobFieldListener", "1") : null
     !cookiesUtilsGet("hwMobFieldTeacher") ? cookiesUtilsSet("hwMobFieldTeacher", "1") : null
     !cookiesUtilsGet("hwMobFieldAssignedDate") ? cookiesUtilsSet("hwMobFieldAssignedDate", "1") : null
-    !cookiesUtilsGet("hwMobFieldTGButton") ? cookiesUtilsSet("hwMobFieldTGButton", "1") : null
     !cookiesUtilsGet("lessonsMobFieldDate") ? cookiesUtilsSet("lessonsMobFieldDate", "1") : null
     !cookiesUtilsGet("lessonsMobFieldTime") ? cookiesUtilsSet("lessonsMobFieldTime", "1") : null
     !cookiesUtilsGet("lessonsMobFieldTeacher") ? cookiesUtilsSet("lessonsMobFieldTeacher", "1") : null

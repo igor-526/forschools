@@ -134,7 +134,7 @@ function lessonsShow(lessons, clear=true, replace_element=null){
         }
 
         const tdName = document.createElement("td")
-        tdName.innerHTML = `<a href="/lessons/${lesson.id}">${lesson.name}</a>`
+        tdName.innerHTML = `<a href="/lessons/${lesson.id}">${lesson.name_fact ? lesson.name_fact : lesson.name}</a>`
         tr.insertAdjacentElement("beforeend", tdName)
 
         const tdDate = document.createElement("td")

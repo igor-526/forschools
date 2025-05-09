@@ -44,7 +44,7 @@ class MaterialSerializer(serializers.ModelSerializer):
         textfile = request.POST.get('file_text')
         if textfile:
             file = f"materials/{request.POST.get('name')}.txt"
-            with open(f"media/{file}", 'w') as f:
+            with open(f"media/{file}", 'w', encoding="utf-16") as f:
                 f.write(textfile)
         else:
             file = request.FILES.get('file')
@@ -95,7 +95,7 @@ class FileSerializer(serializers.ModelSerializer):
         model = File
         fields = '__all__'
 
-    def get_path(self, obj):
+    def get_path(self, obj: File):
         if not os.path.exists(obj.path.path):
             if not obj.tg_url:
                 return None
@@ -104,7 +104,11 @@ class FileSerializer(serializers.ModelSerializer):
             obj.save()
         return obj.path.url
 
-    def get_type(self, obj):
+    def get_type(self, obj: File):
+        if not obj.extension:
+            ext = obj.path.path.split('.')[-1]
+            obj.extension = ext
+            obj.save()
         filetype = get_type(obj.extension)
         return filetype
 

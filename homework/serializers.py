@@ -1,7 +1,5 @@
 from typing import List
-
 from rest_framework import serializers
-
 from learning_plan.models import LearningPlan
 from learning_plan.permissions import get_can_see_plan
 from lesson.models import Lesson
@@ -87,6 +85,16 @@ class HomeworkSerializer(serializers.ModelSerializer):
                 return ["cancel"]
             return []
 
+        def get_edit_actions(last_log_: HomeworkLog, plan_: LearningPlan) -> List[str]:
+            if last_log_.status in [4, 6]:
+                return []
+            if (obj.teacher == self.context.get("request").user or
+                    (plan_ and plan_.metodist == self.context.get("request").user) or
+                    (obj.for_curator and
+                     plan.curators.filter(id=self.context.get("request").user.id).exists())):
+                return ["edit"]
+            return []
+
         actions = []
         last_log = obj.get_status(
             accepted_only=self.context.get('request').user == obj.listener
@@ -96,6 +104,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
         actions.extend(get_agreement_actions(last_log))
         actions.extend(get_send_actions(last_log, plan))
         actions.extend(get_cancel_actions(last_log, plan))
+        actions.extend(get_edit_actions(last_log, plan))
         return actions
 
 
@@ -235,58 +244,129 @@ class HomeworkListSerializer(serializers.ModelSerializer):
 class HomeworkLogListSerializer(serializers.ModelSerializer):
     user = NewUserNameOnlyListSerializer(many=False, read_only=True)
     files = FileSerializer(many=True, read_only=True)
+    editable = serializers.SerializerMethodField()
+    deletable = serializers.SerializerMethodField()
+    editable_logs = []
+    deletable_logs = []
 
     class Meta:
         model = HomeworkLog
         fields = ["id", "user", "comment", "status", "dt",
-                  "agreement", "files"]
+                  "agreement", "files", "deletable", "editable"]
+
+    def __init__(self, *args, **kwargs):
+        super(HomeworkLogListSerializer, self).__init__(*args, **kwargs)
+        if not args or args[0] is None:
+            self.editable_logs = []
+            self.deletable_logs = []
+            return
+        user_groups = self.context.get("request").user.groups.all().values_list("name", flat=True)
+        self.editable_logs = self.get_editable_logs(args[0], user_groups)
+        self.deletable_logs = self.get_deletable_logs(args[0], user_groups)
+
+    def get_editable_logs(self, all_logs, user_groups):
+        if "Admin" in user_groups:
+            return []
+        if all_logs[0].status in [1, 2, 6, 7]:
+            return []
+        last_logs = []
+        for log in all_logs:
+            if not last_logs:
+                last_logs.append(log)
+                continue
+            if log.status == last_logs[-1].status:
+                last_logs.append(log)
+            else:
+                break
+        if "Metodist" in user_groups and last_logs[0].status in [4, 5]:
+            return last_logs
+        result = []
+        for log in last_logs:
+            if log.user == self.context.get("request").user:
+                result.append(log)
+        return result
+
+    def get_deletable_logs(self, all_logs, user_groups):
+        if all_logs[0].status in [1, 2, 7]:
+            return []
+        last_logs = []
+        for log in all_logs:
+            if not last_logs:
+                last_logs.append(log)
+                continue
+            if log.status == last_logs[-1].status:
+                last_logs.append(log)
+            else:
+                break
+        if ("Metodist" in user_groups or "Admin" in user_groups) and last_logs[0].status in [4, 5, 6]:
+            return last_logs
+        result = []
+        for log in last_logs:
+            if log.user == self.context.get("request").user:
+                result.append(log)
+        return result
+
+    def get_editable(self, obj: HomeworkLog):
+        return obj in self.editable_logs
+
+    def get_deletable(self, obj: HomeworkLog):
+        return obj in self.deletable_logs
 
     def create(self, validated_data):
+        def notify(hw_log: HomeworkLog, accepting=False) -> None:
+            if hw_log.status == 3:
+                print("Отправляем преподу")
+                send_homework_answer_tg(
+                    user=hw_log.homework.teacher,
+                    homework=hw_log.homework,
+                    status=hw_log.status
+                )
+                return None
+            if hw_log.status in [4, 5] and accepting:
+                send_homework_tg(
+                    initiator=hw_log.homework.teacher,
+                    listener=plan.metodist,
+                    homeworks=[hw_log.homework],
+                    text="Требуется согласование действия преподавателя"
+                )
+                return None
+            if hw_log.status in [4, 5]:
+                send_homework_answer_tg(
+                    user=hw_log.homework.listener,
+                    homework=hw_log.homework,
+                    status=hw_log.status
+                )
+                return None
+            return None
+
         def cr_obj(accepting=False):
+            query = {
+                "user": self.context.get("request").user,
+                "homework_id": self.context.get("hw_id")
+            }
             if accepting:
-                hwlog = HomeworkLog.objects.create(
-                    **validated_data,
-                    user=self.context.get("request").user,
-                    homework_id=self.context.get("hw_id"),
-                    agreement={
-                        "accepted_dt": None,
-                        "accepted": False
-                    }
-                )
-            else:
-                hwlog = HomeworkLog.objects.create(
-                    **validated_data,
-                    user=self.context.get("request").user,
-                    homework_id=self.context.get("hw_id")
-                )
+                query["agreement"] = {
+                    "accepted_dt": None,
+                    "accepted": False
+                }
+            hwlog = HomeworkLog.objects.create(
+                **validated_data,
+                **query
+            )
+            notify(hwlog, accepting)
             return hwlog
 
         hw = Homework.objects.get(pk=self.context.get("hw_id"))
-        metodist = hw.get_lesson().get_learning_plan().metodist
-        if metodist:
-            if (self.context.get("request").user.groups
-                    .filter(name="Admin").exists() or
-                    hw.get_lesson().get_learning_plan().metodist ==
-                    self.context.get("request").user):
-                hwl = cr_obj(accepting=False)
-                send_homework_answer_tg(hwl.homework.listener,
-                                        hwl.homework,
-                                        hwl.status)
-            else:
-                hwl = cr_obj(accepting=True)
-                send_homework_tg(
-                    initiator=hwl.homework.teacher,
-                    listener=(hwl.homework.get_lesson()
-                              .get_learning_plan().metodist),
-                    homeworks=[hwl.homework],
-                    text="Требуется согласование действия преподавателя"
-                )
-
-        else:
-            hwl = cr_obj(accepting=False)
-            send_homework_answer_tg(hwl.homework.listener,
-                                    hwl.homework,
-                                    hwl.status)
+        lesson = hw.get_lesson()
+        plan = lesson.get_learning_plan() if lesson else None
+        accepting_ = False
+        if plan and plan.metodist:
+            if not (self.context.get("request").user.groups
+                            .filter(name="Admin").exists() or
+                    plan.metodist == self.context.get("request").user or
+                    hw.listener == self.context.get("request").user):
+                accepting_ = True
+        hwl = cr_obj(accepting=accepting_)
         if len(self.context.get("files")) > 0:
             hwl.files.set(self.context.get("files"))
             hwl.save()

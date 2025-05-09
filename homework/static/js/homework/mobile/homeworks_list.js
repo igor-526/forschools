@@ -87,10 +87,6 @@ function homeworkMobileGet(more=false){
 }
 
 function homeworksMobileShow(homeworks=[]){
-    function tgSendListener(hwID){
-
-    }
-
     function setMoreInfoText(hw, elem){
         if (hw.lesson_info && (cookiesUtilsGet("hwMobFieldLessonName") === "1" || cookiesUtilsGet("hwMobFieldLessonDate") === "1")){
             const lessonP = document.createElement("p")
@@ -185,19 +181,6 @@ function homeworksMobileShow(homeworks=[]){
         moreInfoButtons.insertAdjacentElement("beforeend", moreInfoButtonsInfo)
         moreInfoButtons.insertAdjacentElement("beforeend", moreInfoButtonsButtons)
 
-        if (cookiesUtilsGet("hwMobFieldTGButton") === "1"){
-            const moreInfoButtonsSendTG = document.createElement("button")
-            moreInfoButtonsSendTG.classList.add("btn", "btn-outline-primary", "mx-1")
-            moreInfoButtonsSendTG.type = "button"
-            moreInfoButtonsSendTG.style.height = "50px"
-            moreInfoButtonsSendTG.style.width = "50px"
-            moreInfoButtonsSendTG.innerHTML = '<i class="bi bi-telegram"></i>'
-            moreInfoButtonsSendTG.addEventListener("click", function () {
-                tgSendListener(hw.id)
-            })
-            moreInfoButtonsButtons.insertAdjacentElement("beforeend", moreInfoButtonsSendTG)
-        }
-
         const moreInfoButtonsMenu = document.createElement("button")
         moreInfoButtonsMenu.classList.add("btn", "btn-outline-primary", "mx-1")
         moreInfoButtonsMenu.type = "button"
@@ -208,10 +191,6 @@ function homeworksMobileShow(homeworks=[]){
             homeworkItemShowOffcanvas(hw.id)
         })
         moreInfoButtonsButtons.insertAdjacentElement("beforeend", moreInfoButtonsMenu)
-
-
-
-
         return li
     }
 

@@ -76,3 +76,27 @@ async function materialsAPIDelete(matID){
     })
     return await APIGetToObject(request)
 }
+
+async function materialsAPIAddToObject(formData, object, id){
+    const request = await fetch(`/api/v1/materials/edit_object/${object}/${id}/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: formData
+    })
+    return await APIPostPatchToObject(request)
+}
+
+async function materialsAPIDeleteFromObject(formData, object, id){
+    const request = await fetch(`/api/v1/materials/edit_object/${object}/${id}/`, {
+        method: "DELETE",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: formData
+    })
+    return await APIDeleteToObject(request)
+}

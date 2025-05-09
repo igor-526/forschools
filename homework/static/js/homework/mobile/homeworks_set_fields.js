@@ -9,9 +9,6 @@ function homeworksMobileSetFieldsSetModal(){
     hwMobileSetFieldsModalListenerSwitch.checked = cookiesUtilsGet("hwMobFieldListener") === "1"
     hwMobileSetFieldsModalTeacherSwitch.checked = cookiesUtilsGet("hwMobFieldTeacher") === "1"
     hwMobileSetFieldsModalAssignedDateSwitch.checked = cookiesUtilsGet("hwMobFieldAssignedDate") === "1"
-    if (hwMobileSetFieldsModalTGButtonSwitch){
-        hwMobileSetFieldsModalTGButtonSwitch.checked = cookiesUtilsGet("hwMobFieldTGButton") === "1"
-    }
     bsHwMobileSetFieldsModal.show()
 }
 
@@ -22,7 +19,6 @@ function homeworksMobileSetFieldsAccept(){
     cookiesUtilsSet("hwMobFieldListener", hwMobileSetFieldsModalListenerSwitch.checked ? "1" : "0")
     cookiesUtilsSet("hwMobFieldTeacher", hwMobileSetFieldsModalTeacherSwitch.checked ? "1" : "0")
     cookiesUtilsSet("hwMobFieldAssignedDate", hwMobileSetFieldsModalAssignedDateSwitch.checked ? "1" : "0")
-    cookiesUtilsSet("hwMobFieldTGButton", hwMobileSetFieldsModalTGButtonSwitch.checked ? "1" : "0")
     bsHwMobileSetFieldsModal.hide()
     homeworkMobileGet()
 }
@@ -35,7 +31,6 @@ const hwMobileSetFieldsModalLessonDateSwitch = hwMobileSetFieldsModal.querySelec
 const hwMobileSetFieldsModalListenerSwitch = hwMobileSetFieldsModal.querySelector("#hwMobileSetFieldsModalListenerSwitch")
 const hwMobileSetFieldsModalTeacherSwitch = hwMobileSetFieldsModal.querySelector("#hwMobileSetFieldsModalTeacherSwitch")
 const hwMobileSetFieldsModalAssignedDateSwitch = hwMobileSetFieldsModal.querySelector("#hwMobileSetFieldsModalAssignedDateSwitch")
-const hwMobileSetFieldsModalTGButtonSwitch = hwMobileSetFieldsModal.querySelector("#hwMobileSetFieldsModalTGButtonSwitch")
 const hwMobileSetFieldsModalAcceptButton = hwMobileSetFieldsModal.querySelector("#hwMobileSetFieldsModalAcceptButton")
 
 homeworksMobileSetFieldsMain()
