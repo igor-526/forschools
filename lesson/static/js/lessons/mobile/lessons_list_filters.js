@@ -2,9 +2,9 @@ function lessonsMobileFiltersMain(){
     lessonsMobileSetFiltersButton.addEventListener("click", lessonsMobileFiltersSetModal)
     lessonsMobileFiltersNameFieldListeners()
     lessonsMobileFiltersDateListener()
+    lessonsMobileFiltersSetSelectionListeners()
     lessonsMobileFiltersModalAcceptButton.addEventListener("click", lessonsMobileFiltersSet)
     lessonsMobileFiltersModalResetButton.addEventListener("click", lessonsMobileFiltersReset)
-
 }
 
 function lessonsMobileFiltersSetModal(){
@@ -43,12 +43,12 @@ function lessonsMobileFiltersDateListener(){
 }
 
 function lessonsMobileFiltersNameFieldListeners(){
-    lessonsMobileFilterNameField.addEventListener("input", function (){
-        const query = this.value.toLowerCase().trim()
+    lessonsMobileFilterNameField.addEventListener("input", () =>{
+        const query = lessonsMobileFilterNameField.value.toLowerCase().trim()
         lessonsMobileFilterName = query === "" ? null : query
         lessonsMobileGet()
     })
-    lessonsMobileFilterNameFieldErase.addEventListener("click", function (){
+    lessonsMobileFilterNameFieldErase.addEventListener("click", () =>{
         lessonsMobileFilterNameField.value = ""
         lessonsMobileFilterName = null
         lessonsMobileGet()
@@ -104,6 +104,53 @@ function lessonsMobileFiltersReset(){
     lessonsMobileFilterNameField.value = ""
     bsLessonsMobileFiltersModal.hide()
     lessonsMobileGet()
+}
+
+function lessonsMobileFiltersSetSelectionListeners(){
+    function listenersSelect(listeners=[]){
+        lessonsMobileFilterListenersSelected=Array.from(listeners)
+        lessonsMobileFiltersModalSelectListenersButton.innerHTML = `Ученик (${listeners.length})`
+    }
+
+    function teachersSelect(teachers=[]){
+        lessonsMobileFilterTeachersSelected=Array.from(teachers)
+        lessonsMobileFiltersModalSelectTeachersButton.innerHTML = `Преподаватель (${teachers.length})`
+    }
+
+    function placesSelect(places=[]){
+        lessonsMobileFilterPlaces=Array.from(places)
+        lessonsMobileFiltersModalSelectPlacesButton.innerHTML = `Место проведения (${places.length})`
+    }
+
+    lessonsMobileFiltersModalSelectPlacesButton.addEventListener("click", function () {
+        collectionsAPIGetLessonPlaces().then(request => {
+            switch (request.status){
+                case 200:
+                    universalInfoSelectionModal("Выбор места проведения",
+                        request.response,
+                        true, lessonsMobileFilterPlaces,
+                        true, placesSelect)
+                    break
+                default:
+                    showErrorToast()
+                    break
+            }
+        })
+    })
+
+    lessonsMobileFiltersModalSelectTeachersButton.addEventListener("click", function () {
+        universalInfoSelectionModal(null,
+            {roles: ["Teacher"]},
+            true, lessonsMobileFilterTeachersSelected,
+            true, teachersSelect)
+    })
+
+    lessonsMobileFiltersModalSelectListenersButton.addEventListener("click", function () {
+        universalInfoSelectionModal(null,
+            {roles: ["Listener"]},
+            true, lessonsMobileFilterListenersSelected,
+            true, listenersSelect)
+    })
 }
 
 const lessonsMobileSetFiltersButton = document.querySelector("#lessonsMobileSetFiltersButton")

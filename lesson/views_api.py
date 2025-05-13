@@ -350,39 +350,39 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
         if not is_admin and lesson.homeworks.count() == 0:
             return Response(data={'error': "Необходимо задать ДЗ"},
                             status=status.HTTP_400_BAD_REQUEST)
-        if can_set_passed(request, lesson):
-            validation = validate_lesson_review_form(
-                data=request.POST,
-                name_only=plan.can_report_lesson_name_only or is_admin
-            )
-            review = LessonTeacherReview.objects.create(
-                **validation.get("review")
-            ) if (validation.get("status") and len(validation.get("review")) > 0)\
-                else None
-            lesson_name = request.POST.get("name").strip(" ") if (
-                request.POST.get("name")) else None
-            if validation.get("status"):
-                lesson.name_fact = lesson_name
-                lesson.lesson_teacher_review = review
-                lesson.status = 1
-                lesson.save()
-                if is_admin:
-                    self.log_admin(lesson, request.user)
-                self.notify_users(plan_=plan,
-                                  lesson_=lesson,
-                                  user_=request.user,
-                                  tg_id=request.POST.get("notify_tg_id"))
-            else:
-                return Response(
-                    data={'errors': validation.get("errors")},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            return Response(data={'status': 'ok'},
-                            status=status.HTTP_200_OK)
-        else:
+        if not can_set_passed(request, lesson):
             return Response(data={'error': "Недостаточно прав для "
                                            "изменения статуса занятия"},
                             status=status.HTTP_400_BAD_REQUEST)
+
+        validation = validate_lesson_review_form(
+            data=request.POST,
+            name_only=plan.can_report_lesson_name_only or is_admin
+        )
+        review = LessonTeacherReview.objects.create(
+            **validation.get("review")
+        ) if (validation.get("status") and len(validation.get("review")) > 0)\
+            else None
+        lesson_name = request.POST.get("name").strip(" ") if (
+            request.POST.get("name")) else None
+        if validation.get("status") or is_admin:
+            lesson.name_fact = lesson_name
+            lesson.lesson_teacher_review = review
+            lesson.status = 1
+            lesson.save()
+            if is_admin:
+                self.log_admin(lesson, request.user)
+            self.notify_users(plan_=plan,
+                              lesson_=lesson,
+                              user_=request.user,
+                              tg_id=request.POST.get("notify_tg_id"))
+        else:
+            return Response(
+                data={'errors': validation.get("errors")},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(data={'status': 'ok'},
+                        status=status.HTTP_200_OK)
 
 
 class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):

@@ -2,6 +2,11 @@
 {% load static %}
 {% block content %}
     <div id="homeworkMobileTabs" class="mb-3 d-flex" style="overflow-x: scroll;"></div>
+    <div class="input-group mb-3">
+        <input id="homeworksMobileFilterNameField" type="text" class="form-control form-control-sm" placeholder="Поиск по наименованию" aria-label="">
+        <button id="homeworksMobileFilterNameFieldErase" class="btn btn-sm btn-outline-danger" type="button"><i class="bi bi-eraser"></i></button>
+    </div>
+
     <ul class="list-group px-0" id="homeworksMobileList"></ul>
     <div id="homeworkMobileListLoadingSpinner" class="d-flex justify-content-center w-100 d-none">
         <div class="spinner-border text-primary" role="status">
@@ -10,6 +15,7 @@
     </div>
     {% include "material_preview_modal.html" %}
     {% include "mobile/homeworks_set_fields.html" %}
+    {% include "mobile/homeworks_set_filters.html" %}
     {% if is_admin %}
         {% include "mobile/lessons_list_admin_comment.html" %}
     {% endif %}
@@ -36,7 +42,7 @@
     <script src="{% static 'js/universal_field_validator.js' %}"></script>
     <script src="{% static 'js/homework/homework_item_show_offcanvas.js' %}"></script>
     <script src="{% static 'js/lessons/lesson_show_offcanvas.js' %}"></script>
-    <script src="{% static 'js/homework/mobile/homeworks_filter.js' %}"></script>
+    <script src="{% static 'js/homework/mobile/homeworks_list_filters.js' %}"></script>
     <script src="{% static 'js/homework/mobile/homeworks_set_fields.js' %}"></script>
     <script src="{% static 'js/homework/mobile/homeworks_list.js' %}"></script>
 {% endblock %}

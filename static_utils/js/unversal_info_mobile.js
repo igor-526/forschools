@@ -415,3 +415,184 @@ function mobileInfoModalSet(title="", content=[], buttons=[]){
         close: close
     }
 }
+
+
+function universalInfoSelectionModal(
+    custom = null,
+    searchParams = {},
+    multiple = true,
+    autoSelected = [],
+    nullSelection = false,
+    readyFunction = ()=>{}
+){
+    function getSearchBlock(){
+        const mainBlock = document.createElement("div")
+        mainBlock.classList.add("input-group", "mb-3")
+
+        const queryField = document.createElement("input")
+        queryField.type = "text"
+        queryField.classList.add("form-control", "form-control-sm")
+        queryField.ariaLabel = ""
+        queryField.placeholder = "Поиск:"
+        queryField.addEventListener("input", () => {
+            const value = queryField.value.trim().toLowerCase()
+            getUsers(value ? value : null)
+        })
+
+        const resetButton = document.createElement("button")
+        resetButton.type = "button"
+        resetButton.classList.add("btn", "btn-sm", "btn-outline-danger")
+        resetButton.innerHTML = '<i class="bi bi-x-lg"></i>'
+        resetButton.addEventListener("click", function (){
+            queryField.value = ""
+            selected.length = 0
+            getUsers(null)
+            updateReadyButton()
+        })
+
+
+        const eraseButton = document.createElement("button")
+        eraseButton.type = "button"
+        eraseButton.classList.add("btn", "btn-sm", "btn-outline-danger")
+        eraseButton.innerHTML = '<i class="bi bi-eraser"></i>'
+        eraseButton.addEventListener("click", function (){
+            queryField.value = ""
+            getUsers(null)
+        })
+
+        mainBlock.insertAdjacentElement("beforeend", resetButton)
+        mainBlock.insertAdjacentElement("beforeend", queryField)
+        mainBlock.insertAdjacentElement("beforeend", eraseButton)
+
+        return mainBlock
+    }
+
+    function getUsers(fullName=null){
+        let params = {
+            setting: null,
+            id: null,
+            tg: null,
+            username: null,
+            fullName: fullName,
+            roles: [],
+            excludeMe: true,
+            ...searchParams
+        }
+        usersAPIGetAll(
+            params.setting, params.id, params.tg,
+            params.username, params.fullName, params.roles,
+            null,null,null,
+            params.excludeMe
+        ).then(request => {
+            switch (request.status){
+                case 200:
+                    showUsers(request.response)
+                    break
+                default:
+                    showErrorToast()
+                    break
+            }
+        })
+    }
+
+    function showUsers(users=[]){
+        usersList.innerHTML = ""
+        if (users.length === 0){
+            const noContentLi = document.createElement("li")
+            noContentLi.classList.add("list-group-item")
+            noContentLi.innerHTML = "Результатов нет"
+            usersList.insertAdjacentElement("beforeend", noContentLi)
+            return null
+        }
+        users.forEach(user => {
+            const a = document.createElement("a")
+            a.classList.add("list-group-item")
+            a.innerHTML = `${user.first_name} ${user.last_name}`
+            a.href = "#"
+            if (selected.includes(user.id)){
+                a.classList.add("active")
+            }
+            a.addEventListener("click", () => {
+                selectListener(user.id, a)
+            })
+            usersList.insertAdjacentElement("beforeend", a)
+        })
+    }
+
+    function showCustom(){
+        searchParams.forEach(param => {
+            const a = document.createElement("a")
+            a.classList.add("list-group-item")
+            a.innerHTML = param.name
+            a.href = "#"
+            if (selected.includes(param.id)){
+                a.classList.add("active")
+            }
+            a.addEventListener("click", () => {
+                selectListener(param.id, a)
+            })
+            usersList.insertAdjacentElement("beforeend", a)
+        })
+    }
+
+    function selectListener(userID, element) {
+        if (multiple){
+            const index = selected.indexOf(userID)
+            switch (index){
+                case -1:
+                    selected.push(userID)
+                    element.classList.add("active")
+                    break
+                default:
+                    selected.splice(index, 1)
+                    element.classList.remove("active")
+                    break
+            }
+        } else {
+            usersList.querySelectorAll("a").forEach(elem => {
+                elem.classList.remove("active")
+            })
+            element.classList.add("active")
+            selected.length = 0
+            selected.push(userID)
+        }
+        updateReadyButton()
+    }
+
+    function updateReadyButton(){
+        if (!multiple && nullSelection){
+            return null
+        }
+        if (multiple){
+            readyButton.innerHTML = `Выбрать (${selected.length})`
+        }
+        readyButton.disabled = !nullSelection && !selected.length
+    }
+
+    const readyButton = document.createElement("button")
+    readyButton.type = "button"
+    readyButton.classList.add("btn", "btn-success")
+    readyButton.innerHTML = "Выбрать"
+    readyButton.addEventListener("click", function () {
+        modal.close()
+        readyFunction(selected)
+    })
+
+    const selected = Array.from(autoSelected)
+    const usersList = document.createElement("ul")
+    usersList.classList.add("list-group")
+    if (custom){
+        showCustom()
+    } else {
+        getUsers()
+    }
+    updateReadyButton()
+    let title
+    if (custom){
+        title = custom
+    } else {
+        title = multiple ? "Выбор пользователей" : "Выбор пользователя"
+    }
+    const modal = mobileInfoModalSet(title,
+        [getSearchBlock(), usersList], [readyButton])
+}

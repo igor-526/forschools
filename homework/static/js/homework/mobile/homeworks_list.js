@@ -45,9 +45,7 @@ function homeworksMobileInitTabsAndButtons(){
         btn.classList.add("btn-sm", "btn", "btn-outline-primary", "mx-1")
         btn.type = "button"
         btn.innerHTML = '<i class="bi bi-funnel"></i>'
-        btn.addEventListener("click", function (){
-
-        })
+        btn.addEventListener("click", homeworksMobileFiltersSetModal)
         return btn
     }
 

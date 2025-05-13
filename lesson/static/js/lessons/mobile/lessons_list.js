@@ -60,11 +60,11 @@ const lessonsMobileListLoadingSpinner = document.querySelector("#lessonsMobileLi
 //Filters
 let lessonsMobileFilterName = null
 let lessonsMobileFilterComment = null
-const lessonsMobileFilterTeachersSelected = []
-const lessonsMobileFilterListenersSelected = []
+let lessonsMobileFilterTeachersSelected = []
+let lessonsMobileFilterListenersSelected = []
 let lessonsMobileFilterDateStart = null
 let lessonsMobileFilterDateEnd = null
-const lessonsMobileFilterPlaces = []
+let lessonsMobileFilterPlaces = []
 let lessonsMobileFilterHW = null
 let lessonsMobileFilterStatus = null
 let lessonsMobileFilterOffset = 0
