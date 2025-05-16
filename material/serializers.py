@@ -2,7 +2,7 @@ import os.path
 from rest_framework import serializers
 from tgbot.utils import sync_funcs
 from .models import Material, File
-from .utils.get_type import get_type
+from .utils import get_type_by_ext
 from data_collections.serializers import (MaterialLevelSerializer,
                                           MaterialCategorySerializer)
 from profile_management.serializers import NewUserNameOnlyListSerializer
@@ -35,7 +35,7 @@ class MaterialSerializer(serializers.ModelSerializer):
         return obj.file.url
 
     def get_file_type(self, obj):
-        filetype = get_type(obj.extension)
+        filetype = get_type_by_ext(obj.extension)
         return filetype
 
     def create(self, validated_data):
@@ -83,7 +83,7 @@ class MaterialListSerializer(serializers.ModelSerializer):
         return obj.file.url
 
     def get_type(self, obj):
-        filetype = get_type(obj.extension)
+        filetype = get_type_by_ext(obj.extension)
         return filetype
 
 
@@ -109,7 +109,7 @@ class FileSerializer(serializers.ModelSerializer):
             ext = obj.path.path.split('.')[-1]
             obj.extension = ext
             obj.save()
-        filetype = get_type(obj.extension)
+        filetype = get_type_by_ext(obj.extension)
         return filetype
 
 
@@ -131,7 +131,7 @@ class MaterialLogSerializer(serializers.ModelSerializer):
         return obj.file.url
 
     def get_type(self, obj):
-        return get_type(obj.extension)
+        return get_type_by_ext(obj.extension)
 
 
 class FileLogSerializer(serializers.ModelSerializer):
@@ -152,4 +152,4 @@ class FileLogSerializer(serializers.ModelSerializer):
         return obj.path.url
 
     def get_type(self, obj):
-        return get_type(obj.extension)
+        return get_type_by_ext(obj.extension)

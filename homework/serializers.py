@@ -3,6 +3,7 @@ from rest_framework import serializers
 from learning_plan.models import LearningPlan
 from learning_plan.permissions import get_can_see_plan
 from lesson.models import Lesson
+from material.utils import MaterialFileUploader
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from profile_management.models import NewUser
 from material.serializers import MaterialListSerializer
@@ -115,13 +116,28 @@ class HomeworkListSerializer(serializers.ModelSerializer):
     lesson_info = serializers.SerializerMethodField(read_only=True)
     assigned = serializers.SerializerMethodField(read_only=True)
     color = serializers.SerializerMethodField(read_only=True)
+    last_status: HomeworkLog | None
+    lesson: Lesson | None
+    plan: LearningPlan | None
 
     class Meta:
         model = Homework
         fields = ["id", "name", "description", "teacher", "for_curator",
                   "listener", "status", "lesson_info", "assigned", "color"]
 
+    def __init__(self, *args, **kwargs):
+        super(HomeworkListSerializer, self).__init__(*args, **kwargs)
+        if not args or args[0] is None:
+            self.last_status = None
+            self.lesson = None
+            self.plan = None
+            return
+        print(args[0])
+
+
     def get_status(self, obj):
+        if isinstance(obj, dict):
+            return None
         status = obj.get_status(
             accepted_only=obj.listener == self.context.get("request").user
         )
@@ -131,6 +147,8 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         return None
 
     def get_lesson_info(self, obj):
+        if isinstance(obj, dict):
+            return None
         lesson = obj.get_lesson()
         if lesson:
             return {
@@ -141,12 +159,16 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         return None
 
     def get_assigned(self, obj):
+        if isinstance(obj, dict):
+            return None
         status = obj.get_status(True)
         if status:
             return status.dt
         return None
 
     def get_color(self, obj):
+        if isinstance(obj, dict):
+            return None
         color = None
         hw_status = obj.get_status(
             accepted_only=obj.listener == self.context.get("request").user
@@ -175,37 +197,23 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         lesson_id = request.POST.get('lesson')
         set_assigned = True
-        if lesson_id:
-            try:
-                lesson = Lesson.objects.get(pk=int(lesson_id))
-                if (lesson.get_learning_plan().curators
-                        .filter(id=request.user.id).exists()):
-                    validated_data['for_curator'] = True
-                if lesson.status != 1:
-                    set_assigned = False
-                listeners = lesson.get_listeners()
-                teacher = lesson.get_hw_teacher()
-            except Lesson.DoesNotExist:
-                raise serializers.ValidationError(
-                    {"msg": "Занятие отсутствует"}
-                )
-        else:
-            try:
-                lesson = None
-                listeners = NewUser.objects.filter(
-                    groups__name="Listener",
-                    id__in=request.POST.getlist("listeners")
-                )
-                if not listeners:
-                    raise serializers.ValidationError(
-                        {"listeners": "Ученики не найдены"}
-                    )
-                teacher = NewUser.objects.get(groups__name="Teacher",
-                                              id=request.POST.get("teacher"))
-            except NewUser.DoesNotExist:
-                raise serializers.ValidationError(
-                    {"teacher": "Преподаватель не найден"}
-                )
+        if not lesson_id:
+            raise serializers.ValidationError(
+                {"error": "Занятие отсутствует"}
+            )
+        try:
+            lesson = Lesson.objects.get(pk=int(lesson_id))
+            if (lesson.get_learning_plan().curators
+                    .filter(id=request.user.id).exists()):
+                validated_data['for_curator'] = True
+            if lesson.status != 1:
+                set_assigned = False
+            listeners = lesson.get_listeners()
+            teacher = lesson.get_hw_teacher()
+        except Lesson.DoesNotExist:
+            raise serializers.ValidationError(
+                {"error": "Занятие отсутствует"}
+            )
         homeworks = []
         for listener in listeners:
             homework = Homework.objects.create(**validated_data,
@@ -215,15 +223,24 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         if lesson_id:
             lesson.homeworks.add(*homeworks)
             lesson.save()
-        for homework in homeworks:
-            homework.materials.set(
-                self.context.get('request').POST.getlist('materials')
+        text_materials = request.data.getlist("text_materials")
+        files = request.data.getlist("files")
+        materials = []
+        if text_materials or files:
+            materials_uploader = MaterialFileUploader(
+                owner=self.context.get("request").user,
+                mode="m"
             )
-            homework.save()
+            materials_uploader.set_text_materials(text_materials)
+            materials_uploader.set_files(files)
+            materials_uploader.upload()
+            materials = materials_uploader.objects
+        for homework in homeworks:
+            if materials:
+                homework.materials.add(*materials)
             if set_assigned:
                 res = homework.set_assigned()
-                if (res.get("agreement") is not None and
-                        res.get("agreement") is False):
+                if res.get("agreement") is False:
                     send_homework_tg(initiator=request.user,
                                      listener=homework.listener,
                                      homeworks=[homework])
@@ -315,7 +332,6 @@ class HomeworkLogListSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         def notify(hw_log: HomeworkLog, accepting=False) -> None:
             if hw_log.status == 3:
-                print("Отправляем преподу")
                 send_homework_answer_tg(
                     user=hw_log.homework.teacher,
                     homework=hw_log.homework,

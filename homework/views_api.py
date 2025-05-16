@@ -11,7 +11,7 @@ from chat.models import Message
 from lesson.models import Lesson
 from lesson.permissions import CanReplaceTeacherMixin
 from material.models import File, Material
-from material.utils.get_type import get_type
+from material.utils import get_type_by_ext
 from tgbot.funcs.homeworks.homework_show import open_homework_in_tg
 from tgbot.utils import (send_homework_tg, notify_chat_message,
                          send_homework_answer_tg, sync_funcs)
@@ -214,7 +214,9 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                                 status=status.HTTP_400_BAD_REQUEST)
             return Response(data={"status": "ok"},
                             status=status.HTTP_200_OK)
-        serializer = self.get_serializer(data=request.data,
+        name = f'ДЗ {Homework.objects.count() + 1}'
+        serializer = self.get_serializer(data={"name": name,
+                                               **request.data},
                                          context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -342,7 +344,7 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
                 owner=self.request.user,
                 name=".".join(file.name.split(".")[:-1]),
                 extension=file.name.split(".")[-1],
-                is_animation=get_type(file.name.split(".")[-1]) == "animation_formats",
+                is_animation=get_type_by_ext(file.name.split(".")[-1]) == "animation_formats",
                 path=file
             )
             result.append(f.id)

@@ -20,7 +20,7 @@ function maHomeworkItemSetMainInfo(){
         const btn = document.createElement("button")
         a.insertAdjacentElement("beforeend", btn)
         a.href = `/ma/lessons/${lesson_info.id}/`
-        btn.innerHTML = lesson_info.name
+        btn.innerHTML = lesson.name_fact ? `${lesson.name_fact} (${lesson.name})` : lesson.name
         btn.classList.add("btn", "btn-outline-primary", "btn-sm")
         li.insertAdjacentElement("beforeend", a)
         return li

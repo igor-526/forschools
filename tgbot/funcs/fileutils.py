@@ -1,13 +1,13 @@
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import FSInputFile
 from material.models import File
-from material.utils.get_type import get_type
+from material.utils import get_type_by_ext
 from tgbot.create_bot import bot
 
 
 async def send_file(tg_id: int, file_object: File, reply_markup=None, protect=False) -> None:
     file = file_object.tg_url if file_object.tg_url else FSInputFile(path=file_object.path.path)
-    file_type = get_type(file_object.path.name.split(".")[-1])
+    file_type = get_type_by_ext(file_object.path.name.split(".")[-1])
     file_id = None
     if file_type == "image_formats":
         try:

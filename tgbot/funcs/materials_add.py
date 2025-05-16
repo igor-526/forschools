@@ -1,12 +1,10 @@
 import os.path
 from datetime import datetime
-from PIL import Image
-import cv2
+
 from dls.settings import MEDIA_ROOT
 from material.models import Material, File
-from material.utils.get_type import get_type
+from material.utils import get_type_by_ext
 from profile_management.models import NewUser
-from tgbot.create_bot import bot
 from tgbot.utils import get_group_and_perms, get_user, get_tg_note
 from aiogram.fsm.context import FSMContext
 from aiogram import types
@@ -109,7 +107,7 @@ class FileParser:
 
         if self.material_message.document:
             if not self.material_message.animation:
-                file_type = get_type(self.material_message.document.file_name.split(".")[-1])
+                file_type = get_type_by_ext(self.material_message.document.file_name.split(".")[-1])
                 if file_type != "unsupported":
                     file_name = self.material_message.document.file_name
                     self.file_type = "document"

@@ -21,6 +21,13 @@ function maLessonItemMain(){
 }
 
 function maLessonItemSetMainInfo(lesson){
+    function getName(){
+        if (lesson.name_fact){
+            return `${lesson.name_fact} (${lesson.name})`
+        }
+        return lesson.name
+    }
+
     function getListItem(name, value){
         const li = document.createElement("li")
         li.classList.add("list-group-item")
@@ -29,7 +36,7 @@ function maLessonItemSetMainInfo(lesson){
     }
 
     maLessonItemMainList.insertAdjacentElement("beforeend", getListItem(
-        "Наименование", lesson.name
+        "Наименование", getName()
     ))
     if (lesson.description){
         maLessonItemMainList.insertAdjacentElement("beforeend", getListItem(

@@ -88,6 +88,13 @@ function lessonsGet(more=false){
 }
 
 function lessonsShow(lessons, clear=true, replace_element=null){
+    function getLessonName(lesson){
+        if (lesson.name_fact){
+            return `${lesson.name_fact} (${lesson.name})`
+        }
+        return lesson.name
+    }
+
     function getCollapseElement(lessonID){
         const tr = document.createElement("tr")
         const td = document.createElement("td")
@@ -134,7 +141,7 @@ function lessonsShow(lessons, clear=true, replace_element=null){
         }
 
         const tdName = document.createElement("td")
-        tdName.innerHTML = `<a href="/lessons/${lesson.id}">${lesson.name_fact ? lesson.name_fact : lesson.name}</a>`
+        tdName.innerHTML = `<a href="/lessons/${lesson.id}">${getLessonName(lesson)}</a>`
         tr.insertAdjacentElement("beforeend", tdName)
 
         const tdDate = document.createElement("td")

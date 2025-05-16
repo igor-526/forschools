@@ -5,9 +5,8 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-import re
 from homework.models import HomeworkLog
-from material.utils.get_type import get_type
+from material.utils import get_type_by_ext
 from profile_management.models import NewUser
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from user_logs.models import UserLog
@@ -219,7 +218,7 @@ class UserLogsMessagesChatAPIVIew(LoginRequiredMixin, APIView):
             "type": "receiver" if self.selected_first_user == message.sender.id else "sender",
             "read_data": message.read_data,
             "files": [{
-                "type": get_type(f.path.name.split('.')[-1]),
+                "type": get_type_by_ext(f.path.name.split('.')[-1]),
                 "href": f.path.url
             } for f in message.files.all()]
         } for message in query]

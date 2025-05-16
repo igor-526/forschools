@@ -3,7 +3,6 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery, FSInputFile
 from django.db.models import Q
 from homework.models import Homework
-from material.utils.get_for_listener import aget_materials_for_listener, aget_materials_for_listener_next
 from material.models import Material, MaterialCategory, MaterialLevel
 from profile_management.models import Telegram
 from tgbot.create_bot import bot
@@ -20,7 +19,7 @@ from tgbot.keyboards.materials import (get_keyboard_materials,
                                        get_keyboard_tg_users,
                                        get_show_key)
 from tgbot.finite_states.materials import MaterialFSM
-from material.utils.get_type import get_type
+from material.utils import get_type_by_ext
 from user_logs.models import UserLog
 
 
@@ -35,7 +34,7 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
         return msg_text
 
     file = material.tg_url if material.tg_url else FSInputFile(path=material.file.path)
-    mat_type = get_type(material.file.name.split(".")[-1])
+    mat_type = get_type_by_ext(material.file.name.split(".")[-1])
     user = await get_user(tg_id)
     perms = await get_group_and_perms(user.id)
     send_tg = 'material.send_telegram' in perms.get('permissions')
@@ -136,7 +135,7 @@ async def filter_materials(materials: list[Material], state: FSMContext):
                          "id": mat.id,
                          "cat": [cat.id async for cat in mat.category.all()],
                          "level": [level.id async for level in mat.level.all()],
-                         "type": get_type(mat.file.name.split(".")[-1])} for mat in materials]
+                         "type": get_type_by_ext(mat.file.name.split(".")[-1])} for mat in materials]
     cat_id = data.get("cat_id")
     mat_type = data.get("mat_type")
     level_id = data.get("lvl_id")
@@ -181,34 +180,36 @@ async def send_types(callback: CallbackQuery):
 
 
 async def navigate_user_materials(callback: CallbackQuery, state: FSMContext, user_id, page):
-    perms = await get_group_and_perms(user_id)
-    if 'Listener' in perms.get('groups'):
-        materials = await aget_materials_for_listener(user_id, page)
-        next_materials = await aget_materials_for_listener_next(user_id, page)
-        dicted_materials = await filter_materials(materials, state)
-        await callback.message.edit_text(text="Вам доступны следующие материалы:",
-                                         reply_markup=get_keyboard_query_user(
-                                             dicted_materials,
-                                             user_id,
-                                             page,
-                                             next_materials))
+    pass
+    # perms = await get_group_and_perms(user_id)
+    # if 'Listener' in perms.get('groups'):
+    #     materials = await aget_materials_for_listener(user_id, page)
+    #     next_materials = await aget_materials_for_listener_next(user_id, page)
+    #     dicted_materials = await filter_materials(materials, state)
+    #     await callback.message.edit_text(text="Вам доступны следующие материалы:",
+    #                                      reply_markup=get_keyboard_query_user(
+    #                                          dicted_materials,
+    #                                          user_id,
+    #                                          page,
+    #                                          next_materials))
 
 
 async def get_user_materials(message: types.Message, state: FSMContext):
-    user = await get_user(message.from_user.id)
-    perms = await get_group_and_perms(user.id)
-    if 'Listener' in perms.get('groups'):
-        materials = await aget_materials_for_listener(user.id, 1)
-        next_materials = await aget_materials_for_listener_next(user.id, 1)
-        dicted_materials = await filter_materials(materials, state)
-        await message.delete()
-        await message.answer(text="Вам доступны следующие материалы:",
-                             reply_markup=get_keyboard_query_user(dicted_materials, user.id, 1, next_materials))
-    else:
-        await message.answer("Выберите категорию или напишите фразу для поиска:",
-                             reply_markup=get_keyboard_materials(add_mat=True))
-        await state.set_state(MaterialFSM.material_search)
-        await send_categories(message)
+    pass
+    # user = await get_user(message.from_user.id)
+    # perms = await get_group_and_perms(user.id)
+    # if 'Listener' in perms.get('groups'):
+    #     materials = await aget_materials_for_listener(user.id, 1)
+    #     next_materials = await aget_materials_for_listener_next(user.id, 1)
+    #     dicted_materials = await filter_materials(materials, state)
+    #     await message.delete()
+    #     await message.answer(text="Вам доступны следующие материалы:",
+    #                          reply_markup=get_keyboard_query_user(dicted_materials, user.id, 1, next_materials))
+    # else:
+    #     await message.answer("Выберите категорию или напишите фразу для поиска:",
+    #                          reply_markup=get_keyboard_materials(add_mat=True))
+    #     await state.set_state(MaterialFSM.material_search)
+    #     await send_categories(message)
 
 
 async def send_tg_users(callback: CallbackQuery, state: FSMContext, mat_id) -> None:

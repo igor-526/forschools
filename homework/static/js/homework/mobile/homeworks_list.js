@@ -1,6 +1,13 @@
 function homeworkMobileMain(){
     homeworksMobileFilterCurrentLesson = getHashValue("lesson_id")
     homeworksMobileInitTabsAndButtons()
+    window.addEventListener("scroll", () => {
+        if (homeworkMobileAutoRequest && (document.body.scrollHeight-window.innerHeight-window.scrollY < 0)){
+            homeworkMobileAutoRequest = false
+            homeworksMobileCurrentOffset += 50
+            homeworkMobileGet(true)
+        }
+    })
 }
 
 function homeworksMobileInitTabsAndButtons(){
@@ -73,9 +80,8 @@ function homeworkMobileGet(more=false){
         homeworkMobileListLoadingSpinner.classList.add("d-none")
         switch (request.status){
             case 200:
-                homeworksMobileShow(request.response, !more)
-                // request.response.length === 50 ? homeworksTableShowMoreButton.classList.remove("d-none") :
-                //     homeworksTableShowMoreButton.classList.add("d-none")
+                homeworkMobileAutoRequest = request.response.length === 50
+                homeworksMobileShow(request.response)
                 break
             default:
                 showErrorToast()
@@ -197,6 +203,7 @@ function homeworksMobileShow(homeworks=[]){
     })
 }
 
+let homeworkMobileAutoRequest = false
 const homeworksMobileList = document.querySelector("#homeworksMobileList")
 const homeworkMobileTabs = document.querySelector("#homeworkMobileTabs")
 const homeworkMobileListLoadingSpinner = document.querySelector("#homeworkMobileListLoadingSpinner")

@@ -532,8 +532,11 @@ class Telegram(models.Model):
                              null=False,
                              blank=False)
     allowed_users = models.ManyToManyField(NewUser,
-                                           verbose_name="Пользователи",
-                                           related_name='telegram_allowed')
+                                           verbose_name="Авторизованный пользователь",
+                                           related_name='telegram_allowed_user')
+    allowed_parents = models.ManyToManyField(NewUser,
+                                           verbose_name="Авторизованный родитель",
+                                           related_name='telegram_allowed_parent')
     tg_id = models.BigIntegerField(verbose_name='id',
                                    null=False,
                                    blank=False,

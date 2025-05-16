@@ -2,6 +2,13 @@ function lessonsMobileMain(){
     lessonsMobileInitTabs()
     lessonsMobileGet()
     lessonsMobileSetFieldsButton.addEventListener("click", lessonsMobileSetFieldsSetModal)
+    window.addEventListener("scroll", () => {
+        if (lessonMobileAutoRequest && (document.body.scrollHeight-window.innerHeight-window.scrollY < 0)){
+            lessonMobileAutoRequest = false
+            lessonsMobileFilterOffset += 50
+            lessonsMobileGet(true)
+        }
+    })
 }
 
 function lessonsMobileInitTabs(){
@@ -36,6 +43,8 @@ function lessonsMobileGet(more=false){
         lessonsMobileListLoadingSpinner.classList.add("d-none")
         switch (request.status){
             case 200:
+                console.log(request.response.length)
+                lessonMobileAutoRequest = request.response.length === 50
                 lessonsMobileShow(request.response)
                 break
             default:
@@ -51,6 +60,7 @@ function lessonsMobileShow(lessons=[]){
     })
 }
 
+let lessonMobileAutoRequest = false
 const lessonsMobileSetFieldsButton = document.querySelector("#lessonsMobileSetFieldsButton")
 const lessonsMobileSetAllButton = document.querySelector("#lessonsMobileSetAllButton")
 const lessonsMobileSetPassedButton = document.querySelector("#lessonsMobileSetPassedButton")

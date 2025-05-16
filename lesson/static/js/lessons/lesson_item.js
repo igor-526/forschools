@@ -162,6 +162,7 @@ function lessonItemSetReview(review){
     }
 
     LessonItemReview.classList.remove("d-none")
+
     if (review.hasOwnProperty("materials")){
         LessonItemReviewList.insertAdjacentElement("beforeend", getListElement(
             "Использованные материалы",

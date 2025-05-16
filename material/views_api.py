@@ -14,7 +14,7 @@ from .models import Material, File
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView)
 from .serializers import MaterialSerializer
-from .utils.get_type import get_type
+from .utils import get_type_by_ext
 from learning_program.models import (LearningProgramLesson,
                                      LearningProgramPhase)
 
@@ -58,7 +58,7 @@ class MaterialListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             queryset = queryset.filter(level__in=q_lvl)
         if q_mat_type:
             filtered = [m.id for m in
-                        list(filter(lambda mat: get_type(
+                        list(filter(lambda mat: get_type_by_ext(
                             mat.file.path.split(".")[-1]
                         ) in q_mat_type, queryset))]
             queryset = queryset.filter(id__in=filtered)
@@ -146,7 +146,7 @@ class MaterialEditObjectAPIView(LoginRequiredMixin, APIView):
                 "owner": self.request.user,
                 "name": ".".join(file.name.split(".")[:-1]),
                 "extension": file.name.split(".")[-1],
-                "is_animation": get_type(file.name.split(".")[-1]) == "animation_formats"
+                "is_animation": get_type_by_ext(file.name.split(".")[-1]) == "animation_formats"
             }
             if model == Material:
                 query['file'] = file

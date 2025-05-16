@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from .models import Material
-from .utils.get_type import get_type
+from .utils import get_type_by_ext
 from dls.settings import MATERIAL_FORMATS
 from .permissions import CanSeeMaterialMixin
 
@@ -23,7 +23,7 @@ class MaterialItemPage(CanSeeMaterialMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         material = Material.objects.get(pk=kwargs.get("pk"))
-        material_type = get_type(material.file.name.split('.')[-1])
+        material_type = get_type_by_ext(material.file.name.split('.')[-1])
         can_edit = (material.owner == request.user or
                     request.user.has_perm('material.add_general'))
 

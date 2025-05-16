@@ -13,15 +13,21 @@ function lessonShowOffcanvas(lessonID){
         switch (request.status){
             case 200:
                 const lessonOffcanvas = mobileInfoOffcanvasSet(request.response.name)
-                mobileInfoOffcanvasAddData("Основные данные", lessonOffcanvas,
-                    lessonShowGetMainInfoContent(request.response, lessonOffcanvas))
+                lessonOffcanvas.addData(
+                    "Основные данные",
+                    lessonShowGetMainInfoContent(request.response, lessonOffcanvas)
+                )
                 if (request.response.lesson_teacher_review){
-                    mobileInfoOffcanvasAddData("Ревью", lessonOffcanvas,
-                        lessonShowGetReviewContent(request.response.lesson_teacher_review))
+                    lessonOffcanvas.addData(
+                        "Ревью",
+                        lessonShowGetReviewContent(request.response.lesson_teacher_review)
+                    )
                 }
                 if (request.response.place){
-                    mobileInfoOffcanvasAddData("Место проведения", lessonOffcanvas,
-                        lessonShowGetPlaceContent(lessonID, request.response.place))
+                    lessonOffcanvas.addData(
+                        "Место проведения",
+                        lessonShowGetPlaceContent(lessonID, request.response.place)
+                    )
                 }
                 mobileInfoOffcanvasAddData("Материалы", lessonOffcanvas,
                     [mobileInfoMaterialsGetBlock(request.response.materials),
@@ -532,6 +538,74 @@ function lessonItemSetPassed(lessonID, validateInfo, form, lessonSetPassedOffcan
 }
 
 function lessonItemSetAddHWOffcanvas(lessonID, lessonOffcanvas){
+    function addTextField(){
+        const addTextMaterialDiv = document.createElement("div")
+        addTextMaterialDiv.classList.add("my-2")
+        const addTextMaterialTextArea = document.createElement("textarea")
+        addTextMaterialTextArea.classList.add("form-control")
+        addTextMaterialTextArea.rows = 5
+        addTextMaterialTextArea.placeholder = "Текстовый материал"
+        const addTextMaterialInvalidFeedback = document.createElement("div")
+        addTextMaterialInvalidFeedback.classList.add("invalid-feedback")
+        addTextMaterialDiv.insertAdjacentElement("beforeend", addTextMaterialTextArea)
+        addTextMaterialDiv.insertAdjacentElement("beforeend", addTextMaterialInvalidFeedback)
+        textMaterialsForm.insertAdjacentElement("beforeend", addTextMaterialDiv)
+        addTextMaterialDiv.scrollIntoView({block: "start", behavior: "smooth"})
+        textMaterialsFields.push({
+            field: addTextMaterialTextArea,
+            invalidFeedback: addTextMaterialInvalidFeedback
+        })
+    }
+
+    function validateAndGetFormData(){
+        const fd = new FormData(textMaterialsForm)
+        let fullLength = 0
+        let validationStatus = true
+        textMaterialsFields.forEach(field => {
+            field.field.classList.remove("is-invalid")
+            field.invalidFeedback.innerHTML = ""
+            const value = field.field.value.trim()
+            if (value.length > 3800){
+                field.field.classList.add("is-invalid")
+                field.invalidFeedback.innerHTML = "Длина поля не может превышать 3800 символов"
+                validationStatus = false
+            }
+            if (value !== ""){
+                fd.append("text_materials", value)
+                fullLength++
+            }
+        })
+        selectedFiles.forEach(file => {
+            fd.append("files", file.fileForm, file.fileForm.name)
+            fullLength++
+        })
+        if (!fullLength){
+            showErrorToast("Необходимо добавить хотя бы один материал")
+            validationStatus = false
+        }
+        fd.append("lesson", lessonID)
+        return validationStatus ? fd : null
+    }
+
+    function sendListener(){
+        const formData = validateAndGetFormData()
+        if (!formData)
+            return null
+        homeworkAPIAdd(formData).then(request => {
+            lessonAddHWOffcanvas.close()
+            switch (request.status){
+                case 201:
+                    lessonOffcanvas.close()
+                    lessonShowOffcanvas(lessonID)
+                    showSuccessToast("ДЗ успешно задано")
+                    break
+                default:
+                    showErrorToast()
+                    break
+            }
+        })
+    }
+
     const lessonAddHWOffcanvas = mobileInfoOffcanvasSet("Новое ДЗ")
     const content = []
 
@@ -563,8 +637,26 @@ function lessonItemSetAddHWOffcanvas(lessonID, lessonOffcanvas){
         content.push(tgButton)
     }
 
-    mobileInfoOffcanvasAddData("", lessonAddHWOffcanvas,
-        content)
+    const selectedFiles = []
+    const textMaterialsFields = []
+    const uploadBlock = mobileInfoGetUploadFilesBlock(selectedFiles)
+    const textMaterialsForm = document.createElement("form")
+    textMaterialsForm.acceptCharset = "utf-8"
+    const addTextMaterialFieldButton = document.createElement("button")
+    addTextMaterialFieldButton.classList.add("btn", "btn-secondary", "w-100", "my-1")
+    addTextMaterialFieldButton.type = "button"
+    addTextMaterialFieldButton.innerHTML = 'Добавить текст'
+    addTextMaterialFieldButton.addEventListener("click", addTextField)
+    const sendHWButton = document.createElement("button")
+    sendHWButton.classList.add("btn", "btn-success", "w-100", "my-1")
+    sendHWButton.type = "button"
+    sendHWButton.innerHTML = 'Задать ДЗ'
+    sendHWButton.addEventListener("click", sendListener)
+
+    content.push(uploadBlock.button, uploadBlock.block, textMaterialsForm,
+        addTextMaterialFieldButton, sendHWButton)
+
+    lessonAddHWOffcanvas.addData("", content)
 }
 
 let lessonShowOffcanvasSelectedLessonID = null
