@@ -80,18 +80,6 @@ class Message(models.Model):
                                  related_name='message_receiver',
                                  null=True,
                                  blank=True)
-    sender_tg = models.ForeignKey("profile_management.Telegram",
-                                  on_delete=models.SET_NULL,
-                                  verbose_name="Отправитель TG",
-                                  related_name='message_tg_sender',
-                                  null=True,
-                                  blank=True)
-    receiver_tg = models.ForeignKey("profile_management.Telegram",
-                                    on_delete=models.SET_NULL,
-                                    verbose_name="Получатель TG",
-                                    related_name='message_tg_receiver',
-                                    null=True,
-                                    blank=True)
     sender_type = models.IntegerField(verbose_name="Тип профиля отправителя",
                                       null=False,
                                       blank=False,
