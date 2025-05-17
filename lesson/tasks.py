@@ -26,7 +26,7 @@ def notification_lessons_soon() -> None:
         reply_markup = get_lesson_place_button(lesson_.id) if lesson_.place \
             else None
         for listener in listeners_:
-            telegrams = listener.telegram_allowed.all().values(
+            telegrams = Telegram.objects.filter(Q(allowed_users=listener) | Q(allowed_parents=listener)).values(
                 "tg_id", "usertype",
                 "setting_notifications_lessons_hour"
             )
@@ -151,7 +151,7 @@ def notification_listeners_tomorrow_lessons() -> None:
                         f"запланировано занятие с "
                         f"преподавателем <b>{teacher}</b>\n\n")
         for listener in listeners:
-            telegrams = listener.telegram_allowed.all().values(
+            telegrams = Telegram.objects.filter(Q(allowed_users=listener) | Q(allowed_parents=listener)).values(
                 "tg_id", "usertype", "setting_notifications_lesson_day"
             )
             if not telegrams:
