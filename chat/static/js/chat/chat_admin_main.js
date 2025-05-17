@@ -1,16 +1,4 @@
 function chatAdminMain(){
-    chatMessagesAttachmentTypesArray = chatMessagesAttachmentTypesArray
-        .concat(
-            mediaFormats.imageFormats,
-            mediaFormats.videoFormats,
-            mediaFormats.animationFormats,
-            mediaFormats.archiveFormats,
-            mediaFormats.pdfFormats,
-            mediaFormats.voiceFormats,
-            mediaFormats.audioFormats,
-            mediaFormats.textFormats,
-            mediaFormats.presentationFormats
-        )
     chatAdminGetUsers()
     chatAdminSearchListeners()
     chatAdminMessagesNewSend.addEventListener("click", chatAdminMessageSend)

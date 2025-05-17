@@ -17,7 +17,6 @@ function chatFromUserSetOffcanvas(){
                     chatFromUserDownloadedUsers = true
                     break
                 default:
-                    console.log(request.status)
                     break
             }
         })

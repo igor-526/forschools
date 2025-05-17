@@ -317,39 +317,6 @@ class UserPhotoAPIView(LoginRequiredMixin, APIView):
                 )
 
 
-class TelegramAPIView(LoginRequiredMixin, APIView):
-    def delete(self, request, *args, **kwargs):
-        try:
-            user = NewUser.objects.get(id=kwargs.get('pk'))
-            if get_editable_perm(request.user, user):
-                user.telegram.first().delete()
-                return Response(
-                    data={'status': 'disconnected'},
-                    status=status.HTTP_204_NO_CONTENT
-                )
-            else:
-                raise PermissionDenied
-        except Exception as ex:
-            return Response(
-                data={"status": "error", "errors": ex},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-    def get(self, request, *args, **kwargs):
-        user = NewUser.objects.get(id=kwargs.get('pk'))
-        if user.telegram.exists():
-            return Response(
-                data={"status": "connected"},
-                status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                data={"status": "disconnected",
-                      "code": user.tg_code},
-                status=status.HTTP_200_OK
-            )
-
-
 class UsersForScheduleListAPIView(LoginRequiredMixin, ListAPIView):
     serializer_class = NewUserNameOnlyListSerializer
 

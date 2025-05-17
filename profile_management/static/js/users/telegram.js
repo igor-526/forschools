@@ -1,23 +1,12 @@
-function usersAdminTelegramMain(){
-    userTelegramDisconnectModalButton.addEventListener("click", usersAdminTelegramDisconnect)
-    userTelegramEditRoleModalButton.addEventListener("click", usersAdminTelegramEditRole)
-    userTelegramSetMainModalButton.addEventListener("click", usersAdminTelegramSetMain)
-}
-
-function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
-    function setAdminMode(){
-        adminMode?userTelegramModalTableID.classList.remove("d-none"):
-            userTelegramModalTableID.classList.add("d-none")
-        adminMode?userTelegramModalTableNickname.classList.remove("d-none"):
-            userTelegramModalTableNickname.classList.add("d-none")
-    }
-
+function usersAdminTelegramShow(telegramNotes = [], userID, code=null, tableBody, tgModal){
     function getRoleString(role){
         switch (role){
             case 'main':
-                return 'Основной Telegram'
+                return 'Основной'
+            case 'parent':
+                return 'Родитель'
             default:
-                return role
+                return "Не определено"
         }
     }
 
@@ -35,14 +24,12 @@ function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
         const tdRole = document.createElement("td")
         tdRole.innerHTML = getRoleString(telegram.usertype)
         tr.insertAdjacentElement("beforeend", tdRole)
-        if (adminMode){
-            const tdID = document.createElement("td")
-            tdID.innerHTML = telegram.tg_id
-            tr.insertAdjacentElement("beforeend", tdID)
-            const tdNickname = document.createElement("td")
-            tdNickname.innerHTML = getNickname(telegram.nickname)
-            tr.insertAdjacentElement("beforeend", tdNickname)
-        }
+        const tdID = document.createElement("td")
+        tdID.innerHTML = telegram.tg_id
+        tr.insertAdjacentElement("beforeend", tdID)
+        const tdNickname = document.createElement("td")
+        tdNickname.innerHTML = getNickname(telegram.nickname)
+        tr.insertAdjacentElement("beforeend", tdNickname)
         const tdName = document.createElement("td")
         tdName.innerHTML = `${telegram.last_name?telegram.last_name:""} ${telegram.first_name?telegram.first_name:""}`
         tr.insertAdjacentElement("beforeend", tdName)
@@ -51,17 +38,6 @@ function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
         tr.insertAdjacentElement("beforeend", tdJoinDT)
         const tdActions = document.createElement("td")
         if (telegram.usertype !== "main"){
-            const tdActionsEditRoleButton = document.createElement("button")
-            tdActionsEditRoleButton.classList.add("btn", "btn-warning", "mx-1")
-            tdActionsEditRoleButton.type = "button"
-            tdActionsEditRoleButton.innerHTML = '<i class="bi bi-pencil"></i>'
-            tdActionsEditRoleButton.setAttribute("data-bs-toggle", "tooltip")
-            tdActionsEditRoleButton.setAttribute("data-bs-placement", "bottom")
-            tdActionsEditRoleButton.setAttribute("title", "Изменить наименование")
-            new bootstrap.Tooltip(tdActionsEditRoleButton)
-            tdActionsEditRoleButton.addEventListener("click", function () {
-                usersAdminTelegramEditRoleModalSet(telegram.id, telegram.usertype)
-            })
             const tdActionsSetMainButton = document.createElement("button")
             tdActionsSetMainButton.classList.add("btn", "btn-warning", "mx-1")
             tdActionsSetMainButton.type = "button"
@@ -71,21 +47,22 @@ function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
             tdActionsSetMainButton.setAttribute("title", "Сделать основным")
             new bootstrap.Tooltip(tdActionsSetMainButton)
             tdActionsSetMainButton.addEventListener("click", function () {
-                usersAdminTelegramSetMainModalSet(telegram.id)
+                usersAdminTelegramSetMainModalSet(userID, telegram.id, tgModal)
             })
-            tdActions.insertAdjacentElement("beforeend", tdActionsEditRoleButton)
             tdActions.insertAdjacentElement("beforeend", tdActionsSetMainButton)
         }
         const tdActionsDisconnectButton = document.createElement("button")
         tdActionsDisconnectButton.classList.add("btn", "btn-danger", "mx-1")
         tdActionsDisconnectButton.type = "button"
-        tdActionsDisconnectButton.innerHTML = '<i class="bi bi-trash"></i>'
+        tdActionsDisconnectButton.innerHTML = '<i class="bi bi-x-lg"></i>'
         tdActionsDisconnectButton.setAttribute("data-bs-toggle", "tooltip")
         tdActionsDisconnectButton.setAttribute("data-bs-placement", "bottom")
         tdActionsDisconnectButton.setAttribute("title", "Удалить привязку")
         new bootstrap.Tooltip(tdActionsDisconnectButton)
         tdActionsDisconnectButton.addEventListener("click", function () {
-            usersAdminTelegramDisconnectModalSet(telegram.id, telegram.usertype==="main")
+            usersAdminTelegramDisconnectModalSet(
+                userID, telegram.id, tgModal, telegram.usertype === "main"
+            )
         })
         tdActions.insertAdjacentElement("beforeend", tdActionsDisconnectButton)
         tr.insertAdjacentElement("beforeend", tdActions)
@@ -120,7 +97,7 @@ function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
         const tr = document.createElement("tr")
         tr.classList.add("table-warning")
         const td = document.createElement("td")
-        td.colSpan = adminMode?6:4
+        td.colSpan = 6
         td.innerHTML = getText()
         const copyHrefButton = document.createElement("button")
         copyHrefButton.type = "button"
@@ -168,27 +145,48 @@ function usersAdminTelegramShow(telegramNotes = [], adminMode=false, code=null){
         return tr
     }
 
-    setAdminMode()
     telegramNotes.forEach(telegramNote => {
-        userTelegramModalTableBody.insertAdjacentElement("beforeend", GetElement(telegramNote))
+        tableBody.insertAdjacentElement("beforeend", GetElement(telegramNote))
     })
-    userTelegramModalTableBody.insertAdjacentElement("beforeend", GetConnectingElement(
+    tableBody.insertAdjacentElement("beforeend", GetConnectingElement(
         telegramNotes.length === 0
     ))
 
 }
 
 
-function usersAdminTelegramSet(userID = userTelegramSelectedUser) {
-    userTelegramModalTableBody.innerHTML = ""
+function usersAdminTelegramSet(userID) {
+    function getModalBody(){
+        const table = document.createElement("table")
+        table.classList.add("table", "table-hover")
+        const tableHead = document.createElement("thead")
+        const tableBody = document.createElement("tbody")
+        table.insertAdjacentElement("beforeend", tableHead)
+        table.insertAdjacentElement("beforeend", tableBody)
+        const tr = document.createElement("tr")
+        tableHead.insertAdjacentElement("beforeend", tr)
+        const tableHeadNames = ["Роль", "TG ID", "Никнейм", "ФИ", "Время привязки", "Действие"]
+        tableHeadNames.forEach(name => {
+            const th = document.createElement("th")
+            th.scope = "col"
+            th.innerHTML = name
+            tr.insertAdjacentElement("beforeend", th)
+        })
+        return {
+            table: table,
+            tableBody: tableBody
+        }
+    }
+
     telegramAPIGetTelegramNotes(userID).then(request => {
         switch (request.status){
             case 200:
-                usersAdminTelegramShow(request.response.telegrams,
-                    request.response.admin_mode,
-                    request.response.code)
-                userTelegramSelectedUser = userID
-                bsUserTelegramModal.show()
+                const table = getModalBody()
+                const telegramModal = mobileInfoModalSet("Менеджер Telegram",
+                    [table.table], [], ["modal-xl"]
+                )
+                usersAdminTelegramShow(request.response.telegrams, userID,
+                    request.response.code, table.tableBody, telegramModal)
                 break
             default:
                 showErrorToast()
@@ -198,128 +196,72 @@ function usersAdminTelegramSet(userID = userTelegramSelectedUser) {
 }
 
 
-function usersAdminTelegramDisconnectModalSet(noteID, main=false) {
-    userTelegramSelectedNote = noteID
-    userTelegramDisconnectModalBody.innerHTML = "Действие необратимо. Telegram можно будет привязать заново"
-    if (main){
-        userTelegramDisconnectModalBody.innerHTML += "<br><b>ВНИМАНИЕ! ПРИ ОТВЯЗКЕ ОСНОВНОГО TELEGRAM " +
-            "ВСЕ ДОПОЛНИТЕЛЬНЫЕ ОТВЯЖУТСЯ АВТОМАТИЧЕСКИ!</b>"
-    }
-    bsUserTelegramDisconnectModal.show()
-}
-
-function usersAdminTelegramDisconnect(){
-    telegramAPIDisconnect(userTelegramSelectedNote).then(request => {
-        switch (request.status){
-            case 200:
-                bsUserTelegramDisconnectModal.hide()
-                usersAdminTelegramSet()
-                break
-            default:
-                break
-        }
-    })
-}
-
-function usersAdminTelegramEditRoleModalSet(noteID, currentRole=null) {
-    userTelegramSelectedNote = noteID
-    userTelegramEditRoleModalField.value = currentRole?currentRole:""
-    userTelegramEditRoleModalField.classList.remove("is-invalid")
-    userTelegramEditRoleModalError.innerHTML = ""
-    bsUserTelegramEditRoleModal.show()
-}
-
-function usersAdminTelegramEditRole(){
-    function validate(error=null){
-        userTelegramEditRoleModalField.classList.remove("is-invalid")
-        userTelegramEditRoleModalError.innerHTML = ""
-
-        if (error){
-            userTelegramEditRoleModalField.classList.add("is-invalid")
-            userTelegramEditRoleModalError.innerHTML = error
-            return
-        }
-
-        let validationStatus = true
-        if (userTelegramEditRoleModalField.value.trim() === ""){
-            userTelegramEditRoleModalField.classList.add("is-invalid")
-            userTelegramEditRoleModalError.innerHTML = "Поле не может быть пустым"
-            validationStatus = false
-        } else {
-            if (userTelegramEditRoleModalField.value.trim().length > 20){
-                userTelegramEditRoleModalField.classList.add("is-invalid")
-                userTelegramEditRoleModalError.innerHTML = "Ограничение 20 символов"
-                validationStatus = false
-            }
-        }
-        return validationStatus
-    }
-
-    function getFD(){
-        const fd = new FormData()
-        fd.set("usertype", userTelegramEditRoleModalField.value.trim())
-        return fd
-    }
-
-    if (validate()){
-        telegramAPIEditRole(userTelegramSelectedNote, getFD()).then(request => {
+function usersAdminTelegramDisconnectModalSet(userID, noteID, telegramModal, main=false) {
+    function disconnect(userID, NoteID, disconnectModal, telegramModal){
+        telegramAPIDisconnect(NoteID, userID).then(request => {
+            disconnectModal.close()
             switch (request.status){
-                case 200:
-                    bsUserTelegramEditRoleModal.hide()
-                    usersAdminTelegramSet()
-                    break
-                case 400:
-                    validate(request.response.error)
+                case 204:
+                    telegramModal.close()
+                    usersAdminTelegramSet(userID)
                     break
                 default:
-                    bsUserTelegramEditRoleModal.hide()
+                    showErrorToast()
                     break
             }
         })
     }
-}
 
+    const content = []
+    const infoMain = document.createElement("p")
+    infoMain.innerHTML = "Действие необратимо. Telegram можно будет привязать заново"
+    content.push(infoMain)
+    if (main){
+        const infoMore = document.createElement("p")
+        infoMore.innerHTML = "<b>ВНИМАНИЕ! ПРИ ОТВЯЗКЕ ОСНОВНОГО TELEGRAM " +
+            "ВСЕ ДОПОЛНИТЕЛЬНЫЕ ОТВЯЖУТСЯ АВТОМАТИЧЕСКИ!</b>"
+        content.push(infoMore)
+    }
+    const disconnectButton = document.createElement("button")
+    disconnectButton.innerHTML = '<i class="bi bi-x-lg me-2"></i>Отвязать'
+    disconnectButton.type = "button"
+    disconnectButton.classList.add("btn", "btn-danger")
 
-function usersAdminTelegramSetMainModalSet(noteID, currentRole=null) {
-    userTelegramSelectedNote = noteID
-    bsUserTelegramSetMainModal.show()
-}
-
-function usersAdminTelegramSetMain(){
-    telegramAPISetMain(userTelegramSelectedNote).then(request => {
-        bsUserTelegramSetMainModal.hide()
-        if (request.status === 200){
-            usersAdminTelegramSet()
-        }
+    const disconnectModal = mobileInfoModalSet("Отвязка Telegram",
+        content, [disconnectButton], []
+    )
+    disconnectButton.addEventListener("click", function () {
+        disconnect(userID, noteID, disconnectModal, telegramModal)
     })
 }
 
-let userTelegramSelectedUser = null
-let userTelegramSelectedNote = null
+function usersAdminTelegramSetMainModalSet(userID, noteID, telegramModal) {
+    function setMain(userID, NoteID, disconnectModal, telegramModal){
+        telegramAPISetMain(NoteID, userID).then(request => {
+            disconnectModal.close()
+            switch (request.status){
+                case 200:
+                    telegramModal.close()
+                    usersAdminTelegramSet(userID)
+                    break
+                default:
+                    showErrorToast()
+                    break
+            }
+        })
+    }
 
-//Main Modal
-const userTelegramModal = document.querySelector("#userTelegramModal")
-const bsUserTelegramModal = new bootstrap.Modal(userTelegramModal)
-const userTelegramModalTableID = userTelegramModal.querySelector("#userTelegramModalTableID")
-const userTelegramModalTableNickname = userTelegramModal.querySelector("#userTelegramModalTableNickname")
-const userTelegramModalTableBody = userTelegramModal.querySelector("#userTelegramModalTableBody")
+    const infoMain = document.createElement("p")
+    infoMain.innerHTML = "Действие обратимо"
+    const setMainButton = document.createElement("button")
+    setMainButton.innerHTML = '<i class="bi bi-arrow-90deg-up me-2"></i>Сделать основным'
+    setMainButton.type = "button"
+    setMainButton.classList.add("btn", "btn-warning")
 
-//Delete Modal
-const userTelegramDisconnectModal = document.querySelector("#userTelegramDisconnectModal")
-const bsUserTelegramDisconnectModal = new bootstrap.Modal(userTelegramDisconnectModal)
-const userTelegramDisconnectModalBody = userTelegramDisconnectModal.querySelector("#userTelegramDisconnectModalBody")
-const userTelegramDisconnectModalButton = userTelegramDisconnectModal.querySelector("#userTelegramDisconnectModalButton")
-
-//EditModal
-const userTelegramEditRoleModal = document.querySelector("#userTelegramEditRoleModal")
-const bsUserTelegramEditRoleModal = new bootstrap.Modal(userTelegramEditRoleModal)
-const userTelegramEditRoleModalField = userTelegramEditRoleModal.querySelector("#userTelegramEditRoleModalField")
-const userTelegramEditRoleModalError = userTelegramEditRoleModal.querySelector("#userTelegramEditRoleModalError")
-const userTelegramEditRoleModalButton = userTelegramEditRoleModal.querySelector("#userTelegramEditRoleModalButton")
-
-//SetMainModal
-const userTelegramSetMainModal = document.querySelector("#userTelegramSetMainModal")
-const bsUserTelegramSetMainModal = new bootstrap.Modal(userTelegramSetMainModal)
-const userTelegramSetMainModalButton = userTelegramSetMainModal.querySelector("#userTelegramSetMainModalButton")
-
-usersAdminTelegramMain()
+    const setMainModal = mobileInfoModalSet("Сделать Telegram основным",
+        [infoMain], [setMainButton], []
+    )
+    setMainButton.addEventListener("click", function () {
+        setMain(userID, noteID, setMainModal, telegramModal)
+    })
+}

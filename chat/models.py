@@ -1,6 +1,14 @@
+from typing import Dict
+
 from django.db import models
 from django.utils import timezone
 from material.models import File
+
+MESSAGE_PROFILE_TYPE_CHOICES = (
+    (0, 'Основной'),
+    (1, 'Родительский'),
+    (2, 'Администратор'),
+)
 
 
 class AdminMessage(models.Model):
@@ -50,12 +58,12 @@ class AdminMessage(models.Model):
         }
         return readtime
 
-    def set_read(self, user_id, usertype):
-        self.read_data[f'nu{user_id}'] = self.get_readtime()
+    def set_read(self, user_id):
+        self.read_data[user_id] = self.get_readtime()
         self.save()
 
-    async def aset_read(self, user_id, usertype):
-        self.read_data[f'nu{user_id}'] = self.get_readtime()
+    async def aset_read(self, user_id):
+        self.read_data[user_id] = self.get_readtime()
         await self.asave()
 
 
@@ -84,6 +92,16 @@ class Message(models.Model):
                                     related_name='message_tg_receiver',
                                     null=True,
                                     blank=True)
+    sender_type = models.IntegerField(verbose_name="Тип профиля отправителя",
+                                      null=False,
+                                      blank=False,
+                                      default=0,
+                                      choices=MESSAGE_PROFILE_TYPE_CHOICES)
+    receiver_type = models.IntegerField(verbose_name="Тип профиля получателя",
+                                        null=False,
+                                        blank=False,
+                                        default=0,
+                                        choices=MESSAGE_PROFILE_TYPE_CHOICES)
     message = models.TextField(null=True,
                                blank=True,
                                max_length=2000,
@@ -109,7 +127,7 @@ class Message(models.Model):
     def __str__(self):
         return self.message
 
-    def get_readtime(self):
+    def get_readtime(self) -> Dict[str, int]:
         readtime = timezone.now()
         readtime = {
             "year": readtime.year,
@@ -121,18 +139,12 @@ class Message(models.Model):
         }
         return readtime
 
-    def set_read(self, user_id, usertype):
-        if usertype == 'NewUser':
-            self.read_data[f'nu{user_id}'] = self.get_readtime()
-        elif usertype == 'Telegram':
-            self.read_data[f'tg{user_id}'] = self.get_readtime()
+    def set_read(self, user_id, usertype=0) -> None:
+        self.read_data[f'{usertype}_{user_id}'] = self.get_readtime()
         self.save()
 
-    async def aset_read(self, user_id, usertype):
-        if usertype == 'NewUser':
-            self.read_data[f'nu{user_id}'] = self.get_readtime()
-        elif usertype == 'Telegram':
-            self.read_data[f'tg{user_id}'] = self.get_readtime()
+    async def aset_read(self, user_id, usertype=0) -> None:
+        self.read_data[f'{usertype}_{user_id}'] = self.get_readtime()
         await self.asave()
 
 

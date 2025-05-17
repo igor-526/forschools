@@ -11,7 +11,6 @@ class ChatPageTemplateView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = {
             'title': 'Сообщения',
-            'material_formats': MATERIAL_FORMATS,
             'can_see_other_users_messages':
                 can_see_other_users_messages(request),
             'can_add_group_chat': True

@@ -2,7 +2,6 @@ function maLessonItemMain(){
     lessonsAPIGetItem(lessonID).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 maLessonItemSetMainInfo(request.response)
                 if (request.response.materials.length > 0){
                     maLessonItemSetMaterials(request.response.materials)

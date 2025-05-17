@@ -1,6 +1,6 @@
 from .views import TgJournalPage
 from .views_api import (UserTelegramListAPIView, SendMaterialsTGView, TgJournalListAPIView,
-                        TgJournalItemAPIView, TelegramSettingsAPIView, TelegramSetMainAPIView)
+                        TgJournalItemAPIView, TelegramSettingsAPIView)
 from .views_ma import UserLoginMAAPIView, ErrorPageMATemplateView
 from django.urls import path
 
@@ -15,7 +15,6 @@ apiv1journalpatterns = [
 
 apiv1patterns = [
     path('<int:user_id>/', TelegramSettingsAPIView.as_view()),
-    path('<int:pk>/set_main/', TelegramSetMainAPIView.as_view()),
     path('all/', UserTelegramListAPIView.as_view()),
     path('sendmaterial/', SendMaterialsTGView.as_view())
 ]

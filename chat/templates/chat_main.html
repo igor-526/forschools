@@ -65,19 +65,6 @@
     </div>
 {% endblock %}
 {% block static_js %}
-    <script>
-        const mediaFormats = {
-            imageFormats: {{ material_formats.image_formats | safe }},
-            videoFormats: {{ material_formats.video_formats | safe }},
-            animationFormats: {{ material_formats.animation_formats | safe }},
-            archiveFormats: {{ material_formats.archive_formats | safe }},
-            pdfFormats: {{ material_formats.pdf_formats | safe }},
-            voiceFormats: {{ material_formats.voice_formats | safe }},
-            audioFormats: {{ material_formats.audio_formats | safe }},
-            textFormats: {{ material_formats.text_formats | safe }},
-            presentationFormats: {{ material_formats.presentation_formats | safe }}
-        }
-    </script>
     <script src="{% static 'js/chat/chat_utils.js' %}"></script>
     <script src="{% static 'js/users/users_api.js' %}"></script>
     <script src="{% static 'js/chat/chatAPI.js' %}"></script>

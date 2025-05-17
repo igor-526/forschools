@@ -1,21 +1,9 @@
 function chatMain(){
-    chatMessagesAttachmentTypesArray = chatMessagesAttachmentTypesArray
-        .concat(
-            mediaFormats.imageFormats,
-            mediaFormats.videoFormats,
-            mediaFormats.animationFormats,
-            mediaFormats.archiveFormats,
-            mediaFormats.pdfFormats,
-            mediaFormats.voiceFormats,
-            mediaFormats.audioFormats,
-            mediaFormats.textFormats,
-            mediaFormats.presentationFormats
-        )
     chatGetUsers()
     chatUsersSearchListeners()
     chatMessagesSelectedUserID = getHashValue("user")
     if (chatMessagesSelectedUserID){
-        chatSelectUser(chatMessagesSelectedUserID)
+        chatSelectUser(chatMessagesSelectedUserID, 0)
     }
     chatMessagesNewSend.addEventListener("click", chatMessageSend)
     chatMessagesNewAttachmentButton.addEventListener("click", function (){
@@ -65,12 +53,12 @@ function chatGetUsers(){
     })
 }
 
-function chatSelectUser(userID, chatType="NewUser"){
-    chatMessagesSelectedChatType = chatType
+function chatSelectUser(userID, usertype=0){
+    chatMessagesSelectedChatType = usertype
     chatUsersList.querySelectorAll("a").forEach(item => {
         item.classList.remove("active")
     })
-    chatGetMessages(userID, chatType)
+    chatGetMessages(userID, usertype)
 }
 
 function chatShowUsers(userlist = []){
@@ -87,8 +75,8 @@ function chatShowUsers(userlist = []){
         a.href = "#"
         a.addEventListener("click", function (){
             chatSelectUser(
-                user.id?user.id:user.tg_id,
-                user.chat_type
+                user.id,
+                user.usertype
             )
             a.classList.add("active")
         })
@@ -129,11 +117,11 @@ function chatShowUsers(userlist = []){
     })
 }
 
-function chatGetMessages(userID, chatType="NewUser"){
-    chatAPIGetMessages(userID, chatType, chatMessagesFromUserID).then(request => {
+function chatGetMessages(userID, usertype=0){
+    chatAPIGetMessages(userID, usertype, chatMessagesFromUserID).then(request => {
         switch (request.status){
             case 200:
-                chatShowMessages(request.response.messages, request.response.current_user_id)
+                chatShowMessages(request.response.messages)
                 chatMessagesUserName.innerHTML = request.response.username
                 chatMessagesSelectedUserID = userID
                 if (!chatMessagesFromUserID){
@@ -147,20 +135,20 @@ function chatGetMessages(userID, chatType="NewUser"){
     })
 }
 
-function chatShowMessages(messages=[], currentUserID, clear=true){
+function chatShowMessages(messages=[], clear=true){
     function getElement(message){
         const messageDiv = document.createElement("div")
         const messageBody = document.createElement("div")
         const messageBodyText = document.createElement("p")
         const messageBodyData = document.createElement("span")
         messageDiv.classList.add("d-flex")
-        if (message.sender && (currentUserID === message.sender.id) || currentUserID === "sender"){
+        if (message.role === "s"){
             messageDiv.classList.add("justify-content-end")
             messageBody.classList.add("chats-message-sender")
         } else {
             messageDiv.classList.add("justify-content-start")
             messageBody.classList.add("chats-message-receiver")
-            if (chatMessagesSelectedChatType === "Group"){
+            if (chatMessagesSelectedChatType === 3){
                 const messageBodySenderName = document.createElement("div")
                 messageBodySenderName.innerHTML = message.sender ? `${message.sender.first_name} ${message.sender.last_name}` :
                     `${message.sender_tg.user.first_name} ${message.sender_tg.user.last_name} [${message.sender_tg.usertype}]`
@@ -258,7 +246,7 @@ function chatMessageSend(){
     function getFD(){
         const fd = new FormData()
         fd.set("message", chatMessagesNewText.value.trim())
-        fd.set("chat_type", chatMessagesSelectedChatType)
+        fd.set("usertype", chatMessagesSelectedChatType)
         const files = chatMessagesNewAttachmentInput.files
         for (const file of files){
             fd.append("attachments", file)
@@ -270,7 +258,7 @@ function chatMessageSend(){
         chatAPISendMessage(chatMessagesSelectedUserID, getFD()).then(request => {
             switch (request.status){
                 case 201:
-                    chatShowMessages([request.response], "sender", false)
+                    chatShowMessages([request.response], false)
                     chatMessagesNewText.value = ""
                     chatMessagesNewAttachmentInput.value = ""
                     chatMessagesNewAttachmentButton.innerHTML = "Вложение (0)"

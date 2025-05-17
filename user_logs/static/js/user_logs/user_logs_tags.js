@@ -8,7 +8,6 @@ function userLogsTagsSet(tag){
     userLogsAPIGetMessagesByTag(userLogsSelectedPlan, tag).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 userLogsTagsSetMessages(request.response)
                 bsUserLogsOffcanvasTags.show()
                 break

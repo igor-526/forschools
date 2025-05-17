@@ -1,8 +1,3 @@
-async function telegramAPIGetUser(userID){
-    const request = await fetch(`/api/v1/users/${userID}/telegram/`)
-    return await APIGetToObject(request)
-}
-
 async function telegramAPIGetUsers(){
     const request = await fetch('/api/v1/telegram/all/')
     return APIGetToObject(request)
@@ -13,36 +8,30 @@ async function telegramAPIGetTelegramNotes(userID){
     return APIGetToObject(request)
 }
 
-async function telegramAPIDisconnect(noteID){
-    const request = await fetch(`/api/v1/telegram/${noteID}/`, {
+async function telegramAPIDisconnect(noteID, userID){
+    const fd = new FormData()
+    fd.set("tg_note_id", noteID)
+    const request = await fetch(`/api/v1/telegram/${userID}/`, {
         method: 'DELETE',
-        credentials: 'same-origin',
-        headers: {
-            "X-CSRFToken": csrftoken,
-        }
-    })
-    return APIDeleteToObject(request)
-}
-
-async function telegramAPIEditRole(noteID, fd){
-    const request = await fetch(`/api/v1/telegram/${noteID}/`, {
-        method: 'PATCH',
         credentials: 'same-origin',
         headers: {
             "X-CSRFToken": csrftoken,
         },
         body: fd
     })
-    return APIPostPatchToObject(request)
+    return APIDeleteToObject(request)
 }
 
-async function telegramAPISetMain(noteID){
-    const request = await fetch(`/api/v1/telegram/${noteID}/set_main/`, {
-        method: 'POST',
+async function telegramAPISetMain(noteID, userID){
+    const fd = new FormData()
+    fd.set("tg_note_id", noteID)
+    const request = await fetch(`/api/v1/telegram/${userID}/`, {
+        method: 'PATCH',
         credentials: 'same-origin',
         headers: {
             "X-CSRFToken": csrftoken,
-        }
+        },
+        body: fd
     })
     return APIPostPatchToObject(request)
 }

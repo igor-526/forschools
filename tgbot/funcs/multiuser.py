@@ -9,6 +9,11 @@ async def f_multiuser_generate_message(message: types.Message):
     users = [{"name": f'{user.first_name} {user.last_name}',
               "id": user.id} async for user
              in tg_note.allowed_users.exclude(id=tg_note.user.id)]
+    user = users.extend(
+        [{"name": f'{user.first_name} {user.last_name}',
+          "id": user.id} async for user
+         in tg_note.allowed_parents.exclude(id=tg_note.user.id)]
+    )
     await message.answer(text=f"Текущий: {tg_note.user.first_name} "
                               f"{tg_note.user.last_name}\n"
                               f"Выберите пользователя:",

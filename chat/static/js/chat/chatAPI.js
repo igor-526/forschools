@@ -23,11 +23,11 @@ async function chatAPIGetAdminChats(search=null){
     return await APIGetToObject(request)
 }
 
-async function chatAPIGetMessages(userID, chatType=null, fromUserID= null){
-    let url = `/api/v1/messages/${userID ? userID : 0}/`
+async function chatAPIGetMessages(userID=0, usertype=null, fromUserID= null){
+    let url = `/api/v1/messages/${userID}/`
     const queryArray = []
-    if (chatType){
-        queryArray.push(`chat_type=${chatType}`)
+    if (usertype !== null){
+        queryArray.push(`usertype=${usertype}`)
     }
     if (fromUserID){
         queryArray.push(`from_user=${fromUserID}`)

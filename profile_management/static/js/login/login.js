@@ -54,7 +54,6 @@ function loginValidate(){
 function loginButtonListener(){
     if (loginValidate()){
         loginAPISetAdminComment(new FormData(loginForm)).then(request => {
-            console.log(request.status)
             switch (request.status){
                 case 200:
                     location.assign("/")

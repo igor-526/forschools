@@ -43,7 +43,7 @@ function chatUsersMAShow(userlist = []) {
     function getElement(user) {
         const a = document.createElement("a")
         a.classList.add("list-group-item", "d-flex")
-        a.href = `/ma/messages/${user.id ? user.id : user.tg_id ? user.tg_id : 0}/#chat_type=${user.chat_type}`
+        a.href = `/ma/messages/${user.id}/#usertype=${user.usertype}`
         if (chatUsersMAFromUser){
             a.href += `&#from_user=${chatUsersMAFromUser}`
         }

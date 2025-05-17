@@ -1,14 +1,21 @@
-from aiogram import Router, F, types
+from aiogram import F, Router, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from chat.models import Message, AdminMessage
+
+from chat.models import AdminMessage, Message
+
+from profile_management.models import Telegram
+
 from tgbot.create_bot import bot
-from tgbot.funcs.chats import chats_send_ask, chats_type_message, chats_notify, chats_send
+from tgbot.finite_states.chats import ChatsFSM
+from tgbot.funcs.chats import (chats_send,
+                               chats_send_ask,
+                               chats_type_message)
 from tgbot.funcs.homeworks.homeworks import show_homework_queryset
 from tgbot.funcs.menu import send_menu
-from tgbot.keyboards.callbacks.chats import ChatListCallback, ChatAnswerMessageCallback
-from tgbot.finite_states.chats import ChatsFSM
+from tgbot.keyboards.callbacks.chats import (ChatAnswerMessageCallback,
+                                             ChatListCallback)
 from tgbot.keyboards.chats import chats_get_users_buttons
 from tgbot.utils import get_user
 
@@ -27,23 +34,31 @@ async def h_chats_send_ask(callback: CallbackQuery,
 async def h_chats_answer(callback: CallbackQuery,
                          callback_data: ChatAnswerMessageCallback,
                          state: FSMContext) -> None:
-    if callback_data.message_type == "user":
-        chat_message = await (Message.objects.select_related("receiver").select_related("sender")
-                              .select_related("receiver_tg").select_related("sender_tg")
-                              .aget(pk=callback_data.chat_message_id))
-        await state.set_data({'files': [],
-                              'comment': [],
-                              'chat_type': "NewUser" if chat_message.sender else "Telegram",
-                              'message_for': chat_message.sender.id if chat_message.sender else chat_message.sender_tg.id,
-                              'message_tags': chat_message.tags})
+    if callback_data.chat_type in [0, 1]:
+        chat_message = await (
+            Message.objects.select_related("receiver", "sender")
+            .aget(pk=callback_data.chat_message_id)
+        )
+        await state.set_data({
+            'files': [],
+            'comment': [],
+            'chat_type': callback_data.chat_type,
+            'message_for': chat_message.sender.id,
+            'message_tags': chat_message.tags
+        })
     else:
-        chat_message = await (AdminMessage.objects.select_related("receiver").select_related("sender")
-                              .aget(pk=callback_data.chat_message_id))
-        is_admin = await (await get_user(callback.from_user.id)).groups.filter(name="Admin").aexists()
-        await state.set_data({'files': [],
-                              'comment': [],
-                              'chat_type': "Admin",
-                              'message_for': chat_message.sender.id if is_admin else 0})
+        chat_message = await (
+            AdminMessage.objects.select_related("receiver", "sender")
+            .aget(pk=callback_data.chat_message_id)
+        )
+        is_admin = await ((await get_user(callback.from_user.id))
+                          .groups.filter(name="Admin").aexists())
+        await state.set_data(
+            {'files': [],
+             'comment': [],
+             'chat_type': 2,
+             'message_for': chat_message.sender.id if is_admin else 0}
+        )
     await bot.send_message(chat_id=callback.from_user.id,
                            text="Введите сообщение")
     await state.set_state(ChatsFSM.send_message)
@@ -62,22 +77,30 @@ async def h_chats_send(message: types.Message, state: FSMContext) -> None:
     if state_data.get("message_for") is not None:
         await chats_send(message.from_user.id, state)
     else:
-        user = await get_user(message.from_user.id)
-        chats = await user.aget_users_for_chat(message.from_user.id)
-        await message.answer(text="Выберите пользователя для отправки сообщения:",
+        tg_note = await Telegram.objects.select_related("user").aget(
+            tg_id=message.from_user.id
+        )
+        chats = await tg_note.aget_users_for_chat()
+        await message.answer(text="Выберите пользователя для отправки "
+                                  "сообщения:",
                              reply_markup=chats_get_users_buttons(chats))
 
 
 @router.message(StateFilter(ChatsFSM.send_message),
                 F.text == "Отправить решение ДЗ")
-async def h_chats_send_hw(message: types.Message, state: FSMContext) -> None:
+async def h_chats_send_hw(message: types.Message,
+                          state: FSMContext) -> None:
     await state.update_data(materials_action="send_hw")
-    await show_homework_queryset(message.from_user.id, state, "complete")
+    await show_homework_queryset(tg_id=message.from_user.id,
+                                 state=state,
+                                 func="complete")
 
 
 @router.message(StateFilter(ChatsFSM.send_message),
-                F.media_group_id != None)
-async def h_chats_type_media_group(message: types.Message, state: FSMContext, media_events=[]):
+                F.media_group_id is not None)
+async def h_chats_type_media_group(message: types.Message,
+                                   state: FSMContext,
+                                   media_events=[]) -> None:
     await chats_type_message(media_events, state)
 
 

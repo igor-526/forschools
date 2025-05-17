@@ -7,7 +7,6 @@ function mailingNewMain(){
                     mailingNewNameField.value = `${request.response.name} (повтор)`
                     mailingNewMessageField.value = request.response.messages[0].text
                     mailingNewMessageThemeField.value = request.response.messages[0].theme
-                    console.log(request.response.users)
                     Object.keys(request.response.users).forEach(userID => {
                         const mainTGIndex = request.response.users[userID].tg.indexOf("main")
                         if (mainTGIndex !== -1){

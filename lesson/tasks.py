@@ -1,6 +1,6 @@
 from celery import shared_task
 from django.db.models import Q, QuerySet, Count
-from datetime import datetime, date, timedelta
+from datetime import datetime
 from django.utils import timezone
 from dls.celery import app
 from download_data.models import GenerateFilesTasks

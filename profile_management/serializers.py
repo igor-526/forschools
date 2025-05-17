@@ -9,12 +9,6 @@ from .permissions import (get_editable_perm,
                           get_secretinfo_perm)
 
 
-class TelegramSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Telegram
-        fields = '__all__'
-
-
 class NewUserGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
@@ -120,7 +114,8 @@ class NewUserListSerializer(serializers.ModelSerializer):
         return get_editable_perm(request.user, obj)
 
     def get_tg(self, obj):
-        return obj.telegram.exists()
+        return (obj.telegram_allowed_user.exists() or
+                obj.telegram_allowed_parent.exists())
 
 
 class NewUserNameOnlyListSerializer(serializers.ModelSerializer):

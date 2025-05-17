@@ -5,43 +5,45 @@ from material.models import File
 from profile_management.models import NewUser, Telegram
 from profile_management.serializers import (NewUserNameOnlyListSerializer,
                                             TelegramListSerializer)
-from tgbot.utils import (notify_chat_message,
-                         notify_group_chat_message,
-                         notify_admin_chat_message)
+from .tg_utils import tg_sync_chat_funcs
 from .models import Message, GroupChats, AdminMessage
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):
     sender = NewUserNameOnlyListSerializer(many=False, read_only=True)
     receiver = NewUserNameOnlyListSerializer(many=False, read_only=True)
-    sender_tg = TelegramListSerializer(many=False, read_only=True)
-    receiver_tg = TelegramListSerializer(many=False, read_only=True)
+    role = serializers.SerializerMethodField()
     files = FileSerializer(many=True, read_only=True)
 
     class Meta:
         model = Message
         fields = "__all__"
 
+    def get_role(self, obj):
+        if self.context.get("current_user_id") is None:
+            return "s"
+        if obj.sender.id == self.context.get("current_user_id"):
+            return "s"
+        return "r"
+
     def create(self, validated_data):
-        chat_type = self.context.get("chat_type")
+        usertype = self.context.get("usertype")
         request = self.context.get("request")
         message = Message()
-        if chat_type == "NewUser":
+        if usertype in [0, 1]:
             message = Message.objects.create(
                 **validated_data,
                 receiver_id=self.context.get("receiver"),
-                sender=request.user
+                sender=request.user,
+                sender_type=0,
+                receiver_type=usertype
             )
-        elif chat_type == "Telegram":
-            message = Message.objects.create(
-                **validated_data,
-                receiver_tg_id=self.context.get("receiver"),
-                sender=request.user
-            )
-        elif chat_type == "Group":
+        elif usertype == 3:
             message = Message.objects.create(**validated_data,
                                              sender=request.user)
-            group = GroupChats.objects.get(id=self.context.get("receiver"))
+            group = GroupChats.objects.get(id=self.context.get(
+                "receiver")
+            )
             group.messages.add(message)
             group.save()
         attachments = request.FILES.getlist("attachments")
@@ -57,10 +59,10 @@ class ChatMessageSerializer(serializers.ModelSerializer):
                 att_list.append(file)
             message.files.set(att_list)
             message.save()
-        if chat_type == "Group":
-            notify_group_chat_message(message)
+        if usertype in [0, 1]:
+            tg_sync_chat_funcs.notify_message(message.id)
         else:
-            notify_chat_message(message)
+            tg_sync_chat_funcs.notify_admin_message(message.id)
         return message
 
 
@@ -176,5 +178,5 @@ class ChatAdminMessageSerializer(serializers.ModelSerializer):
                 att_list.append(file)
             message.files.set(att_list)
             message.save()
-        notify_admin_chat_message(message)
+        tg_sync_chat_funcs.notify_admin_message(message.id)
         return message

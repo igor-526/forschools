@@ -178,7 +178,7 @@ class AsyncClass:
 sync_funcs = sync.methods(AsyncClass())
 
 
-async def get_user(tg_id) -> NewUser or None:
+async def get_user(tg_id) -> NewUser | None:
     tg_note = await Telegram.objects.filter(tg_id=tg_id).select_related("user").afirst()
     if tg_note:
         return tg_note.user

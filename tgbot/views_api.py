@@ -1,17 +1,28 @@
 from datetime import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+
+from lesson.models import Lesson
+
+from material.models import Material
+
+from profile_management.models import (NewUser,
+                                       ProfileEventsJournal,
+                                       Telegram)
+
 from rest_framework import status
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import (ListAPIView,
+                                     RetrieveAPIView)
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from lesson.models import Lesson
-from material.models import Material
-from .serializers import (UserTelegramSerializer, TgJournalSerializer,
-                          TelegramNotesAllFieldsSerializer, TelegramNotesSerializer)
-from profile_management.models import NewUser, Telegram, ProfileEventsJournal
+
 from tgbot.utils import send_materials
+
 from .models import TgBotJournal
+from .serializers import (TelegramNotesSerializer,
+                          TgJournalSerializer,
+                          UserTelegramSerializer)
 
 
 class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
@@ -50,7 +61,8 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
             else:
                 q = Q(initiator__id__in=initiator)
             queryset = queryset.filter(q)
-        offset = int(self.request.query_params.get("offset")) if self.request.query_params.get("offset") else 0
+        offset = int(self.request.query_params.get("offset")) if (
+            self.request.query_params.get("offset")) else 0
         return queryset.distinct()[offset:offset + 50] if queryset else None
 
     def get_queryset(self):
@@ -58,12 +70,14 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
         if self.request.user.groups.filter(name="Admin"):
             mq = Q(event__in=[7, 10])
         else:
-            mq = Q(event__in=[7, 10], initiator=self.request.user) | Q(event__in=[7, 10],
-                                                                       recipient__in=[self.request.user, None])
+            mq = (Q(event__in=[7, 10],
+                    initiator=self.request.user) |
+                  Q(event__in=[7, 10],
+                    recipient__in=[self.request.user, None]))
 
         if self.request.user.groups.filter(name="Admin").exists():
             queryset = TgBotJournal.objects.filter(Q(
-                event__in=[1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13]
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14]
             ) | mq)
         elif self.request.user.groups.filter(name="Metodist").exists():
             queryset = TgBotJournal.objects.filter(Q(
@@ -71,11 +85,11 @@ class TgJournalListAPIView(LoginRequiredMixin, ListAPIView):
                 initiator__groups__name__in=["Teacher", "Listener"],
                 recipient__groups__name__in=["Teacher", "Listener"],
             ) | Q(
-                event__in=[1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13],
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14],
                 initiator__isnull=True,
                 recipient__groups__name__in=["Teacher", "Listener"],
             ) | Q(
-                event__in=[1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13],
+                event__in=[1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14],
                 initiator=self.request.user,
                 recipient=self.request.user,
             ) | mq)
@@ -120,7 +134,7 @@ class SendMaterialsTGView(LoginRequiredMixin, APIView):
             try:
                 lesson = Lesson.objects.get(id=lesson)
                 users = [listener.id for listener in lesson.get_listeners()]
-            except:
+            except Exception:
                 return None
         return users
 
@@ -135,88 +149,59 @@ class SendMaterialsTGView(LoginRequiredMixin, APIView):
 
 
 class TelegramSettingsAPIView(LoginRequiredMixin, APIView):
-    def get_admin_mode(self, *args, **kwargs):
-        user_id = kwargs.get("user_id")
-        if user_id == self.request.user.id or self.request.user.groups.filter(name="Admin").exists():
-            return True
-        return False
+    serializer_class = TelegramNotesSerializer
+
+    def log_profile_event(self, event: int, user: NewUser) -> None:
+        ProfileEventsJournal.objects.create(
+            event=event,
+            user=user,
+            initiator=self.request.user
+        )
 
     def get_queryset(self, *args, **kwargs):
-        queryset = Telegram.objects.filter(user__id=kwargs.get("user_id"))
+        queryset = Telegram.objects.filter(
+            Q(allowed_users__id=kwargs.get("user_id")) |
+            Q(allowed_parents__id=kwargs.get("user_id"))
+        )
         return queryset
-
-    def get_serializer_class(self, *args, **kwargs):
-        if self.get_admin_mode(*args, **kwargs):
-            return TelegramNotesAllFieldsSerializer
-        return TelegramNotesSerializer
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset(*args, **kwargs)
-        serializer = self.get_serializer_class()
-        serialized = serializer(queryset, many=True)
+        serializer = self.serializer_class(queryset, many=True, context={
+            "request": self.request,
+            "user_id": kwargs.get("user_id"),
+        })
         return Response({
-            'admin_mode': self.get_admin_mode(*args, **kwargs),
-            'telegrams': serialized.data,
+            'telegrams': serializer.data,
             'code': NewUser.objects.get(pk=kwargs.get("user_id")).tg_code
         },
             status=status.HTTP_200_OK)
 
-    def delete(self, request, *args, **kwargs):
-        tg_note = Telegram.objects.get(pk=kwargs.get("user_id"))
-        if tg_note.usertype != "main":
-            ProfileEventsJournal.objects.create(
-                event=3,
-                user=tg_note.user,
-                initiator=request.user
-            )
-            users_count = tg_note.allowed_users.count()
-            if users_count > 1:
-                tg_note.allowed_users.remove(tg_note.user)
-            else:
-                tg_note.delete()
-        else:
-            tg_notes = Telegram.objects.filter(user=tg_note.user)
-            ProfileEventsJournal.objects.create(
-                event=2,
-                user=tg_note.user,
-                initiator=request.user
-            )
-            for tg in tg_notes:
-                tg.delete()
-        return Response({'status': 'success'}, status=status.HTTP_200_OK)
-
-    def patch(self, request, *args, **kwargs):
-        tg_note = Telegram.objects.get(pk=kwargs.get("user_id"))
-        if tg_note.usertype != "main":
-            ut = request.data.get("usertype")
-            if ut:
-                if len(ut) <= 20:
-                    tg_note.usertype = ut
-                    tg_note.save()
-                    return Response({'status': 'success'}, status=status.HTTP_200_OK)
-                else:
-                    return Response({'error': 'Ограничение 20 символов'},
-                                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({'error': 'Обязательное поле'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'error': 'Невозможно поменять роль основного Telegram'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-
-class TelegramSetMainAPIView(LoginRequiredMixin, APIView):
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, user_id: int, *args, **kwargs):
         try:
-            tg_note_selected = Telegram.objects.get(pk=kwargs.get("pk"))
-            tg_note_main = Telegram.objects.filter(user=tg_note_selected.user,
-                                                   usertype="main").exclude(id=tg_note_selected.id).first()
-            if not tg_note_main:
-                raise Telegram.DoesNotExist
-        except Telegram.DoesNotExist:
+            tg_note = Telegram.objects.get(id=request.data.get("tg_note_id"))
+            user = NewUser.objects.get(id=user_id)
+        except (Telegram.DoesNotExist, NewUser.DoesNotExist):
             return Response(status=status.HTTP_404_NOT_FOUND)
-        tg_note_main.usertype = tg_note_selected.usertype
-        tg_note_selected.usertype = "main"
-        tg_note_main.save()
-        tg_note_selected.save()
-        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        tg_note.allowed_parents.remove(user.id)
+        tg_note.allowed_users.add(user.id)
+        return Response(data={'status': 'success'},
+                        status=status.HTTP_200_OK)
+
+    def delete(self, request, user_id: int, *args, **kwargs):
+        tg_note = Telegram.objects.get(pk=request.data.get('tg_note_id'))
+        user = NewUser.objects.get(pk=user_id)
+        if tg_note.allowed_parents.filter(id=user_id).exists():
+            tg_note.allowed_parents.remove(user_id)
+            self.log_profile_event(3, user)
+        if tg_note.allowed_users.filter(id=user_id).exists():
+            tg_note.allowed_users.remove(user_id)
+            self.log_profile_event(2, user)
+            if not user.telegram_allowed_user.count():
+                for tg_note_ in Telegram.objects.filter(allowed_parents=user_id):
+                    tg_note_.allowed_parents.remove(user_id)
+                    self.log_profile_event(3, user)
+        if not tg_note.allowed_users.exists() and not tg_note.allowed_parents.exists():
+            tg_note.delete()
+        return Response(data={'status': 'ok'},
+                        status=status.HTTP_204_NO_CONTENT)

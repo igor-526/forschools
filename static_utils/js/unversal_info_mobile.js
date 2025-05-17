@@ -351,7 +351,7 @@ function mobileInfoGetUploadFilesBlock(filesArray){
 }
 
 
-function mobileInfoModalSet(title="", content=[], buttons=[]){
+function mobileInfoModalSet(title="", content=[], buttons=[], classes=[]){
     function close(){
         modalBs.hide()
         setTimeout(() => {
@@ -362,6 +362,9 @@ function mobileInfoModalSet(title="", content=[], buttons=[]){
     const modalDiv = document.createElement("div")
     modalDiv.classList.add("modal", "fade")
     modalDiv.tabIndex = -1
+    classes.forEach(cl => {
+        modalDiv.classList.add(cl)
+    })
 
     const modalDialog = document.createElement("div")
     modalDialog.classList.add("modal-dialog")

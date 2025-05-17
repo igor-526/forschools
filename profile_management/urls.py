@@ -7,7 +7,6 @@ from .views import (DashboardPageTemplateView,
 from .views_api import (UserListAPIView,
                         UserDetailAPIView,
                         UserPhotoAPIView,
-                        TelegramAPIView,
                         DeactivateUserAPIView,
                         ActivateUserAPIView,
                         ChangePasswordAPIView,
@@ -46,7 +45,6 @@ apiv1patterns = [
     path('schedule/', UsersForScheduleListAPIView.as_view()),
     path('<int:pk>/', UserDetailAPIView.as_view()),
     path('<int:pk>/photo/', UserPhotoAPIView.as_view()),
-    path('<int:pk>/telegram/', TelegramAPIView.as_view()),
     path('<int:pk>/deactivate/', DeactivateUserAPIView.as_view()),
     path('<int:pk>/activate/', ActivateUserAPIView.as_view()),
     path('<int:pk>/login/', AdminLoginAPIView.as_view()),
@@ -54,4 +52,3 @@ apiv1patterns = [
     path('<int:pk>/hw/', UserHWListAPIView.as_view()),
     path('<int:pk>/lessons/', UserLessonListAPIView.as_view()),
 ]
-

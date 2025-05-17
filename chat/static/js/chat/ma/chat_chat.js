@@ -1,21 +1,9 @@
 function chatMAMain(){
-    selectedChatType = getHashValue("chat_type")
+    selectedChatType = getHashValue("usertype")
     chatMAFromUser = getHashValue("from_user")
     if (!chatMAFromUser){
         chatMA.style = `height: ${window.innerHeight - 120}px;`
         chatMANew.classList.remove("d-none")
-        chatMAAttachmentTypesArray = chatMAAttachmentTypesArray
-            .concat(
-                mediaFormats.imageFormats,
-                mediaFormats.videoFormats,
-                mediaFormats.animationFormats,
-                mediaFormats.archiveFormats,
-                mediaFormats.pdfFormats,
-                mediaFormats.voiceFormats,
-                mediaFormats.audioFormats,
-                mediaFormats.textFormats,
-                mediaFormats.presentationFormats
-            )
         chatMAAttachmentsListeners()
         chatMANewSend.addEventListener("click", chatMASend)
     }
@@ -42,13 +30,13 @@ function chatMAShowMessages(messages=[], currentUserID, down=false){
         const messageBodyText = document.createElement("p")
         const messageBodyData = document.createElement("span")
         messageDiv.classList.add("d-flex")
-        if (message.sender && (currentUserID === message.sender.id) || currentUserID === "sender"){
+        if (message.role === "s"){
             messageDiv.classList.add("justify-content-end")
             messageBody.classList.add("chats-message-sender")
         } else {
             messageDiv.classList.add("justify-content-start")
             messageBody.classList.add("chats-message-receiver")
-            if (selectedChatType === "Group"){
+            if (selectedChatType === 3){
                 const messageBodySenderName = document.createElement("div")
                 messageBodySenderName.innerHTML = message.sender ? `${message.sender.first_name} ${message.sender.last_name}` :
                     `${message.sender_tg.user.first_name} ${message.sender_tg.user.last_name} [${message.sender_tg.usertype}]`
@@ -169,7 +157,7 @@ function chatMASend(){
     function getFD(){
         const fd = new FormData()
         fd.set("message", chatMANewText.value.trim())
-        fd.set("chat_type", selectedChatType)
+        fd.set("usertype", selectedChatType)
         const files = chatMANewAttachmentInput.files
         for (const file of files){
             fd.append("attachments", file)
