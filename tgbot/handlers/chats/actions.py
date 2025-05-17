@@ -97,7 +97,7 @@ async def h_chats_send_hw(message: types.Message,
 
 
 @router.message(StateFilter(ChatsFSM.send_message),
-                F.media_group_id is not None)
+                F.media_group_id != None)
 async def h_chats_type_media_group(message: types.Message,
                                    state: FSMContext,
                                    media_events=[]) -> None:
