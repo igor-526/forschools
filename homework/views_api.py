@@ -491,7 +491,9 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
                 agreement['message'] = request.POST.get('message')
                 message = Message.objects.create(
                     sender=request.user,
+                    sender_type=0,
                     receiver=instance.homework.teacher,
+                    receiver_type=0,
                     message=request.POST.get('message')
                 )
                 tg_sync_chat_funcs.notify_message(message.id)
@@ -786,7 +788,9 @@ class HomeworkItemAgreementAPIView(LoginRequiredMixin, APIView):
         if self.request.POST.get('comment'):
             message = Message.objects.create(
                 sender=request.user,
+                sender_type=0,
                 receiver=homework.teacher,
+                receiver_type=0,
                 message=request.POST.get('comment')
             )
             tg_sync_chat_funcs.notify_message(message.id)
