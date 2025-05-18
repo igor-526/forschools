@@ -7,36 +7,36 @@ from tgbot.utils import aget_user_groups
 
 async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выберите действие: ") -> None:
     tg_note = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
-    perms = await aget_user_groups(tg_note.user.id)
+    groups = await aget_user_groups(tg_note.user.id)
     materials = False
     homeworks = False
     lessons = False
     messages = False
     settings = False
-    if 'Listener' in perms.get('groups'):
+    if 'Listener' in groups:
         materials = False
         homeworks = True
         lessons = True
         messages = True
         settings = True
-    elif 'Curator' in perms.get('groups'):
+    elif 'Curator' in groups:
         materials = False
         homeworks = True
         messages = True
         settings = True
-    elif 'Teacher' in perms.get('groups'):
+    elif 'Teacher' in groups:
         materials = False
         homeworks = True
         lessons = True
         messages = True
         settings = True
-    elif 'Metodist' in perms.get('groups'):
+    elif 'Metodist' in groups:
         materials = False
         homeworks = True
         lessons = "select"
         messages = True
         settings = True
-    elif 'Admin' in perms.get('groups'):
+    elif 'Admin' in groups:
         materials = False
         homeworks = True
         lessons = True
