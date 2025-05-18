@@ -5,7 +5,6 @@ from learning_plan.permissions import get_can_see_plan
 from lesson.models import Lesson
 from material.utils import MaterialFileUploader
 from profile_management.serializers import NewUserNameOnlyListSerializer
-from profile_management.models import NewUser
 from material.serializers import MaterialListSerializer
 from material.serializers import FileSerializer
 from tgbot.utils import send_homework_answer_tg, send_homework_tg
@@ -124,16 +123,6 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         model = Homework
         fields = ["id", "name", "description", "teacher", "for_curator",
                   "listener", "status", "lesson_info", "assigned", "color"]
-
-    def __init__(self, *args, **kwargs):
-        super(HomeworkListSerializer, self).__init__(*args, **kwargs)
-        if not args or args[0] is None:
-            self.last_status = None
-            self.lesson = None
-            self.plan = None
-            return
-        print(args[0])
-
 
     def get_status(self, obj):
         if isinstance(obj, dict):

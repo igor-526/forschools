@@ -2,12 +2,12 @@ from aiogram.fsm.context import FSMContext
 from profile_management.models import aget_unread_messages_count, Telegram
 from tgbot.create_bot import bot
 from tgbot.keyboards import get_menu_keyboard
-from tgbot.utils import get_group_and_perms
+from tgbot.utils import aget_user_groups
 
 
 async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выберите действие: ") -> None:
     tg_note = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
-    perms = await get_group_and_perms(tg_note.user.id)
+    perms = await aget_user_groups(tg_note.user.id)
     materials = False
     homeworks = False
     lessons = False

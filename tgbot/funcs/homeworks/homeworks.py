@@ -17,7 +17,7 @@ from tgbot.utils import get_tg_id
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework, HomeworkLog, HomeworkGroups
 from tgbot.create_bot import bot
-from tgbot.utils import get_group_and_perms, get_user
+from tgbot.utils import aget_user_groups, get_user
 from user_logs.models import UserLog
 from user_logs.serializers import get_role_ru
 from user_logs.utils import aget_role_from_plan
@@ -25,7 +25,7 @@ from user_logs.utils import aget_role_from_plan
 
 async def homeworks_send_menu(message: types.Message, state: FSMContext):
     user = await get_user(message.from_user.id)
-    perms = await get_group_and_perms(user.id)
+    groups = await aget_user_groups(user.id)
     func_params = {
         "new_hw_btn": False,
         "check_hw_btn": False,
@@ -33,21 +33,21 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
         "sended_hw_btn": False,
     }
     open_as = []
-    if len(perms.get("groups")) > 1:
-        for role in perms.get("groups"):
+    if len(groups) > 1:
+        for role in groups:
             open_as.append({
                 "name": role,
                 "name_ru": get_role_ru(role, "n", True)
             })
-    if "Curator" in perms.get("groups"):
+    if "Curator" in groups:
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
-    if "Listener" in perms.get("groups"):
+    if "Listener" in groups:
         func_params["compl_hw_btn"] = True
-    if "Metodist" in perms.get("groups"):
+    if "Metodist" in groups:
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
-    if "Teacher" in perms.get("groups"):
+    if "Teacher" in groups:
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
         func_params["sended_hw_btn"] = True
@@ -409,8 +409,7 @@ async def add_homework_set_homework_message(tg_id: int,
 
 async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
     user = await get_user(tg_id)
-    gp = await get_group_and_perms(user.id)
-    groups = gp.get('groups')
+    groups = await aget_user_groups(user.id)
     if func == "complete":
         if 'Listener' in groups:
             homeworks = list(filter(lambda hw: hw['hw_status'] in [7, 2, 3, 5],
@@ -553,8 +552,8 @@ async def send_hw_answer(callback: CallbackQuery,
                 .aget(pk=callback_data.hw_id))
     hw_status = await hw.aget_status()
     user = await get_user(callback.from_user.id)
-    gp = await get_group_and_perms(user.id)
-    if 'Listener' in gp['groups'] and hw_status.status in [7, 2, 3, 5]:
+    groups = await aget_user_groups(user.id)
+    if 'Listener' in groups and hw_status.status in [7, 2, 3, 5]:
         await bot.send_message(chat_id=callback.from_user.id,
                                text="Отправьте мне сообщения, содержащие решение домашнего задания, "
                                     "после чего нажмите кнопку 'Отправить'\nВы можете отправить текст, фотографии, "
@@ -580,16 +579,16 @@ async def send_hw_check(callback: CallbackQuery,
                     .aget(pk=callback_data.hw_id))
         user = await get_user(callback.from_user.id)
         hw_status = await hw.aget_status()
-        gp = await get_group_and_perms(user.id)
+        groups = await aget_user_groups(user.id)
         if hw_status.status not in [3, 5]:
             return False
-        if 'Teacher' in gp['groups'] and hw.teacher == user:
+        if 'Teacher' in groups and hw.teacher == user:
             return True
         lesson = await hw.aget_lesson()
         lp = await lesson.aget_learning_plan() if lesson else None
         if lp:
-            return (('Metodist' in gp['groups'] and lp.metodist == user) or
-                    ('Curator' in gp['groups'] and
+            return (('Metodist' in groups and lp.metodist == user) or
+                    ('Curator' in groups and
                      hw.for_curator and
                      (await lp.curators.filter(pk=user.id).aexists())))
 
@@ -629,7 +628,7 @@ async def hw_send(tg_id: int, state: FSMContext):
         return hw_log
 
     async def notify_teacher(msg="Пришёл новый ответ от ученика по ДЗ"):
-        teacher_tg = await get_tg_id(hw.teacher.id, "main")
+        teacher_tg = await get_tg_id(hw.teacher.id, True)
         if teacher_tg:
             try:
                 msg_object = await bot.send_message(chat_id=teacher_tg,
@@ -715,10 +714,10 @@ async def hw_send(tg_id: int, state: FSMContext):
                 )
 
     async def notify_methodist(msg="Требуется проверка действия преподавателя"):
-        metodist_tg = await get_tg_id(lp.metodist.id, "main")
-        if metodist_tg:
+        methodist_tg = await get_tg_id(lp.metodist.id, True)
+        if methodist_tg:
             try:
-                msg_object = await bot.send_message(chat_id=metodist_tg,
+                msg_object = await bot.send_message(chat_id=methodist_tg,
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([{
                                                         'name': await hw.aget_tg_name(["Metodist"]),
@@ -767,7 +766,7 @@ async def hw_send(tg_id: int, state: FSMContext):
     async def notify_curators(msg="Новое событие с ДЗ"):
         hw_curators = [curator async for curator in lp.curators.all()]
         for curator in hw_curators:
-            curator_tg_id = await get_tg_id(curator.id, "main")
+            curator_tg_id = await get_tg_id(curator.id, True)
             if curator_tg_id:
                 try:
                     msg_object = await bot.send_message(chat_id=curator_tg_id,
@@ -920,9 +919,9 @@ async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
                              homeworks: list[Homework], text="У вас новые домашние задания!", log_event=3):
     recipients_tgs = await get_tg_id(recipient_user_id)
     user_groups = [group.name async for group in (await NewUser.objects.aget(pk=recipient_user_id)).groups.all()]
-    for user_tg_note in recipients_tgs:
+    for tg_id in recipients_tgs:
         try:
-            msg = await bot.send_message(chat_id=user_tg_note.get("tg_id"),
+            msg = await bot.send_message(chat_id=tg_id,
                                          text=text,
                                          reply_markup=get_homeworks_buttons([{
                                              "name": await hw.aget_tg_name(user_groups),

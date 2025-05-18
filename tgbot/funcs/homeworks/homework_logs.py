@@ -8,7 +8,7 @@ from tgbot.funcs.homeworks.homeworks_agreement import f_homework_agr_send
 from tgbot.keyboards.default import ready_cancel_keyboard
 from aiogram import types
 
-from tgbot.utils import get_user, get_group_and_perms
+from tgbot.utils import get_user, aget_user_groups
 
 
 async def f_homework_logs_change_log_message(callback: CallbackQuery, state: FSMContext, hw_log_id: int):
@@ -86,8 +86,8 @@ async def f_homework_logs_change_log_ready(message: types.Message, state: FSMCon
     await message.answer("Обратная связь успешно изменена")
     await notify()
 
-    gp = await get_group_and_perms((await get_user(message.from_user.id)).id)
-    if "Metodist" in gp.get("groups"):
+    user_groups = await aget_user_groups((await get_user(message.from_user.id)).id)
+    if "Metodist" in user_groups:
         await state.update_data(
             action="agreement_accept",
             comment=[],

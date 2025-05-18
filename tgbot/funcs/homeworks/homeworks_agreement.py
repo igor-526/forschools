@@ -158,10 +158,12 @@ async def f_homework_agr_send(tg_id: int,
                     msg = await Message.objects.acreate(
                         receiver=log_.homework.teacher,
                         sender=await get_user(tg_id),
+                        sender_type=0,
+                        receiver_type=0,
                         message="\n".join(st_data.get("comment")),
                         tags=[f"hw{hw.id}" for hw in hws]
                     )
-                    await chats_notify(msg.id, False)
+                    await chats_notify(msg.id)
                     msg_chat_teacher_send = True
                 await homework_tg_notify(logs_info.get("plan").metodist,
                                          log_.homework.teacher.id,

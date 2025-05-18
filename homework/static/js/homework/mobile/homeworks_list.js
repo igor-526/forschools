@@ -8,6 +8,10 @@ function homeworkMobileMain(){
             homeworkMobileGet(true)
         }
     })
+    const hwToOpen = getHashValue("open")
+    if (hwToOpen){
+        homeworkItemShowOffcanvas(hwToOpen)
+    }
 }
 
 function homeworksMobileInitTabsAndButtons(){

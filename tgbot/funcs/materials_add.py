@@ -5,7 +5,7 @@ from dls.settings import MEDIA_ROOT
 from material.models import Material, File
 from material.utils import get_type_by_ext
 from profile_management.models import NewUser
-from tgbot.utils import get_group_and_perms, get_user, get_tg_note
+from tgbot.utils import aget_user_groups, get_user, get_tg_note
 from aiogram.fsm.context import FSMContext
 from aiogram import types
 from tgbot.keyboards.default import cancel_keyboard
@@ -327,7 +327,7 @@ class FileParser:
 async def add_material_message(message: types.Message, state: FSMContext) -> None:
     await message.delete()
     user = await get_user(message.from_user.id)
-    perms = await get_group_and_perms(user.id)
+    perms = await aget_user_groups(user.id)
     if 'material.add_personal' in perms.get("permissions"):
         await message.answer(text="Отправьте мне материалы для быстрого добавления, после чего нажмите кнопку 'Отмена' "
                                   "для выхода из инструмента\nПо умолчанию 1 сообщение - 1 материал. "

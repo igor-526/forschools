@@ -1,23 +1,21 @@
 from datetime import datetime, date, timedelta
 import os
-from typing import Dict
+from typing import Dict, List
 
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 from django.db.models import Q
-from chat.models import Message, AdminMessage
+from chat.models import Message
 from dls.settings import MEDIA_ROOT
 from lesson.models import Lesson
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework
-from django.contrib.auth.models import Permission
 from tgbot.create_bot import bot, dp
 import async_to_sync as sync
 
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.fileutils import send_file
 from tgbot.funcs.lessons import f_lessons_show_place_access_info
-from tgbot.keyboards.chats import chats_get_answer_message_button
 from tgbot.keyboards.lessons import get_lesson_ma_button
 from tgbot.keyboards.materials import get_materials_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_editing_buttons
@@ -186,15 +184,14 @@ async def get_user(tg_id) -> NewUser | None:
         return None
 
 
-async def get_tg_id(user_id: int, usertype=None):
-    if usertype:
-        tg_note = await Telegram.objects.filter(usertype=usertype, user__id=user_id).afirst()
-        return tg_note.tg_id if tg_note else None
-    tg_ids = [{
-        "tg_id": tgnote.tg_id,
-        "usertype": tgnote.usertype
-    } async for tgnote in Telegram.objects.filter(user__id=user_id).all()]
-    return tg_ids
+async def get_tg_id(user_id: int, main_one=False):
+    if main_one:
+        return (await Telegram.objects.filter(user__id=user_id).afirst()).tg_id
+    return [tg_id async for tg_id in
+            Telegram.objects.filter(
+                Q(allowed_users=user_id) |
+                Q(allowed_parents=user_id)
+            ).values_list("tg_id", flat=True)]
 
 
 async def get_tg_note(tg_id: int) -> Telegram | None:
@@ -204,15 +201,11 @@ async def get_tg_note(tg_id: int) -> Telegram | None:
         return None
 
 
-async def get_group_and_perms(user_id) -> dict:
+async def aget_user_groups(user_id) -> List[str]:
     user = await NewUser.objects.aget(id=user_id)
-    groups = [group.name async for group in user.groups.all()]
-    perms = [f"{perm.content_type.app_label}.{perm.codename}"
-             async for perm in Permission.objects.select_related("content_type").filter(group__name__in=groups)]
-    return {
-        "groups": groups,
-        "permissions": perms
-    }
+    groups = [group async for group in
+              user.groups.values_list("name", flat=True)]
+    return groups
 
 
 def send_materials(initiator: NewUser, recipient: NewUser, materials, sendtype):
@@ -413,156 +406,6 @@ def notify_group_chat_message(message: Message):
     notify(receivers_tg_id, 'user')
     notify(receiver_parents_tg_id, 'receiver_parent')
     notify(sender_parents_tg_id, 'sender_parent')
-
-
-def notify_chat_message(message: Message):
-    def add_tg_journal_note(result):
-        if result.get("status") == "success":
-            TgBotJournal.objects.create(
-                recipient=message.receiver,
-                initiator=message.sender,
-                event=7,
-                data={
-                    "status": "success",
-                    "text": msg_text,
-                    "msg_id": result.get("msg_id"),
-                    "errors": [],
-                    "attachments": []
-                }
-            )
-        else:
-            TgBotJournal.objects.create(
-                recipient=message.receiver,
-                initiator=message.sender,
-                event=7,
-                data={
-                    "status": "error",
-                    "text": None,
-                    "msg_id": None,
-                    "errors": result.get("errors"),
-                    "attachments": []
-                }
-            )
-
-    def notify_parents():
-        if message.sender:
-            if message.receiver:
-                receiver_fullname = f'{message.receiver.first_name} {message.receiver.last_name}'
-            else:
-                receiver_fullname = (f'{message.receiver_tg.user.first_name} {message.receiver_tg.user.last_name}'
-                                     f'({message.receiver_tg.usertype})')
-            parents = Telegram.objects.filter(user=message.sender).exclude(usertype="main")
-            parent_msg_text = (f"<b>Новое сообщение <b>ОТ УЧЕНИКА ДЛЯ</b> {receiver_fullname}"
-                               f" [{message.date.strftime('%d.%m %H:%M')}]</b>:\n"
-                               f"{message.message}")
-            parent_msg_text = parent_msg_text.replace("<br>", "\n")
-            for p_tg_note in parents:
-                sync_funcs.send_tg_message_sync(tg_id=p_tg_note.tg_id,
-                                                message=parent_msg_text)
-                for attachment in message.files.all():
-                    sync_funcs.send_tg_file_sync(tg_id, attachment)
-
-    user_tg_id = None
-    parents_tg_ids = []
-    if message.receiver:
-        user_tg_id = get_tg_id_sync(message.receiver.id, "main")
-        parents_tg_ids = [
-            tgnote.tg_id for tgnote in Telegram.objects.filter(user_id=message.receiver.id).exclude(usertype="main")
-        ]
-    elif message.receiver_tg:
-        user_tg_id = message.receiver_tg.tg_id
-    if user_tg_id:
-        msg_text = (f"<b>Новое сообщение от {message.sender.first_name} "
-                    f"{message.sender.last_name}</b>\n{message.message}")
-        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
-                                                     message=msg_text,
-                                                     reply_markup=chats_get_answer_message_button(message.id))
-        add_tg_journal_note(msg_result)
-        notify_parents()
-        for parent_tg_id in parents_tg_ids:
-            msg_text = (f"<b>Новое сообщение ДЛЯ УЧЕНИКА от {message.sender.first_name} "
-                        f"{message.sender.last_name}</b>\n{message.message}")
-            msg_result = sync_funcs.send_tg_message_sync(tg_id=parent_tg_id,
-                                                         message=msg_text)
-            add_tg_journal_note(msg_result)
-        for att in message.files.all():
-            for tg_id in [user_tg_id, *parents_tg_ids]:
-                sync_funcs.send_tg_file_sync(tg_id, att)
-    else:
-        TgBotJournal.objects.create(
-            recipient=message.receiver,
-            initiator=message.sender,
-            event=7,
-            data={
-                "status": "error",
-                "text": None,
-                "msg_id": None,
-                "errors": ["У пользователя не привязан Telegram"],
-                "attachments": []
-            }
-        )
-
-
-def notify_admin_chat_message(message: AdminMessage):
-    def add_tg_journal_note(result, recipient):
-        if result.get("status") == "success":
-            TgBotJournal.objects.create(
-                recipient=recipient,
-                initiator=message.sender,
-                event=10,
-                data={
-                    "status": "success",
-                    "text": msg_text,
-                    "msg_id": result.get("msg_id"),
-                    "errors": [],
-                    "attachments": []
-                }
-            )
-        else:
-            TgBotJournal.objects.create(
-                recipient=recipient,
-                initiator=message.sender,
-                event=10,
-                data={
-                    "status": "error",
-                    "text": None,
-                    "msg_id": None,
-                    "errors": result.get("errors"),
-                    "attachments": []
-                }
-            )
-
-    if message.receiver:
-        users = [message.receiver]
-        msg_text = (f"<b>Новое сообщение от администратора {message.sender.first_name} "
-                    f"{message.sender.last_name}</b>\n{message.message}")
-    else:
-        users = NewUser.objects.filter(groups__name="Admin")
-        msg_text = (f"<b>Новое сообщение администратору {message.sender.first_name} "
-                    f"{message.sender.last_name}</b>\n{message.message}")
-    attachments = message.files.all()
-    for user in users:
-        user_tg_ids = [tg_note.tg_id for tg_note in user.telegram.all()]
-        for tg_id in user_tg_ids:
-            msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id,
-                                                         message=msg_text,
-                                                         reply_markup=chats_get_answer_message_button(message.id, "admin"))
-            for att in attachments:
-                sync_funcs.send_tg_file_sync(tg_id, att)
-            add_tg_journal_note(msg_result, user)
-        if not user_tg_ids:
-            TgBotJournal.objects.create(
-                recipient=user,
-                initiator=message.sender,
-                event=10,
-                data={
-                    "status": "error",
-                    "text": None,
-                    "msg_id": None,
-                    "errors": ["У пользователя не привязан Telegram"],
-                    "attachments": []
-                }
-            )
 
 
 def notify_lesson_passed(tg_id: int,

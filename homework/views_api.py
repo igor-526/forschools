@@ -13,8 +13,9 @@ from lesson.permissions import CanReplaceTeacherMixin
 from material.models import File, Material
 from material.utils import get_type_by_ext
 from tgbot.funcs.homeworks.homework_show import open_homework_in_tg
-from tgbot.utils import (send_homework_tg, notify_chat_message,
+from tgbot.utils import (send_homework_tg,
                          send_homework_answer_tg, sync_funcs)
+from chat.tg_utils import tg_sync_chat_funcs
 from user_logs.models import UserLog
 from .models import Homework, HomeworkLog
 from .utils import status_code_to_string
@@ -493,7 +494,7 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
                     receiver=instance.homework.teacher,
                     message=request.POST.get('message')
                 )
-                notify_chat_message(message)
+                tg_sync_chat_funcs.notify_message(message.id)
             for log in to_agreement:
                 log.agreement = agreement
                 log.save()
@@ -788,6 +789,6 @@ class HomeworkItemAgreementAPIView(LoginRequiredMixin, APIView):
                 receiver=homework.teacher,
                 message=request.POST.get('comment')
             )
-            notify_chat_message(message)
+            tg_sync_chat_funcs.notify_message(message.id)
         return Response(data={'status': True},
                         status=status.HTTP_200_OK)

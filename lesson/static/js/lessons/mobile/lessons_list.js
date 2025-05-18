@@ -9,6 +9,10 @@ function lessonsMobileMain(){
             lessonsMobileGet(true)
         }
     })
+    const lessonToOpen = getHashValue("open")
+    if (lessonToOpen){
+        lessonShowOffcanvas(lessonToOpen)
+    }
 }
 
 function lessonsMobileInitTabs(){

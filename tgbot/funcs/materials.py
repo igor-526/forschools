@@ -7,7 +7,7 @@ from material.models import Material, MaterialCategory, MaterialLevel
 from profile_management.models import Telegram
 from tgbot.create_bot import bot
 from tgbot.keyboards.callbacks.material import MaterialItemCallback, MaterialItemSendTgCallback
-from tgbot.utils import get_group_and_perms, get_user
+from tgbot.utils import aget_user_groups, get_user
 from aiogram.fsm.context import FSMContext
 from aiogram import types
 from tgbot.keyboards.materials import (get_keyboard_materials,
@@ -36,7 +36,7 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
     file = material.tg_url if material.tg_url else FSInputFile(path=material.file.path)
     mat_type = get_type_by_ext(material.file.name.split(".")[-1])
     user = await get_user(tg_id)
-    perms = await get_group_and_perms(user.id)
+    perms = await aget_user_groups(user.id)
     send_tg = 'material.send_telegram' in perms.get('permissions')
     file_id = None
     all_text = generate_material_message()
@@ -151,7 +151,7 @@ async def filter_materials(materials: list[Material], state: FSMContext):
 async def send_material_query(callback: CallbackQuery, state: FSMContext, materials=None):
     if materials is None:
         user = await get_user(callback.from_user.id)
-        perms = await get_group_and_perms(user.id)
+        perms = await aget_user_groups(user.id)
         materials = [_ async for _ in Material.objects.filter(type=1, owner=user)]
         if 'material.see_all_general' in perms["permissions"]:
             materials += [_ async for _ in Material.objects.filter(type=2)]

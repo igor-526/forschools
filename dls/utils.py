@@ -1,19 +1,12 @@
+from django.db.models import Q
 from django.urls import reverse
 from profile_management.models import Telegram
 
 
-def get_tg_id_sync(user_id: int, usertype=None):
-    if usertype:
-        tg = Telegram.objects.filter(user__id=user_id,
-                                     usertype=usertype).first()
-        if tg:
-            return tg.tg_id
-        return None
-    else:
-        tg_ids = [{"tg_id": tgnote.tg_id,
-                   "usertype": tgnote.usertype} for tgnote
-                  in Telegram.objects.filter(user__id=user_id).all()]
-        return tg_ids
+def get_tg_id_sync(user_id: int):
+    return Telegram.objects.filter(
+        Q(allowed_users=user_id) | Q(allowed_parents=user_id)
+    ).values_list("tg_id", flat=True)
 
 
 def get_menu(user):

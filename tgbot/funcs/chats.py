@@ -45,7 +45,7 @@ async def chats_show(message: types.Message, state: FSMContext):
             msg async for msg in
             Message.objects.filter(
                 **query['filter']).exclude(**query['exclude']).
-            order_by('sender', 'sender_tg', 'date')
+            order_by('sender', 'date')
         ]
         for msg in unread_messages:
             await msg.aset_read(**query['reading'])

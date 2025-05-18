@@ -118,6 +118,10 @@ function lessonShowGetMainInfoContent(lesson, lessonOffcanvas){
             lessonItemSetPassedOffcanvas(lesson.id, lesson.awaiting_action === "name_only", lessonOffcanvas)
         })
         elements.push(passLessonButton)
+        const goForm = getHashValue("form")
+        if (goForm){
+            lessonItemSetPassedOffcanvas(lesson.id, lesson.awaiting_action === "name_only", lessonOffcanvas)
+        }
     }
 
     return elements
