@@ -1,11 +1,12 @@
 import os.path
 from typing import List, Dict
+
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from django.core.exceptions import BadRequest
 from dls.settings import BASE_DIR
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from homework.models import Homework, HomeworkLog
@@ -70,7 +71,7 @@ class MaterialListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             if self.request.user.has_perm('material.see_all_general'):
                 queryset = Material.objects.filter(type=1, visible=True)
             else:
-                raise PermissionDenied
+                raise PermissionDenied()
         elif param_type == "2":
             queryset = Material.objects.filter(
                 type=2, owner=self.request.user, visible=True

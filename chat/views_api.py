@@ -1,4 +1,3 @@
-from _operator import itemgetter
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from rest_framework.exceptions import PermissionDenied
@@ -8,7 +7,7 @@ from rest_framework.generics import (ListCreateAPIView,
                                      CreateAPIView)
 from rest_framework import status
 from rest_framework.views import APIView
-from profile_management.models import NewUser, Telegram
+from profile_management.models import NewUser
 from chat.models import GroupChats, AdminMessage
 from tgbot.utils import sync_funcs
 from .models import Message
@@ -38,9 +37,9 @@ class ChatUsersListAPIView(LoginRequiredMixin, ListAPIView):
                     chats = self.filter_chats(chats)
                     return Response(chats, status=status.HTTP_200_OK)
                 except NewUser.DoesNotExist:
-                    raise PermissionDenied()
+                    return Response(status=status.HTTP_404_NOT_FOUND)
             else:
-                raise PermissionDenied()
+                return Response(status=status.HTTP_403_FORBIDDEN)
         chats = request.user.get_users_for_chat(from_user=False)
         chats = self.filter_chats(chats)
         return Response(chats, status=status.HTTP_200_OK)

@@ -2,7 +2,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import (ListCreateAPIView,
                                      RetrieveUpdateDestroyAPIView)
 from rest_framework.response import Response
@@ -70,7 +69,7 @@ class PlansItemStatusAPIView(LoginRequiredMixin, APIView):
             if phase.lessons.count() == 0:
                 phase.delete()
         return Response(data={"status": "success"},
-                        status=200)
+                        status=status.HTTP_200_OK)
 
 
 class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
@@ -181,7 +180,7 @@ class PlanPhasesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset(plan_pk=self.kwargs.get("plan_pk"))
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, status=200)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -193,11 +192,11 @@ class PlanPhasesListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
                                              context={"plan": plan})
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                return Response(serializer.data, status=201)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.data, status=400)
+                return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
         else:
-            raise PermissionDenied
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
@@ -211,7 +210,7 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
         try:
             phase = self.get_object(phase_pk=kwargs.get("pk"))
         except LearningPhases.DoesNotExist:
-            raise Http404
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if can_edit_plan(request, phase=phase):
             serializer = self.get_serializer(
                 data=request.data,
@@ -220,22 +219,25 @@ class PlanPhaseItemAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
             )
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                return Response(serializer.data, status=201)
+                return Response(data=serializer.data,
+                                status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.data, status=400)
+                return Response(data=serializer.data,
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
-            raise PermissionDenied
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
     def delete(self, request, *args, **kwargs):
         try:
             phase = self.get_object(phase_pk=kwargs.get("pk"))
         except LearningPhases.DoesNotExist:
-            raise Http404
+            return Response(status=status.HTTP_404_NOT_FOUND)
         if can_edit_plan(request, phase=phase):
             if phase.lessons.count() == 0:
                 phase.delete()
-                return Response({"status": "ok"}, status=204)
-        raise PermissionDenied
+                return Response(data={"status": "ok"},
+                                status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
@@ -248,7 +250,7 @@ class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
                               "%Y-%m-%d"),
             get_schedule(request.query_params),
             program
-        ), status=200)
+        ), status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         program = LearningProgram.objects.get(
@@ -264,7 +266,8 @@ class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
                 plan
             )
             setter.set_program()
-            return Response(data={"status": "ok"}, status=201)
+            return Response(data={"status": "ok"},
+                            status=status.HTTP_201_CREATED)
         else:
             return Response(data={
                 "error": "Вы не можете сгенерировать план на основе программы"
@@ -300,7 +303,7 @@ class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
                                },
                                buttons=[],
                                user=request.user)
-        return Response({"status": "ok"}, status=201)
+        return Response(data={"status": "ok"}, status=status.HTTP_201_CREATED)
 
 
 class PlansItemPreHWCommentAPIView(LoginRequiredMixin, APIView):
@@ -313,7 +316,7 @@ class PlansItemPreHWCommentAPIView(LoginRequiredMixin, APIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
         plan.pre_hw_comment = request.POST.get("pre_hw_comment")
         plan.save()
-        return Response({"status": "ok"}, status=201)
+        return Response({"status": "ok"}, status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
         try:
@@ -324,7 +327,7 @@ class PlansItemPreHWCommentAPIView(LoginRequiredMixin, APIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
         plan.pre_hw_comment = None
         plan.save()
-        return Response({"status": "ok"}, status=201)
+        return Response({"status": "ok"}, status=status.HTTP_201_CREATED)
 
 
 class PlansDownloadAPIView(CanDownloadPlan, APIView):
@@ -334,4 +337,4 @@ class PlansDownloadAPIView(CanDownloadPlan, APIView):
             initiator=request.user,
         )
         plans_download(request.data, note.id)
-        return Response({"status": "ok"}, status=200)
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)

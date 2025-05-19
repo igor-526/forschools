@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
 from .models import Material
 
 
@@ -7,7 +6,7 @@ class CanSeeMaterialMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if has_material_access(request, kwargs.get('pk')):
             return super().dispatch(request, *args, **kwargs)
-        raise PermissionDenied('Permission denied')
+        return self.handle_no_permission()
 
 
 def has_material_access(request, mat_id):
@@ -17,13 +16,11 @@ def has_material_access(request, mat_id):
     try:
         material = Material.objects.get(pk=mat_id)
     except Material.DoesNotExist:
-        raise PermissionDenied('Доступ ограничен')
+        return False
     if ("Metodist" in usergroups) or ("Teacher" in usergroups):
         if material.visible:
             return True
-        else:
-            raise PermissionDenied('Доступ ограничен')
-
+        return False
     if "Listener" in usergroups:
         if request.user in material.access.all():
             return True

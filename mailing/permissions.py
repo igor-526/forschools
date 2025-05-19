@@ -1,12 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
 
 
 class MailingAccessMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if mailing_permission(request.user):
             return super().dispatch(request, *args, **kwargs)
-        raise PermissionDenied('Permission denied')
+        return self.handle_no_permission()
 
 
 def mailing_permission(user):

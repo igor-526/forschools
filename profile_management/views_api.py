@@ -4,9 +4,9 @@ from django.contrib.auth.password_validation import validate_password
 from django.db.models import Q, Count
 from django.core.exceptions import ValidationError
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
 from chat.permissions import can_see_other_users_messages
 from .permissions import (get_editable_perm,
@@ -28,7 +28,7 @@ class DeactivateUserAPIView(LoginRequiredMixin, APIView):
                 result = user.get_info_deactivate()
                 return Response(result, status=status.HTTP_200_OK)
             else:
-                raise PermissionDenied
+                return Response(status=status.HTTP_403_FORBIDDEN)
         except Exception as ex:
             return Response(
                 data={'status': 'error', 'errors': ex},
@@ -46,7 +46,7 @@ class DeactivateUserAPIView(LoginRequiredMixin, APIView):
                     status=status.HTTP_200_OK
                 )
             else:
-                raise PermissionDenied
+                return Response(status=status.HTTP_403_FORBIDDEN)
         except Exception as ex:
             return Response(
                 data={'status': 'error', 'errors': ex},
@@ -66,7 +66,7 @@ class ActivateUserAPIView(LoginRequiredMixin, APIView):
                     status=status.HTTP_200_OK
                 )
             else:
-                raise PermissionDenied
+                raise PermissionDenied()
         except Exception as ex:
             return Response(
                 data={'status': 'error', 'errors': ex},
@@ -84,7 +84,7 @@ class ChangePasswordAPIView(LoginRequiredMixin, APIView):
                 user.set_password(new_password)
                 user.save()
             else:
-                raise PermissionDenied
+                return Response(status=status.HTTP_403_FORBIDDEN)
             return Response(
                 data={'status': 'success'},
                 status=status.HTTP_200_OK
@@ -103,7 +103,7 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
             if can_see_other_users_messages(self.request):
                 return NewUserLastMessageDateListSerializer
             else:
-                raise PermissionDenied
+                return Response(status=status.HTTP_403_FORBIDDEN)
         else:
             return NewUserListSerializer
 
@@ -299,7 +299,7 @@ class UserPhotoAPIView(LoginRequiredMixin, APIView):
                     status=400
                 )
         else:
-            raise PermissionDenied
+            raise PermissionDenied()
 
     def delete(self, request, *args, **kwargs):
         user = NewUser.objects.get(pk=kwargs.get('pk'))

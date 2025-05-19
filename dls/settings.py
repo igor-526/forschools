@@ -99,7 +99,6 @@ DATABASES = {
     }
 }
 AUTH_USER_MODEL = 'profile_management.NewUser'
-LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
 ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = False

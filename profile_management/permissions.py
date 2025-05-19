@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
 
 
 class CanSeeUserPageMixin(LoginRequiredMixin):
@@ -9,14 +8,14 @@ class CanSeeUserPageMixin(LoginRequiredMixin):
                 ("Metodist" in usergroups) or
                 ("Teacher" in usergroups)):
             return super().dispatch(request, *args, **kwargs)
-        raise PermissionDenied('Permission denied')
+        return self.handle_no_permission()
 
 
 class CanSeeEventJournalMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if request.user.groups.filter(name="Admin").exists():
             return super().dispatch(request, *args, **kwargs)
-        raise PermissionDenied('Permission denied')
+        return self.handle_no_permission()
 
 
 def get_editable_perm(user, obj) -> bool:

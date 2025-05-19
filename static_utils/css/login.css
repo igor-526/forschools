@@ -8,21 +8,15 @@ body {
 
 .login_block{
     background-color: #fff;
-    width: 20%;
-    min-width: 200px;
+    width: 300px;
     margin: auto auto;
     margin-top: 150px;
     border-radius: 20px;
     padding: 40px;
 }
 
-.login_field{
-    padding: 10px;
-}
-
-.login_field input{
-    width: 90%;
-    height: 35px;
-    padding-left: 15px;
-    border-radius: 5px;
+@media (max-width: 576px) {
+    .login_block {
+        width: 96%;
+    }
 }

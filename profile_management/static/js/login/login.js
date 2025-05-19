@@ -1,4 +1,4 @@
-async function loginAPISetAdminComment(fd){
+async function loginAPILogin(fd){
     return await fetch("/auth/", {
         method: "POST",
         credentials: 'same-origin',
@@ -12,6 +12,30 @@ async function loginAPISetAdminComment(fd){
 function loginMain(){
     tgLogin()
     loginFormButton.addEventListener("click", loginButtonListener)
+    loginFormPasswordShowButton.addEventListener("click", function () {
+        switch (loginFormPasswordShowButton.attributes.getNamedItem("data-action").value){
+            case "show":
+                loginFormPasswordShowButton.innerHTML = '<i class="bi bi-eye-slash"></i>'
+                loginFormPasswordShowButton.setAttribute("data-action", "hide")
+                loginFormPassword.type = "text"
+                break
+            case "hide":
+                loginFormPasswordShowButton.innerHTML = '<i class="bi bi-eye"></i>'
+                loginFormPasswordShowButton.setAttribute("data-action", "show")
+                loginFormPassword.type = "password"
+                break
+        }
+    })
+    loginFormLogin.addEventListener('keypress', (e) => {
+        if (e.key === "Enter"){
+            loginFormPassword.focus()
+        }
+    })
+    loginFormPassword.addEventListener('keypress', (e) => {
+        if (e.key === "Enter"){
+            loginButtonListener()
+        }
+    })
 }
 
 function tgLogin(){
@@ -53,12 +77,14 @@ function loginValidate(){
 
 function loginButtonListener(){
     if (loginValidate()){
-        loginAPISetAdminComment(new FormData(loginForm)).then(request => {
+        loginAPILogin(new FormData(loginForm)).then(request => {
             switch (request.status){
                 case 200:
-                    location.assign("/")
+                    let params = new URL(document.location.toString()).searchParams;
+                    location.assign(params.has("next") ? params.get("next") : "/")
                     break
                 default:
+                    console.log(request.status)
                     loginFormLogin.classList.add("is-invalid")
                     loginFormPassword.classList.add("is-invalid")
                     break
@@ -71,5 +97,6 @@ const loginForm = document.querySelector("#loginForm")
 const loginFormLogin = loginForm.querySelector("#loginFormLogin")
 const loginFormPassword = loginForm.querySelector("#loginFormPassword")
 const loginFormButton = document.querySelector("#loginFormButton")
+const loginFormPasswordShowButton = loginForm.querySelector("#loginFormPasswordShowButton")
 
 loginMain()

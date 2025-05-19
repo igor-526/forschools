@@ -13,17 +13,18 @@
     </head>
     <body>
         <div class="container-xxl">
-            <div class="row login_block">
-                <form id="loginForm">
+            <div class="row login_block px-3">
+                <form id="loginForm" class="p-0">
                     {% csrf_token %}
                     <div class="mb-3">
                         <input id="loginFormLogin" name="username" type="text" class="form-control" placeholder="Логин" aria-label="">
                     </div>
-                    <div class="mb-3">
+                    <div class="input-group mb-3">
                         <input id="loginFormPassword" name="password" type="password" class="form-control" placeholder="Пароль" aria-label="">
+                        <button type="button" id="loginFormPasswordShowButton" class="btn btn-outline-primary" data-action="show"><i class="bi bi-eye"></i></button>
                     </div>
                 </form>
-                <button id="loginFormButton" class="btn btn-primary">Войти</button>
+                <button type="button" id="loginFormButton" class="btn btn-primary">Войти</button>
             </div>
         </div>
 

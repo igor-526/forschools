@@ -12,9 +12,6 @@ from .utils import get_homework_list_settings
 
 
 class HomeworksListPage(LoginRequiredMixin, TemplateView):
-    login_url = '/login/'
-    redirect_field_name = 'redirect_to'
-
     def get_template_names(self):
         if self.request.user_agent.is_mobile:
             return 'mobile/homeworks_list.html'

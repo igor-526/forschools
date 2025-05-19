@@ -1,6 +1,5 @@
 import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from lesson.models import Lesson
 from profile_management.models import NewUser
@@ -10,14 +9,14 @@ class CanReplaceTeacherMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if hw_perm_can_set_replace(request):
             return super().dispatch(request, *args, **kwargs)
-        raise PermissionDenied('Permission denied')
+        return self.handle_no_permission()
 
 
 class CanEditLessonAdminComment(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if request.user.groups.filter(name='Admin').exists():
             return super().dispatch(request, *args, **kwargs)
-        raise PermissionDenied('Permission denied')
+        return self.handle_no_permission()
 
 
 class CanSeeLessonMixin(LoginRequiredMixin):
@@ -30,7 +29,7 @@ class CanSeeLessonMixin(LoginRequiredMixin):
         if "Listener" in usergroups:
             lesson = Lesson.objects.get(pk=kwargs.get('pk'))
             if not lesson and lesson.date:
-                raise PermissionDenied('Permission denied')
+                return self.handle_no_permission()
             if request.user in lesson.get_listeners():
                 return super().dispatch(request, *args, **kwargs)
         if "Curator" in usergroups:
@@ -39,7 +38,7 @@ class CanSeeLessonMixin(LoginRequiredMixin):
                              .learningplan_set.first())
             if request.user in learning_plan.curators.all():
                 return super().dispatch(request, *args, **kwargs)
-        raise PermissionDenied('Permission denied')
+        return self.handle_no_permission()
 
 
 def get_usergroups(user):
