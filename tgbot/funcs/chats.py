@@ -54,15 +54,15 @@ async def chats_show(message: types.Message, state: FSMContext):
     tg_note = await Telegram.objects.select_related("user").aget(
         tg_id=message.from_user.id
     )
-    unread = await aget_unread_messages_count(tg_note)
-    if unread > 0:
-        await show_unread()
-    else:
-        is_admin = await tg_note.user.groups.filter(name='Admin').aexists()
-        await message.answer(
-            text="Все диалоги:",
-            reply_markup=chats_get_show_message_page_button(is_admin)
-        )
+    # unread = await aget_unread_messages_count(tg_note)
+    # if unread > 0:
+    #     await show_unread()
+    # else:
+    is_admin = await tg_note.user.groups.filter(name='Admin').aexists()
+    await message.answer(
+        text="Все диалоги:",
+        reply_markup=chats_get_show_message_page_button(is_admin)
+    )
 
 
 async def chats_type_message(messages: list[types.Message],

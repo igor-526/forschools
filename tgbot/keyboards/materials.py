@@ -178,7 +178,7 @@ def get_show_key(mat_id) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_keyboard_material_item(material, send_tg=False, delete_settings=None) -> InlineKeyboardMarkup:
+def get_keyboard_material_item(material, delete_settings=None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if delete_settings and delete_settings.get("action") == "hw":
         builder.button(

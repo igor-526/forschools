@@ -260,12 +260,12 @@ def send_homework_tg(initiator: NewUser, listener: NewUser,
                      homeworks: list[Homework], text="У вас новые домашние задания!",
                      tg_id: int = None) -> dict:
     if tg_id:
-        tg_ids = [{"tg_id": tg_id}]
+        tg_ids = [tg_id]
     else:
         tg_ids = get_tg_id_sync(listener.id)
     user_groups = [group.name for group in listener.groups.all()]
     for tg_id in tg_ids:
-        msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id.get("tg_id"),
+        msg_result = sync_funcs.send_tg_message_sync(tg_id=tg_id,
                                                      message=text,
                                                      reply_markup=get_homeworks_buttons(
                                                          [{'name': hw.get_tg_name(user_groups),
