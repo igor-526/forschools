@@ -329,7 +329,7 @@ def send_homework_answer_tg(user: NewUser, homework: Homework, status: int) -> d
         recipient = homework.listener
     for user_tg_id in user_tg_ids:
         user_groups = [group.name for group in recipient.groups.all()]
-        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id.get("tg_id"),
+        msg_result = sync_funcs.send_tg_message_sync(tg_id=user_tg_id,
                                                      message=msg,
                                                      reply_markup=get_homeworks_buttons([{
                                                          'name': homework.get_tg_name(user_groups),

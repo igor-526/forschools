@@ -8,9 +8,9 @@ from chat.models import (AdminMessage, GroupChats, Message)
 
 from django.db.models import Q
 
+from chat.utils import aget_unread_messages
 from profile_management.models import (NewUser,
-                                       Telegram,
-                                       aget_unread_messages_count)
+                                       Telegram)
 
 from tgbot.create_bot import bot
 from tgbot.funcs.fileutils import send_file
@@ -25,39 +25,16 @@ from tgbot.tg_user_utils import get_user
 
 
 async def chats_show(message: types.Message, state: FSMContext):
-    async def show_unread():
-        tgnote = await (Telegram.objects.select_related("user")
-                        .aget(tg_id=message.from_user.id))
-        query = {
-            "filter": {},
-            "exclude": {},
-            "reading": {}
-        }
-        if tgnote.usertype == "main":
-            query['filter']["receiver_id"] = tgnote.user.id
-            query['exclude']['read_data__has_key'] = f'nu{tgnote.user.id}'
-            query['reading']["user_id"] = tgnote.user.id
-        else:
-            query['filter']["receiver_tg_id"] = tgnote.id
-            query['exclude']['read_data__has_key'] = f'tg{tgnote.id}'
-            query['reading']["user_id"] = tgnote.id
-        unread_messages = [
-            msg async for msg in
-            Message.objects.filter(
-                **query['filter']).exclude(**query['exclude']).
-            order_by('sender', 'date')
-        ]
-        for msg in unread_messages:
-            await msg.aset_read(**query['reading'])
+    async def show_unread(messages: List[Message]):
+        for msg in messages:
             await chats_notify(msg.id)
 
     tg_note = await Telegram.objects.select_related("user").aget(
         tg_id=message.from_user.id
     )
-    # unread = await aget_unread_messages_count(tg_note)
-    # if unread > 0:
-    #     await show_unread()
-    # else:
+    unread = await aget_unread_messages(tg_note, read=True)
+    if len(unread) > 0:
+        await show_unread(unread)
     is_admin = await tg_note.user.groups.filter(name='Admin').aexists()
     await message.answer(
         text="Все диалоги:",
@@ -140,11 +117,7 @@ async def chats_send(user_tg_id: int, state: FSMContext):
     message_status = await bot.send_message(chat_id=user_tg_id,
                                             text="Отправка...")
     chat_type = data.get("chat_type")
-    self_profile_type = await tg_note.get_usertype()
-    if self_profile_type == "main":
-        self_profile_type = 0
-    elif self_profile_type == "parent":
-        self_profile_type = 1
+    self_profile_type = await tg_note.aget_usertype()
     if chat_type == 2:
         chat_message = await create_admin_message(state_data=data)
         await admin_chats_notify(chat_message.id)

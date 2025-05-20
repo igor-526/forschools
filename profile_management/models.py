@@ -493,11 +493,11 @@ class Telegram(models.Model):
                 self.last_message_from_user_id = message_id
         await self.asave()
 
-    async def get_usertype(self) -> str | None:
+    async def aget_usertype(self) -> int | None:
         if await self.allowed_users.filter(id=self.user.id).aexists():
-            return "main"
+            return 0
         if await self.allowed_parents.filter(id=self.user.id).aexists():
-            return "parent"
+            return 1
         return None
 
     async def aget_users_for_chat(self):
@@ -542,12 +542,7 @@ class Telegram(models.Model):
         roles = [group["name"] async for group in
                  self.user.groups.values("name").all()]
         users = []
-        self_ut = await self.get_usertype()
-        if self_ut == "main":
-            self_ut = 0
-        elif self_ut == "parent":
-            self_ut = 1
-
+        self_ut = await self.aget_usertype()
         if "Admin" in roles:
             users.extend([
                 await get_user_chat_info(u, self_ut, 0) async for u in
@@ -643,32 +638,3 @@ class ProfileEventsJournal(models.Model):
 
     def __str__(self):
         return f'({self.event}){str(self.user)}: {self.dt}'
-
-
-async def aget_unread_messages_count(tgnote, sender=None, read=False):
-    query = {"filter": {},
-             "exclude": {},
-             "read": {}}
-    if sender:
-        if sender.get("usertype") == "NewUser":
-            query['filter']['sender_id'] = sender.get("id")
-        elif sender.get("usertype") == "Telegram":
-            query['filter']['sender_tg_id'] = sender.get("id")
-    if tgnote.usertype == "main":
-        query['exclude']['read_data__has_key'] = f'nu{tgnote.user.id}'
-        query['read']['user_id'] = tgnote.user.id
-        msgquery = [msg async for msg in
-                    tgnote.user.message_receiver.filter(
-                        **query['filter']
-                    ).exclude(**query['exclude'])]
-    else:
-        query['exclude']['read_data__has_key'] = f'tg{tgnote.id}'
-        query['read']['user_id'] = tgnote.id
-        msgquery = [msg async for msg in
-                    tgnote.message_tg_receiver.filter(
-                        **query['filter']
-                    ).exclude(**query['exclude'])]
-    if read:
-        for msg in msgquery:
-            await msg.aset_read(**query['read'])
-    return len(msgquery)
