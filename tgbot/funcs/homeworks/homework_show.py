@@ -8,7 +8,8 @@ from profile_management.models import NewUser, Telegram
 from tgbot.create_bot import bot
 from tgbot.funcs.fileutils import send_file
 from tgbot.funcs.materials import send_material_item
-from tgbot.keyboards.homework import get_hw_log_delete_file_button, get_hw_log_edit_button, get_homework_item_buttons
+from tgbot.keyboards.homework import get_hw_log_delete_file_button, get_hw_log_edit_button, get_homework_item_buttons, \
+    get_homeworks_buttons
 from tgbot.utils import get_user, get_tg_note
 
 
@@ -174,10 +175,23 @@ class TGHomework:
         await self.send_last_log()
         await self.send_actions(not mat_send and mat_exists)
 
+    async def send_link(self, message: str = "Вам направлено ДЗ"):
+        homeworks = [{
+            'name': self.homework.name,
+            'status': None,
+            'id': self.homework_id
+        }]
+        await bot.send_message(chat_id=self.telegram_id,
+                               text=message,
+                               reply_markup=get_homeworks_buttons(homeworks))
+
 
 class AsyncClass:
     async def open_hw_in_tg(self, hw: TGHomework):
         await hw.show_homework()
+
+    async def send_hw_to_tg(self, hw: TGHomework, message: str):
+        await hw.send_link(message)
 
 
 sync_funcs = sync.methods(AsyncClass())
@@ -188,3 +202,10 @@ def open_homework_in_tg(telegram_id: int, homework_id: int):
                     homework_id=homework_id)
     hw.init_homework()
     sync_funcs.open_hw_in_tg(hw)
+
+
+def send_link_to_tg(telegram_id: int, homework_id: int, message: str = None):
+    hw = TGHomework(telegram_id=telegram_id,
+                    homework_id=homework_id)
+    hw.init_homework()
+    sync_funcs.send_hw_to_tg(hw, message)

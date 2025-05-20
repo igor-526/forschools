@@ -156,6 +156,7 @@ async function homeworkAPIGetItem(homeworkID){
     return await APIGetToObject(request)
 }
 
+// Deprecated
 async function homeworkAPISendTelegram(homeworkID, tgID=null){
     let url = `/api/v1/homeworks/${homeworkID}/edit/`
     if (tgID){
@@ -163,6 +164,18 @@ async function homeworkAPISendTelegram(homeworkID, tgID=null){
     }
     const request = await fetch(url)
     return await APIGetToObject(request)
+}
+
+async function homeworkAPISendTG(homeworkID, fd){
+    const request = await fetch(`/api/v1/homeworks/${homeworkID}/send_tg/`, {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+        body: fd
+    })
+    return APIPostPatchToObject(request)
 }
 
 async function homeworkAPIReplaceTeacher(teacherID, homework){

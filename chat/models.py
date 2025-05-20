@@ -1,7 +1,7 @@
-from typing import Dict
-
 from django.db import models
 from django.utils import timezone
+
+from chat.utils import chat_message_get_readtime
 from material.models import File
 
 MESSAGE_PROFILE_TYPE_CHOICES = (
@@ -115,24 +115,13 @@ class Message(models.Model):
     def __str__(self):
         return self.message
 
-    def get_readtime(self) -> Dict[str, int]:
-        readtime = timezone.now()
-        readtime = {
-            "year": readtime.year,
-            "month": readtime.month,
-            "day": readtime.day,
-            "hour": readtime.hour,
-            "minute": readtime.minute,
-            "second": readtime.second,
-        }
-        return readtime
-
-    def set_read(self, user_id, usertype=0) -> None:
-        self.read_data[f'{usertype}_{user_id}'] = self.get_readtime()
+    def set_read(self, user_id: int, usertype=0) -> None:
+        self.read_data[f'{usertype}_{user_id}'] = chat_message_get_readtime()
+        print(self.read_data)
         self.save()
 
     async def aset_read(self, user_id, usertype=0) -> None:
-        self.read_data[f'{usertype}_{user_id}'] = self.get_readtime()
+        self.read_data[f'{usertype}_{user_id}'] = chat_message_get_readtime()
         await self.asave()
 
 

@@ -1,15 +1,19 @@
 from typing import List
+
+from django.db.models import QuerySet
 from rest_framework import serializers
 from learning_plan.models import LearningPlan
 from learning_plan.permissions import get_can_see_plan
 from lesson.models import Lesson
 from material.utils import MaterialFileUploader
+from profile_management.models import NewUser
 from profile_management.serializers import NewUserNameOnlyListSerializer
 from material.serializers import MaterialListSerializer
 from material.serializers import FileSerializer
 from tgbot.utils import send_homework_answer_tg, send_homework_tg
 from .permissions import get_delete_log_permission, get_can_accept_log_permission
 from .models import Homework, HomeworkLog, HomeworkGroups
+from rest_framework.request import Request
 
 
 class HomeworkSerializer(serializers.ModelSerializer):
@@ -17,37 +21,49 @@ class HomeworkSerializer(serializers.ModelSerializer):
     teacher = NewUserNameOnlyListSerializer()
     materials = MaterialListSerializer(many=True)
     lesson_info = serializers.SerializerMethodField(read_only=True)
-    actions = serializers.SerializerMethodField()
+    actions = serializers.SerializerMethodField(read_only=True)
+    send_tg = serializers.SerializerMethodField(read_only=True)
+
+    hw_lesson: Lesson = None
+    hw_learning_plan: LearningPlan = None
+    hw_curators: QuerySet[NewUser] = None
+    request: Request
 
     class Meta:
         model = Homework
         fields = '__all__'
 
-    def get_lesson_info(self, obj):
-        lesson = obj.get_lesson()
-        if lesson:
-            plan = lesson.get_learning_plan()
+    def __init__(self, *args, **kwargs):
+        hw = args[0]
+        super(HomeworkSerializer, self).__init__(*args, **kwargs)
+        self.request = self.context.get('request')
+        self.hw_lesson = hw.get_lesson()
+        self.hw_learning_plan = self.hw_lesson.get_learning_plan() if self.hw_lesson else None
+        self.hw_curators = self.hw_learning_plan.curators.all() if self.hw_learning_plan else None
+
+    def get_lesson_info(self, obj: Homework):
+        if self.hw_lesson:
             result = {
-                "id": lesson.id,
-                "name": lesson.name,
+                "id": self.hw_lesson.id,
+                "name": self.hw_lesson.name,
             }
-            if get_can_see_plan(self.context.get('request'), plan, lesson):
+            if self.hw_learning_plan and get_can_see_plan(self.context.get('request'), self.hw_learning_plan, self.hw_lesson):
                 result['plan'] = {
-                    "id": plan.id,
+                    "id": self.hw_learning_plan.id,
                     "teacher": NewUserNameOnlyListSerializer(
-                        plan.teacher,
+                        self.hw_learning_plan.teacher,
                         many=False
                     ).data,
                     "listeners": NewUserNameOnlyListSerializer(
-                        plan.listeners.all(),
+                        self.hw_learning_plan.listeners.all(),
                         many=True
                     ).data,
                     "curators": NewUserNameOnlyListSerializer(
-                        plan.curators.all(),
+                        self.hw_curators,
                         many=True
                     ).data,
                     "methodist": NewUserNameOnlyListSerializer(
-                        plan.metodist,
+                        self.hw_learning_plan.metodist,
                         many=False
                     ).data
                 }
@@ -106,6 +122,38 @@ class HomeworkSerializer(serializers.ModelSerializer):
         actions.extend(get_cancel_actions(last_log, plan))
         actions.extend(get_edit_actions(last_log, plan))
         return actions
+
+    def get_send_tg(self, obj: Homework):
+        user_groups = self.request.user.groups.values_list('name', flat=True)
+        result = {}
+        if (("Listener" in user_groups or
+                "Teacher" in user_groups or
+                "Curator" in user_groups or
+                "Metodist" in user_groups or
+                "Admin" in user_groups) and
+                (self.request.user != obj.teacher) and
+                (obj.teacher.get_has_tg())):
+            result['teacher'] = NewUserNameOnlyListSerializer(
+                obj.teacher,
+                many=False
+            ).data
+        if (("Teacher" in user_groups or
+                "Curator" in user_groups or
+                "Metodist" in user_groups or
+                "Admin" in user_groups)):
+            if self.request.user != self.hw_learning_plan.metodist and self.hw_learning_plan.metodist.get_has_tg():
+                result['methodist'] = NewUserNameOnlyListSerializer(
+                    self.hw_learning_plan.metodist,
+                    many=False
+                ).data
+            if obj.listener.get_has_tg():
+                result['listener'] = NewUserNameOnlyListSerializer(
+                    obj.listener,
+                    many=False
+                ).data
+            if self.request.user.get_has_tg():
+                result['self'] = {"id": self.request.user.id}
+        return result
 
 
 class HomeworkListSerializer(serializers.ModelSerializer):

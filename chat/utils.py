@@ -1,7 +1,6 @@
 from _operator import itemgetter
-from typing import List
-
-from chat.models import Message
+from typing import Dict
+from django.utils import timezone
 
 
 def chat_users_remove_duplicates(users):
@@ -23,17 +22,36 @@ def chat_users_sort(users):
     return [*unread_list, *has_messages_list, *no_messages_list]
 
 
+def chat_message_get_readtime() -> Dict[str, int]:
+    readtime = timezone.now()
+    readtime = {
+        "year": readtime.year,
+        "month": readtime.month,
+        "day": readtime.day,
+        "hour": readtime.hour,
+        "minute": readtime.minute,
+        "second": readtime.second,
+    }
+    return readtime
+
+
 async def aget_unread_messages(tg_note,
                                sender=None,
                                sender_user_type: int = 0,
-                               read: bool = False) -> List[Message]:
-    query = {"filter": {},
-             "exclude": {}}
+                               read: bool = False) -> list:
     user_type_self = await tg_note.aget_usertype()
+    query = {
+        "filter": {
+            'receiver_type': user_type_self,
+        },
+        "exclude": {
+            'read_data__has_key': f'{user_type_self}_{tg_note.user.id}'
+        }
+    }
+
     if sender:
         query["filter"]["sender__id"] = sender
         query["filter"]["sender_type"] = sender_user_type
-    query['exclude']['read_data__has_key'] = f'{user_type_self}_{tg_note.user.id}'
     msg_query = [msg async for msg in tg_note.user.message_receiver.filter(
         **query['filter']
     ).exclude(**query['exclude'])]

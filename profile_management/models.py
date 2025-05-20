@@ -382,11 +382,19 @@ class NewUser(AbstractUser):
             users = [get_admin_support_user(), *users]
         return users
 
-    def get_unread_messages_count(self, sender=None):
-        if sender is None:
-            return self.message_receiver.exclude(read_data__key=f'nu{self.id}').count()
-        else:
-            return self.message_receiver.filter(sender=sender).exclude(read_data__key=f'nu{self.id}').count()
+    def get_unread_messages_count(self, sender=None, sender_type=0):
+        query = {
+            "filter": {
+                "receiver_type": 0,
+            },
+            "exclude": {
+                "read_data__key": f'0_{self.id}'
+            },
+        }
+        if sender:
+            query['filter']['sender__id'] = sender
+            query['filter']['sender_type'] = sender_type
+        return self.message_receiver.filter(**query['filter']).exclude(**query['exclude']).count()
 
     def get_last_message_date(self):
         s_message = self.message_sender.order_by("-date").first()
@@ -397,6 +405,9 @@ class NewUser(AbstractUser):
             return s_message.date
         if r_message:
             return r_message.date
+
+    def get_has_tg(self):
+        return self.telegram_allowed_user.exists() or self.telegram_allowed_parent.exists()
 
 
 class Telegram(models.Model):

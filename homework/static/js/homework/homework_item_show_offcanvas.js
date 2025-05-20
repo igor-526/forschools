@@ -10,6 +10,12 @@ function homeworkItemShowOffcanvas(homeworkID){
                     mobileInfoOffcanvasAddData("Действия", homeworkOffcanvas,
                         homeworkItemShowOffcanvasGetActionsContent(request.response.id, request.response.actions, homeworkOffcanvas))
                 }
+                if (Object.keys(request.response.send_tg)){
+                    homeworkOffcanvas.addData("Отправка",
+                        homeworkItemShowOffcanvasGetSendContent(
+                            request.response.id, request.response.send_tg
+                        ))
+                }
                 if (request.response.materials.length){
                     homeworkOffcanvas.addData("Материалы",
                         homeworkItemShowOffcanvasGetMaterialsContent(
@@ -172,6 +178,107 @@ function homeworkItemShowOffcanvasGetActionsContent(homeworkID, actions=[], home
     }
 
     return actionsElements
+}
+
+function homeworkItemShowOffcanvasGetSendContent(homeworkID, contacts={}){
+    function send(userId, method, message="", sendTGModal){
+        const fd = new FormData()
+        fd.set("user_id", userId)
+        fd.set("method", method)
+        if (message !== ""){
+            fd.set("message", message)
+        }
+        homeworkAPISendTG(homeworkID, fd).then(request => {
+            sendTGModal.close()
+            switch (request.status){
+                case 200:
+                    showSuccessToast("Успешная отправка")
+                    break
+                case 400:
+                    showErrorToast(request.response.error)
+                    break
+                case 403:
+                    showErrorToast("Нет доступа для отправки")
+                    break
+                default:
+                    showErrorToast()
+                    break
+            }
+        })
+    }
+
+    function buttonListener(userId, method){
+        const textAreaDiv = document.createElement("div")
+        textAreaDiv.classList.add("mb-3")
+        const textAreaLabel = document.createElement("label")
+        textAreaLabel.for = "hwOffcanvasSendTGField"
+        textAreaLabel.classList.add("form-label")
+        textAreaLabel.innerHTML = "Сообщение:"
+        const textAreaInput = document.createElement("textarea")
+        textAreaInput.id = "hwOffcanvasSendTGField"
+        textAreaInput.type = "text"
+        textAreaInput.classList.add("form-control")
+        textAreaInput.rows = 5
+        textAreaInput.value = "Вам направлено ДЗ"
+        const textAreaInvalidFeedback = document.createElement("div")
+        textAreaInvalidFeedback.classList.add("invalid-feedback")
+        textAreaDiv.insertAdjacentElement("beforeend", textAreaLabel)
+        textAreaDiv.insertAdjacentElement("beforeend", textAreaInput)
+        textAreaDiv.insertAdjacentElement("beforeend", textAreaInvalidFeedback)
+        const sendButton = document.createElement("button")
+        sendButton.type = "button"
+        sendButton.classList.add("btn", "btn-primary")
+        sendButton.innerHTML = "Отправить"
+        const cancelModal = mobileInfoModalSet("Отправка ДЗ",
+            [textAreaDiv], [sendButton]
+        )
+        sendButton.addEventListener("click", function () {
+            const validation = universalFieldValidator([
+                {
+                    name: "message",
+                    inputElement: textAreaInput,
+                    errorElement: textAreaInvalidFeedback,
+                    error: null,
+                    min_length: 0,
+                    max_length: 2000,
+                }
+            ])
+            if (validation){
+                send(userId, method, textAreaInput.value.trim(), cancelModal)
+            }
+        })
+    }
+
+    function getButton(text="", userId, method){
+        const btn = document.createElement("button")
+        btn.classList.add("btn", "btn-primary", "w-100", "my-1")
+        btn.type = "button"
+        btn.innerHTML = `<i class="bi bi-telegram me-2"></i>${text}`
+        btn.addEventListener("click", function () {
+            buttonListener(userId, method)
+        })
+        return btn
+    }
+
+    const sendElements = []
+    if (contacts.hasOwnProperty("self")){
+        sendElements.push(getButton("Себе (ссылка)", contacts.self.id, "link"))
+        sendElements.push(getButton("Себе (открыть)", contacts.self.id, "open"))
+    }
+    if (contacts.hasOwnProperty("teacher")){
+        sendElements.push(getButton(`Преподаватель: ${contacts.teacher.first_name} ${contacts.teacher.last_name}`,
+            contacts.teacher.id, "link"))
+    }
+    if (contacts.hasOwnProperty("listener")){
+        sendElements.push(getButton(`Ученик: ${contacts.listener.first_name} ${contacts.listener.last_name}`,
+            contacts.listener.id, "link"))
+    }
+    if (contacts.hasOwnProperty("methodist")){
+        sendElements.push(getButton(`Методист: ${contacts.methodist.first_name} ${contacts.methodist.last_name}`,
+            contacts.methodist.id, "link"))
+    }
+
+    return sendElements
 }
 
 function homeworkItemShowOffcanvasGetMaterialsContent(homeworkID, homeworkOffcanvas, materials=[]){

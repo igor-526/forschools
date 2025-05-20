@@ -12,7 +12,8 @@ from lesson.models import Lesson
 from lesson.permissions import CanReplaceTeacherMixin
 from material.models import File, Material
 from material.utils import get_type_by_ext
-from tgbot.funcs.homeworks.homework_show import open_homework_in_tg
+from profile_management.models import NewUser
+from tgbot.funcs.homeworks.homework_show import open_homework_in_tg, send_link_to_tg
 from tgbot.utils import (send_homework_tg,
                          send_homework_answer_tg, sync_funcs)
 from chat.tg_utils import tg_sync_chat_funcs
@@ -254,6 +255,7 @@ class HomeworkItemPageInfoAPIView(LoginRequiredMixin, APIView):
         })
 
 
+# Deprecated
 class HomeworkItemPageSendTGAPIView(LoginRequiredMixin, APIView):
     def get(self, request, *args, **kwargs):
         try:
@@ -269,7 +271,33 @@ class HomeworkItemPageSendTGAPIView(LoginRequiredMixin, APIView):
                                 status=status.HTTP_400_BAD_REQUEST)
             tg_id = tg_note.tg_id
         open_homework_in_tg(tg_id, hw.id)
-        return Response(data={},
+        return Response(data={"status": "ok"},
+                        status=status.HTTP_200_OK)
+
+
+class HomeworkItemPageSendTelegramAPIView(LoginRequiredMixin, APIView):
+    def post(self, request: Request, pk: int, *args, **kwargs):
+        try:
+            homework = Homework.objects.get(pk=pk)
+        except Homework.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        user_id = request.POST.get("user_id")
+        if not user_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = NewUser.objects.get(pk=user_id)
+        except NewUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        user_telegrams = user.telegram_allowed_user.filter(user=user).values_list("tg_id", flat=True)
+        if not user_telegrams:
+            return Response(data={"error": "Нет ни одного авторизованного под этим пользователем Telegram"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        for tg_id in user_telegrams:
+            if request.POST.get("method") == "open":
+                open_homework_in_tg(tg_id, homework.id)
+            else:
+                send_link_to_tg(tg_id, homework.id, request.POST.get("message"))
+        return Response(data={"status": "ok"},
                         status=status.HTTP_200_OK)
 
 
