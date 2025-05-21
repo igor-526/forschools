@@ -2,27 +2,34 @@ from .models import HomeworkLog, Homework
 
 
 def get_delete_log_permission(log: HomeworkLog, request):
-    if (request.user.groups.filter(name__in=['Admin', 'Metodist'])
-            .exists() or request.user == log.user):
+    user_groups = request.user.get_groups()
+    all_logs = [{
+        "log_id": log_note.id,
+        "log_status": log_note.status
+    } for log_note in (HomeworkLog.objects.filter(homework=log.homework)
+                       .order_by('-dt'))]
+    deletable_logs = []
+    for log_note in all_logs:
+        if not deletable_logs:
+            deletable_logs.append(log_note)
+        else:
+            if log_note["log_status"] == deletable_logs[-1]["log_status"]:
+                deletable_logs.append(log_note)
+            else:
+                break
+    deletable_logs = [log["log_id"] for log in deletable_logs]
+    if "Admin" in user_groups or "Metodist" in user_groups or request.user == log.user and "Listener" not in user_groups:
         if log.status in [1, 2, 3]:
             return False
         if log.homework.get_status().status in [1, 2]:
             return False
-        all_logs = [{
-            "log_id": log_note.id,
-            "log_status": log_note.status
-        } for log_note in (HomeworkLog.objects.filter(homework=log.homework)
-                           .order_by('-dt'))]
-        deletable_logs = []
-        for log_note in all_logs:
-            if not deletable_logs:
-                deletable_logs.append(log_note)
-            else:
-                if log_note["log_status"] == deletable_logs[-1]["log_status"]:
-                    deletable_logs.append(log_note)
-                else:
-                    break
-        deletable_logs = [log["log_id"] for log in deletable_logs]
+        return log.id in deletable_logs
+    if "Listener" in user_groups and request.user == log.user:
+        print("FFF")
+        if log.status != 3:
+            return False
+        if log.homework.get_status().status != 3:
+            return False
         return log.id in deletable_logs
     return False
 

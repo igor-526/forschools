@@ -1,5 +1,7 @@
 from aiogram import types
-from profile_management.models import Telegram
+from django.db.models import Q
+
+from profile_management.models import Telegram, NewUser
 from tgbot.create_bot import bot
 from tgbot.keyboards.multiuser import get_multiuser_keyboard
 
@@ -20,13 +22,22 @@ async def f_multiuser_generate_message(message: types.Message):
                          reply_markup=get_multiuser_keyboard(users))
 
 
-async def f_multiuser_change_user(callback: types.CallbackQuery, new_user_id: int):
-    tg_note = await Telegram.objects.select_related("user").aget(tg_id=callback.from_user.id)
+async def f_multiuser_change_user(callback: types.CallbackQuery,
+                                  new_user_id: int) -> None:
+    tg_note = await Telegram.objects.select_related("user").aget(
+        tg_id=callback.from_user.id
+    )
     try:
-        user = await tg_note.allowed_users.aget(id=new_user_id)
-    except Exception:
+        if not Telegram.objects.filter(
+                Q(allowed_users=new_user_id) |
+                Q(allowed_parents=new_user_id)
+        ).aexists():
+            await bot.send_message(chat_id=callback.from_user.id,
+                                   text="Недостаточно прав")
+        user = await NewUser.objects.aget(id=new_user_id)
+    except NewUser.DoesNotExist:
         await bot.send_message(chat_id=callback.from_user.id,
-                               text="Недостаточно прав")
+                               text="Пользователь не найден")
         return None
     tg_note.user = user
     await tg_note.asave()

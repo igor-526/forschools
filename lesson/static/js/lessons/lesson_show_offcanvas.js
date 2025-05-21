@@ -289,7 +289,7 @@ function lessonShowGetPlaceContent(lessonID, place){
     goButton.innerHTML = '<i class="bi bi-globe2 me-1"></i> Перейти'
     goButton.type = "button"
     goButton.addEventListener("click", function () {
-        location.assign(place.url)
+        window.open(place.url, "_blank")
     })
     content.push(goButton)
 
@@ -615,7 +615,7 @@ function lessonItemSetAddHWOffcanvas(lessonID, lessonOffcanvas){
 
     if (tgID){
         const tgButton = document.createElement("button")
-        tgButton.classList.add("btn", "btn-primary", "w-100")
+        tgButton.classList.add("btn", "btn-primary", "w-100", "mb-5")
         tgButton.innerHTML = "Задать через TG"
         tgButton.type = "button"
         tgButton.addEventListener("click", function () {
@@ -652,7 +652,7 @@ function lessonItemSetAddHWOffcanvas(lessonID, lessonOffcanvas){
     addTextMaterialFieldButton.innerHTML = 'Добавить текст'
     addTextMaterialFieldButton.addEventListener("click", addTextField)
     const sendHWButton = document.createElement("button")
-    sendHWButton.classList.add("btn", "btn-success", "w-100", "my-1")
+    sendHWButton.classList.add("btn", "btn-success", "w-100", "mt-5")
     sendHWButton.type = "button"
     sendHWButton.innerHTML = 'Задать ДЗ'
     sendHWButton.addEventListener("click", sendListener)

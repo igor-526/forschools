@@ -138,6 +138,7 @@ function homeworkItemShowOffcanvasGetActionsContent(homeworkID, actions=[], home
         })
         actionsElements.push(checkBtn)
     }
+
     if (actions.includes("edit")){
         const addMaterialsBlock = document.createElement("div")
         addMaterialsBlock.classList.add("row", "my-2", "mx-0")
@@ -160,6 +161,26 @@ function homeworkItemShowOffcanvasGetActionsContent(homeworkID, actions=[], home
             addMaterialsButton.classList.add("me-1")
             addMaterialsTGButton.type = "button"
             addMaterialsTGButton.innerHTML = '<i class="bi bi-plus-lg me-1"></i><i class="bi bi-telegram me-2"></i>Материалы'
+            addMaterialsTGButton.addEventListener("click", function () {
+                const fd = new FormData()
+                fd.set("method", "edit")
+                homeworkAPISendTG(homeworkID, fd).then(request => {
+                    switch (request.status){
+                        case 200:
+                            showSuccessToast("Проверьте Telegram")
+                            break
+                        case 400:
+                            showErrorToast(request.response.error)
+                            break
+                        case 403:
+                            showErrorToast("Нет доступа для редактирования ДЗ")
+                            break
+                        default:
+                            showErrorToast()
+                            break
+                    }
+                })
+            })
             addMaterialsTGButtonCol.insertAdjacentElement("beforeend", addMaterialsTGButton)
             addMaterialsBlock.insertAdjacentElement("beforeend", addMaterialsTGButtonCol)
         }

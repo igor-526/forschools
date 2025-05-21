@@ -1,7 +1,9 @@
+from typing import List
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
 from random import randint
-from django.db.models import Q, Count
+from django.db.models import Q, Count, QuerySet
 from django.utils import timezone
 
 from chat.models import Message
@@ -148,6 +150,9 @@ class NewUser(AbstractUser):
             return "success"
         except Group.DoesNotExist:
             return "Произошла ошибка при определении роли"
+
+    def get_groups(self) -> QuerySet[str]:
+        return self.groups.values_list('name', flat=True).all()
 
     def set_engagement_channel(self, eng_ch, can_create=False):
         if eng_ch is None:

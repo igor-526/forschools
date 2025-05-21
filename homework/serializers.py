@@ -151,8 +151,8 @@ class HomeworkSerializer(serializers.ModelSerializer):
                     obj.listener,
                     many=False
                 ).data
-            if self.request.user.get_has_tg():
-                result['self'] = {"id": self.request.user.id}
+        if self.request.user.get_has_tg():
+            result['self'] = {"id": self.request.user.id}
         return result
 
 
