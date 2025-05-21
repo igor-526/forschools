@@ -141,7 +141,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
                 "Curator" in user_groups or
                 "Metodist" in user_groups or
                 "Admin" in user_groups)):
-            if self.request.user != self.hw_learning_plan.metodist and self.hw_learning_plan.metodist.get_has_tg():
+            if self.hw_learning_plan and self.hw_learning_plan.metodist and (self.request.user != self.hw_learning_plan.metodist and self.hw_learning_plan.metodist.get_has_tg()):
                 result['methodist'] = NewUserNameOnlyListSerializer(
                     self.hw_learning_plan.metodist,
                     many=False
