@@ -1,0 +1,50 @@
+{% extends 'base_mobile.html' %}
+{% load static %}
+{% block static_css %}
+    <link rel="stylesheet" href="{% static 'css/chat/chat_mobile.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="chatsMobileUsersSelectOffcanvas">
+        <div class="offcanvas-header">
+            <h5>Диалоги</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body px-0">
+            {% if is_admin %}
+                <button id="chatsMobileUsersSelectOffcanvasSelectFromUser" class="btn btn-outline-primary mb-3 w-100"><i class="bi bi-people me-2"></i>Выбрать пользователя</button>
+            {% endif %}
+            <div class="input-group mb-3">
+                <input id="chatsMobileUsersSelectOffcanvasSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                <button id="chatsMobileUsersSelectOffcanvasSearchErase" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+            </div>
+            <div id="chatsMobileUsersSelectOffcanvasList" class="list-group"></div>
+        </div>
+    </div>
+
+    <div id="chatsMobileUsersBlock" class="mx-0 mb-4 position-sticky d-flex justify-content-between">
+        <div class="d-flex align-items-center">
+            <button id="chatsMobileUsersBlockUsersSelectButton" class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#chatsMobileUsersSelectOffcanvas"><i class="bi bi-people"></i></button>
+        </div>
+        <div class="d-flex align-items-center">
+            <p id="chatsMobileCurrentUser" class="m-0 fw-bold">Выберите пользователя</p>
+        </div>
+    </div>
+    <div id="chatsMobileMessagesBlock"></div>
+    <div class="d-none" id="chatsMessagesSendPlaceHolder"></div>
+    <div class="d-none" id="chatsMessagesSendBlock">
+        <div class="input-group">
+            <button id="chatsMessagesSendBlockAttachmentButton" class="btn btn-outline-primary"><i class="bi bi-paperclip"></i></button>
+            <input id="chatsMessagesSendBlockAttachmentInput" type="file" multiple class="form-control d-none">
+            <textarea id="chatsMessagesSendBlockTextArea" rows="1" type="text" class="form-control" placeholder="Введите сообщение.." aria-label=""></textarea>
+            <button id="chatsMessagesSendBlockSendButton" class="btn btn-outline-primary"><i class="bi bi-send"></i></button>
+            <div id="chatsMessagesSendBlockError" class="invalid-feedback"></div>
+        </div>
+        <div id="chatsMessagesSendBlockFilesPreview"></div>
+    </div>
+{% endblock %}
+{% block static_js %}
+    <script src="{% static 'js/universal_field_validator.js' %}"></script>
+    <script src="{% static 'js/users/users_api.js' %}"></script>
+    <script src="{% static 'js/chat/chatAPI.js' %}"></script>
+    <script src="{% static 'js/chat/mobile/chat.js' %}"></script>
+{% endblock %}

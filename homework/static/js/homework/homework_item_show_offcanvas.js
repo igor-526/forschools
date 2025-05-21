@@ -19,7 +19,8 @@ function homeworkItemShowOffcanvas(homeworkID){
                 if (request.response.materials.length){
                     homeworkOffcanvas.addData("Материалы",
                         homeworkItemShowOffcanvasGetMaterialsContent(
-                            request.response.id, homeworkOffcanvas, request.response.materials
+                            request.response.id, homeworkOffcanvas,
+                            request.response.materials, request.response.actions.includes("edit")
                         ))
                 }
 
@@ -302,7 +303,8 @@ function homeworkItemShowOffcanvasGetSendContent(homeworkID, contacts={}){
     return sendElements
 }
 
-function homeworkItemShowOffcanvasGetMaterialsContent(homeworkID, homeworkOffcanvas, materials=[]){
+function homeworkItemShowOffcanvasGetMaterialsContent(homeworkID, homeworkOffcanvas,
+                                                      materials=[], can_edit=false){
     function setDeleteMaterialModal(matID){
         const p = document.createElement("p")
         p.innerHTML = "Действие необратимо"
@@ -337,7 +339,7 @@ function homeworkItemShowOffcanvasGetMaterialsContent(homeworkID, homeworkOffcan
         })
     }
 
-    return [mobileInfoMaterialsGetBlock(materials, setDeleteMaterialModal)]
+    return [mobileInfoMaterialsGetBlock(materials, can_edit ? setDeleteMaterialModal : null)]
 }
 
 function homeworkItemShowOffcanvasGetLogsInfo(homeworkID, homeworkOffcanvas, logs=[], last=true){

@@ -7,6 +7,10 @@ from dls.settings import MATERIAL_FORMATS
 
 class ChatPageTemplateView(LoginRequiredMixin, TemplateView):
     template_name = "chat_main.html"
+    def get_template_names(self):
+        if self.request.user_agent.is_mobile:
+            return 'mobile/chats_mobile.html'
+        return 'chat_main.html'
 
     def get(self, request, *args, **kwargs):
         context = {
@@ -15,7 +19,9 @@ class ChatPageTemplateView(LoginRequiredMixin, TemplateView):
                 can_see_other_users_messages(request),
             'can_add_group_chat': True
         }
-        return render(request, self.template_name, context)
+        if self.request.user_agent.is_mobile:
+            context['menu'] = "msg"
+        return render(request, self.get_template_names(), context)
 
 
 class ChatAdminPageTemplateView(CanSeeAdminChats, TemplateView):

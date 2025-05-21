@@ -260,9 +260,9 @@ class NewUser(AbstractUser):
     def get_users_for_chat(self, from_user=False):
         def get_admin_support_user():
             info = {
-                "id": None,
+                "id": 0,
                 "name": "Администратор",
-                "usertype": 3,
+                "usertype": 2,
                 "unread": 0,
                 "photo": "/media/profile_pictures/base_avatar.png",
                 "last_message_text": None,
@@ -300,7 +300,14 @@ class NewUser(AbstractUser):
                   sender_type=0)
             ).order_by('-date').first()
             if last_message:
-                info["last_message_text"] = last_message.message[:50] if last_message.message else ""
+                last_message_text = last_message.message
+                if last_message_text:
+                    last_message_text = last_message_text.replace('<br>', ' ')
+                    if len(last_message_text) > 40:
+                        last_message_text = f'{last_message_text[:38]}...'
+                    info["last_message_text"] = last_message_text
+                else:
+                    info["last_message_text"] = '[Вложения]'
                 info["last_message_date"] = last_message.date
             return info
 
@@ -397,7 +404,7 @@ class NewUser(AbstractUser):
             },
         }
         if sender:
-            query['filter']['sender__id'] = sender
+            query['filter']['sender__id'] = sender.id
             query['filter']['sender_type'] = sender_type
         return self.message_receiver.filter(**query['filter']).exclude(**query['exclude']).count()
 

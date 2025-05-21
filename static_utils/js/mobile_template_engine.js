@@ -31,7 +31,55 @@ function mobileTemplateEngine(){
             location.assign("/homeworks")
         }
     })
+    mobileNavbarChatButton.addEventListener("click", function () {
+        if (mobileNavbarChatButton.classList.contains("active") && window.scrollY > 0){
+            window.scrollTo(0, 0)
+        } else {
+            location.assign("/messages")
+        }
+    })
 
+    mobileTemplateEngineSetDropdownMenu()
+}
+
+function mobileTemplateEngineSetDropdownMenu(){
+    function logout(){
+        location.assign("/logout")
+    }
+
+    function setDropdownElement(name="", listenerFunction = null){
+        const a = document.createElement("a")
+        a.innerHTML = name
+        a.href = "#"
+        a.classList.add("mobile-nav-dropdown-element")
+        mobileNavbarDropdown.insertAdjacentElement("beforeend", a)
+        if (listenerFunction){
+            a.addEventListener("click", (e) => {
+                e.preventDefault()
+                listenerFunction()
+            })
+        }
+    }
+
+    mobileNavbarMenuButton.addEventListener("click", function () {
+        if (mobileNavbarDropdown.classList.contains("d-none")){
+            mobileNavbarDropdown.classList.add("d-block")
+            mobileNavbarDropdown.classList.remove("d-none")
+        } else {
+            mobileNavbarDropdown.classList.remove("d-block")
+            mobileNavbarDropdown.classList.add("d-none")
+        }
+    })
+    window.addEventListener("click", (e) => {
+        if (!e.target.matches('.mobile-nav-dropdown-element')){
+            if (mobileNavbarDropdown.classList.contains("d-block")){
+                mobileNavbarDropdown.classList.remove("d-block")
+                mobileNavbarDropdown.classList.add("d-none")
+            }
+        }
+    })
+
+    setDropdownElement('<i class="bi bi-box-arrow-left me-2"></i>Выход', logout)
 }
 
 const mobileTitleBlock = document.querySelector("#mobileTitle")
@@ -42,6 +90,9 @@ const mobileNavbarActiveButtonSrc = mobileNavbarActiveButton.src
 const startMobileTitleBlockHeight = mobileTitleBlock.clientHeight
 const mobileNavbarLessonsButton = document.querySelector("#mobileNavbarLessonsButton")
 const mobileNavbarHomeworkButton = document.querySelector("#mobileNavbarHomeworkButton")
+const mobileNavbarChatButton = document.querySelector("#mobileNavbarChatButton")
+const mobileNavbarMenuButton = document.querySelector("#mobileNavbarMenuButton")
+const mobileNavbarDropdown = document.querySelector("#mobileNavbarDropdown")
 const mobileTitleH = document.querySelector("#mobileTitleH")
 
 mobileTemplateEngine()

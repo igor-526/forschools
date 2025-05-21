@@ -1,0 +1,86 @@
+#chatsMobileUsersBlock {
+    top: 60px;
+    background-color: white;
+    min-height: 50px;
+}
+
+#chatsMobileCurrentUser {
+    font-size: 18px;
+    color: grey;
+}
+
+.chats-mobile-user-profile-photo{
+    height: 35px;
+    border-radius: 20px;
+}
+
+.chats-mobile-user-data{
+    color: grey;
+}
+
+.chats-mobile-user-name{
+    font-weight: 600;
+}
+
+.chats-mobile-message-block-sender{
+    display: flex;
+    justify-content: end;
+}
+
+.chats-mobile-message-block-receiver{
+    display: flex;
+    justify-content: start;
+}
+
+.chats-mobile-message-sender{
+    background-color: rgba(48, 132, 255, 0.37);
+    width: fit-content;
+    height: fit-content;
+    padding: 10px 10px 20px 10px;
+    border: 1px solid #afafaf;
+    border-radius: 10px 10px 0 10px;
+    margin: 5px 0;
+}
+
+.chats-mobile-message-data{
+    font-size: 12px;
+}
+
+.chats-mobile-message-receiver{
+    background-color: #cccccc;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px 10px 7px 10px;
+    border: 1px solid #afafaf;
+    border-radius: 10px 10px 10px 0;
+    margin: 5px 0;
+}
+
+#chatsMessagesSendBlock{
+    position: fixed;
+    bottom: 75px;
+    width: 95%;
+}
+
+#chatsMessagesSendBlock button{
+    background-color: white;
+}
+
+#chatsMessagesSendBlock button:active{
+    background-color: #0d6efd;
+}
+
+#chatsMessagesSendBlock button:focus{
+    color: #0d6efd;
+}
+
+#chatsMessagesSendBlockFilesPreview{
+    background-color: white;
+}
+
+.chats-mobile-message-block-username {
+    color: grey;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid #AFAFAFFF;
+}

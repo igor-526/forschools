@@ -282,7 +282,7 @@ async def chats_notify(chat_message_id: int):
         else:
             msg_text = f"<b>Cообщение от {sender_full_name}</b>\n\n"
 
-        msg_text += chat_message.message
+        msg_text += chat_message.message if chat_message.message else ""
         msg_text = msg_text.replace("<br>", "\n")
         for tg_id in tg_ids:
             msg_result = await bot.send_message(

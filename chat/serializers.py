@@ -153,10 +153,16 @@ class ChatAdminMessageSerializer(serializers.ModelSerializer):
     sender = NewUserNameOnlyListSerializer(many=False, read_only=True)
     receiver = NewUserNameOnlyListSerializer(many=False, read_only=True)
     files = FileSerializer(many=True, read_only=True)
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = AdminMessage
         fields = "__all__"
+
+    def get_role(self, obj):
+        if obj.sender.id == self.context.get("request").user.id:
+            return "s"
+        return "r"
 
     def create(self, validated_data):
         request = self.context.get("request")

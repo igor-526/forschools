@@ -64,3 +64,19 @@ body {
   font-weight: bold;
   color: grey;
 }
+
+.mobile-nav-dropdown-content {
+  position: fixed;
+  width: fit-content;
+  bottom: 65px;
+  right: 0;
+  background-color: #f1f1f1;
+  z-index: 1;
+}
+
+.mobile-nav-dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
