@@ -22,6 +22,7 @@
     border: 1px solid #afafaf;
     border-radius: 10px 10px 0 10px;
     margin: 5px 0;
+    overflow-wrap: break-word;
 }
 
 .chats-message-receiver p{

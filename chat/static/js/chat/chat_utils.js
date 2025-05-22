@@ -165,3 +165,17 @@ function chatShowMessagesGetAttachmentsElement(attachments = [], mobile=false){
     })
     return attAll
 }
+
+function chatUtilsPrepareMessage(message = "") {
+    if (message === null){
+        return ""
+    }
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return message.replace(urlRegex, function(url) {
+        let linkText = url
+        if (url.length > 50) {
+            linkText = url.substring(0, 50) + '...'
+        }
+        return `<a href="${url}">${linkText}</a>`
+    })
+}

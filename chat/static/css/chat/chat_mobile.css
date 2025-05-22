@@ -36,6 +36,8 @@
     background-color: rgba(48, 132, 255, 0.37);
     width: fit-content;
     height: fit-content;
+    max-width: 100%;
+    overflow-wrap: break-word;
     padding: 10px 10px 20px 10px;
     border: 1px solid #afafaf;
     border-radius: 10px 10px 0 10px;
@@ -50,6 +52,8 @@
     background-color: #cccccc;
     width: fit-content;
     height: fit-content;
+    max-width: 100%;
+    overflow-wrap: break-word;
     padding: 10px 10px 7px 10px;
     border: 1px solid #afafaf;
     border-radius: 10px 10px 10px 0;

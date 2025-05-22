@@ -242,7 +242,7 @@ function chatMobileShowMessages(messages = [], newMessage=false){
         messageMainBlock.insertAdjacentElement("beforeend", messageBlock)
 
         const messageText = document.createElement("p")
-        messageText.innerHTML = message.message
+        messageText.innerHTML = chatUtilsPrepareMessage(message.message)
         messageBlock.insertAdjacentElement("beforeend", messageText)
 
         if (message.files.length > 0){

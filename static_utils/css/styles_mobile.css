@@ -1,6 +1,7 @@
 body {
   background-color: #e1e1e1;
   transition: background-color 500ms ease-in-out;
+  overflow-x: hidden;
 }
 
 #mobileTitle {
