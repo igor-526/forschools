@@ -76,6 +76,7 @@ function lessonsGet(more=false){
         lessonsTableFilterHWAgreementStatus, lessonsTableFilterPlaces).then(request => {
         switch (request.status){
             case 200:
+                console.log(request.response)
                 lessonsShow(request.response, !more)
                 request.response.length === 50 ? lessonsTableShowMoreButton.classList.remove("d-none") :
                     lessonsTableShowMoreButton.classList.add("d-none")

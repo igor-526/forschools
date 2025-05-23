@@ -41,7 +41,7 @@ def get_menu(user):
         {'name': 'Домашние задания',
          'url': reverse('homeworks'),
          'type': 'main'},
-        {'name': 'Администрирование',
+        {'name': 'Администр.',
          'type': 'dropdown',
          'menu': [
              {'name': 'Управление пользователями',
@@ -110,7 +110,7 @@ def get_menu(user):
          'url': "#",
          'type': 'main',
          'id': 'forschoolsSupport'},
-        {'name': 'Администрирование',
+        {'name': 'Администр.',
          'type': 'dropdown',
          'menu': [
              {'name': 'Управление пользователями',
@@ -205,7 +205,7 @@ def get_menu(user):
     if user.user_permissions.filter(codename="mailing_access").exists():
         admin_dropdown_index = next(
             (index for (index, d) in enumerate(menu) if
-             d["name"] == "Администрирование"), None
+             d["name"] == "Администр."), None
         )
         if admin_dropdown_index:
             menu[admin_dropdown_index]["menu"].append(
@@ -213,7 +213,7 @@ def get_menu(user):
             )
         else:
             menu.insert(-1, {
-                'name': 'Администрирование',
+                'name': 'Администр.',
                 'type': 'dropdown',
                 'menu': [
                     {'name': 'Рассылки',
