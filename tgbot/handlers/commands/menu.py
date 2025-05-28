@@ -10,6 +10,7 @@ from tgbot.funcs.homeworks.homeworks import homeworks_send_menu
 from tgbot.funcs.chats import chats_show, chats_type_message
 from tgbot.funcs.multiuser import f_multiuser_generate_message
 from tgbot.funcs.settings import generate_settings_message
+from tgbot.keyboards.menu_keyboard import get_platform_button
 
 router = Router(name=__name__)
 
@@ -49,6 +50,13 @@ async def h_mainmenu_settings(message: types.Message) -> None:
                 F.text == "Сменить аккаунт")
 async def h_mainmenu_multiuser(message: types.Message) -> None:
     await f_multiuser_generate_message(message)
+
+
+@router.message(StateFilter(None),
+                F.text == "Платформа")
+async def h_mainmenu_platform(message: types.Message) -> None:
+    await message.answer(text="Нажмите на кнопку для перехода на платформу",
+                         reply_markup=await get_platform_button(message.from_user.id))
 
 
 @router.message(StateFilter(None),

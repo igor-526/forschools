@@ -46,12 +46,8 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
         settings = True
     multiuser = await tg_note.allowed_users.acount() > 1
     await state.clear()
-    if DEBUG:
-        token = None
-    else:
-        token = tg_note.access_token
     await bot.send_message(chat_id=user_tg_id,
                            text=custom_text,
                            reply_markup=get_menu_keyboard(len(await aget_unread_messages(tg_note)),
                                                           materials, homeworks, lessons, messages,
-                                                          settings, multiuser, token))
+                                                          settings, multiuser))
