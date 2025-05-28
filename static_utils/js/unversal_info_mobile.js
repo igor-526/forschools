@@ -813,7 +813,8 @@ function universalInfoSelectionModal(
     }
     const modal = new modalEngine()
     modal.title = title
-    modal.addContent(getSearchBlock(), usersList)
+    console.log(usersList)
+    modal.addContent([getSearchBlock(), usersList])
     modal.addButtons(readyButton)
     modal.show()
 }
