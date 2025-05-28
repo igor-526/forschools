@@ -613,24 +613,22 @@ class UserHWListAPIView(LoginRequiredMixin, ListAPIView):
 class HomeworkSetCancelledAPIView(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
         try:
-            hw = Homework.objects.get(pk=kwargs.get('pk'))
+            homework = Homework.objects.get(pk=kwargs.get('pk'))
         except Homework.DoesNotExist:
-            return Response({'status': 'Ошибка! ДЗ не найдено'},
-                            status=status.HTTP_404_NOT_FOUND)
-        if hw.get_status().status in [4, 6]:
-            return Response({'status': 'Невозможно отменить ДЗ, так как '
-                                       'оно либо принято, либо уже отменено'},
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if homework.get_status().status in [4, 6]:
+            return Response({'error': 'Невозможно отменить ДЗ, так как '
+                                      'оно либо принято, либо уже отменено'},
                             status=status.HTTP_400_BAD_REQUEST)
-        hl = HomeworkLog.objects.create(
-            homework=hw,
+        HomeworkLog.objects.create(
+            homework=homework,
             user=request.user,
             comment="Домашнее задание отменено",
             status=6
         )
-        serializer = HomeworkLogSerializer(hl, many=False,
-                                           context={'request': request})
-        return Response(data={'status': 'ok',
-                              'log': serializer.data},
+        serializer = HomeworkSerializer(homework, many=False,
+                                        context={'request': request})
+        return Response(data=serializer.data,
                         status=status.HTTP_200_OK)
 
 
@@ -800,9 +798,9 @@ class HomeworkItemAgreementAPIView(LoginRequiredMixin, APIView):
         else:
             hws = [homework]
         to_agreement = HomeworkLog.objects.filter(
-                homework__id__in=[hw.id for hw in hws],
-                agreement__accepted=False
-            )
+            homework__id__in=[hw.id for hw in hws],
+            agreement__accepted=False
+        )
         accepted_dt = datetime.datetime.now()
         lesson = homework.get_lesson()
         agreement = {
@@ -829,5 +827,9 @@ class HomeworkItemAgreementAPIView(LoginRequiredMixin, APIView):
                 message=request.POST.get('comment')
             )
             tg_sync_chat_funcs.notify_message(message.id)
-        return Response(data={'status': True},
-                        status=status.HTTP_200_OK)
+        return Response(
+            data=HomeworkSerializer(
+                homework,
+                context={'request': request}).data,
+            status=status.HTTP_200_OK
+        )

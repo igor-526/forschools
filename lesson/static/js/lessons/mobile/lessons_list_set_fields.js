@@ -7,8 +7,6 @@ function lessonsMobileSetFieldsSetModal(){
     lessonsMobileSetFieldsModalTimeSwitch.checked = cookiesUtilsGet("lessonsMobFieldTime") === "1"
     lessonsMobileSetFieldsModalTeacherSwitch.checked = cookiesUtilsGet("lessonsMobFieldTeacher") === "1"
     lessonsMobileSetFieldsModalListenersSwitch.checked = cookiesUtilsGet("lessonsMobFieldListeners") === "1"
-    lessonsMobileSetFieldsModalHWButtonSwitch.checked = cookiesUtilsGet("lessonsMobFieldHWButton") === "1"
-    lessonsMobileSetFieldsModalHWCountSwitch.checked = cookiesUtilsGet("lessonsMobFieldHWCount") === "1"
     if (isAdmin){
         lessonsMobileSetFieldsModalAdminCommentSwitch.checked = cookiesUtilsGet("lessonsMobFieldAdminComment") === "1"
     }
@@ -21,8 +19,6 @@ function lessonsMobileSetFieldsAccept(){
     cookiesUtilsSet("lessonsMobFieldTime", lessonsMobileSetFieldsModalTimeSwitch.checked ? "1" : "0")
     cookiesUtilsSet("lessonsMobFieldTeacher", lessonsMobileSetFieldsModalTeacherSwitch.checked ? "1" : "0")
     cookiesUtilsSet("lessonsMobFieldListeners", lessonsMobileSetFieldsModalListenersSwitch.checked ? "1" : "0")
-    cookiesUtilsSet("lessonsMobFieldHWButton", lessonsMobileSetFieldsModalHWButtonSwitch.checked ? "1" : "0")
-    cookiesUtilsSet("lessonsMobFieldHWCount", lessonsMobileSetFieldsModalHWCountSwitch.checked ? "1" : "0")
 
     if (isAdmin) {
         cookiesUtilsSet("lessonsMobFieldAdminComment", lessonsMobileSetFieldsModalAdminCommentSwitch.checked ? "1" : "0")
@@ -37,8 +33,6 @@ const lessonsMobileSetFieldsModalDateSwitch = lessonsMobileSetFieldsModal.queryS
 const lessonsMobileSetFieldsModalTimeSwitch = lessonsMobileSetFieldsModal.querySelector("#lessonsMobileSetFieldsModalTimeSwitch")
 const lessonsMobileSetFieldsModalTeacherSwitch = lessonsMobileSetFieldsModal.querySelector("#lessonsMobileSetFieldsModalTeacherSwitch")
 const lessonsMobileSetFieldsModalListenersSwitch = lessonsMobileSetFieldsModal.querySelector("#lessonsMobileSetFieldsModalListenersSwitch")
-const lessonsMobileSetFieldsModalHWButtonSwitch = lessonsMobileSetFieldsModal.querySelector("#lessonsMobileSetFieldsModalHWButtonSwitch")
-const lessonsMobileSetFieldsModalHWCountSwitch = lessonsMobileSetFieldsModal.querySelector("#lessonsMobileSetFieldsModalHWCountSwitch")
 const lessonsMobileSetFieldsModalAdminCommentSwitch = lessonsMobileSetFieldsModal.querySelector("#lessonsMobileSetFieldsModalAdminCommentSwitch")
 const lessonsMobileSetFieldsModalAcceptButton = lessonsMobileSetFieldsModal.querySelector("#lessonsMobileSetFieldsModalAcceptButton")
 

@@ -107,6 +107,7 @@ async def command_start_handler(message: types.Message,
                 first_name=message.from_user.first_name,
                 last_name=message.from_user.last_name
             )
+            await tg_note.aupdate_access_token()
         telegrams_count = await Telegram.objects.filter(
             Q(allowed_users=user) | Q(allowed_parents=user)
         ).aexists()

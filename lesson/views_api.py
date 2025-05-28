@@ -19,8 +19,8 @@ from .models import Lesson, Place, LessonTeacherReview
 from .serializers import LessonListSerializer, LessonSerializer
 from .permissions import (CanReplaceTeacherMixin,
                           can_set_passed,
-                          can_set_not_held,
-                          CanEditLessonAdminComment)
+                          lesson_perm_can_set_not_held,
+                          CanEditLessonAdminComment, CanSetNotHeldMixin, lesson_perm_can_set_replace)
 from datetime import datetime, timedelta, date
 from .validators import validate_lesson_review_form
 
@@ -271,16 +271,41 @@ class LessonReplaceTeacherAPIView(CanReplaceTeacherMixin, APIView):
     def patch(self, request, *args, **kwargs):
         try:
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
-            lesson.replace_teacher_id = request.data.get('teacher_id')
-            lesson.save()
-            return Response(data={'status': 'ok'},
-                            status=status.HTTP_200_OK)
         except Lesson.DoesNotExist:
-            return Response(data={'error': 'Занятие не найдено'},
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if (not lesson_perm_can_set_replace(
+                lesson=lesson,
+                is_admin=self.request.user.groups.filter(name='Admin').exists(),
+        )):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        teacher_id = request.data.get('teacher_id')
+        if teacher_id is None:
+            return Response(data={"error": "Пользователь не найден"},
                             status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response(data={'error': str(e)},
+        if lesson.get_learning_plan().teacher.id == int(teacher_id):
+            lesson.replace_teacher = None
+            lesson.save()
+            return Response(
+                data=LessonSerializer(lesson,
+                                      context={"request": request}).data,
+                status=status.HTTP_200_OK
+            )
+        try:
+            new_teacher = NewUser.objects.get(pk=teacher_id)
+        except NewUser.DoesNotExist:
+            return Response(data={"error": "Пользователь не найден"},
                             status=status.HTTP_400_BAD_REQUEST)
+        if not new_teacher.groups.filter(name="Teacher").exists():
+            return Response(data={"error": "Пользователь не является "
+                                           "преподавателем"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        lesson.replace_teacher = new_teacher
+        lesson.save()
+        return Response(
+            data=LessonSerializer(lesson,
+                                  context={"request": request}).data,
+            status=status.HTTP_200_OK
+        )
 
 
 class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
@@ -361,7 +386,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
         )
         review = LessonTeacherReview.objects.create(
             **validation.get("review")
-        ) if (validation.get("status") and len(validation.get("review")) > 0)\
+        ) if (validation.get("status") and len(validation.get("review")) > 0) \
             else None
         lesson_name = request.POST.get("name").strip(" ") if (
             request.POST.get("name")) else None
@@ -385,7 +410,7 @@ class LessonSetPassedAPIView(LoginRequiredMixin, APIView):
                         status=status.HTTP_200_OK)
 
 
-class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
+class LessonSetNotHeldAPIView(CanSetNotHeldMixin, APIView):
     def get_review_form_list_data(self, rf):
         list_data = []
         if rf and rf.materials:
@@ -426,49 +451,45 @@ class LessonSetNotHeldAPIView(LoginRequiredMixin, APIView):
         except Lesson.DoesNotExist:
             return Response(data={'error': "Занятие не найдено"},
                             status=status.HTTP_400_BAD_REQUEST)
-        if lesson.status != 0:
-            if can_set_not_held(request, lesson):
-                lesson.status = 0
-                lesson.save()
-                serialized_lesson = LessonSerializer(
-                    lesson,
-                    context={'request': request}
-                )
-                UserLog.objects.create(
-                    log_type=2,
-                    color="danger",
-                    learning_plan=lesson.get_learning_plan(),
-                    title=f"Занятие '{lesson.name}' от "
-                          f"{lesson.date.strftime('%d.%m.%Y')} "
-                          f"помечено непроведённым",
-                    content={
-                        "list": self.get_review_form_list_data(
-                            lesson.lesson_teacher_review
-                        ),
-                        "text": ["Занятие было помечено непроведённым"]
-                    },
-                    buttons=[{
-                        "href": f"/lessons/{lesson.id}",
-                        "inner": "Занятие"
-                    }],
-                    user=request.user
-                )
-                if lesson.lesson_teacher_review:
-                    lesson.lesson_teacher_review.delete()
-                    lesson.lesson_teacher_review = None
-                return Response(data=serialized_lesson.data,
-                                status=status.HTTP_201_CREATED)
-            else:
-                return Response(
-                    data={'error': "Недостаточно прав для изменения "
-                                   "статуса занятия"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        else:
-            return Response(
-                data={'error': "Занятие в статусе непроведённого"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if lesson.status == 0:
+            return Response(data={'error': "Занятие не проведено"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if not lesson_perm_can_set_not_held(
+                lesson=lesson,
+                is_admin=request.user.groups.filter(name="Admin").exists()
+        ):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        lesson.status = 0
+        lesson.save()
+        serialized_lesson = LessonSerializer(
+            lesson,
+            context={'request': request}
+        )
+        UserLog.objects.create(
+            log_type=2,
+            color="danger",
+            learning_plan=lesson.get_learning_plan(),
+            title=f"Занятие '{lesson.name}' от "
+                  f"{lesson.date.strftime('%d.%m.%Y')} "
+                  f"помечено непроведённым",
+            content={
+                "list": self.get_review_form_list_data(
+                    lesson.lesson_teacher_review
+                ),
+                "text": ["Занятие было помечено непроведённым"]
+            },
+            buttons=[{
+                "href": f"/lessons/{lesson.id}",
+                "inner": "Занятие"
+            }],
+            user=request.user
+        )
+        if lesson.lesson_teacher_review:
+            lesson.lesson_teacher_review.delete()
+            lesson.lesson_teacher_review = None
+        return Response(data=serialized_lesson.data,
+                        status=status.HTTP_200_OK)
 
 
 class UserLessonListAPIView(LoginRequiredMixin, ListAPIView):
@@ -809,16 +830,21 @@ class LessonSetAdditionalListeners(CanReplaceTeacherMixin, APIView):
             lesson = Lesson.objects.get(pk=kwargs.get("pk"))
         except Lesson.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        new_add_listeners = [int(listener_id) for listener_id in
-                             request.POST.getlist("additional_listener")]
-        for listener_id in [listener.get("id") for listener in
-                            lesson.get_learning_plan().listeners.all()
-                                    .values("id")]:
-            if listener_id in new_add_listeners:
-                new_add_listeners.remove(listener_id)
+        new_add_listeners = NewUser.objects.filter(
+            id__in=request.POST.getlist("additional_listener"),
+            groups__name="Listener"
+        ).exclude(
+            id__in=lesson.get_learning_plan().listeners.values_list(
+                "id", flat=True
+            )
+        )
+        print(new_add_listeners)
         lesson.additional_listeners.set(new_add_listeners)
-        return Response(data={"status": "success"},
-                        status=status.HTTP_200_OK)
+        return Response(
+            data=LessonSerializer(lesson,
+                                  context={'request': request}).data,
+            status=status.HTTP_200_OK
+        )
 
 
 class LessonSendPlaceTGAPIVIew(LoginRequiredMixin, APIView):

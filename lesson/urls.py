@@ -19,7 +19,7 @@ from .views_ma import (LessonMAReviewFormPage,
 
 urlpatterns = [
     path('', LessonsListPage.as_view(), name='lessons'),
-    path('<int:pk>', LessonItemPage.as_view()),
+    path('<int:pk>/', LessonItemPage.as_view()),
 ]
 
 apiv1patterns = [

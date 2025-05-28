@@ -9,8 +9,6 @@ function cookiesInit(){
     !cookiesUtilsGet("lessonsMobFieldTime") ? cookiesUtilsSet("lessonsMobFieldTime", "1") : null
     !cookiesUtilsGet("lessonsMobFieldTeacher") ? cookiesUtilsSet("lessonsMobFieldTeacher", "1") : null
     !cookiesUtilsGet("lessonsMobFieldListeners") ? cookiesUtilsSet("lessonsMobFieldListeners", "1") : null
-    !cookiesUtilsGet("lessonsMobFieldHWButton") ? cookiesUtilsSet("lessonsMobFieldHWButton", "1") : null
-    !cookiesUtilsGet("lessonsMobFieldHWCount") ? cookiesUtilsSet("lessonsMobFieldHWCount", "1") : null
     !cookiesUtilsGet("lessonsMobFieldAdminComment") ? cookiesUtilsSet("lessonsMobFieldAdminComment", "1") : null
 }
 

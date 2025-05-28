@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .forms import SignUpForm
-from .models import NewUser
+from .models import NewUser, Telegram
 from rest_framework.decorators import api_view
 
 
@@ -34,6 +34,23 @@ class UserLoginAPIView(APIView):
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class UserTelegramLoginAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            logout(request)
+        token = request.POST.get("token")
+        if not token:
+            return Response(data={"error": "Отсутствует токен"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        tg_note = Telegram.objects.filter(access_token=token).first()
+        if not tg_note:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            tg_note.update_access_token(expires_only=True)
+            login(request, tg_note.user)
+            return Response(status=status.HTTP_200_OK)
 
 
 def user_logout(request):
@@ -115,3 +132,11 @@ class AdminLoginAPIView(LoginRequiredMixin, APIView):
                                "этим пользователем"},
                 status=status.HTTP_403_FORBIDDEN
             )
+
+
+class TelegramLoginPageView(TemplateView):
+    template_name = "telegram_login.html"
+
+    def get(self, request, *args, **kwargs):
+        context = {'title': 'Авторизация'}
+        return render(request, self.template_name, context)

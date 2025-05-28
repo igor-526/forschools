@@ -1,5 +1,4 @@
 function homeworkItemShowOffcanvas(homeworkID){
-    homeworkItemShowOffcanvasSelectedHWID = homeworkID
     homeworkAPIGetItem(homeworkID).then(request => {
         switch (request.status){
             case 200:
@@ -79,11 +78,22 @@ function homeworkItemShowOffcanvasGetMainInfoContent(hw){
         lessonP.innerHTML += `<span class="fw-bold">Занятие: </span> ${hw.lesson_info.name}`
         lessonP.style.color = "#0d6efd"
         lessonP.addEventListener("click", function () {
-            lessonShowOffcanvas(hw.lesson_info.id)
+            lessonsAPIGetItem(lesson.id).then(request => {
+                switch (request.status){
+                    case 200:
+                        const lsnUtils = new lessonUtils(request.response)
+                        lsnUtils.showOffcanvas()
+                        break
+                    default:
+                        const toast = new toastEngine()
+                        toast.setError()
+                        toast.show()
+                        break
+                }
+            })
         })
         elements.push(lessonP)
     }
-
     return elements
 }
 
@@ -440,7 +450,6 @@ function homeworkItemShowOffcanvasGetLogsInfo(homeworkID, homeworkOffcanvas, log
     ul.classList.add("list-group")
 
     logsToShow.forEach(log => {
-        console.log(log)
         const li = document.createElement("li")
         li.classList.add("list-group-item")
         if (log.agreement && log.agreement.hasOwnProperty("accepted")){
@@ -972,5 +981,3 @@ function homeworkItemGetEditLogModal(homeworkID, homeworkOffcanvas, log){
         [comment.block, h6, uploadBlock.button, uploadBlock.block], [editButton]
     )
 }
-
-let homeworkItemShowOffcanvasSelectedHWID = null

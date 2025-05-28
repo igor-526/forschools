@@ -5,10 +5,8 @@ from learning_plan.permissions import get_can_see_plan
 from .models import Lesson
 from dls.settings import MATERIAL_FORMATS
 from .permissions import (CanSeeLessonMixin,
-                          hw_perm_can_set_replace,
                           can_edit_lesson_materials,
                           can_see_lesson_materials,
-                          can_add_homework,
                           can_set_passed)
 
 
@@ -32,7 +30,7 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         lesson = Lesson.objects.get(pk=kwargs.get("pk"))
-        can_add_hw = can_add_homework(request, lesson)
+        can_add_hw = True
         hw_curator_button = (
                 lesson.get_learning_plan().teacher == request.user or
                 lesson.replace_teacher == request.user or
@@ -45,7 +43,7 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
             plan_button = lp.id
         context = {
             'lesson': lesson,
-            'can_set_replace': hw_perm_can_set_replace(request),
+            'can_set_replace': False,
             'can_see_materials': can_see_lesson_materials(request, lesson),
             'can_edit_materials': can_edit_lesson_materials(request, lesson),
             'can_add_hw': can_add_hw,

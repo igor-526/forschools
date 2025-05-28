@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from chat.models import Message
 from chat.utils import chat_users_remove_duplicates, chat_users_sort
+from profile_management.utils import generate_access_token
 
 PROFILE_EVENT_CHOICES = (
     (0, 'Привязка основного Telegram'),
@@ -498,6 +499,12 @@ class Telegram(models.Model):
                                    null=False,
                                    blank=False,
                                    default=timezone.now)
+    access_token = models.CharField(verbose_name="Токен авторизации",
+                                    null=True,
+                                    blank=True)
+    access_token_expires = models.DateTimeField(verbose_name="Дата истечения токена",
+                                                null=True,
+                                                blank=True)
 
     class Meta:
         verbose_name = 'Привязанный Telegram'
@@ -506,6 +513,18 @@ class Telegram(models.Model):
 
     def __str__(self):
         return f'{str(self.user)} {self.nickname}'
+
+    def update_access_token(self, expires_only=False):
+        if not expires_only:
+            self.access_token = generate_access_token()
+        self.access_token_expires = timezone.now() + timezone.timedelta(days=2)
+        self.save()
+
+    async def aupdate_access_token(self, expires_only=False):
+        if not expires_only:
+            self.access_token = generate_access_token()
+        self.access_token_expires = timezone.now() + timezone.timedelta(days=2)
+        await self.asave()
 
     async def set_last_message(self, message_id: int):
         self.last_message_from_user_time = timezone.now()

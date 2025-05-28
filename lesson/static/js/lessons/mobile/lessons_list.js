@@ -11,7 +11,19 @@ function lessonsMobileMain(){
     })
     const lessonToOpen = getHashValue("open")
     if (lessonToOpen){
-        lessonShowOffcanvas(lessonToOpen)
+        lessonsAPIGetItem(lessonToOpen).then(request => {
+            switch (request.status){
+                case 200:
+                    const lsnUtils = new lessonUtils(request.response)
+                    lsnUtils.showOffcanvas()
+                    break
+                default:
+                    const toast = new toastEngine()
+                    toast.setError("Занятие не найдено")
+                    toast.show()
+                    break
+            }
+        })
     }
 }
 

@@ -196,7 +196,7 @@ function tgJournalFilterEnterListeners(){
         tgJournalFilterTimeFromField.classList.remove("is-invalid")
         tgJournalFilterTimeToField.classList.remove("is-invalid")
         if (tgJournalFilterTimeFromField.value !== "" && tgJournalFilterTimeToField.value !== ""){
-            if (compareTime(tgJournalFilterTimeFromField, tgJournalFilterTimeToField)){
+            if (timeUtilsCompareTime(tgJournalFilterTimeFromField, tgJournalFilterTimeToField)){
                 tgJournalFilterTimeFromField.classList.add("is-invalid")
                 tgJournalFilterTimeToField.classList.add("is-invalid")
                 return false

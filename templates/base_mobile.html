@@ -58,6 +58,7 @@
     const isTeacher = {% if is_teacher %}true{% else %}false{% endif %}
     const isCurator = {% if is_curator %}true{% else %}false{% endif %}
     const isListener = {% if is_listener %}true{% else %}false{% endif %}
+    const isMobile = true
     const tgID = {% if tg_id %} {{ tg_id }}{% else %}null{% endif %}
     const supportedExtensions = {{ supported_extensions|safe }}
 </script>
@@ -66,6 +67,7 @@
 <script src="{% static 'js/materials_preview.js' %}"></script>
 <script src="{% static 'js/mobile_template_engine.js' %}"></script>
 <script src="{% static 'js/unversal_info_mobile.js' %}"></script>
+<script src="{% static 'js/lessons/lesson_utils.js' %}"></script>
 <script src="{% static 'js/userutils.js' %}"></script>
 <script src="{% static 'js/timeutils.js' %}"></script>
 <script src="{% static 'js/hashutils.js' %}"></script>

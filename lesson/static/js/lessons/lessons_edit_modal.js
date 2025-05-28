@@ -107,7 +107,7 @@ function lessonEditValidation(){
                 [lessonEditModalStartField])
         }
         if (lessonEditModalStartField.value !== "" && lessonEditModalStartField.value !== ""){
-            if (compareTime(lessonEditModalStartField, lessonEditModalEndField)){
+            if (timeUtilsCompareTime(lessonEditModalStartField, lessonEditModalEndField)){
                 setInvalid("Время окончания занятия не может быть раньше времени начала",
                     [lessonEditModalStartField, lessonEditModalEndField])
             }
@@ -127,7 +127,7 @@ function lessonEditSave(){
     }
     if (lessonEditValidation()){
         if (lessonEditSelectedLessonID){
-            lessonsAPIUpdateLesson(getFormData(), lessonEditSelectedLessonID).then(request => {
+            lessonsAPIUpdateLesson(lessonEditSelectedLessonID, getFormData()).then(request => {
                 switch (request.status){
                     case 200:
                         bsLessonEditModal.hide()

@@ -1,13 +1,24 @@
 import datetime
+from typing import List
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
+
+from learning_plan.models import LearningPlan
 from lesson.models import Lesson
 from profile_management.models import NewUser
 
 
 class CanReplaceTeacherMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
-        if hw_perm_can_set_replace(request):
+        if request.user.groups.filter(name="Admin").exists():
+            return super().dispatch(request, *args, **kwargs)
+        return self.handle_no_permission()
+
+
+class CanSetNotHeldMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name="Admin").exists():
             return super().dispatch(request, *args, **kwargs)
         return self.handle_no_permission()
 
@@ -45,14 +56,22 @@ def get_usergroups(user):
     return [group.name for group in user.groups.all()]
 
 
-def hw_perm_can_set_replace(request):
-    return request.user.groups.filter(name="Admin").exists()
+def lesson_perm_can_set_replace(lesson=Lesson,
+                                is_admin: bool = None,
+                                user_groups=None) -> bool:
+    if lesson.status != 0:
+        return False
+    if is_admin is not None:
+        return is_admin
+    if user_groups is None:
+        user_groups = []
+    return "Admin" in user_groups
 
 
 def can_edit_lesson_materials(request, lesson: Lesson):
     if lesson.status == 3:
         return False
-    return can_add_homework(request, lesson)
+    return lesson_perm_can_add_homework(user=request.user, lesson=lesson)
 
 
 def can_see_lesson_materials(request, lesson: Lesson):
@@ -80,15 +99,21 @@ def can_see_lesson_materials(request, lesson: Lesson):
     return False
 
 
-def can_add_homework(request, lesson: Lesson):
-    usergroups = get_usergroups(request.user)
-    if ("Admin" in usergroups) or ("Metodist" in usergroups):
+def lesson_perm_can_add_homework(user: NewUser,
+                                 lesson: Lesson,
+                                 plan: LearningPlan = None,
+                                 user_groups=None) -> bool:
+    if user_groups is None:
+        user_groups = user.groups.values_list("name", flat=True)
+    if ("Admin" in user_groups) or ("Metodist" in user_groups):
         return True
-    if "Teacher" in usergroups:
-        return lesson.get_teacher() == request.user
-    if "Curator" in usergroups:
-        return lesson.get_learning_plan().curators.filter(
-            id=request.user.id
+    if "Teacher" in user_groups:
+        return lesson.get_teacher() == user
+    if "Curator" in user_groups:
+        if plan is None:
+            plan = lesson.get_learning_plan()
+        return plan.curators.filter(
+            id=user.id
         ).exists()
     return False
 
@@ -113,7 +138,37 @@ async def a_can_set_passed_perm(user: NewUser, lesson: Lesson):
     return False
 
 
-def can_set_not_held(request, lesson: Lesson):
-    if lesson.status == 0:
+def lesson_perm_can_set_not_held(lesson: Lesson = None,
+                                 is_admin: bool = None,
+                                 user_groups=None) -> bool:
+    if lesson is None or lesson.status == 0:
         return False
-    return request.user.groups.filter(name="Admin").exists()
+    if is_admin is not None:
+        return is_admin
+    if user_groups is None:
+        user_groups = []
+    return "Admin" in user_groups
+
+
+def lesson_perm_can_edit(lesson: Lesson = None,
+                         is_admin: bool = None,
+                         user_groups=None) -> bool:
+    if lesson is None or lesson.status == 2:
+        return False
+    if is_admin is not None:
+        return is_admin
+    if user_groups is None:
+        user_groups = []
+    return "Admin" in user_groups
+
+
+def lesson_perm_can_delete(lesson: Lesson = None,
+                           is_admin: bool = None,
+                           user_groups=None) -> bool:
+    if lesson is None or lesson.status in [1, 2]:
+        return False
+    if is_admin is not None:
+        return is_admin
+    if user_groups is None:
+        user_groups = []
+    return "Admin" in user_groups

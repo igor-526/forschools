@@ -88,14 +88,21 @@
     const isTeacher = {% if is_teacher %}true{% else %}false{% endif %}
     const isCurator = {% if is_curator %}true{% else %}false{% endif %}
     const isListener = {% if is_listener %}true{% else %}false{% endif %}
+    const isMobile = false
     const tgID = {% if tg_id %} {{ tg_id }}{% else %}null{% endif %}
 </script>
+<script src="{% static 'js/icon_utils.js' %}"></script>
 <script src="{% static 'js/unversal_info_mobile.js' %}"></script>
 <script src="{% static 'js/userutils.js' %}"></script>
 <script src="{% static 'js/timeutils.js' %}"></script>
 <script src="{% static 'js/hashutils.js' %}"></script>
 <script src="{% static 'js/apitostr.js' %}"></script>
+<script src="{% static 'js/lessons/lesson_utils.js' %}"></script>
 <script src="{% static 'js/support/support_api.js' %}"></script>
+<script src="{% static 'js/homework/homework_api.js' %}"></script>
+<script src="{% static 'js/materials/materials_api.js' %}"></script>
+<script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+<script src="{% static 'js/telegram/telegram_api.js' %}"></script>
 <script src="{% static 'js/support/support.js' %}"></script>
 <script src="{% static 'js/toasts.js' %}"></script>
 {% block static_js %} {% endblock %}

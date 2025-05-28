@@ -15,16 +15,19 @@ from .views_api import (UserListAPIView,
                         ProfileEventsJournalListAPIView)
 from .views_login import (user_logout,
                           LoginPageTemplateView,
+                          TelegramLoginPageView,
                           register_view,
                           AdminLoginAPIView,
-                          UserLoginAPIView)
+                          UserLoginAPIView, UserTelegramLoginAPIView)
 from lesson.views_api import UserLessonListAPIView
 from homework.views_api import UserHWListAPIView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='dashboard')),
     path('login/', LoginPageTemplateView.as_view(), name='login'),
+    path('login_tg/', TelegramLoginPageView.as_view(), name='login_tg'),
     path('auth/', UserLoginAPIView.as_view()),
+    path('auth_tg/', UserTelegramLoginAPIView.as_view()),
     path('logout', user_logout, name='logout'),
     path('register/', register_view, name='register'),
     path('dashboard', DashboardPageTemplateView.as_view(),

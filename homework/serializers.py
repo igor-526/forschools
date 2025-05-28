@@ -23,6 +23,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
     lesson_info = serializers.SerializerMethodField(read_only=True)
     actions = serializers.SerializerMethodField(read_only=True)
     send_tg = serializers.SerializerMethodField(read_only=True)
+    logs = serializers.SerializerMethodField(read_only=True)
 
     hw_lesson: Lesson = None
     hw_learning_plan: LearningPlan = None
@@ -127,10 +128,10 @@ class HomeworkSerializer(serializers.ModelSerializer):
         user_groups = self.request.user.groups.values_list('name', flat=True)
         result = {}
         if (("Listener" in user_groups or
-                "Teacher" in user_groups or
-                "Curator" in user_groups or
-                "Metodist" in user_groups or
-                "Admin" in user_groups) and
+             "Teacher" in user_groups or
+             "Curator" in user_groups or
+             "Metodist" in user_groups or
+             "Admin" in user_groups) and
                 (self.request.user != obj.teacher) and
                 (obj.teacher.get_has_tg())):
             result['teacher'] = NewUserNameOnlyListSerializer(
@@ -138,9 +139,9 @@ class HomeworkSerializer(serializers.ModelSerializer):
                 many=False
             ).data
         if (("Teacher" in user_groups or
-                "Curator" in user_groups or
-                "Metodist" in user_groups or
-                "Admin" in user_groups)):
+             "Curator" in user_groups or
+             "Metodist" in user_groups or
+             "Admin" in user_groups)):
             if self.hw_learning_plan and self.hw_learning_plan.metodist and (self.request.user != self.hw_learning_plan.metodist and self.hw_learning_plan.metodist.get_has_tg()):
                 result['methodist'] = NewUserNameOnlyListSerializer(
                     self.hw_learning_plan.metodist,
@@ -154,6 +155,11 @@ class HomeworkSerializer(serializers.ModelSerializer):
         if self.request.user.get_has_tg():
             result['self'] = {"id": self.request.user.id}
         return result
+
+    def get_logs(self, obj: Homework):
+        return HomeworkLogListSerializer(
+            obj.log.all(), many=True,
+            context={"request": self.request}).data
 
 
 class HomeworkListSerializer(serializers.ModelSerializer):

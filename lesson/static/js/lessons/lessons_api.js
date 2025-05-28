@@ -37,8 +37,8 @@ async function lessonsAPIDeleteMaterials(materials=[], lesson){
     return await APIDeleteToObject(response)
 }
 
-async function lessonsAPIReplaceTeacher(teacherID, lesson){
-    const request = await fetch(`/api/v1/lessons/${lesson}/rt/`, {
+async function lessonsAPIReplaceTeacher(teacherID, lessonID){
+    const request = await fetch(`/api/v1/lessons/${lessonID}/rt/`, {
         method: "PATCH",
         credentials: 'same-origin',
         headers:{
@@ -106,7 +106,18 @@ async function lessonsAPIGetItem(lessonID){
     return await APIGetToObject(request)
 }
 
-async function lessonsAPIUpdateLesson(fd, lessonID){
+async function lessonsAPIDestroyItem(lessonID){
+    const response = await fetch(`/api/v1/lessons/${lessonID}/`, {
+        method: "DELETE",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+    })
+    return await APIDeleteToObject(response)
+}
+
+async function lessonsAPIUpdateLesson(lessonID, fd){
     const request = await fetch(`/api/v1/lessons/${lessonID}/`, {
         method: "PATCH",
         credentials: 'same-origin',

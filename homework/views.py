@@ -2,7 +2,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from dls.settings import MATERIAL_FORMATS
-from lesson.permissions import hw_perm_can_set_replace
 from .models import Homework
 from .permissions import (get_send_hw_permission,
                           get_can_check_hw_permission,
@@ -45,6 +44,6 @@ class HomeworkItemPage(LoginRequiredMixin, TemplateView):
                    "can_send": get_send_hw_permission(hw, request),
                    "can_check": get_can_check_hw_permission(hw, request),
                    "can_cancel": get_can_cancel_hw_permission(hw, request),
-                   "can_set_replace": hw_perm_can_set_replace(request),
+                   "can_set_replace": False,
                    "can_edit_hw": get_can_edit_hw_permission(hw, request)}
         return render(request, self.template_name, context)

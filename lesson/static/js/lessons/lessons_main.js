@@ -76,7 +76,6 @@ function lessonsGet(more=false){
         lessonsTableFilterHWAgreementStatus, lessonsTableFilterPlaces).then(request => {
         switch (request.status){
             case 200:
-                console.log(request.response)
                 lessonsShow(request.response, !more)
                 request.response.length === 50 ? lessonsTableShowMoreButton.classList.remove("d-none") :
                     lessonsTableShowMoreButton.classList.add("d-none")
@@ -126,7 +125,18 @@ function lessonsShow(lessons, clear=true, replace_element=null){
     }
 
     function getLessonElement(lesson, collapse){
+        const lsnUtils = new lessonUtils(lesson)
+
         const tr = document.createElement("tr")
+        tr.addEventListener("click", (e) => {
+            if (!e.target.matches('button')){
+                if (!lsnUtils.offcanvas){
+                    lsnUtils.showOffcanvas(true)
+                } else {
+                    lsnUtils.showOffcanvas()
+                }
+            }
+        })
         switch (lesson.status){
             case 0:
                 if (lesson.awaiting_action){
@@ -142,7 +152,7 @@ function lessonsShow(lessons, clear=true, replace_element=null){
         }
 
         const tdName = document.createElement("td")
-        tdName.innerHTML = `<a href="/lessons/${lesson.id}">${getLessonName(lesson)}</a>`
+        tdName.innerHTML = `${lsnUtils.lessonName}`
         tr.insertAdjacentElement("beforeend", tdName)
 
         const tdDate = document.createElement("td")
@@ -176,7 +186,7 @@ function lessonsShow(lessons, clear=true, replace_element=null){
         const tdHomeworksButton = document.createElement("button")
         tdHomeworksButton.classList.add("btn", `btn-${lesson.hw_data.color}`)
         tdHomeworksButton.innerHTML = lesson.hw_data.count
-        tdHomeworksButton.addEventListener("click", function (){
+        tdHomeworksButton.addEventListener("click", () =>{
             lessonsShowHomeworkCollapse([collapse])
         })
         tdHomeworks.insertAdjacentElement("beforeend", tdHomeworksButton)
@@ -197,8 +207,8 @@ function lessonsShow(lessons, clear=true, replace_element=null){
                 actionsCommentInnerText = '<i class="bi bi-chat-left-text-fill"></i>'
             }
             tdActionsComment.innerHTML = actionsCommentInnerText
-            tdActionsComment.addEventListener("click", function (){
-                lessonsAdminCommentSetModal(lesson.id, tr, lesson.admin_comment)
+            tdActionsComment.addEventListener("click", () => {
+                lsnUtils._adminCommentModalSet()
             })
             tdActions.insertAdjacentElement("beforeend", tdActionsComment)
             tr.insertAdjacentElement("beforeend", tdActions)

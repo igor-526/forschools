@@ -7,170 +7,39 @@
                 <h1>{{ lesson.name }}</h1>
             </div>
             {% if plan_button %}
-            <div class="col-auto">
-                <div class="btn-group" role="group">
-                    <a href="/user_logs/#plan_id={{ plan_button }}" class="btn btn-outline-primary mt-1" role="button"><i class="bi bi-card-list"></i> логи</a>
-                    <a href="/learning_plans/{{ plan_button }}" class="btn btn-outline-primary mt-1" role="button">План обучения</a>
+                <div class="col-auto">
+                    <div class="btn-group" role="group">
+                        <a href="/user_logs/#plan_id={{ plan_button }}" class="btn btn-outline-primary mt-1" role="button"><i class="bi bi-card-list"></i> логи</a>
+                        <a href="/learning_plans/{{ plan_button }}" class="btn btn-outline-primary mt-1" role="button">План обучения</a>
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
         </div>
     </div>
 
-    <div class="container-xxl">
-        <div class="row">
-            <div class="col-6">
-                <div class="card mb-3">
-                    <div class="card-header">Занятие
-                        {% if can_edit_materials %}
-                            <button id="lessonItemEditButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-pencil"></i></button>
-                            {% include "lesson_edit_modal.html" %}
-                        {% endif %}
-                        {% if lesson.from_program_lesson %}
-                            <button id="lessonItemRestoreButton" type="button" class="btn btn-primary btn-sm ms-1"><i class="bi bi-box-arrow-down"></i> Восстановить из шаблона</button>
-                            {% include "lesson_item_modal_restore.html" %}
-                        {% endif %}
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush" id="lessonItemMainInfo"></ul>
-                    </div>
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-header">Участники</div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush" id="lessonItemParticipants"></ul>
-                    </div>
-                </div>
-
-                {% if can_set_passed %}
-                    <div class="card mb-3">
-                        <div class="card-header">Занятие было проведено?</div>
-                        <div class="card-body">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">
-                                    <button id="lessonItemStatusPassedButton" type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#lessonItemStatusPassedModal">Да</button>
-                                    <button id="lessonItemStatusCancelledButton" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#lessonItemStatusCancelledModal">Нет</button>
-                                </li>
-                            </ul>
-                        </div>
-                        {% include "modal_set_status.html" %}
-                    </div>
-                {% endif %}
-            </div>
-            <div class="col-6">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <div>Материалы</div>
-                        <div>
-                            <button id="LessonItemCheckMaterialsButton" type="button" class="btn btn-primary btn-sm m-1" data-action="check"><i class="bi bi-check-square"></i></button>
-                            {% if can_edit_materials %}
-                                <button id="LessonItemAddMaterialsButton" type="button" class="btn btn-warning btn-sm m-1" data-bs-toggle="modal" data-bs-target="#MaterialsEmbedModal"><i class="bi bi-plus"></i></button>
-                                {% include "materials_embed_modal.html" %}
-                                <button id="LessonItemDeleteMaterialsButton" type="button" class="btn btn-danger btn-sm m-1" disabled><i class="bi bi-x-lg"></i> Убрать</button>
-                                {% include "lesson_item_modal_delete_materials.html" %}
-                            {% endif %}
-                            <button id="LessonItemSendMaterialsButton" type="button" class="btn btn-primary btn-sm m-1" disabled><i class="bi bi-telegram"></i> Отпр. ученику</button>
-                            {% include "lesson_item_modal_sendtg.html" %}
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush" id="lessonItemMaterialsList"></ul>
-                    </div>
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-header">Домашние задания
-                        {% if can_add_hw %}
-                            <button id="LessonItemNewHWButton" type="button" class="btn btn-primary btn-sm ms-2" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNewHW"><i class="bi bi-plus-lg"></i></button>
-                            {% include "offcanvas_lesson_new_HW.html" %}
-                            {% include "lesson_item_modal_delete_hw.html" %}
-                        {% endif %}
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush" id="lessonItemHomeworkList"></ul>
-                    </div>
-                </div>
-
-                <div class="card mb-3 d-none" id="LessonItemReview">
-                    <div class="card-header">Ревью</div>
-                    <div class="card-body">
-                        <ul id="LessonItemReviewList" class="list-group list-group-flush"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% if can_set_replace %}
-        {% include "modal_set_replace.html" %}
-        {% include "modal_set_additional_listeners.html" %}
-    {% endif %}
+    <div id="contentBody" class="row"></div>
 {% endblock %}
 {% block static_js %}
     <script>
-        const lessonID = '{{ lesson.id }}'
-        const can_see_materials = {% if can_see_materials %}true{% else %}false{% endif %}
-    </script>
-    {% if can_set_replace %}
-        <script>
-            const lessonItemCanSetReplace = true
-            const userID = {{ request.user.id }}
-        </script>
-        <script src="{% static 'js/users/users_api.js' %}"></script>
-        <script src="{% static 'js/users/users_replace_teacher.js' %}"></script>
-        <script src="{% static 'js/lessons/modal_additional_listeners.js' %}"></script>
-    {% else %}
-        <script>
-            const lessonItemCanSetReplace = false
-        </script>
-    {% endif %}
-
-
-    <script src="{% static 'js/homework/homework_api.js' %}"></script>
-    <script src="{% static 'js/materials/materials_api.js' %}"></script>
-    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
-    <script src="{% static 'js/telegram/telegram_api.js' %}"></script>
-    <script src="{% static 'js/list_utils.js' %}"></script>
-    {% if can_set_passed %}
-        <script src="{% static 'js/collections/collections_api.js' %}"></script>
-        <script src="{% static 'js/lessons/lesson_item_set_status.js' %}"></script>
-    {% endif %}
-    {% if can_edit_materials %}
-        <script>
-            let materialEmbedAction
-            const see_general = {% if perms.material.see_all_general %}true{% else %}false{% endif %}
-            const mediaFormats = {
-                imageFormats: {{ material_formats.image_formats | safe }},
-                videoFormats: {{ material_formats.video_formats | safe }},
-                animationFormats: {{ material_formats.animation_formats | safe }},
-                archiveFormats: {{ material_formats.archive_formats | safe }},
-                pdfFormats: {{ material_formats.pdf_formats | safe }},
-                voiceFormats: {{ material_formats.voice_formats | safe }},
-                audioFormats: {{ material_formats.audio_formats | safe }},
-                textFormats: {{ material_formats.text_formats | safe }},
-                presentationFormats: {{ material_formats.presentation_formats | safe }}
+        lessonsAPIGetItem({{ lesson.id }}).then(request => {
+            if (request.status === 200){
+                const lsnUtils = new lessonUtils(request.response)
+                lsnUtils.generateOnPage(document.querySelector("#contentBody"))
+            } else {
+                const toast = new toastEngine()
+                switch (request.status){
+                    case 403:
+                        toast.setError("Нет доступа")
+                        break
+                    case 404:
+                        toast.setError("Занятие не найдено")
+                        break
+                    default:
+                        toast.setError()
+                        break
+                }
+                toast.show()
             }
-        </script>
-        <script src="{% static 'js/collections/collections_api.js' %}"></script>
-        <script src="{% static 'js/programs/programsAPI.js' %}"></script>
-        <script src="{% static 'js/materials/materials_utils.js' %}"></script>
-        <script src="{% static 'js/materials/materials_embed.js' %}"></script>
-        <script src="{% static 'js/lessons/lesson_item_delete_materials.js' %}"></script>
-        <script src="{% static 'js/lessons/lesson_item_send_materials.js' %}"></script>
-        <script src="{% static 'js/lessons/lesson_item_delete_hw.js' %}"></script>
-        <script src="{% static 'js/lessons/lessons_edit_modal.js' %}"></script>
-        {% if lesson.from_program_lesson %}
-            <script src="{% static 'js/lessons/lesson_item_restore.js' %}"></script>
-        {% endif %}
-    {% endif %}
-    <script src="{% static 'js/lessons/lesson_item.js' %}"></script>
-    {% if can_add_hw %}
-        <script src="{% static 'js/automaticAPI.js' %}"></script>
-        <script>
-            const HWNewCuratorSwitch = {% if hw_curator_button %}true{% else %}false{% endif %}
-            const lessonItemNewHwDeadline = {% if hwdeadline %}"{{ hwdeadline }}"{% else %}null{% endif %}
-        </script>
-        <script src="{% static 'js/lessons/lesson_item_homeworks.js' %}"></script>
-    {% endif %}
-
+        })
+    </script>
 {% endblock %}

@@ -98,16 +98,12 @@ function homeworksMobileShow(homeworks=[]){
     function setMoreInfoText(hw, elem){
         if (hw.lesson_info && (cookiesUtilsGet("hwMobFieldLessonName") === "1" || cookiesUtilsGet("hwMobFieldLessonDate") === "1")){
             const lessonP = document.createElement("p")
-            lessonP.style.color = "#0d6efd"
             const lessonIcon = iconUtilsGetIcon(
                 "lesson_grey.svg", "Занятие"
             )
             lessonIcon.classList.add("me-1")
             lessonP.classList.add("mb-0")
             lessonP.insertAdjacentElement("beforeend", lessonIcon)
-            lessonP.addEventListener("click", function () {
-                lessonShowOffcanvas(hw.lesson_info.id)
-            })
 
             if (cookiesUtilsGet("hwMobFieldLessonName") === "1"){
                 const lessonNameSpan = document.createElement("span")
@@ -176,29 +172,15 @@ function homeworksMobileShow(homeworks=[]){
         mainInfoDiv.insertAdjacentElement("beforeend", mainInfoName)
         mainInfoDiv.insertAdjacentElement("beforeend", mainInfoStatus)
 
-        const moreInfoButtons = document.createElement("div")
-        moreInfoButtons.classList.add("d-flex", "justify-content-between")
         const moreInfoButtonsInfo = document.createElement("div")
         moreInfoButtonsInfo.classList.add("ms-2")
         moreInfoButtonsInfo.style.color = "grey"
         setMoreInfoText(hw, moreInfoButtonsInfo)
-        const moreInfoButtonsButtons = document.createElement("div")
-        moreInfoButtonsButtons.classList.add("d-flex")
-        moreInfoButtonsButtons.style.alignItems = "end"
-        li.insertAdjacentElement("beforeend", moreInfoButtons)
-        moreInfoButtons.insertAdjacentElement("beforeend", moreInfoButtonsInfo)
-        moreInfoButtons.insertAdjacentElement("beforeend", moreInfoButtonsButtons)
+        li.insertAdjacentElement("beforeend", moreInfoButtonsInfo)
 
-        const moreInfoButtonsMenu = document.createElement("button")
-        moreInfoButtonsMenu.classList.add("btn", "btn-outline-primary", "mx-1")
-        moreInfoButtonsMenu.type = "button"
-        moreInfoButtonsMenu.style.height = "50px"
-        moreInfoButtonsMenu.style.width = "50px"
-        moreInfoButtonsMenu.innerHTML = '<i class="bi bi-list"></i>'
-        moreInfoButtonsMenu.addEventListener("click", function () {
+        li.addEventListener("click", function () {
             homeworkItemShowOffcanvas(hw.id)
         })
-        moreInfoButtonsButtons.insertAdjacentElement("beforeend", moreInfoButtonsMenu)
         return li
     }
 

@@ -128,7 +128,7 @@ function lessonsMobileFiltersSetSelectionListeners(){
                 case 200:
                     universalInfoSelectionModal("Выбор места проведения",
                         request.response,
-                        true, lessonsMobileFilterPlaces,
+                        false, lessonsMobileFilterPlaces,
                         true, placesSelect)
                     break
                 default:

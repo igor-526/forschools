@@ -189,7 +189,7 @@ function plansItemReschedulingValidation(errors){
             }
             if (plansItemReschedulingModalMondayTimeStart.value !== "" ||
                 plansItemReschedulingModalMondayTimeEnd.value !== ""){
-                if (compareTime(
+                if (timeUtilsCompareTime(
                     plansItemReschedulingModalMondayTimeStart,
                     plansItemReschedulingModalMondayTimeEnd
                 )){
@@ -219,7 +219,7 @@ function plansItemReschedulingValidation(errors){
             }
             if (plansItemReschedulingModalTuesdayTimeStart.value !== "" ||
                 plansItemReschedulingModalTuesdayTimeEnd.value !== ""){
-                if (compareTime(
+                if (timeUtilsCompareTime(
                     plansItemReschedulingModalTuesdayTimeStart,
                     plansItemReschedulingModalTuesdayTimeEnd
                 )){
@@ -249,7 +249,7 @@ function plansItemReschedulingValidation(errors){
             }
             if (plansItemReschedulingModalWednesdayTimeStart.value !== "" ||
                 plansItemReschedulingModalWednesdayTimeEnd.value !== ""){
-                if (compareTime(
+                if (timeUtilsCompareTime(
                     plansItemReschedulingModalWednesdayTimeStart,
                     plansItemReschedulingModalWednesdayTimeEnd
                 )){
@@ -279,7 +279,7 @@ function plansItemReschedulingValidation(errors){
             }
             if (plansItemReschedulingModalThursdayTimeStart.value !== "" ||
                 plansItemReschedulingModalThursdayTimeEnd.value !== ""){
-                if (compareTime(
+                if (timeUtilsCompareTime(
                     plansItemReschedulingModalThursdayTimeStart,
                     plansItemReschedulingModalThursdayTimeEnd
                 )){
@@ -309,7 +309,7 @@ function plansItemReschedulingValidation(errors){
             }
             if (plansItemReschedulingModalFridayTimeStart.value !== "" ||
                 plansItemReschedulingModalFridayTimeEnd.value !== ""){
-                if (compareTime(
+                if (timeUtilsCompareTime(
                     plansItemReschedulingModalFridayTimeStart,
                     plansItemReschedulingModalFridayTimeEnd
                 )){
@@ -339,7 +339,7 @@ function plansItemReschedulingValidation(errors){
             }
             if (plansItemReschedulingModalSaturdayTimeStart.value !== "" ||
                 plansItemReschedulingModalSaturdayTimeEnd.value !== ""){
-                if (compareTime(
+                if (timeUtilsCompareTime(
                     plansItemReschedulingModalSaturdayTimeStart,
                     plansItemReschedulingModalSaturdayTimeEnd
                 )){
@@ -369,7 +369,7 @@ function plansItemReschedulingValidation(errors){
             }
             if (plansItemReschedulingModalSundayTimeStart.value !== "" ||
                 plansItemReschedulingModalSundayTimeEnd.value !== ""){
-                if (compareTime(
+                if (timeUtilsCompareTime(
                     plansItemReschedulingModalSundayTimeStart,
                     plansItemReschedulingModalSundayTimeEnd
                 )){

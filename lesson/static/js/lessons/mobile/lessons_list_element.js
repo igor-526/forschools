@@ -23,7 +23,7 @@ function lessonListGetElement(lesson){
             }
             stringsArray.push(`
             <img src="/static/icons/comment_grey.svg" alt="Комментарий" style="height: 20px;" class="me-1" onclick="lessonsMobileAdminCommentModalSet(${lesson.id})">
-            <span class="fw-bold" style="color: #0d6dfb;" onclick="lessonsMobileAdminCommentModalSet(${lesson.id})">${adminComment}</span>
+            <span>${adminComment}</span>
             `)
         }
 
@@ -64,49 +64,25 @@ function lessonListGetElement(lesson){
     moreInfoButtonsInfo.classList.add("ms-2")
     moreInfoButtonsInfo.style.color = "grey"
     moreInfoButtonsInfo.innerHTML = getMoreInfoText()
-    const moreInfoButtonsButtons = document.createElement("div")
-    moreInfoButtonsButtons.classList.add("d-flex", "align-items-end")
 
-    if (cookiesUtilsGet("lessonsMobFieldHWButton") === "1"){
-        const moreInfoButtonsHomeworksButton = document.createElement("button")
-        moreInfoButtonsHomeworksButton.classList.add("btn", "btn-outline-primary", "mx-1")
-        moreInfoButtonsHomeworksButton.type = "button"
-        moreInfoButtonsHomeworksButton.style.height = "50px"
-        moreInfoButtonsHomeworksButton.style.width = "50px"
-        moreInfoButtonsHomeworksButton.innerHTML = '<img style="height: 90%; width: 90%" src="/static/icons/homework_mini_primary.svg" alt="ДЗ">'
-        if (lesson.hw_data.count > 0){
-            moreInfoButtonsHomeworksButton.addEventListener("click", function () {
-                location.assign(`/homeworks/#lesson_id=${lesson.id}`)
-            })
-        } else {
-            moreInfoButtonsHomeworksButton.disabled = true
-        }
-        moreInfoButtonsButtons.insertAdjacentElement("beforeend", moreInfoButtonsHomeworksButton)
-        if (cookiesUtilsGet("lessonsMobFieldHWCount") === "1"){
-            moreInfoButtonsHomeworksButton.classList.add("position-relative")
-            moreInfoButtonsHomeworksButton.innerHTML += `
-            <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-${lesson.hw_data.color}">
-            ${lesson.hw_data.count}<span class="visually-hidden"></span></span>
-            `
-        }
-    }
-
-
-
-    const moreInfoButtonsMenuButton = document.createElement("button")
-    moreInfoButtonsMenuButton.classList.add("btn", "btn-outline-primary", "mx-1")
-    moreInfoButtonsMenuButton.type = "button"
-    moreInfoButtonsMenuButton.style.height = "50px"
-    moreInfoButtonsMenuButton.style.width = "50px"
-    moreInfoButtonsMenuButton.innerHTML = '<i class="bi bi-list"></i>'
-    moreInfoButtonsMenuButton.addEventListener("click", function () {
-        lessonShowOffcanvas(lesson.id)
+    li.addEventListener("click", function () {
+        lessonsAPIGetItem(lesson.id).then(request => {
+            switch (request.status){
+                case 200:
+                    const lsnUtils = new lessonUtils(request.response)
+                    lsnUtils.showOffcanvas()
+                    break
+                default:
+                    const toast = new toastEngine()
+                    toast.setError("Занятие не найдено")
+                    toast.show()
+                    break
+            }
+        })
     })
 
     li.insertAdjacentElement("beforeend", moreInfoButtonsDiv)
     moreInfoButtonsDiv.insertAdjacentElement("beforeend", moreInfoButtonsInfo)
-    moreInfoButtonsDiv.insertAdjacentElement("beforeend", moreInfoButtonsButtons)
-    moreInfoButtonsButtons.insertAdjacentElement("beforeend", moreInfoButtonsMenuButton)
 
     return li
 }

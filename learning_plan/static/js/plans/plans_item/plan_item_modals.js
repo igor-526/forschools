@@ -262,7 +262,7 @@ function planItemModalsLessonSetNotHeld(){
     const lessonID= Number(this.attributes.getNamedItem("data-lesson-notheld-id").value)
     lessonsAPISetNotHeld(lessonID).then(request => {
         switch (request.status){
-            case 201:
+            case 200:
                 bsPlansItemNotHeldModal.hide()
                 showSuccessToast("Занятие успешно изменено")
                 planItemChangeLesson(request.response)
