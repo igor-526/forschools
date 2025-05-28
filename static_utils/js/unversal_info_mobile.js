@@ -317,10 +317,10 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
 
         switch (mat.type){
             case 'image_formats':
-                materialBlock.style.minWidth = "25vw"
+                materialBlock.style.width = "25%"
                 materialBlock.style.backgroundImage = `url("${mat.file}")`
                 materialBlock.style.backgroundSize = "cover"
-                materialBlock.style.height = "25vw"
+                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -329,16 +329,16 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.color = "#0d6efd"
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
-                materialBlock.style.minWidth = "25vw"
-                materialBlock.style.height = "25vw"
+                materialBlock.style.width = "25%"
+                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
             case 'animation_formats':
                 materialBlock.style.backgroundImage = `url("${mat.file}")`
                 materialBlock.style.backgroundSize = "cover"
-                materialBlock.style.minWidth = "25vw"
-                materialBlock.style.height = "25vw"
+                materialBlock.style.width = "25%"
+                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -347,8 +347,8 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.color = "#0d6efd"
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
-                materialBlock.style.minWidth = "25vw"
-                materialBlock.style.height = "25vw"
+                materialBlock.style.width = "25%"
+                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -357,8 +357,8 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.color = "#0d6efd"
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
-                materialBlock.style.minWidth = "25vw"
-                materialBlock.style.height = "25vw"
+                materialBlock.style.width = "25%"
+                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -367,8 +367,8 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.color = "#0d6efd"
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
-                materialBlock.style.minWidth = "25vw"
-                materialBlock.style.height = "25vw"
+                materialBlock.style.width = "25%"
+                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -409,8 +409,8 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.color = "#0d6efd"
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
-                materialBlock.style.minWidth = "25vw"
-                materialBlock.style.height = "25vw"
+                materialBlock.style.width = "25%"
+                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -813,7 +813,6 @@ function universalInfoSelectionModal(
     }
     const modal = new modalEngine()
     modal.title = title
-    console.log(usersList)
     modal.addContent([getSearchBlock(), usersList])
     modal.addButtons(readyButton)
     modal.show()
