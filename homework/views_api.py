@@ -346,6 +346,10 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
+        try:
+            homework = Homework.objects.get(id=kwargs.get('pk'))
+        except Homework.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         files = []
         if (request.data.getlist('files') and
                 len(request.data.getlist('files')[0]) > 0):
@@ -361,9 +365,15 @@ class HomeworkLogListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-        except Exception:
-            pass
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as ex:
+            return Response(data={"error": str(ex)},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            data=HomeworkSerializer(homework, many=False,
+                                    context={'request': request}).data,
+            status=status.HTTP_201_CREATED
+        )
 
 
 class HomeworkLogAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
@@ -579,8 +589,11 @@ class HomeworkLogAPIView(LoginRequiredMixin, RetrieveUpdateDestroyAPIView):
             instance.comment = request.POST.get('comment')
             instance.files.add(*self.get_files())
             instance.save()
-            return Response(data={"status": "ok"},
-                            status=status.HTTP_200_OK)
+            return Response(
+                data=HomeworkSerializer(instance.homework, many=False,
+                                        context={"request": request}).data,
+                status=status.HTTP_200_OK
+            )
         except Exception as e:
             return Response(data={"error": str(e)},
                             status=status.HTTP_400_BAD_REQUEST)

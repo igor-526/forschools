@@ -1,6 +1,7 @@
 class homeworkUtils{
     data = null
     offcanvas = null
+    page = null
 
     constructor(data){
         this.data = data
@@ -36,6 +37,31 @@ class homeworkUtils{
         if (!this.offcanvas.offcanvasElement.classList.contains("showing")){
             this.offcanvas.show()
         }
+        if (resetData){
+            this.resetContent()
+        }
+    }
+
+    generateOnPage(contentBody){
+        this.page = new pageEngine(contentBody)
+        this.page.addData("Основные данные", this._getMainInfoContent())
+        if (this.data.hasOwnProperty("actions") && this.data.actions.length){
+            this.page.addData("Действия", this._getActionsContent())
+        }
+        if (this.data.hasOwnProperty("materials") && this.data.hasOwnProperty("actions")){
+            this.page.addData("Матариалы", this._getMaterialsContent())
+        }
+        if (this.data.hasOwnProperty("logs") && this.data.hasOwnProperty("actions")){
+            const logsContent = this._getLogsContent(true)
+            const allHistoryButton = document.createElement("button")
+            allHistoryButton.type = "button"
+            allHistoryButton.classList.add("btn", "btn-primary", "w-100", "mt-2")
+            allHistoryButton.innerHTML = '<i class="bi bi-clock-history me-2"></i>Вся история'
+            allHistoryButton.addEventListener("click", () => {
+                this._setLogsOffcanvas()
+            })
+            this.page.addData("Последний ответ", [logsContent, allHistoryButton])
+        }
     }
 
     resetContent(newData=null){
@@ -46,7 +72,7 @@ class homeworkUtils{
                 this.showOffcanvas()
             }
         } else {
-            lessonsAPIGetItem(this.data.id).then(request => {
+            homeworkAPIGetItem(this.data.id).then(request => {
                 switch (request.status){
                     case 200:
                         this.data = request.response
@@ -120,8 +146,8 @@ class homeworkUtils{
             agreementBtn.type = "button"
             agreementBtn.classList.add("my-2", "w-100", "btn", "btn-warning")
             agreementBtn.innerHTML = '<i class="bi bi-card-list"></i> Согласование'
-            agreementBtn.addEventListener("click", function () {
-                homeworkItemShowAgreementModal(homeworkID, homeworkOffcanvas)
+            agreementBtn.addEventListener("click", () => {
+                this._agreementSetModal()
             })
             actionsElements.push(agreementBtn)
         }
@@ -156,116 +182,167 @@ class homeworkUtils{
             checkBtn.type = "button"
             checkBtn.classList.add("my-2", "w-100", "btn", "btn-primary")
             checkBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Проверить'
-            checkBtn.addEventListener("click", function () {
-                const headerElement = homeworkOffcanvas.addData("Проверка",
-                    homeworkItemGetAnswerContent(homeworkID, homeworkOffcanvas, "check"))
+            checkBtn.addEventListener("click", () => {
+                const he = this.offcanvas.addData("Проверка ДЗ", this._getAnswerContent("check"))
                 checkBtn.remove()
-                headerElement.scrollIntoView({block: "start", behavior: "smooth"})
+                he.scrollIntoView({block: "start", behavior: "smooth"})
             })
             actionsElements.push(checkBtn)
         }
 
-        if (this.data.actions.includes("edit")){
-            const addMaterialsBlock = document.createElement("div")
-            addMaterialsBlock.classList.add("row", "my-2", "mx-0")
-
-            const addMaterialsButtonCol = document.createElement("div")
-            addMaterialsButtonCol.classList.add("col", "p-0")
-            const addMaterialsButton = document.createElement("button")
-            addMaterialsButton.classList.add("btn", "btn-primary", "w-100")
-            addMaterialsButton.type = "button"
-            addMaterialsButton.innerHTML = '<i class="bi bi-plus-lg me-1"></i><i class="bi bi-globe2 me-2"></i>Материалы'
-            addMaterialsButtonCol.insertAdjacentElement("beforeend", addMaterialsButton)
-            addMaterialsBlock.insertAdjacentElement("beforeend", addMaterialsButtonCol)
-
-            let addMaterialsTGButton = null
-            if (tgID){
-                const addMaterialsTGButtonCol = document.createElement("div")
-                addMaterialsTGButtonCol.classList.add("col", "p-0")
-                addMaterialsTGButton = document.createElement("button")
-                addMaterialsTGButton.classList.add("btn", "btn-primary", "w-100", "ms-1")
-                addMaterialsButton.classList.add("me-1")
-                addMaterialsTGButton.type = "button"
-                addMaterialsTGButton.innerHTML = '<i class="bi bi-plus-lg me-1"></i><i class="bi bi-telegram me-2"></i>Материалы'
-                addMaterialsTGButton.addEventListener("click", function () {
-                    const fd = new FormData()
-                    fd.set("method", "edit")
-                    homeworkAPISendTG(homeworkID, fd).then(request => {
-                        switch (request.status){
-                            case 200:
-                                showSuccessToast("Проверьте Telegram")
-                                break
-                            case 400:
-                                showErrorToast(request.response.error)
-                                break
-                            case 403:
-                                showErrorToast("Нет доступа для редактирования ДЗ")
-                                break
-                            default:
-                                showErrorToast()
-                                break
-                        }
-                    })
-                })
-                addMaterialsTGButtonCol.insertAdjacentElement("beforeend", addMaterialsTGButton)
-                addMaterialsBlock.insertAdjacentElement("beforeend", addMaterialsTGButtonCol)
-            }
-
-            addMaterialsButton.addEventListener("click", () => {
-                const headerElement = homeworkOffcanvas.addData("Добавление материалов",
-                    homeworkItemGetAddMaterialsContent(homeworkID, homeworkOffcanvas))
-                addMaterialsButtonCol.remove()
-                if (tgID){
-                    addMaterialsTGButton ? addMaterialsTGButton.classList.remove("ms-1") : null
-                    addMaterialsButton.classList.remove("me-1")
-                }
-                headerElement.scrollIntoView({block: "start", behavior: "smooth"})
+        if (this.data.send_tg ?? this.data.send_tg.self){
+            const sendTGBtn = document.createElement("button")
+            sendTGBtn.type = "button"
+            sendTGBtn.classList.add("my-2", "w-100", "btn", "btn-primary")
+            sendTGBtn.innerHTML = '<i class="bi bi-telegram me-2"></i>Посмотреть в TG'
+            sendTGBtn.addEventListener("click", () => {
+                this._sendTGSelf()
             })
-            actionsElements.push(addMaterialsBlock)
+            actionsElements.push(sendTGBtn)
         }
 
         return actionsElements
     }
 
     _getMaterialsContent(){
-        function setDeleteMaterialModal(matID){
-            const p = document.createElement("p")
-            p.innerHTML = "Действие необратимо"
-            const deleteButton = document.createElement("button")
-            deleteButton.type = "button"
-            deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
-            deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
-            const deleteFileModal = mobileInfoModalSet("Удалить материал из ДЗ?",
-                [p], [deleteButton])
-            deleteButton.addEventListener("click", () => {
-                const fd = new FormData()
-                fd.append("pk", matID)
-                materialsAPIDeleteFromObject(fd, "hw", homeworkID).then(request => {
-                    deleteFileModal.close()
-                    switch (request.status){
-                        case 204:
-                            homeworkOffcanvas.close()
-                            homeworkItemShowOffcanvas(homeworkID)
-                            showSuccessToast("Материал успешно удалён из ДЗ")
-                            break
-                        case 400:
-                            showErrorToast()
-                            break
-                        case 404:
-                            showErrorToast("Домашнее задание или материал не найден")
-                            break
-                        default:
-                            showErrorToast()
-                            break
-                    }
-                })
+        let deleteMaterialFunction = null
+        if (this.data.actions.includes("edit")){
+            deleteMaterialFunction = (matID) => {
+                this._deleteMaterialSetModal(matID)
+            }
+        }
+        const content = [mobileInfoMaterialsGetBlock(
+            this.data.materials, deleteMaterialFunction)]
+
+        if (this.data.actions.includes("edit")){
+            const addMaterialsButton = document.createElement("button")
+            addMaterialsButton.classList.add("btn", "btn-primary", "w-100", "my-1")
+            addMaterialsButton.type = "button"
+            addMaterialsButton.innerHTML = '<i class="bi bi-plus-lg me-1"></i><i class="bi bi-globe2 me-2"></i>Добавить через браузер'
+            content.push(addMaterialsButton)
+            addMaterialsButton.addEventListener("click", () => {
+                addMaterialsButton.remove()
+                const he = this.offcanvas.addData("Добавление материалов", this._addMaterialsInBrowserGetContent())
+                he.scrollIntoView({block: "start", behavior: "smooth"})
             })
+
+            if (tgID){
+                const addMaterialsTGButton = document.createElement("button")
+                addMaterialsTGButton.classList.add("btn", "btn-primary", "w-100", "my-1")
+                addMaterialsTGButton.type = "button"
+                addMaterialsTGButton.innerHTML = '<i class="bi bi-plus-lg me-1"></i><i class="bi bi-telegram me-2"></i>Добавить через TG'
+                content.push(addMaterialsTGButton)
+                addMaterialsTGButton.addEventListener("click", () => {
+                    this._addMaterialsInTelegram()
+                })
+            }
         }
 
-        return [mobileInfoMaterialsGetBlock(
-            this.data.materials,
-            this.data.actions.includes("edit") ?
-                setDeleteMaterialModal : null)]
+        return content
+    }
+
+    _getAnswerContent(mode){
+        function validateAndGetFormData(action){
+            comment.field.classList.remove("is-invalid")
+            comment.invalidFeedback.innerHTML = ""
+            const filesExists = selectedFiles.length > 0
+            const commentValue = comment.field.value.trim()
+            if (!filesExists && !commentValue){
+                comment.field.classList.add("is-invalid")
+                comment.invalidFeedback.innerHTML = "Добавьте или файл или комментарий"
+                return false
+            }
+            if (commentValue.length > 2000){
+                comment.field.classList.add("is-invalid")
+                comment.invalidFeedback.innerHTML = "Объём не может превышать 2000 символов"
+                return false
+            }
+            const fd = new FormData()
+            switch (action){
+                case "send":
+                    fd.append("status", "3")
+                    break
+                case "check_accept":
+                    fd.append("status", "4")
+                    break
+                case "check_decline":
+                    fd.append("status", "5")
+                    break
+            }
+            if (commentValue){
+                fd.set("comment", commentValue)
+            }
+            selectedFiles.forEach(file => {
+                fd.append("files", file.fileForm, file.fileForm.name)
+            })
+            return fd
+        }
+
+        function getComment(){
+            const sendHWCommentDiv = document.createElement("div")
+            sendHWCommentDiv.classList.add("my-2")
+            const sendHWCommentTextArea = document.createElement("textarea")
+            sendHWCommentTextArea.classList.add("form-control")
+            sendHWCommentTextArea.rows = 5
+            sendHWCommentTextArea.placeholder = "Комментарий"
+            const sendHWCommentInvalidFeedback = document.createElement("div")
+            sendHWCommentInvalidFeedback.classList.add("invalid-feedback")
+            sendHWCommentDiv.insertAdjacentElement("beforeend", sendHWCommentTextArea)
+            sendHWCommentDiv.insertAdjacentElement("beforeend", sendHWCommentInvalidFeedback)
+            return {
+                block: sendHWCommentDiv,
+                field: sendHWCommentTextArea,
+                invalidFeedback: sendHWCommentInvalidFeedback
+            }
+        }
+
+        const selectedFiles = []
+        const uploadBlock = mobileInfoGetUploadFilesBlock(selectedFiles)
+        const comment = getComment()
+        const content = [uploadBlock.button, uploadBlock.block, comment.block]
+        switch (mode){
+            case "send":
+                const sendBtn = document.createElement("button")
+                sendBtn.type = "button"
+                sendBtn.classList.add("btn", "btn-success", "w-100", "my-1")
+                sendBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>Отправить решение'
+                sendBtn.addEventListener("click", () => {
+                    const formData = validateAndGetFormData("send")
+                    if (formData === false){
+                        return null
+                    }
+                    this._homeworkSend(formData)
+                })
+                content.push(sendBtn)
+                break
+            case "check":
+                const acceptBtn = document.createElement("button")
+                acceptBtn.type = "button"
+                acceptBtn.classList.add("btn", "btn-success", "w-100", "my-1")
+                acceptBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>Принять ДЗ'
+                acceptBtn.addEventListener("click", () => {
+                    const formData = validateAndGetFormData("check_accept")
+                    if (formData === false){
+                        return null
+                    }
+                    this._homeworkSend(formData)
+                })
+                content.push(acceptBtn)
+                const declineBtn = document.createElement("button")
+                declineBtn.type = "button"
+                declineBtn.classList.add("btn", "btn-warning", "w-100", "my-1")
+                declineBtn.innerHTML = '<i class="bi bi-x-lg me-1"></i>Отправить на доработку'
+                declineBtn.addEventListener("click", () => {
+                    const formData = validateAndGetFormData("check_decline")
+                    if (formData === false){
+                        return null
+                    }
+                    this._homeworkSend(formData)
+                })
+                content.push(declineBtn)
+                break
+        }
+        return content
     }
 
     _cancelSetModal(){
@@ -425,7 +502,7 @@ class homeworkUtils{
                     editBtn.classList.add("mx-1", "btn", "btn-sm", "btn-warning")
                     editBtn.innerHTML = '<i class="bi bi-pen"></i>'
                     editBtn.addEventListener("click", () => {
-                        homeworkItemGetEditLogModal(homeworkID, homeworkOffcanvas, log)
+                        this._editLogSetModal(log)
                     })
                     actionsButtonBlock.insertAdjacentElement("beforeend", editBtn)
                 }
@@ -435,7 +512,7 @@ class homeworkUtils{
                     deleteBtn.classList.add("mx-1", "btn", "btn-sm", "btn-danger")
                     deleteBtn.innerHTML = '<i class="bi bi-trash"></i>'
                     deleteBtn.addEventListener("click", () => {
-                        getDeleteModal(log.id)
+                        this._deleteLogSetModal(log.id)
                     })
                     actionsButtonBlock.insertAdjacentElement("beforeend", deleteBtn)
                 }
@@ -464,6 +541,131 @@ class homeworkUtils{
         o.header = `История "${this.data.name}"`
         o.addData("", this._getLogsContent(false))
         o.show()
+    }
+
+    _editLogSetModal(log){
+        function getFormDataAndValidate(){
+            comment.field.classList.remove("is-invalid")
+            comment.invalidFeedback.innerHTML = ""
+            const commentValue = comment.field.value.trim()
+            if (commentValue.length > 2000){
+                comment.field.classList.add("is-invalid")
+                comment.invalidFeedback.innerHTML = "Объём не может превышать 2000 символов"
+                return false
+            }
+            const fd = new FormData()
+            fd.set("comment", commentValue ? commentValue : "-")
+            selectedFiles.forEach(file => {
+                fd.append("files", file.fileForm, file.fileForm.name)
+            })
+            return fd
+        }
+
+        function getComment(){
+            const sendHWCommentDiv = document.createElement("div")
+            sendHWCommentDiv.classList.add("my-2")
+            const sendHWCommentTextArea = document.createElement("textarea")
+            sendHWCommentTextArea.classList.add("form-control")
+            sendHWCommentTextArea.rows = 5
+            sendHWCommentTextArea.placeholder = "Комментарий"
+            const sendHWCommentInvalidFeedback = document.createElement("div")
+            sendHWCommentInvalidFeedback.classList.add("invalid-feedback")
+            sendHWCommentDiv.insertAdjacentElement("beforeend", sendHWCommentTextArea)
+            sendHWCommentDiv.insertAdjacentElement("beforeend", sendHWCommentInvalidFeedback)
+            return {
+                block: sendHWCommentDiv,
+                field: sendHWCommentTextArea,
+                invalidFeedback: sendHWCommentInvalidFeedback
+            }
+        }
+
+        const comment = getComment()
+        comment.field.innerHTML = log.comment
+        const selectedFiles = []
+        const editButton = document.createElement("button")
+        editButton.classList.add("btn", "btn-success")
+        editButton.innerHTML = '<i class="bi bi-check2 me-2"></i>Применить'
+        editButton.addEventListener("click", () => {
+            const fd = getFormDataAndValidate()
+            if (!fd){
+                return null
+            }
+            this._editLog(editModal, log.id, fd)
+        })
+        const h6 = document.createElement("h6")
+        h6.innerHTML = "Добавление файлов"
+        const uploadBlock = mobileInfoGetUploadFilesBlock(selectedFiles)
+        const editModal = new modalEngine()
+        editModal.title = "Изменение ответа"
+        editModal.addContent([comment.block, h6, uploadBlock.button, uploadBlock.block])
+        editModal.addButtons(editButton)
+        editModal.show()
+    }
+
+    _editLog(editModal, logID, formData){
+        homeworkAPIUpdateLog(logID, formData).then(request => {
+            editModal.close()
+            const toast = new toastEngine()
+            switch (request.status){
+                case 200:
+                    toast.setSuccess("Ответ успешно изменён")
+                    this.resetContent(request.response)
+                    break
+                case 400:
+                    toast.setError(request.response.error)
+                    break
+                case 403:
+                    toast.setError("Нет доступа для изменения этого ответа")
+                    break
+                case 404:
+                    toast.setError("Ответ не найден")
+                    break
+                default:
+                    toast.setError()
+                    break
+            }
+            toast.show()
+        })
+    }
+
+    _deleteLogSetModal(logID){
+        const p = document.createElement("p")
+        p.innerHTML = "Действие необратимо"
+        const deleteButton = document.createElement("button")
+        deleteButton.type = "button"
+        deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
+        deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
+        const deleteLogModal = new modalEngine()
+        deleteLogModal.title = "Удалить ответ из ДЗ?"
+        deleteLogModal.addContent(p)
+        deleteLogModal.addButtons(deleteButton)
+        deleteButton.show()
+        deleteButton.addEventListener("click", () => {
+            this._deleteLog(deleteLogModal, logID)
+        })
+    }
+
+    _deleteLog(deleteLogModal, logID){
+        homeworkAPIDeleteLog(logID).then(request => {
+            deleteLogModal.close()
+            const toast = new toastEngine()
+            switch (request.status){
+                case 204:
+                    toast.setSuccess("Ответ успешно удалён")
+                    this.resetContent()
+                    break
+                case 403:
+                    toast.setError("Нет доступа для удаления ответа")
+                    break
+                case 404:
+                    toast.setError("Ответ не найден")
+                    break
+                default:
+                    toast.setError()
+                    break
+            }
+            toast.show()
+        })
     }
 
     _cancel(cancelModal){
@@ -535,27 +737,36 @@ class homeworkUtils{
             return fd
         }
 
-        function getButtons(){
-            const declineButton = document.createElement("button")
-            declineButton.type = "button"
-            declineButton.innerHTML = '<i class="bi bi-x-lg"></i> Не согласовать'
-            declineButton.classList.add("btn", "btn-danger", "mx-1", "my-1")
-            declineButton.addEventListener("click", getDeclineListener)
-
-            const acceptButton = document.createElement("button")
-            acceptButton.type = "button"
-            acceptButton.innerHTML = '<i class="bi bi-check2-all"></i> Согласовать'
-            acceptButton.classList.add("btn", "btn-success", "mx-1", "my-1")
-            acceptButton.addEventListener("click", getAcceptListener)
-
-            return [declineButton, acceptButton]
-        }
-
         const modalBody = getBody()
         const agreementModal = new modalEngine()
         agreementModal.title = `Согласование ${this.data.name}`
+
+        const declineButton = document.createElement("button")
+        declineButton.type = "button"
+        declineButton.innerHTML = '<i class="bi bi-x-lg"></i> Не согласовать'
+        declineButton.classList.add("btn", "btn-danger", "mx-1", "my-1")
+        declineButton.addEventListener("click", () => {
+            const fd = getFormDataAndValidate(true)
+            if (!fd){
+                return null
+            }
+            this._agreementDecline(agreementModal, fd)
+        })
+
+        const acceptButton = document.createElement("button")
+        acceptButton.type = "button"
+        acceptButton.innerHTML = '<i class="bi bi-check2-all"></i> Согласовать'
+        acceptButton.classList.add("btn", "btn-success", "mx-1", "my-1")
+        acceptButton.addEventListener("click", () => {
+            const fd = getFormDataAndValidate(false)
+            if (!fd){
+                return null
+            }
+            this._agreementAccept(agreementModal, fd)
+        })
+
         agreementModal.addContent(modalBody.body)
-        agreementModal.addButtons(getButtons())
+        agreementModal.addButtons([declineButton, acceptButton])
         agreementModal.show()
     }
 
@@ -604,6 +815,230 @@ class homeworkUtils{
                 case 404:
                     toast.setError("ДЗ не найдено")
                     this.offcanvas.close()
+                    break
+                default:
+                    toast.setError()
+                    break
+            }
+            toast.show()
+        })
+    }
+
+    _homeworkSend(formData){
+        homeworkAPISend(this.data.id, formData).then(request => {
+            const toast = new toastEngine()
+            switch (request.status){
+                case 201:
+                    toast.setSuccess("Отправлено")
+                    this.resetContent(request.response)
+                    break
+                case 400:
+                    toast.setError(request.response)
+                    break
+                case 404:
+                    toast.setError("ДЗ не найдено")
+                    break
+                case 403:
+                    toast.setError("Нет доступа")
+                    break
+                default:
+                    toast.setError()
+                    break
+            }
+            toast.show()
+        })
+    }
+
+    _addMaterialsInBrowserGetContent(){
+        function addTextField(){
+            const addTextMaterialDiv = document.createElement("div")
+            addTextMaterialDiv.classList.add("my-2")
+            const addTextMaterialTextArea = document.createElement("textarea")
+            addTextMaterialTextArea.classList.add("form-control")
+            addTextMaterialTextArea.rows = 5
+            addTextMaterialTextArea.placeholder = "Текстовый материал"
+            const addTextMaterialInvalidFeedback = document.createElement("div")
+            addTextMaterialInvalidFeedback.classList.add("invalid-feedback")
+            addTextMaterialDiv.insertAdjacentElement("beforeend", addTextMaterialTextArea)
+            addTextMaterialDiv.insertAdjacentElement("beforeend", addTextMaterialInvalidFeedback)
+            textMaterialsForm.insertAdjacentElement("beforeend", addTextMaterialDiv)
+            addTextMaterialDiv.scrollIntoView({block: "start", behavior: "smooth"})
+            textMaterialsFields.push({
+                field: addTextMaterialTextArea,
+                invalidFeedback: addTextMaterialInvalidFeedback
+            })
+        }
+
+        function validateAndGetFormData(){
+            const fd = new FormData(textMaterialsForm)
+            let fullLength = 0
+            let validationStatus = true
+            textMaterialsFields.forEach(field => {
+                field.field.classList.remove("is-invalid")
+                field.invalidFeedback.innerHTML = ""
+                const value = field.field.value.trim()
+                if (value.length > 3800){
+                    field.field.classList.add("is-invalid")
+                    field.invalidFeedback.innerHTML = "Длина поля не может превышать 3800 символов"
+                    validationStatus = false
+                }
+                if (value !== ""){
+                    fd.append("text_materials", value)
+                    fullLength++
+                }
+            })
+            selectedFiles.forEach(file => {
+                fd.append("files", file.fileForm, file.fileForm.name)
+                fullLength++
+            })
+            if (!fullLength){
+                showErrorToast("Необходимо добавить хотя бы один материал")
+                validationStatus = false
+            }
+            return validationStatus ? fd : null
+        }
+
+        const selectedFiles = []
+        const textMaterialsFields = []
+        const uploadBlock = mobileInfoGetUploadFilesBlock(selectedFiles)
+        const textMaterialsForm = document.createElement("form")
+        textMaterialsForm.acceptCharset = "utf-8"
+        const addTextMaterialFieldButton = document.createElement("button")
+        addTextMaterialFieldButton.classList.add("btn", "btn-secondary", "w-100", "my-1")
+        addTextMaterialFieldButton.type = "button"
+        addTextMaterialFieldButton.innerHTML = 'Добавить текст'
+        addTextMaterialFieldButton.addEventListener("click", addTextField)
+        const addMaterialsButton = document.createElement("button")
+        addMaterialsButton.classList.add("btn", "btn-success", "w-100", "my-1")
+        addMaterialsButton.type = "button"
+        addMaterialsButton.innerHTML = 'Добавить материалы'
+        addMaterialsButton.addEventListener("click", () => {
+            const formData = validateAndGetFormData()
+            if (!formData){
+                return null
+            }
+            this._addMaterials(formData)
+        })
+        return [uploadBlock.button, uploadBlock.block, textMaterialsForm,
+            addTextMaterialFieldButton, addMaterialsButton]
+    }
+
+    _addMaterials(formData){
+        materialsAPIAddToObject(formData, "hw", this.data.id).then(request => {
+            const toast = new toastEngine()
+            switch (request.status){
+                case 200:
+                    toast.setSuccess("Материалы успешно добавлены")
+                    this.resetContent()
+                    break
+                case 400:
+                    toast.setError(request.response.hasOwnProperty("error") ?
+                        request.response.error : null)
+                    break
+                case 403:
+                    toast.setError("Нет доступа для изменения занятия")
+                    break
+                case 404:
+                    toast.setError(request.response.hasOwnProperty("error") ?
+                        request.response.error : "Домашнее задание не найдено")
+                    break
+                default:
+                    toast.setError()
+                    break
+            }
+            toast.show()
+        })
+    }
+
+    _addMaterialsInTelegram(){
+        const fd = new FormData()
+        fd.set("method", "edit")
+        homeworkAPISendTG(this.data.id, fd).then(request => {
+            const toast = new toastEngine()
+            switch (request.status){
+                case 200:
+                    toast.setSuccess("Проверьте Telegram")
+                    toast.addTGButton()
+                    break
+                case 400:
+                    toast.setError(request.response.error)
+                    break
+                case 403:
+                    toast.setError("Нет доступа для редактирования ДЗ")
+                    break
+                default:
+                    toast.setError()
+                    break
+            }
+            toast.show()
+        })
+    }
+
+    _deleteMaterialSetModal(matID){
+        const p = document.createElement("p")
+        p.innerHTML = "Действие необратимо"
+        const deleteButton = document.createElement("button")
+        deleteButton.type = "button"
+        deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
+        deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
+        const deleteMaterialModal = new modalEngine()
+        deleteMaterialModal.title = "Удалить материал из ДЗ?"
+        deleteMaterialModal.addContent(p)
+        deleteMaterialModal.addButtons(deleteButton)
+        deleteButton.addEventListener("click", () => {
+            const fd = new FormData()
+            fd.append("pk", matID)
+            this._deleteMaterial(deleteMaterialModal, fd)
+        })
+        deleteMaterialModal.show()
+    }
+
+    _deleteMaterial(deleteMaterialModal, formData){
+        materialsAPIDeleteFromObject(formData, "hw", this.data.id).then(request => {
+            deleteMaterialModal.close()
+            const toast = new toastEngine()
+            switch (request.status){
+                case 204:
+                    toast.setSuccess("Материал успешно удалён из ДЗ")
+                    this.resetContent()
+                    break
+                case 400:
+                    toast.setError(request.response.hasOwnProperty("error") ? request.response.error : null)
+                    break
+                case 403:
+                    toast.setError("Нет доступа для изменения ДЗ")
+                    break
+                case 404:
+                    toast.setError("Домашнее задание или материал не найден")
+                    break
+                default:
+                    toast.setError()
+                    break
+            }
+            toast.show()
+        })
+    }
+
+    _sendTGSelf(){
+        const fd = new FormData()
+        fd.set("user_id", this.data.send_tg.self.id)
+        fd.set("method", "open")
+        // if (message !== ""){
+        //     fd.set("message", message)
+        // }
+        homeworkAPISendTG(this.data.id, fd).then(request => {
+            const toast = new toastEngine()
+            switch (request.status){
+                case 200:
+                    toast.message = "Проверьте Telegram"
+                    toast.title = "Отправлено"
+                    toast.addTGButton()
+                    break
+                case 400:
+                    toast.setError(request.response.error)
+                    break
+                case 403:
+                    toast.setError("Нет доступа для отправки")
                     break
                 default:
                     toast.setError()

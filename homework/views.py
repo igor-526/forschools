@@ -40,10 +40,5 @@ class HomeworkItemPage(LoginRequiredMixin, TemplateView):
         if hw_status == 1 and hw.listener == request.user:
             hw.open()
         context = {'title': hw.name,
-                   "hw": hw,
-                   "can_send": get_send_hw_permission(hw, request),
-                   "can_check": get_can_check_hw_permission(hw, request),
-                   "can_cancel": get_can_cancel_hw_permission(hw, request),
-                   "can_set_replace": False,
-                   "can_edit_hw": get_can_edit_hw_permission(hw, request)}
+                   "hw": hw}
         return render(request, self.template_name, context)

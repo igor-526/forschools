@@ -4,112 +4,29 @@
     <div class="container-xxl mt-4 mb-3">
         <h1>{{ hw.name }}</h1>
     </div>
-
-    <div class="container-xxl">
-        <div class="row">
-            <div class="col-6">
-                <div class="card mb-3">
-                    <div class="card-header">Основные данные</div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush" id="hwItemMainInfoList"></ul>
-                    </div>
-                </div>
-
-                <div class="card mb-3 d-none" id="hwItemPlanInfo">
-                    <div class="card-header" id="hwItemPlanInfoHeader"></div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush" id="hwItemPlanInfoList"></ul>
-                    </div>
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-header">Материалы
-                        <button id="hwItemAddMaterialsTG" class="btn-primary btn btn-sm d-none"><i class="bi bi-plus-lg"></i> <i class="bi bi-telegram"></i></button>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush" id="hwItemMaterialsList"></ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="card mb-3">
-                    <div class="card-header">Действия</div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                {% if can_send %}
-                                    <button id="hwItemSendButton" type="button" class="btn btn-primary">Отправить решение</button>
-                                    {% include "homework_item_modal_send.html" %}
-                                {% endif %}
-                                {% if can_check %}
-                                    <button id="hwItemCheckButton" type="button" class="btn btn-primary">Проверить</button>
-                                    {% include "homework_item_modal_check.html" %}
-                                {% endif %}
-                                {% if can_cancel %}
-                                    <button id="hwItemCancelButton" type="button" class="btn btn-danger">Отменить</button>
-                                    {% include "homework_item_modal_cancel.html" %}
-                                {% endif %}
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <h3 class="mt-2" style="color: #808080;">История</h3>
-                <div class="list-group" id="hwItemLogList"></div>
-                {% include "homework_item_modal_log.html" %}
-            </div>
-        </div>
-    </div>
-    {% include "material_preview_modal.html" %}
-    {% if can_set_replace %}
-        {% include "modal_set_replace.html" %}
-    {% endif %}
-    {% if can_edit_hw %}
-        {% include "homework_item_modal_del_material.html" %}
-    {% endif %}
+    <div id="contentBody" class="row"></div>
 {% endblock %}
 {% block static_js %}
     <script>
-        const hwID = {{ hw.id }}
+        homeworkAPIGetItem({{ hw.id }}).then(request => {
+            if (request.status === 200){
+                const hwUtils = new homeworkUtils(request.response)
+                hwUtils.generateOnPage(document.querySelector("#contentBody"))
+            } else {
+                const toast = new toastEngine()
+                switch (request.status){
+                    case 403:
+                        toast.setError("Нет доступа")
+                        break
+                    case 404:
+                        toast.setError("ДЗ не найдено")
+                        break
+                    default:
+                        toast.setError()
+                        break
+                }
+                toast.show()
+            }
+        })
     </script>
-    <script src="{% static 'js/list_utils.js' %}"></script>
-    <script src="{% static 'js/homework/homework_utils.js' %}"></script>
-    <script src="{% static 'js/homework/homework_api.js' %}"></script>
-    <script src="{% static 'js/materials/materials_api.js' %}"></script>
-    <script src="{% static 'js/homework/homework_item.js' %}"></script>
-    <script src="{% static 'js/homework/homework_item_log.js' %}"></script>
-    <script src="{% static 'js/materialsutils.js' %}"></script>
-    {% if can_send %}
-        <script src="{% static 'js/homework/homework_item_send.js' %}"></script>
-    {% endif %}
-    {% if can_check %}
-        <script src="{% static 'js/homework/homework_item_check.js' %}"></script>
-    {% endif %}
-    {% if can_cancel %}
-        <script src="{% static 'js/homework/homework_item_cancel.js' %}"></script>
-    {% endif %}
-    {% if can_edit_hw %}
-        <script>
-            const hwItemCanEdit = true
-        </script>
-        <script src="{% static 'js/homework/homework_item_delete_material.js' %}"></script>
-    {% else %}
-        <script>
-            const hwItemCanEdit = false
-        </script>
-    {% endif %}
-
-    {% if can_set_replace %}
-        <script>
-            const hwItemCanSetReplace = true
-            const userID = {{ request.user.id }}
-        </script>
-        <script src="{% static 'js/users/users_api.js' %}"></script>
-        <script src="{% static 'js/users/users_replace_teacher.js' %}"></script>
-    {% else %}
-        <script>
-            const hwItemCanSetReplace = false
-            const userID = {{ request.user.id }}
-        </script>
-    {% endif %}
-
 {% endblock %}

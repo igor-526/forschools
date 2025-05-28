@@ -15,7 +15,7 @@ from .views_ma import HomeworkItemMAPage, HomeworkListMAPage
 
 urlpatterns = [
     path('', HomeworksListPage.as_view(), name='homeworks'),
-    path('<int:pk>', HomeworkItemPage.as_view()),
+    path('<int:pk>/', HomeworkItemPage.as_view()),
 ]
 
 apiv1patterns = [

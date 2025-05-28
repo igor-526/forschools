@@ -82,25 +82,22 @@ function homeworksShow(homeworks, clear=true){
         tr.insertAdjacentElement("beforeend", tdAssigned)
         tr.insertAdjacentElement("beforeend", tdLastChanged)
         if (hw.lesson_info){
-            const tdNameLessonButtonA = document.createElement("a")
-            const tdNameLessonButtonButton = document.createElement("button")
-            tdNameLessonButtonA.insertAdjacentElement("beforeend", tdNameLessonButtonButton)
-            tdNameLessonButtonA.href = `/lessons/${hw.lesson_info.id}`
-            tdNameLessonButtonButton.classList.add("btn", "btn-sm", "btn-primary", "me-2")
-            tdNameLessonButtonButton.innerHTML = '<i class="bi bi-file-earmark-text"></i>'
             tdName.setAttribute("data-bs-toggle", "tooltip")
             tdName.setAttribute("data-bs-placement", "top")
             tdName.setAttribute("title", `Занятие "${hw.lesson_info.name}" от ${new Date(hw.lesson_info.date).toLocaleDateString()}`)
-            tdName.insertAdjacentElement("beforeend", tdNameLessonButtonA)
             new bootstrap.Tooltip(tdName)
         }
-        tdName.innerHTML += `<a href="/homeworks/${hw.id}">${hw.name}</a>`
+        tdName.innerHTML += hw.name
         tdTeacher.innerHTML = getUsersString([hw.teacher])
         tdListener.innerHTML = getUsersString([hw.listener])
         if (hw.assigned){
             tdAssigned.innerHTML = timeUtilsDateTimeToStr(hw.assigned)
         }
         tdLastChanged.innerHTML = `${homeworkItemShowLogsStrStatus(hw.status.status)} (${new Date(hw.status.dt).toLocaleDateString()})`
+        tr.addEventListener("click", (e) => {
+            const hwUtils = new homeworkUtils(hw)
+            hwUtils.showOffcanvas(true)
+        })
         return tr
     }
 

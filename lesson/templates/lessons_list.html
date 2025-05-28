@@ -157,20 +157,13 @@
         </div>
     </div>
     {% if is_admin %}
-        {% include 'lessons_modal_comment.html' %}
         {% include 'modals/download_data.html' %}
     {% endif %}
 {% endblock %}
 {% block static_js %}
     {% if is_admin %}
         <script src="{% static 'js/download_data_engine.js' %}"></script>
-        <script src="{% static 'js/lessons/lessons_admin_comment.js' %}"></script>
     {% endif %}
-    <script src="{% static 'js/users/users_api.js' %}"></script>
-    <script src="{% static 'js/collections/collections_api.js' %}"></script>
-    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
-    <script src="{% static 'js/homework/homework_utils.js' %}"></script>
-    <script src="{% static 'js/homework/homework_api.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_main.js' %}"></script>
     <script src="{% static 'js/lessons/lessons_main_filters.js' %}"></script>
 {% endblock %}

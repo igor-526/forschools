@@ -316,37 +316,7 @@ function homeworkItemShowOffcanvasGetSendContent(homeworkID, contacts={}){
 function homeworkItemShowOffcanvasGetMaterialsContent(homeworkID, homeworkOffcanvas,
                                                       materials=[], can_edit=false){
     function setDeleteMaterialModal(matID){
-        const p = document.createElement("p")
-        p.innerHTML = "Действие необратимо"
-        const deleteButton = document.createElement("button")
-        deleteButton.type = "button"
-        deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
-        deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
-        const deleteFileModal = mobileInfoModalSet("Удалить материал из ДЗ?",
-            [p], [deleteButton])
-        deleteButton.addEventListener("click", () => {
-            const fd = new FormData()
-            fd.append("pk", matID)
-            materialsAPIDeleteFromObject(fd, "hw", homeworkID).then(request => {
-                deleteFileModal.close()
-                switch (request.status){
-                    case 204:
-                        homeworkOffcanvas.close()
-                        homeworkItemShowOffcanvas(homeworkID)
-                        showSuccessToast("Материал успешно удалён из ДЗ")
-                        break
-                    case 400:
-                        showErrorToast()
-                        break
-                    case 404:
-                        showErrorToast("Домашнее задание или материал не найден")
-                        break
-                    default:
-                        showErrorToast()
-                        break
-                }
-            })
-        })
+
     }
 
     return [mobileInfoMaterialsGetBlock(materials, can_edit ? setDeleteMaterialModal : null)]
@@ -354,31 +324,7 @@ function homeworkItemShowOffcanvasGetMaterialsContent(homeworkID, homeworkOffcan
 
 function homeworkItemShowOffcanvasGetLogsInfo(homeworkID, homeworkOffcanvas, logs=[], last=true){
     function getDeleteModal(logID){
-        const p = document.createElement("p")
-        p.innerHTML = "Действие необратимо"
-        const deleteButton = document.createElement("button")
-        deleteButton.type = "button"
-        deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
-        deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
-        const deleteLogModal = mobileInfoModalSet("Удалить ответ из ДЗ?",
-            [p], [deleteButton])
-        deleteButton.addEventListener("click", () => {
-            homeworkAPIDeleteLog(logID).then(request => {
-                deleteLogModal.close()
-                switch (request.status){
-                    case 204:
-                        homeworkOffcanvas.close()
-                        homeworkItemShowOffcanvas(homeworkID)
-                        showSuccessToast("Ответ успешно удалён")
-                        break
-                    case 404:
-                        showErrorToast("Ответ не найден")
-                        break
-                    default:
-                        showErrorToast()
-                }
-            })
-        })
+
     }
 
     function getDeleteFileModal(fileID){

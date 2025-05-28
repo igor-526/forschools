@@ -153,7 +153,7 @@ class offcanvasEngine{
             return null
         }
         this.allContent.push(contentToAdd)
-        this._addContentItemToOffcanvas(contentToAdd)
+        return this._addContentItemToOffcanvas(contentToAdd)
     }
 
     _addContentItemToOffcanvas(content){

@@ -62,21 +62,29 @@
     const tgID = {% if tg_id %} {{ tg_id }}{% else %}null{% endif %}
     const supportedExtensions = {{ supported_extensions|safe }}
 </script>
-<script src="{% static 'js/icon_utils.js' %}"></script>
-<script src="{% static 'js/universal_field_validator.js' %}"></script>
-<script src="{% static 'js/materials/materials_api.js' %}"></script>
-<script src="{% static 'js/materials_preview.js' %}"></script>
 <script src="{% static 'js/mobile_template_engine.js' %}"></script>
-<script src="{% static 'js/unversal_info_mobile.js' %}"></script>
-<script src="{% static 'js/lessons/lesson_utils.js' %}"></script>
+<script src="{% static 'js/apitostr.js' %}"></script>
+<script src="{% static 'js/collections/collections_api.js' %}"></script>
+<script src="{% static 'js/homework/homework_api.js' %}"></script>
+<script src="{% static 'js/materials/materials_api.js' %}"></script>
+<script src="{% static 'js/lessons/lessons_api.js' %}"></script>
+<script src="{% static 'js/programs/programsAPI.js' %}"></script>
+<script src="{% static 'js/support/support_api.js' %}"></script>
+<script src="{% static 'js/telegram/telegram_api.js' %}"></script>
+<script src="{% static 'js/users/users_api.js' %}"></script>
+<script src="{% static 'js/materials_preview.js' %}"></script>
 <script src="{% static 'js/userutils.js' %}"></script>
 <script src="{% static 'js/timeutils.js' %}"></script>
 <script src="{% static 'js/hashutils.js' %}"></script>
 <script src="{% static 'js/cookies_utils.js' %}"></script>
-<script src="{% static 'js/apitostr.js' %}"></script>
-<script src="{% static 'js/support/support_api.js' %}"></script>
 <script src="{% static 'js/support/support.js' %}"></script>
 <script src="{% static 'js/toasts.js' %}"></script>
+<script src="{% static 'js/icon_utils.js' %}"></script>
+<script src="{% static 'js/universal_field_validator.js' %}"></script>
+<script src="{% static 'js/unversal_info_mobile.js' %}"></script>
+<script src="{% static 'js/lessons/lesson_utils.js' %}"></script>
+<script src="{% static 'js/materials/materials_utils.js' %}"></script>
+<script src="{% static 'js/homework/homework_utils.js' %}"></script>
 {% block static_js %} {% endblock %}
 </body>
 </html>

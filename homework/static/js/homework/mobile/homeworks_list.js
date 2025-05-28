@@ -178,8 +178,9 @@ function homeworksMobileShow(homeworks=[]){
         setMoreInfoText(hw, moreInfoButtonsInfo)
         li.insertAdjacentElement("beforeend", moreInfoButtonsInfo)
 
-        li.addEventListener("click", function () {
-            homeworkItemShowOffcanvas(hw.id)
+        li.addEventListener("click", () => {
+            const hwUtils = new homeworkUtils(hw)
+            hwUtils.showOffcanvas(true)
         })
         return li
     }
