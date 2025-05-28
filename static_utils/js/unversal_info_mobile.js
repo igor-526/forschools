@@ -318,9 +318,11 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
         switch (mat.type){
             case 'image_formats':
                 materialBlock.style.width = "25%"
-                materialBlock.style.backgroundImage = `url("${mat.file}")`
-                materialBlock.style.backgroundSize = "cover"
-                materialBlock.style.height = "25%"
+                const materialBlockImg = document.createElement("img")
+                materialBlockImg.style.width = "100%"
+                materialBlockImg.src = mat.file
+                materialBlockImg.alt = "Изображение"
+                materialBlock.insertAdjacentElement("beforeend", materialBlockImg)
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -330,16 +332,17 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
                 materialBlock.style.width = "25%"
-                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
             case 'animation_formats':
-                materialBlock.style.backgroundImage = `url("${mat.file}")`
-                materialBlock.style.backgroundSize = "cover"
                 materialBlock.style.width = "25%"
-                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
+                const materialBlockAnim = document.createElement("img")
+                materialBlockAnim.style.width = "100%"
+                materialBlockAnim.src = mat.file
+                materialBlockAnim.alt = "Анимация"
+                materialBlock.insertAdjacentElement("beforeend", materialBlockAnim)
                 setListeners(materialBlock, mat)
                 break
             case 'archive_formats':
@@ -358,7 +361,6 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
                 materialBlock.style.width = "25%"
-                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -368,7 +370,6 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
                 materialBlock.style.width = "25%"
-                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
@@ -410,7 +411,6 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
                 materialBlock.style.width = "25%"
-                materialBlock.style.height = "25%"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
