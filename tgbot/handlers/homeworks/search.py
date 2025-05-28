@@ -26,14 +26,6 @@ async def h_homework_show_check(callback: CallbackQuery,
     await show_homework_queryset(callback.from_user.id, state, callback_data.action)
 
 
-@router.callback_query(HomeworkMenuCallback.filter(F.action == 'sended'))
-async def h_homework_show_sended(callback: CallbackQuery,
-                                callback_data: HomeworkMenuCallback,
-                                state: FSMContext) -> None:
-    await callback.message.delete()
-    await show_homework_queryset(callback.from_user.id, state, callback_data.action)
-
-
 @router.callback_query(HomeworkCallback.filter(F.action == 'search'))
 async def h_homework_search(callback: CallbackQuery,
                             state: FSMContext) -> None:

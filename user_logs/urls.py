@@ -14,7 +14,3 @@ api_v1_patterns = [
     path('messages/', UserLogsMessagesChatAPIVIew.as_view()),
     path('', UserLogsActionsAPIView.as_view()),
 ]
-
-ma_patterns = [
-
-]

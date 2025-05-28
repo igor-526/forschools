@@ -43,7 +43,8 @@ class homeworkUtils{
     }
 
     generateOnPage(contentBody){
-        this.page = new pageEngine(contentBody)
+        this.contentBody = contentBody
+        this.page = new pageEngine(this.contentBody)
         this.page.addData("Основные данные", this._getMainInfoContent())
         if (this.data.hasOwnProperty("actions") && this.data.actions.length){
             this.page.addData("Действия", this._getActionsContent())
@@ -71,6 +72,10 @@ class homeworkUtils{
                 this.offcanvas.resetContent()
                 this.showOffcanvas()
             }
+            if (this.page){
+                this.page.resetContent()
+                this.generateOnPage(this.contentBody)
+            }
         } else {
             homeworkAPIGetItem(this.data.id).then(request => {
                 switch (request.status){
@@ -79,6 +84,10 @@ class homeworkUtils{
                         if (this.offcanvas){
                             this.offcanvas.resetContent()
                             this.showOffcanvas()
+                        }
+                        if (this.page){
+                            this.page.resetContent()
+                            this.generateOnPage(this.contentBody)
                         }
                         break
                     default:
@@ -168,9 +177,14 @@ class homeworkUtils{
             sendBtn.type = "button"
             sendBtn.classList.add("my-2", "w-100", "btn", "btn-primary")
             sendBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Отправить решение'
-            sendBtn.addEventListener("click", function () {
-                const headerElement = homeworkOffcanvas.addData("Решение",
-                    homeworkItemGetAnswerContent(homeworkID, homeworkOffcanvas, "send"))
+            sendBtn.addEventListener("click", () => {
+                let headerElement
+                if (this.offcanvas){
+                    headerElement = this.offcanvas.addData("Решение", this._getAnswerContent("send"))
+                }
+                if (this.page){
+                    headerElement = this.page.addData("Решение", this._getAnswerContent("send"))
+                }
                 sendBtn.remove()
                 headerElement.scrollIntoView({block: "start", behavior: "smooth"})
             })
@@ -183,14 +197,19 @@ class homeworkUtils{
             checkBtn.classList.add("my-2", "w-100", "btn", "btn-primary")
             checkBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Проверить'
             checkBtn.addEventListener("click", () => {
-                const he = this.offcanvas.addData("Проверка ДЗ", this._getAnswerContent("check"))
+                let headerElement
+                if (this.offcanvas){
+                    headerElement = this.offcanvas.addData("Проверка", this._getAnswerContent("check"))
+                }
+                if (this.page){
+                    headerElement = this.page.addData("Проверка", this._getAnswerContent("check"))
+                }
                 checkBtn.remove()
-                he.scrollIntoView({block: "start", behavior: "smooth"})
+                headerElement.scrollIntoView({block: "start", behavior: "smooth"})
             })
             actionsElements.push(checkBtn)
         }
-
-        if (this.data.send_tg ?? this.data.send_tg.self){
+        if (this.data.send_tg && this.data.send_tg.self){
             const sendTGBtn = document.createElement("button")
             sendTGBtn.type = "button"
             sendTGBtn.classList.add("my-2", "w-100", "btn", "btn-primary")
@@ -221,9 +240,15 @@ class homeworkUtils{
             addMaterialsButton.innerHTML = '<i class="bi bi-plus-lg me-1"></i><i class="bi bi-globe2 me-2"></i>Добавить через браузер'
             content.push(addMaterialsButton)
             addMaterialsButton.addEventListener("click", () => {
+                let headerElement
+                if (this.offcanvas){
+                    headerElement = this.offcanvas.addData("Добавление материалов", this._addMaterialsInBrowserGetContent())
+                }
+                if (this.page){
+                    headerElement = this.page.addData("Добавление материалов", this._addMaterialsInBrowserGetContent())
+                }
                 addMaterialsButton.remove()
-                const he = this.offcanvas.addData("Добавление материалов", this._addMaterialsInBrowserGetContent())
-                he.scrollIntoView({block: "start", behavior: "smooth"})
+                headerElement.scrollIntoView({block: "start", behavior: "smooth"})
             })
 
             if (tgID){
@@ -366,73 +391,6 @@ class homeworkUtils{
     }
 
     _getLogsContent(last=false){
-        function getDeleteModal(logID){
-            const p = document.createElement("p")
-            p.innerHTML = "Действие необратимо"
-            const deleteButton = document.createElement("button")
-            deleteButton.type = "button"
-            deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
-            deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
-            const deleteLogModal = mobileInfoModalSet("Удалить ответ из ДЗ?",
-                [p], [deleteButton])
-            deleteButton.addEventListener("click", () => {
-                homeworkAPIDeleteLog(logID).then(request => {
-                    deleteLogModal.close()
-                    switch (request.status){
-                        case 204:
-                            homeworkOffcanvas.close()
-                            homeworkItemShowOffcanvas(homeworkID)
-                            showSuccessToast("Ответ успешно удалён")
-                            break
-                        case 404:
-                            showErrorToast("Ответ не найден")
-                            break
-                        default:
-                            showErrorToast()
-                    }
-                })
-            })
-        }
-
-        function getDeleteFileModal(fileID){
-            const p = document.createElement("p")
-            p.innerHTML = "Действие необратимо"
-            const deleteButton = document.createElement("button")
-            deleteButton.type = "button"
-            deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
-            deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
-            const deleteFileModal = mobileInfoModalSet("Удалить файл?",
-                [p], [deleteButton])
-            deleteButton.addEventListener("click", () => {
-                let fileInfo = fileID.split(" ")
-                fileInfo = {
-                    logID: fileInfo[0],
-                    fileID: fileInfo[1]
-                }
-                const fd = new FormData()
-                fd.append("pk", fileInfo.fileID)
-                materialsAPIDeleteFromObject(fd, "hw_log", fileInfo.logID).then(request => {
-                    deleteFileModal.close()
-                    switch (request.status){
-                        case 204:
-                            homeworkOffcanvas.close()
-                            homeworkItemShowOffcanvas(homeworkID)
-                            showSuccessToast("Файл успешно удалён")
-                            break
-                        case 400:
-                            showErrorToast("Не удалось удалить файл")
-                            break
-                        case 403:
-                            showErrorToast("Нет доступа для изменения этого ответа")
-                            break
-                        default:
-                            showErrorToast()
-                            break
-                    }
-                })
-            })
-        }
-
         const logsToShow = []
         for (let i = 0; i < this.data.logs.length; i++) {
             if (last){
@@ -490,7 +448,7 @@ class homeworkUtils{
                         file: file.path,
                         type: file.type
                     }
-                }), log.editable ? getDeleteFileModal : null
+                }), log.editable ? (fileID) => {this._deleteFileFromLogModalSet(fileID)} : null
             ))
             const userDiv = document.createElement("div")
             userDiv.classList.add("d-flex", "align-items-end")
@@ -639,7 +597,7 @@ class homeworkUtils{
         deleteLogModal.title = "Удалить ответ из ДЗ?"
         deleteLogModal.addContent(p)
         deleteLogModal.addButtons(deleteButton)
-        deleteButton.show()
+        deleteLogModal.show()
         deleteButton.addEventListener("click", () => {
             this._deleteLog(deleteLogModal, logID)
         })
@@ -1039,6 +997,54 @@ class homeworkUtils{
                     break
                 case 403:
                     toast.setError("Нет доступа для отправки")
+                    break
+                default:
+                    toast.setError()
+                    break
+            }
+            toast.show()
+        })
+    }
+
+    _deleteFileFromLogModalSet(fileID){
+        const p = document.createElement("p")
+        p.innerHTML = "Действие необратимо"
+        const deleteButton = document.createElement("button")
+        deleteButton.type = "button"
+        deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
+        deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
+        const deleteFileModal = new modalEngine()
+        deleteFileModal.title = "Удалить файл из ответа?"
+        deleteFileModal.addContent(p)
+        deleteFileModal.addButtons(deleteButton)
+        deleteFileModal.show()
+        deleteButton.addEventListener("click", () => {
+            let fileInfo = fileID.split(" ")
+            fileInfo = {
+                logID: fileInfo[0],
+                fileID: fileInfo[1]
+            }
+            const fd = new FormData()
+            fd.append("pk", fileInfo.fileID)
+            console.log(this.data)
+            this._deleteFileFromLog(deleteFileModal, fd, fileInfo.logID)
+        })
+    }
+
+    _deleteFileFromLog(deleteFileModal, formData, logID){
+        materialsAPIDeleteFromObject(formData, "hw_log", logID).then(request => {
+            deleteFileModal.close()
+            const toast = new toastEngine()
+            switch (request.status){
+                case 204:
+                    toast.setSuccess("Файл успешно удалён")
+                    this.resetContent()
+                    break
+                case 400:
+                    toast.setError("Не удалось удалить файл")
+                    break
+                case 403:
+                    toast.setError("Нет доступа для изменения этого ответа")
                     break
                 default:
                     toast.setError()

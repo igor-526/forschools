@@ -13,15 +13,11 @@ from material.urls import (urlpatterns as
 from lesson.urls import (urlpatterns as
                          lesson_urlpatterns,
                          apiv1patterns as
-                         lesson_apiv1patterns,
-                         ma_patterns as
-                         lesson_ma_patterns)
+                         lesson_apiv1patterns)
 from homework.urls import (urlpatterns as
                            homework_urlpatterns,
                            apiv1patterns as
-                           homework_apiv1patterns,
-                           ma_patterns as
-                           homework_ma_patterns)
+                           homework_apiv1patterns)
 from data_collections.urls import (urlpatterns as
                                    data_collections_urlpatterns,
                                    apiv1patterns as
@@ -45,9 +41,7 @@ from tgbot.urls import (apiv1patterns as
                         urlpatterns as
                         tgbot_urlpatterns,
                         apiv1journalpatterns as
-                        tgbot_journal_apiv1patterns,
-                        ma_patterns as
-                        tgbot_ma_patterns)
+                        tgbot_journal_apiv1patterns)
 from automatic_fields.urls import (apiv1patterns as
                                    automatic_fields_apiv1patterns)
 from support.urls import (urlpatterns as
@@ -57,15 +51,11 @@ from support.urls import (urlpatterns as
 from user_logs.urls import (urlpatterns as
                             user_logs_urlpatterns,
                             api_v1_patterns as
-                            user_logs_api_v1_patterns,
-                            ma_patterns as
-                            user_logs_ma_patterns)
+                            user_logs_api_v1_patterns)
 from download_data.urls import (urlpatterns as
                                 download_data_urlpatterns,
                                 api_v1_patterns as
-                                download_data_api_v1_patterns,
-                                ma_patterns as
-                                download_data_ma_patterns)
+                                download_data_api_v1_patterns)
 from mailing.urls import (urlpatterns as
                           mailing_urlpatterns,
                           api_v1_patterns as
@@ -83,11 +73,9 @@ urlpatterns = [
 
     path('lessons/', include(lesson_urlpatterns)),
     path('api/v1/lessons/', include(lesson_apiv1patterns)),
-    path('ma/lessons/', include(lesson_ma_patterns)),
 
     path('homeworks/', include(homework_urlpatterns)),
     path('api/v1/homeworks/', include(homework_apiv1patterns)),
-    path('ma/homeworks/', include(homework_ma_patterns)),
 
     path('learning_plans/', include(learning_plan_urlpatterns)),
     path('api/v1/learning_plans/', include(learning_plan_apiv1patterns)),
@@ -102,11 +90,9 @@ urlpatterns = [
 
     path('user_logs/', include(user_logs_urlpatterns)),
     path('api/v1/user_logs/', include(user_logs_api_v1_patterns)),
-    path('ma/user_logs/', include(user_logs_ma_patterns)),
 
     path('generated/', include(download_data_urlpatterns)),
     path('api/v1/generated/', include(download_data_api_v1_patterns)),
-    path('ma/generated/', include(download_data_ma_patterns)),
 
     path('mailing/', include(mailing_urlpatterns)),
     path('api/v1/mailing/', include(mailing_api_v1_patterns)),
@@ -114,7 +100,6 @@ urlpatterns = [
     path('api/v1/telegram/', include(tgbot_apiv1patterns)),
     path('tgjournal/', include(tgbot_urlpatterns)),
     path('api/v1/tgjournal/', include(tgbot_journal_apiv1patterns)),
-    path('ma/', include(tgbot_ma_patterns)),
 
     path('support/', include(support_urlpatterns)),
     path('api/v1/support/', include(support_apiv1patterns)),

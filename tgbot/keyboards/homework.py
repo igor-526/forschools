@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
+from aiogram.types import InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from profile_management.models import Telegram
@@ -7,35 +7,23 @@ from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkMenuCa
                                                 HomeworkCuratorCallback, HomeworkNewSelectDateFakeCallback,
                                                 HomeworkLogEditingCallback)
 from tgbot.keyboards.callbacks.lessons import LessonFormReviewCallback
-from tgbot.keyboards.utils import keyboard_anti_cache_url, WebPlatformUrl
+from tgbot.keyboards.utils import WebPlatformUrl
 
 
-def get_homework_menu_buttons(params: dict, open_ma: list = None) -> InlineKeyboardMarkup:
+def get_homework_menu_buttons(params: dict, tg_note: Telegram) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    hw_url = WebPlatformUrl("homeworks")
+    hw_url.set_token_by_tg_note(tg_note=tg_note)
 
-    if open_ma:
-        for role in open_ma:
-            builder.button(
-                text=f"Открыть список как {role.get('name_ru')}",
-                web_app=WebAppInfo(
-                    url=keyboard_anti_cache_url(f"/ma/homeworks/?open_as={role.get('name')}&"))
-            )
-    else:
-        builder.button(
-            text="Открыть список ДЗ",
-            web_app=WebAppInfo(
-                url=keyboard_anti_cache_url("/ma/homeworks/"))
-        )
+    builder.button(
+        text="Открыть список ДЗ",
+        url=hw_url.get_url(),
+    )
 
     if params.get("check_hw_btn"):
         builder.button(
             text=f"Проверка домашних заданий",
             callback_data=HomeworkMenuCallback(action="check")
-        )
-    if params.get("sended_hw_btn"):
-        builder.button(
-            text=f"Отправленные ДЗ",
-            callback_data=HomeworkMenuCallback(action="sended")
         )
     if params.get("new_hw_btn"):
         builder.button(
@@ -122,12 +110,13 @@ def get_homework_item_buttons(hw_id: int,
                               send_button: bool,
                               check_button: bool,
                               agreement_buttons: bool,
-                              edit_hw_button: bool) -> InlineKeyboardMarkup:
+                              edit_hw_button: bool,
+                              tg_note: Telegram) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    hw_url = WebPlatformUrl(f"homeworks/{hw_id}")
     builder.button(
         text="Просмотр ДЗ",
-        web_app=WebAppInfo(
-            url=keyboard_anti_cache_url(f"/ma/homeworks/{hw_id}/"))
+        url=hw_url.get_url(),
     )
     if mat_button:
         builder.button(
@@ -219,9 +208,11 @@ def get_homework_add_ready_buttons(tg_note: Telegram,
                                    form_review_mode: int = 0) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     if hw_id:
+        hw_url = WebPlatformUrl("homeworks")
+        hw_url.set_token_by_tg_note(tg_note)
         builder.button(
             text="Домашнее задание",
-            web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/homeworks/{hw_id}/"))
+            url=hw_url.get_url()
         )
     if lesson_id:
         if form_review_mode == 0:
@@ -278,12 +269,17 @@ def get_hw_log_delete_file_button(hw_log_id: int, file_id: int) -> InlineKeyboar
     return builder.as_markup()
 
 
-def get_homework_notification_menu_buttons() -> InlineKeyboardMarkup:
+def get_homework_notification_menu_buttons(tg_note: Telegram = None,
+                                           access_token: str = None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    hw_url = WebPlatformUrl("homeworks")
+    if tg_note:
+        hw_url.set_token_by_tg_note(tg_note=tg_note)
+    if access_token:
+        hw_url.set_token(token=access_token)
     builder.button(
         text="Открыть список ДЗ",
-        web_app=WebAppInfo(
-            url=keyboard_anti_cache_url("/ma/homeworks/"))
+        url=hw_url.get_url()
     )
     builder.button(
         text=f"Открыть список в TG",

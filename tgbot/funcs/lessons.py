@@ -5,7 +5,7 @@ from django.db.models import Q
 from lesson.models import Lesson
 from profile_management.models import NewUser
 from tgbot.create_bot import bot
-from tgbot.keyboards.lessons import lessons_get_users_buttons, get_schedule_ma_button, get_lesson_place_url_button
+from tgbot.keyboards.lessons import lessons_get_users_buttons, get_lesson_place_url_button
 from tgbot.tg_user_utils import get_user
 
 
@@ -80,17 +80,6 @@ async def lessons_generate_schedule_message(lessons: list[Lesson], monday: datet
         for lesson in schedule["sunday"]:
             msg += get_lessons_string(lesson)
     return msg
-
-
-async def lessons_get_schedule(message: types.Message):
-    user = await get_user(message.from_user.id)
-    self_schedule = await user.groups.filter(name__in=["Admin", "Metodist"]).aexists()
-    if self_schedule:
-        rm = get_schedule_ma_button(False)
-    else:
-        rm = get_schedule_ma_button()
-    await message.answer(text="Нажмите на кнопку ниже для открытия расписания",
-                         reply_markup=rm)
 
 
 async def lessons_search_users(message: types.Message, state: FSMContext):

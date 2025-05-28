@@ -57,7 +57,7 @@ def notification_teachers_homeworks_unchecked(tz=3, today=False) -> None:
             result = tg.send_tg_message_sync(
                 tg_id=telegram.tg_id,
                 message=message_text,
-                reply_markup=get_homework_notification_menu_buttons()
+                reply_markup=get_homework_notification_menu_buttons(tg_note=telegram)
             )
             notification_log_journal(recipient=teacher,
                                      event=13,
@@ -91,13 +91,15 @@ def notification_methodists_homeworks_unaccepted(tz=3, today=False) -> None:
                       "homework__lesson__date",
                       "homework__lesson__learningphases__learningplan__metodist__id",
                       "homework__lesson__learningphases__learningplan__metodist__telegram__tg_id",
+                      "homework__lesson__learningphases__learningplan__metodist__telegram__access_token",
                       named=True)
         methodists_info_ = {}
         for hw in homeworks:
             if hw.homework__lesson__learningphases__learningplan__metodist__id not in methodists_info_:
                 methodists_info_[hw.homework__lesson__learningphases__learningplan__metodist__id] = {
                     "hw": [],
-                    "tg_id": hw.homework__lesson__learningphases__learningplan__metodist__telegram__tg_id
+                    "tg_id": hw.homework__lesson__learningphases__learningplan__metodist__telegram__tg_id,
+                    "access_token": hw.homework__lesson__learningphases__learningplan__metodist__telegram__access_token
                 }
             methodists_info_[hw.homework__lesson__learningphases__learningplan__metodist__id]["hw"].append(hw)
         return methodists_info_
@@ -124,7 +126,7 @@ def notification_methodists_homeworks_unaccepted(tz=3, today=False) -> None:
         result = tg.send_tg_message_sync(
             tg_id=methodists_info[methodist]["tg_id"],
             message=message_text,
-            reply_markup=get_homework_notification_menu_buttons()
+            reply_markup=get_homework_notification_menu_buttons(access_token=[methodist]["access_token"])
         )
         notification_log_journal(recipient=methodist,
                                  event=14,

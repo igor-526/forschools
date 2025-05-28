@@ -1,10 +1,8 @@
 import datetime
-
 from aiogram import types, Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from tgbot.finite_states.chats import ChatsFSM
-from tgbot.funcs.lessons import lessons_get_schedule
 from tgbot.funcs.materials import get_user_materials
 from tgbot.funcs.homeworks.homeworks import homeworks_send_menu
 from tgbot.funcs.chats import chats_show, chats_type_message
@@ -25,12 +23,6 @@ async def h_mainmenu_materials(message: types.Message, state: FSMContext) -> Non
                 F.text == "Домашние задания")
 async def h_mainmenu_homeworks(message: types.Message, state: FSMContext) -> None:
     await homeworks_send_menu(message, state)
-
-
-@router.message(StateFilter(None),
-                F.text == "Расписание")
-async def h_mainmenu_lessons(message: types.Message) -> None:
-    await lessons_get_schedule(message)
 
 
 @router.message(StateFilter(None),

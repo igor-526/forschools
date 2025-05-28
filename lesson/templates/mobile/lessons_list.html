@@ -17,8 +17,6 @@
         <ul class="list-group px-0" id="lessonsMobileList"></ul>
     </div>
 
-
-
     <div id="lessonsMobileListLoadingSpinner" class="d-flex justify-content-center w-100 d-none">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden"></span>
@@ -27,22 +25,10 @@
 
     {% include "mobile/lessons_set_fields.html" %}
     {% include "mobile/lessons_set_filters.html" %}
-    {% if is_admin %}
-        {% include "mobile/lessons_list_admin_comment.html" %}
-    {% endif %}
 {% endblock %}
 {% block static_js %}
-    <script src="{% static 'js/users/users_api.js' %}"></script>
-    <script src="{% static 'js/collections/collections_api.js' %}"></script>
-    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
-    <script src="{% static 'js/homework/homework_utils.js' %}"></script>
-    <script src="{% static 'js/homework/homework_api.js' %}"></script>
-    <script src="{% static 'js/homework/homework_item_show_offcanvas.js' %}"></script>
     <script src="{% static 'js/lessons/mobile/lessons_list_element.js' %}"></script>
     <script src="{% static 'js/lessons/mobile/lessons_list_filters.js' %}"></script>
     <script src="{% static 'js/lessons/mobile/lessons_list_set_fields.js' %}"></script>
-    {% if is_admin %}
-        <script src="{% static 'js/lessons/mobile/lessons_list_admin_comment.js' %}"></script>
-    {% endif %}
     <script src="{% static 'js/lessons/mobile/lessons_list.js' %}"></script>
 {% endblock %}

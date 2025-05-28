@@ -38,6 +38,9 @@ class WebPlatformUrl:
         for h in self.url_hash:
             self.params.append(f"nextHash={h}")
 
+    def set_token(self, token: str) -> None:
+        self.params.append(f'token={token}')
+
     def set_token_by_tg_note(self, tg_note: Telegram) -> None:
         self.params.append(f'token={tg_note.access_token}')
 

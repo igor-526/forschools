@@ -159,8 +159,13 @@ class TGHomework:
         agreement_buttons = await get_agreement_buttons()
         check_button = False if agreement_buttons else (await get_check_button())
         edit_hw_button = await get_edit_hw_button()
-        rm = get_homework_item_buttons(self.homework_id, mat_button, send_button, check_button,
-                                       agreement_buttons, edit_hw_button)
+        rm = get_homework_item_buttons(hw_id=self.homework_id,
+                                       mat_button=mat_button,
+                                       send_button=send_button,
+                                       check_button=check_button,
+                                       agreement_buttons=agreement_buttons,
+                                       edit_hw_button=edit_hw_button,
+                                       tg_note=self.telegram_note)
 
         await bot.send_message(chat_id=self.telegram_id,
                                text="Выберите действие",

@@ -15,9 +15,6 @@
     </div>
     {% include "mobile/homeworks_set_fields.html" %}
     {% include "mobile/homeworks_set_filters.html" %}
-    {% if is_admin %}
-        {% include "mobile/lessons_list_admin_comment.html" %}
-    {% endif %}
 {% endblock %}
 {% block static_js %}
     <script>
@@ -31,14 +28,6 @@
             })
         {% endfor %}
     </script>
-    {% if is_admin %}
-        <script src="{% static 'js/lessons/mobile/lessons_list_admin_comment.js' %}"></script>
-    {% endif %}
-    <script src="{% static 'js/users/users_api.js' %}"></script>
-    <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
-    <script src="{% static 'js/homework/homework_api.js' %}"></script>
-    <script src="{% static 'js/homework/homework_utils.js' %}"></script>
-    <script src="{% static 'js/homework/homework_item_show_offcanvas.js' %}"></script>
     <script src="{% static 'js/homework/mobile/homeworks_list_filters.js' %}"></script>
     <script src="{% static 'js/homework/mobile/homeworks_set_fields.js' %}"></script>
     <script src="{% static 'js/homework/mobile/homeworks_list.js' %}"></script>

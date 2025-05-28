@@ -72,8 +72,11 @@ function chatMobileFilesListeners(){
         deleteButton.type = "button"
         deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
         deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
-        const deleteFileModal = mobileInfoModalSet("Удалить файл?",
-            [p], [deleteButton])
+        const deleteFileModal = new modalEngine()
+        deleteFileModal.title = "Удалить файл?"
+        deleteFileModal.addContent(p)
+        deleteFileModal.addButtons(deleteButton)
+        deleteFileModal.show()
         deleteButton.addEventListener("click", () => {
             const index = chatMobileFilesArray.indexOf(chatMobileFilesArray.find(mat => mat.id === matID))
             if (index !== -1){

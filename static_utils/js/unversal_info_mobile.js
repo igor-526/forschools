@@ -1,80 +1,3 @@
-function mobileInfoOffcanvasSet(header){
-    function close(){
-        offcanvas.bsElement.hide()
-        setTimeout(() => {
-            offcanvas.element.remove()
-        }, 1000)
-    }
-
-    function addData(header=null, content=[]){
-        const headerElement = document.createElement("h2")
-        headerElement.innerHTML = header
-        headerElement.classList.add("mt-4")
-        offcanvas.body.insertAdjacentElement("beforeend", headerElement)
-        if (header.length > 0){
-            const navButton = document.createElement("button")
-            navButton.type = "button"
-            navButton.classList.add("btn", "btn-sm", "btn-outline-primary", "mx-1")
-            navButton.innerHTML = header
-            offcanvas.navigation.insertAdjacentElement("beforeend", navButton)
-            navButton.addEventListener("click", function (){
-                headerElement.scrollIntoView({block: "start", behavior: "smooth"})
-            })
-        }
-        content.forEach(item => {
-            offcanvas.body.insertAdjacentElement("beforeend", item)
-        })
-        return headerElement
-    }
-
-    function getOffcanvas(){
-        const mainDiv = document.createElement("div")
-        mainDiv.classList.add("offcanvas", "offcanvas-end")
-        mainDiv.tabIndex = -1
-
-        const header = document.createElement("div")
-        header.classList.add("offcanvas-header")
-        const headerH = document.createElement("h5")
-        const closeButton = document.createElement("button")
-        closeButton.classList.add("btn-close", "text-reset")
-        closeButton.type = "button"
-        closeButton.setAttribute("data-bs-dismiss", "offcanvas")
-        header.insertAdjacentElement("beforeend", headerH)
-        header.insertAdjacentElement("beforeend", closeButton)
-        mainDiv.insertAdjacentElement("beforeend", header)
-        closeButton.addEventListener("click", function (){
-            setTimeout(() => {
-                mainDiv.remove()
-            }, 500)
-        })
-
-        const body = document.createElement("div")
-        body.classList.add("offcanvas-body")
-        const bodyNavigation = document.createElement("nav")
-        bodyNavigation.classList.add("d-flex", "mb-5")
-        bodyNavigation.style.overflowX = "scroll"
-        const bodyBlock = document.createElement("div")
-        body.insertAdjacentElement("beforeend", bodyNavigation)
-        body.insertAdjacentElement("beforeend", bodyBlock)
-        mainDiv.insertAdjacentElement("beforeend", body)
-        document.body.insertAdjacentElement("beforeend", mainDiv)
-        return {
-            element: mainDiv,
-            bsElement: new bootstrap.Offcanvas(mainDiv),
-            header: headerH,
-            navigation: bodyNavigation,
-            body: bodyBlock,
-            close: close,
-            addData: addData
-        }
-    }
-
-    const offcanvas = getOffcanvas()
-    offcanvas.bsElement.show()
-    offcanvas.header.innerHTML = header ? header : ""
-    return offcanvas
-}
-
 class offcanvasEngine{
     allContent = []
     title = ""
@@ -233,8 +156,8 @@ class modalEngine{
         this.modalFooter.insertAdjacentElement("beforeend", modalFooterCloseButton)
         document.body.insertAdjacentElement("beforeend", this.modalDiv)
         this.modalBs = new bootstrap.Modal(this.modalDiv)
-        modalHeaderCloseButton.addEventListener("click", this.close)
-        modalFooterCloseButton.addEventListener("click", this.close)
+        modalHeaderCloseButton.addEventListener("click", () => {this.close()})
+        modalFooterCloseButton.addEventListener("click", () => {this.close()})
 
     }
 
@@ -292,23 +215,16 @@ class pageEngine{
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 const { width, height } = entry.contentRect
-                if (this.allColumns.length > 0 && width >= 950){
-                    console.log("FFFF")
-                    this.allColumns.forEach(col => {
-                        col.classList.add("col-4")
-                        col.classList.remove("col-6", "col-12")
-                    })
-                }
-                if (this.allColumns.length > 0 && width > 550 && width < 950){
+                if (this.allColumns.length > 0 && width > 700){
                     this.allColumns.forEach(col => {
                         col.classList.add("col-6")
-                        col.classList.remove("col-4", "col-12")
+                        col.classList.remove("col-12")
                     })
                 }
-                if (this.allColumns.length > 0 && width <= 550){
+                if (this.allColumns.length > 0 && width <= 700){
                     this.allColumns.forEach(col => {
                         col.classList.add("col-12")
-                        col.classList.remove("col-4", "col-6")
+                        col.classList.remove("col-6")
                     })
                 }
             }
@@ -327,7 +243,7 @@ class pageEngine{
             return null
         }
         const column = document.createElement("div")
-        column.classList.add("p-4", "mb-4")
+        column.classList.add("p-6", "mb-4")
         this.contentBody.insertAdjacentElement("beforeend", column)
         if (title !== ""){
             this.titleH = document.createElement("h4")
@@ -338,31 +254,14 @@ class pageEngine{
         contentToAdd.forEach(cont => {
             column.insertAdjacentElement("beforeend", cont)
         })
-
-
         this.allColumns.push(column)
+        return column
     }
-}
 
-
-function mobileInfoOffcanvasAddData(header, offcanvas, content=[]){
-    const headerElement = document.createElement("h2")
-    headerElement.innerHTML = header
-    headerElement.classList.add("mt-4")
-    offcanvas.body.insertAdjacentElement("beforeend", headerElement)
-    if (header.length > 0){
-        const navButton = document.createElement("button")
-        navButton.type = "button"
-        navButton.classList.add("btn", "btn-sm", "btn-outline-primary", "mx-1")
-        navButton.innerHTML = header
-        offcanvas.navigation.insertAdjacentElement("beforeend", navButton)
-        navButton.addEventListener("click", function (){
-            headerElement.scrollIntoView({block: "start", behavior: "smooth"})
-        })
+    resetContent(){
+        this.contentBody.innerHTML = ""
+        this.allColumns.length = 0
     }
-    content.forEach(item => {
-        offcanvas.body.insertAdjacentElement("beforeend", item)
-    })
 }
 
 
@@ -530,15 +429,17 @@ function mobileInfoGetUploadFilesBlock(filesArray){
         deleteButton.type = "button"
         deleteButton.classList.add("mx-1", "my-1", "btn", "btn-danger")
         deleteButton.innerHTML = '<i class="bi bi-trash me-1"></i> Удалить'
-        const deleteFileModal = mobileInfoModalSet("Удалить файл?",
-            [p], [deleteButton])
+        const deleteFileModal = new modalEngine()
+        deleteFileModal.title = "Удалить файл?"
+        deleteFileModal.addContent(p)
+        deleteFileModal.addButtons(deleteButton)
+        deleteFileModal.show()
         deleteButton.addEventListener("click", () => {
             const index = filesArray.indexOf(filesArray.find(mat => mat.id === matID))
             if (index !== -1){
                 filesArray.splice(index, 1)
                 updateFilesBlock()
             }
-
             deleteFileModal.close()
         })
     }
@@ -572,7 +473,7 @@ function mobileInfoGetUploadFilesBlock(filesArray){
 
     const sendHWAddFilesButton = document.createElement("button")
     sendHWAddFilesButton.type = "button"
-    sendHWAddFilesButton.classList.add("btn", "btn-outline-primary", "my-2")
+    sendHWAddFilesButton.classList.add("btn", "btn-outline-primary", "my-2", "w-100")
     sendHWAddFilesButton.style.height = "100px"
     sendHWAddFilesButton.innerHTML = "Нажмите или перенесите сюда файлы для добавления"
     sendHWAddFilesButton.addEventListener("click", () => {
@@ -620,74 +521,114 @@ function mobileInfoGetUploadFilesBlock(filesArray){
 }
 
 
-function mobileInfoModalSet(title="", content=[], buttons=[], classes=[]){
-    function close(){
-        modalBs.hide()
-        setTimeout(() => {
-            modalDiv.remove()
-        }, 1000)
+function materialPreviewModalSet(type, href){
+    function getImg(href){
+        const img = document.createElement("img")
+        img.src = href
+        img.alt = "Изображение"
+        img.classList.add("img-fluid")
+        return img
     }
 
-    const modalDiv = document.createElement("div")
-    modalDiv.classList.add("modal", "fade")
-    modalDiv.tabIndex = -1
-    classes.forEach(cl => {
-        modalDiv.classList.add(cl)
-    })
-
-    const modalDialog = document.createElement("div")
-    modalDialog.classList.add("modal-dialog")
-    modalDiv.insertAdjacentElement("beforeend", modalDialog)
-
-    const modalContent = document.createElement("div")
-    modalContent.classList.add("modal-content")
-    modalDialog.insertAdjacentElement("beforeend", modalContent)
-
-    const modalHeader = document.createElement("div")
-    modalHeader.classList.add("modal-header")
-    const modalHeaderH = document.createElement("h5")
-    modalHeaderH.classList.add("modal-title")
-    modalHeaderH.innerHTML = title
-    const modalHeaderCloseButton = document.createElement("button")
-    modalHeaderCloseButton.classList.add("btn-close")
-    modalHeaderCloseButton.type = "button"
-    modalHeaderCloseButton.setAttribute("data-bs-dismiss", "modal")
-    modalHeaderCloseButton.ariaLabel = "Close"
-    modalContent.insertAdjacentElement("beforeend", modalHeader)
-    modalHeader.insertAdjacentElement("beforeend", modalHeaderH)
-    modalHeader.insertAdjacentElement("beforeend", modalHeaderCloseButton)
-
-    const modalBody = document.createElement("div")
-    modalBody.classList.add("modal-body")
-    modalBody.style.maxHeight = `${window.innerHeight - 140}px`
-    modalBody.style.overflowY = "scroll"
-    modalContent.insertAdjacentElement("beforeend", modalBody)
-    content.forEach(cont => {
-        modalBody.insertAdjacentElement("beforeend", cont)
-    })
-
-    const modalFooter = document.createElement("div")
-    modalFooter.classList.add("modal-footer")
-    const modalFooterCloseButton = document.createElement("button")
-    modalFooterCloseButton.classList.add("btn", "btn-secondary", "mx-1", "my-1")
-    modalFooterCloseButton.setAttribute("data-bs-dismiss", "modal")
-    modalFooterCloseButton.type = "button"
-    modalFooterCloseButton.innerHTML = "Закрыть"
-    modalContent.insertAdjacentElement("beforeend", modalFooter)
-    buttons.forEach(btn => {
-        modalFooter.insertAdjacentElement("beforeend", btn)
-    })
-    modalFooter.insertAdjacentElement("beforeend", modalFooterCloseButton)
-    document.body.insertAdjacentElement("beforeend", modalDiv)
-    const modalBs = new bootstrap.Modal(modalDiv)
-    modalHeaderCloseButton.addEventListener("click", close)
-    modalFooterCloseButton.addEventListener("click", close)
-    modalBs.show()
-    return {
-        modal: modalDiv,
-        modalBs: modalBs,
-        close: close
+    function getAudio(href){
+        const audio = document.createElement("audio")
+        audio.controls = true
+        audio.src = href
+        return audio
     }
+
+    function getVideo(href){
+        const video = document.createElement("video")
+        video.controls = true
+        video.src = href
+        video.classList.add("img-fluid")
+        return video
+    }
+
+    function getText(href){
+        const p = document.createElement("p")
+        const splittedHref = href.split("/")
+        const folder = splittedHref[splittedHref.length-2]
+        const file = splittedHref[splittedHref.length-1]
+        href = `/api/v1/materials/get_text/?folder=${folder}&file=${file}`
+        fetch(href).then(async request => {
+            if (request.status === 200) {
+                p.innerHTML = await request.json()
+            } else {
+                p.innerHTML = "Произошла ошибка при загрузке материала"
+            }
+        })
+        return p
+    }
+
+    function getPDF(href){
+        const pdf = document.createElement("embed")
+        pdf.type = "application/pdf"
+        pdf.src = href
+        pdf.style = "width: 100%; height: 700px;"
+        return pdf
+    }
+
+    function getOffice(href){
+        const word = document.createElement("iframe")
+        word.src = `https://view.officeapps.live.com/op/embed.aspx?src=${location.host}/${href}`
+        word.style = "width: 100%;"
+        return word
+    }
+
+    function getUnsupported(){
+        const p = document.createElement("p")
+        p.innerHTML = "Предварительный просмотр материала не поддерживается"
+        return p
+    }
+
+    function getBody(type, href){
+        switch (type) {
+            case "image_formats":
+                return {title: "Изображение",
+                    elem: getImg(href)}
+            case "animation_formats":
+                return {title: "Анимация",
+                    elem: getImg(href)}
+            case "voice_formats":
+                return {title: "Голосовое сообщение",
+                    elem: getAudio(href)}
+            case "audio_formats":
+                return {title: "Аудиозапись",
+                    elem: getAudio(href)}
+            case "video_formats":
+                return {title: "Видео",
+                    elem: getVideo(href)}
+            case "pdf_formats":
+                return {title: "PDF файл",
+                    elem: getPDF(href)}
+            case "word_formats":
+                return {title: "Документ Word",
+                    elem: getOffice(href)}
+            case "presentation_formats":
+                return {title: "Презентация",
+                    elem: getOffice(href)}
+            case "text_formats":
+                return {title: "Текст",
+                    elem: getText(href)}
+            default:
+                return {title: "Не поддерживается",
+                    elem: getUnsupported()}
+        }
+    }
+
+    const prevBody = getBody(type, href)
+    const materialPreviewModal = new modalEngine()
+    materialPreviewModal.title = prevBody.title
+    materialPreviewModal.addContent(prevBody.elem)
+
+    const materialPreviewSaveButton = document.createElement("a")
+    materialPreviewSaveButton.classList.add("btn", "btn-primary")
+    materialPreviewSaveButton.innerHTML = 'Скачать'
+    materialPreviewSaveButton.href = href
+    materialPreviewModal.setClasses(["modal-xxl"])
+    materialPreviewModal.addButtons(materialPreviewSaveButton)
+    materialPreviewModal.show()
 }
 
 
@@ -870,8 +811,11 @@ function universalInfoSelectionModal(
     } else {
         title = multiple ? "Выбор пользователей" : "Выбор пользователя"
     }
-    const modal = mobileInfoModalSet(title,
-        [getSearchBlock(), usersList], [readyButton])
+    const modal = new modalEngine()
+    modal.title = title
+    modal.addContent(getSearchBlock(), usersList)
+    modal.addButtons(readyButton)
+    modal.show()
 }
 
 let offcanvasEngineID = 1

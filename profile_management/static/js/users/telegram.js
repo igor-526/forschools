@@ -182,9 +182,11 @@ function usersAdminTelegramSet(userID) {
         switch (request.status){
             case 200:
                 const table = getModalBody()
-                const telegramModal = mobileInfoModalSet("Менеджер Telegram",
-                    [table.table], [], ["modal-xl"]
-                )
+                const telegramModal = new modalEngine()
+                telegramModal.setClasses(["modal-xl"])
+                telegramModal.title = "Менеджер Telegram"
+                telegramModal.addContent(table.table)
+                telegramModal.show()
                 usersAdminTelegramShow(request.response.telegrams, userID,
                     request.response.code, table.tableBody, telegramModal)
                 break
@@ -226,10 +228,11 @@ function usersAdminTelegramDisconnectModalSet(userID, noteID, telegramModal, mai
     disconnectButton.innerHTML = '<i class="bi bi-x-lg me-2"></i>Отвязать'
     disconnectButton.type = "button"
     disconnectButton.classList.add("btn", "btn-danger")
-
-    const disconnectModal = mobileInfoModalSet("Отвязка Telegram",
-        content, [disconnectButton], []
-    )
+    const disconnectModal = new modalEngine()
+    disconnectModal.title = "Отвязка Telegram"
+    disconnectModal.addContent(content)
+    disconnectModal.addButtons(disconnectButton)
+    disconnectModal.show()
     disconnectButton.addEventListener("click", function () {
         disconnect(userID, noteID, disconnectModal, telegramModal)
     })
@@ -257,10 +260,11 @@ function usersAdminTelegramSetMainModalSet(userID, noteID, telegramModal) {
     setMainButton.innerHTML = '<i class="bi bi-arrow-90deg-up me-2"></i>Сделать основным'
     setMainButton.type = "button"
     setMainButton.classList.add("btn", "btn-warning")
-
-    const setMainModal = mobileInfoModalSet("Сделать Telegram основным",
-        [infoMain], [setMainButton], []
-    )
+    const setMainModal = new modalEngine()
+    setMainModal.title = "Сделать Telegram основным"
+    setMainModal.addContent(infoMain)
+    setMainModal.addButtons(setMainButton)
+    setMainModal.show()
     setMainButton.addEventListener("click", function () {
         setMain(userID, noteID, setMainModal, telegramModal)
     })

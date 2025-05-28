@@ -13,7 +13,7 @@ from tgbot.keyboards.default import cancel_keyboard, homework_typing_keyboard
 from tgbot.finite_states.homework import HomeworkFSM, HomeworkNewFSM
 from tgbot.funcs.menu import send_menu
 from tgbot.models import TgBotJournal
-from tgbot.utils import get_tg_id
+from tgbot.utils import get_tg_id, get_tg_note
 from profile_management.models import NewUser, Telegram
 from homework.models import Homework, HomeworkLog, HomeworkGroups
 from tgbot.create_bot import bot
@@ -24,13 +24,12 @@ from user_logs.utils import aget_role_from_plan
 
 
 async def homeworks_send_menu(message: types.Message, state: FSMContext):
-    user = await get_user(message.from_user.id)
-    groups = await aget_user_groups(user.id)
+    tg_note = await get_tg_note(tg_id=message.from_user.id)
+    groups = await aget_user_groups(tg_note.user.id)
     func_params = {
         "new_hw_btn": False,
         "check_hw_btn": False,
         "compl_hw_btn": False,
-        "sended_hw_btn": False,
     }
     open_as = []
     if len(groups) > 1:
@@ -50,9 +49,8 @@ async def homeworks_send_menu(message: types.Message, state: FSMContext):
     if "Teacher" in groups:
         func_params["new_hw_btn"] = True
         func_params["check_hw_btn"] = True
-        func_params["sended_hw_btn"] = True
     await message.answer(text="Выберите функцию:",
-                         reply_markup=get_homework_menu_buttons(func_params, open_as))
+                         reply_markup=get_homework_menu_buttons(func_params, tg_note))
 
 
 async def add_homework_select_lesson(user_tg_id: int, message: types.Message = None,
@@ -497,25 +495,6 @@ async def show_homework_queryset(tg_id: int, state: FSMContext, func: str):
                                    reply_markup=get_homeworks_buttons(
                                        [*methodist_homeworks, *teacher_homeworks, *curator_homeworks],
                                        sb=True))
-    elif func == "sended":
-        homeworks = list(filter(lambda hw: hw['hw_status'] in [1, 2, 5, 7],
-                                [{
-                                    'obj': hw,
-                                    'hw_status': (await hw.aget_status()).status,
-                                    'name': await hw.aget_tg_name(groups)
-                                } async for hw in Homework.objects.select_related("listener").filter(teacher=user)]))
-        homeworks = [{
-            'name': hw.get("name"),
-            'status': hw.get("hw_status") == 3,
-            'id': hw.get("obj").id
-        } for hw in homeworks]
-        if len(homeworks) == 0:
-            await bot.send_message(chat_id=tg_id,
-                                   text="Нет отправленных ДЗ, на которые не ответил ученик")
-        else:
-            await bot.send_message(chat_id=tg_id,
-                                   text="Вот домашние задания, которые были отправлены и на которые не ответил ученик:",
-                                   reply_markup=get_homeworks_buttons(homeworks))
 
 
 async def search_homeworks_message(callback: CallbackQuery, state: FSMContext):

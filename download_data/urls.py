@@ -10,7 +10,3 @@ api_v1_patterns = [
     path('', GeneratedListAPIView.as_view()),
     path('download/<str:mode>/', GenerateNewData.as_view()),
 ]
-
-ma_patterns = [
-
-]

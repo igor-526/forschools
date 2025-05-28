@@ -398,7 +398,8 @@ class lessonUtils{
                 a.classList.add(`list-group-item-${hw.color}`)
             }
             a.addEventListener("click", function () {
-                homeworkItemShowOffcanvas(hw.id)
+                const hwUtils = new homeworkUtils(hw)
+                hwUtils.showOffcanvas(true)
             })
             ul.insertAdjacentElement("beforeend", a)
         })
