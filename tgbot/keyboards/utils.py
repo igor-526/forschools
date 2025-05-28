@@ -15,8 +15,6 @@ def keyboard_anti_cache_url(path: str = "/"):
 
 class WebPlatformUrl:
     url = ""
-    token: str
-    path: str
     params: List[str]
     url_hash: List[str]
 
@@ -28,13 +26,13 @@ class WebPlatformUrl:
             self.url = ALLOWED_HOSTS[0]
         self.url = f'https://{self.url}/login_tg/'
         if params is None:
-            params = []
+            self.params = []
         if url_hash is None:
-            url_hash = []
+            self.url_hash = []
         if path:
-            params.append(f'next=/{path}/')
-        for h in url_hash:
-            params.append(f"nextHash={h}")
+            self.params.append(f'next=/{path}/')
+        for h in self.url_hash:
+            self.params.append(f"nextHash={h}")
 
     def set_token_by_tg_note(self, tg_note: Telegram) -> None:
         self.params.append(f'token={tg_note.access_token}')
