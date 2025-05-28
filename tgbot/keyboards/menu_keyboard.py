@@ -10,7 +10,7 @@ multiuser_button = KeyboardButton(text="Сменить аккаунт")
 
 def get_web_button(token: str) -> KeyboardButton:
     return KeyboardButton(text="Платформа",
-                          web_app=WebAppInfo(url=f'{ALLOWED_HOSTS[0]}/login_tg/?token={token}'))
+                          web_app=WebAppInfo(url=f'https://{ALLOWED_HOSTS[0]}/login_tg/?token={token}'))
 
 
 def get_menu_keyboard(chats: int, materials=False, homeworks=False,
