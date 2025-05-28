@@ -38,7 +38,8 @@ async def chats_show(message: types.Message, state: FSMContext):
     is_admin = await tg_note.user.groups.filter(name='Admin').aexists()
     await message.answer(
         text="Все диалоги:",
-        reply_markup=chats_get_show_message_page_button(is_admin)
+        reply_markup=await chats_get_show_message_page_button(tg_note=tg_note,
+                                                              admin_messages=is_admin)
     )
 
 

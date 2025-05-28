@@ -11,13 +11,15 @@ def keyboard_anti_cache_url(path: str = "/"):
     return f'{url}?ac={n}'
 
 
-async def get_web_url(tg_id: int, path: str = None,
-                      params: list = None, url_hash: list = None) -> str:
+async def get_web_url(tg_id: int = None, tg_note: Telegram = None,
+                      path: str = None, params: list = None,
+                      url_hash: list = None) -> str:
     if params is None:
         params = []
     if url_hash is None:
         url_hash = []
-    tg_note = await Telegram.objects.select_related("user").aget(tg_id=tg_id)
+    if tg_note is None and tg_id:
+        tg_note = await Telegram.objects.select_related("user").aget(tg_id=tg_id)
     if tg_note.access_token:
         params.append(f'token={tg_note.access_token}')
     if path:

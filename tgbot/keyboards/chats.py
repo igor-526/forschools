@@ -1,9 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from profile_management.models import Telegram
 from tgbot.keyboards.callbacks.chats import (ChatAnswerMessageCallback,
                                              ChatListCallback)
-from tgbot.keyboards.utils import keyboard_anti_cache_url
+from tgbot.keyboards.utils import keyboard_anti_cache_url, get_web_url
 
 
 def chats_get_users_buttons(chats: list) -> InlineKeyboardMarkup:
@@ -32,13 +33,14 @@ def chats_get_answer_message_button(chat_message_id: int,
     return builder.as_markup()
 
 
-def chats_get_show_message_page_button(admin_messages: bool = False) \
+async def chats_get_show_message_page_button(tg_note: Telegram, admin_messages: bool = False) \
         -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(
         text="Обычные сообщения" if admin_messages else "Открыть",
         web_app=WebAppInfo(
-            url=keyboard_anti_cache_url("/ma/messages/"))
+            url=await get_web_url(tg_note=tg_note,
+                                  path="messages"))
     )
     if admin_messages:
         builder.button(
