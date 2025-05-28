@@ -230,7 +230,7 @@ def get_homework_add_ready_buttons(tg_note: Telegram,
             lesson_url.set_token_by_tg_note(tg_note=tg_note)
             builder.button(
                 text="ФОРМА ЗАНЯТИЯ",
-                url=keyboard_anti_cache_url(f"/ma/lessons/{lesson_id}/form/")
+                url=lesson_url.get_url()
             )
         elif form_review_mode == 1:
             builder.button(

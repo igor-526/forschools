@@ -1,6 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from profile_management.models import Telegram
 from tgbot.keyboards.callbacks.lessons import LessonScheduleListCallback, LessonPlaceCallback
 from tgbot.keyboards.utils import keyboard_anti_cache_url, WebPlatformUrl

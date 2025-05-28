@@ -27,8 +27,12 @@ class WebPlatformUrl:
         self.url = f'https://{self.url}/login_tg/'
         if params is None:
             self.params = []
+        else:
+            self.params = params
         if url_hash is None:
             self.url_hash = []
+        else:
+            self.url_hash = url_hash
         if path:
             self.params.append(f'next=/{path}/')
         for h in self.url_hash:
