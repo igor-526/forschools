@@ -413,7 +413,8 @@ def notify_lesson_passed(tg_id: int,
                          lesson_id: int = None):
     rm = None
     if lesson_id:
-        rm = get_lesson_web_button(tg_note=None,
+        tg_note = Telegram.objects.get(tg_id=tg_id)
+        rm = get_lesson_web_button(tg_note=tg_note,
                                    lesson_id=lesson_id)
     sync_funcs.send_tg_message_sync(tg_id=tg_id,
                                     message=text,
