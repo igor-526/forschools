@@ -149,6 +149,9 @@ class offcanvasEngine{
             header: header,
             elements: content instanceof Array ? content : [content]
         }
+        if (!contentToAdd.elements.length){
+            return null
+        }
         this.allContent.push(contentToAdd)
         this._addContentItemToOffcanvas(contentToAdd)
     }
@@ -314,20 +317,24 @@ class pageEngine{
     }
 
     addData(title, content){
-        const column = document.createElement("div")
-        column.classList.add("p-4", "mb-4")
-        contentBody.insertAdjacentElement("beforeend", column)
-        if (title !== ""){
-            this.titleH = document.createElement("h4")
-            this.titleH.innerHTML = title
-            column.insertAdjacentElement("beforeend", this.titleH)
-        }
         let contentToAdd = []
         if (content instanceof Array){
             contentToAdd = content
         } else {
             contentToAdd = [content]
         }
+        if (!contentToAdd.length){
+            return null
+        }
+        const column = document.createElement("div")
+        column.classList.add("p-4", "mb-4")
+        this.contentBody.insertAdjacentElement("beforeend", column)
+        if (title !== ""){
+            this.titleH = document.createElement("h4")
+            this.titleH.innerHTML = title
+            column.insertAdjacentElement("beforeend", this.titleH)
+        }
+
         contentToAdd.forEach(cont => {
             column.insertAdjacentElement("beforeend", cont)
         })

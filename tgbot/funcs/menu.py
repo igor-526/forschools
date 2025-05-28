@@ -4,7 +4,6 @@ from tgbot.create_bot import bot
 from tgbot.keyboards import get_menu_keyboard
 from tgbot.utils import aget_user_groups
 from chat.utils import aget_unread_messages
-from dls.settings import DEBUG
 
 
 async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выберите действие: ") -> None:

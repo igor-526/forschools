@@ -1,11 +1,13 @@
 from aiogram.types import InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from profile_management.models import Telegram
 from tgbot.keyboards.callbacks.homework import (HomeworkCallback, HomeworkMenuCallback,
                                                 HomeworkNewCallback, HomeworkNewSelectDateCallback,
                                                 HomeworkCuratorCallback, HomeworkNewSelectDateFakeCallback,
                                                 HomeworkLogEditingCallback)
 from tgbot.keyboards.callbacks.lessons import LessonFormReviewCallback
-from tgbot.keyboards.utils import keyboard_anti_cache_url
+from tgbot.keyboards.utils import keyboard_anti_cache_url, WebPlatformUrl
 
 
 def get_homework_menu_buttons(params: dict, open_ma: list = None) -> InlineKeyboardMarkup:
@@ -210,7 +212,8 @@ def get_homework_curator_button(hw_id: int, for_curator_status=True) -> InlineKe
     return builder.as_markup()
 
 
-def get_homework_add_ready_buttons(hw_id: int = None,
+def get_homework_add_ready_buttons(tg_note: Telegram,
+                                   hw_id: int = None,
                                    lesson_id: int = None,
                                    for_curator_status: bool = None,
                                    form_review_mode: int = 0) -> InlineKeyboardMarkup:
@@ -222,9 +225,12 @@ def get_homework_add_ready_buttons(hw_id: int = None,
         )
     if lesson_id:
         if form_review_mode == 0:
+            lesson_url = WebPlatformUrl(path=f"lessons/{lesson_id}",
+                                        url_hash=["form=true"])
+            lesson_url.set_token_by_tg_note(tg_note=tg_note)
             builder.button(
                 text="ФОРМА ЗАНЯТИЯ",
-                web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/lessons/{lesson_id}/form/"))
+                url=keyboard_anti_cache_url(f"/ma/lessons/{lesson_id}/form/")
             )
         elif form_review_mode == 1:
             builder.button(

@@ -1,5 +1,7 @@
 import os
 from random import randint
+from typing import List
+
 from dls.settings import DEBUG, ALLOWED_HOSTS
 from profile_management.models import Telegram
 
@@ -11,26 +13,35 @@ def keyboard_anti_cache_url(path: str = "/"):
     return f'{url}?ac={n}'
 
 
-async def get_web_url(tg_id: int = None, tg_note: Telegram = None,
-                      path: str = None, params: list = None,
-                      url_hash: list = None) -> str:
-    if params is None:
-        params = []
-    if url_hash is None:
-        url_hash = []
-    if tg_note is None and tg_id:
-        tg_note = await Telegram.objects.select_related("user").aget(tg_id=tg_id)
-    if tg_note.access_token:
-        params.append(f'token={tg_note.access_token}')
-    if path:
-        params.append(f'next=/{path}/')
-    for h in url_hash:
-        params.append(f"nextHash={h}")
-    if DEBUG:
-        base_url = "kitai-school.forschools.ru"
-    else:
-        base_url = ALLOWED_HOSTS[0]
-    url = f'https://{base_url}/login_tg/'
-    url += "?" + "&".join(params)
-    return url
+class WebPlatformUrl:
+    url = ""
+    token: str
+    path: str
+    params: List[str]
+    url_hash: List[str]
 
+    def __init__(self, path: str = None, params: list = None,
+                 url_hash: list = None) -> None:
+        if DEBUG:
+            self.url = "kitai-school.forschools.ru"
+        else:
+            self.url = ALLOWED_HOSTS[0]
+        self.url = f'https://{self.url}/login_tg/'
+        if params is None:
+            params = []
+        if url_hash is None:
+            url_hash = []
+        if path:
+            params.append(f'next=/{path}/')
+        for h in url_hash:
+            params.append(f"nextHash={h}")
+
+    def set_token_by_tg_note(self, tg_note: Telegram) -> None:
+        self.params.append(f'token={tg_note.access_token}')
+
+    async def set_token_by_tg_id(self, tg_id: int) -> None:
+        tg_note = await Telegram.objects.aget(tg_id=tg_id)
+        self.params.append(f'token={tg_note.access_token}')
+
+    def get_url(self) -> str:
+        return self.url + "?" + "&".join(self.params)

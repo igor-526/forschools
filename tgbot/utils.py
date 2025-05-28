@@ -16,7 +16,7 @@ import async_to_sync as sync
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.fileutils import send_file
 from tgbot.funcs.lessons import f_lessons_show_place_access_info
-from tgbot.keyboards.lessons import get_lesson_ma_button
+from tgbot.keyboards.lessons import get_lesson_web_button
 from tgbot.keyboards.materials import get_materials_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_editing_buttons
 from dls.utils import get_tg_id_sync
@@ -413,7 +413,8 @@ def notify_lesson_passed(tg_id: int,
                          lesson_id: int = None):
     rm = None
     if lesson_id:
-        rm = get_lesson_ma_button(lesson_id)
+        rm = get_lesson_web_button(tg_note=None,
+                                   lesson_id=lesson_id)
     sync_funcs.send_tg_message_sync(tg_id=tg_id,
                                     message=text,
                                     reply_markup=rm)

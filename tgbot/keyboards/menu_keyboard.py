@@ -1,7 +1,7 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from tgbot.keyboards.utils import get_web_url
+from tgbot.keyboards.utils import WebPlatformUrl
 
 materials_button = KeyboardButton(text="Материалы")
 hw_button = KeyboardButton(text="Домашние задания")
@@ -33,9 +33,11 @@ def get_menu_keyboard(chats: int, materials=False, homeworks=False,
 
 async def get_platform_button(tg_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    url = WebPlatformUrl()
+    await url.set_token_by_tg_id(tg_id=tg_id)
     builder.button(
         text="Перейти на платформу",
-        url=await get_web_url(tg_id)
+        url=url.get_url()
     )
     builder.adjust(1)
     return builder.as_markup()

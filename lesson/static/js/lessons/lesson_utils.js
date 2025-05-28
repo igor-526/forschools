@@ -183,10 +183,9 @@ class lessonUtils{
                 this._setPassedFormSetOffcanvas()
             })
             elements.push(passLessonButton)
-            const goForm = getHashValue("form")
-            // if (goForm){
-            //     lessonItemSetPassedOffcanvas(this.data.id, this.data.awaiting_action === "name_only", this.offcanvas)
-            // }
+            if (getHashValue("form")){
+                this._setPassedFormSetOffcanvas()
+            }
         }
         return elements
     }

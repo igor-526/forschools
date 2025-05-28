@@ -1,7 +1,9 @@
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from profile_management.models import Telegram
 from tgbot.keyboards.callbacks.lessons import LessonScheduleListCallback, LessonPlaceCallback
-from tgbot.keyboards.utils import keyboard_anti_cache_url
+from tgbot.keyboards.utils import keyboard_anti_cache_url, WebPlatformUrl
 
 
 def lessons_get_users_buttons(users: list) -> InlineKeyboardMarkup:
@@ -15,11 +17,14 @@ def lessons_get_users_buttons(users: list) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_lesson_ma_button(lesson_id: int) -> InlineKeyboardMarkup:
+def get_lesson_web_button(tg_note: Telegram,
+                          lesson_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    url = WebPlatformUrl(f"lessons/{lesson_id}")
+    url.set_token_by_tg_note(tg_note=tg_note)
     builder.button(
         text="Посмотреть",
-        web_app=WebAppInfo(url=keyboard_anti_cache_url(f"/ma/lessons/{lesson_id}/"))
+        url=url.get_url()
     )
     builder.adjust(1)
     return builder.as_markup()

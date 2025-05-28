@@ -151,9 +151,10 @@ async def add_homework_set_homework_ready(state: FSMContext,
             if lesson.status == 1 and methodist:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} отправлено на согласование"
                 await hw.aset_assigned()
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=None,
-                                                    for_curator_status=True if curators_ids else None)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=None,
+                                                          for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          methodist.id,
                                          [hw],
@@ -161,9 +162,10 @@ async def add_homework_set_homework_ready(state: FSMContext,
             elif lesson.status == 1 and methodist is None:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=None,
-                                                    for_curator_status=True if curators_ids else None)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=None,
+                                                          for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          listener.id,
                                          [hw],
@@ -176,30 +178,34 @@ async def add_homework_set_homework_ready(state: FSMContext,
             elif lesson.status == 0 and lesson_can_be_passed and methodist:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет отправлено на "
                             f"согласование методисту после заполнения формы занятия")
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=lesson.id,
-                                                    for_curator_status=True if curators_ids else None,
-                                                    form_review_mode=tg_note.setting_lesson_review_form_mode)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=lesson.id,
+                                                          for_curator_status=True if curators_ids else None,
+                                                          form_review_mode=tg_note.setting_lesson_review_form_mode)
             elif lesson.status == 0 and lesson_can_be_passed and methodist is None:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет задано после "
                             f"заполнения формы занятия")
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=lesson.id,
-                                                    for_curator_status=True if curators_ids else None,
-                                                    form_review_mode=tg_note.setting_lesson_review_form_mode)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=lesson.id,
+                                                          for_curator_status=True if curators_ids else None,
+                                                          form_review_mode=tg_note.setting_lesson_review_form_mode)
             elif lesson.status == 0 and not lesson_can_be_passed:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет задано после "
                             f"проведения занятия")
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=None,
-                                                    for_curator_status=True if curators_ids else None)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=None,
+                                                          for_curator_status=True if curators_ids else None)
         elif is_curator:
             if lesson.status == 1 and methodist:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} отправлено на согласование"
                 await hw.aset_assigned()
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=None,
-                                                    for_curator_status=None)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=None,
+                                                          for_curator_status=None)
                 await homework_tg_notify(user,
                                          methodist.id,
                                          [hw],
@@ -207,9 +213,10 @@ async def add_homework_set_homework_ready(state: FSMContext,
             elif lesson.status == 1 and methodist is None:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=None,
-                                                    for_curator_status=True if curators_ids else None)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=None,
+                                                          for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          listener.id,
                                          [hw],
@@ -227,9 +234,10 @@ async def add_homework_set_homework_ready(state: FSMContext,
             if lesson.status == 1:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=None,
-                                                    for_curator_status=True if curators_ids else None)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=None,
+                                                          for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          listener.id,
                                          [hw],
@@ -242,9 +250,10 @@ async def add_homework_set_homework_ready(state: FSMContext,
             elif lesson.status == 0:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} создано и будет задано после "
                             f"проведения занятия")
-                rm = get_homework_add_ready_buttons(hw_id=hw.id,
-                                                    lesson_id=None,
-                                                    for_curator_status=True if curators_ids else None)
+                rm = get_homework_add_ready_buttons(tg_note=tg_note,
+                                                          hw_id=hw.id,
+                                                          lesson_id=None,
+                                                          for_curator_status=True if curators_ids else None)
         else:
             msg_text = "Вы не можете задать ДЗ к этому занятию"
         if message:
@@ -288,31 +297,31 @@ async def add_homework_set_homework_ready(state: FSMContext,
             plan = await lesson.aget_learning_plan() if lesson else None
             user_role_ru = get_role_ru(await aget_role_from_plan(plan, user))
             ul = await UserLog.objects.acreate(log_type=4,
-                                          learning_plan=plan,
-                                          title=f'{user_role_ru} добавил в ДЗ новые материалы',
-                                          content={
-                                              "list": [
-                                                  {
-                                                      "name": "Наименование ДЗ",
-                                                      "val": hw.name
-                                                  },
-                                                  {
-                                                      "name": "Наименование занятия",
-                                                      "val": lesson.name
-                                                  },
-                                                  {
-                                                      "name": "Дата занятия",
-                                                      "val": lesson.date.strftime("%d.%m.%Y")
-                                                  },
-                                              ],
-                                              "text": [],
-                                          },
-                                          buttons=[{"inner": "Занятие",
-                                                    "href": f"/lessons/{lesson.id}"},
-                                                   {"inner": "ДЗ",
-                                                    "href": f"/homeworks/{hw.id}"}
+                                               learning_plan=plan,
+                                               title=f'{user_role_ru} добавил в ДЗ новые материалы',
+                                               content={
+                                                   "list": [
+                                                       {
+                                                           "name": "Наименование ДЗ",
+                                                           "val": hw.name
+                                                       },
+                                                       {
+                                                           "name": "Наименование занятия",
+                                                           "val": lesson.name
+                                                       },
+                                                       {
+                                                           "name": "Дата занятия",
+                                                           "val": lesson.date.strftime("%d.%m.%Y")
+                                                       },
                                                    ],
-                                          user=user)
+                                                   "text": [],
+                                               },
+                                               buttons=[{"inner": "Занятие",
+                                                         "href": f"/lessons/{lesson.id}"},
+                                                        {"inner": "ДЗ",
+                                                         "href": f"/homeworks/{hw.id}"}
+                                                        ],
+                                               user=user)
             await ul.materials_db.aadd(*added_materials)
 
     statedata = await state.get_data()
