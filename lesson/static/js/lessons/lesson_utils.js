@@ -25,7 +25,7 @@ class lessonUtils{
         }
         this.offcanvas.header = `<a target="_blank" href="/lessons/${this.data.id}/" class="btn btn-sm btn-primary me-2"><i class="bi bi-globe"></i></a>${this.lessonName}`
         this.offcanvas.addData("Основные данные", this._getMainInfoContent())
-        if (this.data.hasOwnProperty("actions") && this.data.actions.length > 0){
+        if ((this.data.hasOwnProperty("actions") && this.data.actions.length > 0) || isAdmin){
             this.offcanvas.addData("Действия", this._getActionsContent())
         }
         if (this.data.hasOwnProperty("lesson_teacher_review") && this.data.lesson_teacher_review){
@@ -132,6 +132,9 @@ class lessonUtils{
 
 
         if (this.data.hasOwnProperty("additional_listeners")){
+            const listenerIcon = iconUtilsGetIcon(
+                "student_grey.svg", "Ученик"
+            )
             this.data.additional_listeners.forEach(listener => {
                 const listenerP = document.createElement("p")
                 listenerP.classList.add("mb-1")
@@ -192,8 +195,24 @@ class lessonUtils{
 
     _getActionsContent(){
         const buttons = []
+        console.log(this.data)
+        if (this.data.hasOwnProperty("learning_plan") && (isAdmin || isMethodist)){
+            const planButton = document.createElement("a")
+            planButton.target = "_blank"
+            planButton.href = `/learning_plans/${this.data.learning_plan.id}/`
+            planButton.classList.add("btn", "btn-primary", "w-100", "mb-2")
+            planButton.innerHTML = '<i class="bi bi-card-list me-1"></i>План обучения'
+            buttons.push(planButton)
 
-        if (this.data.actions.includes("edit")){
+            const logsButton = document.createElement("a")
+            logsButton.target = "_blank"
+            logsButton.href = `/user_logs/#plan_id=${this.data.learning_plan.id}`
+            logsButton.classList.add("btn", "btn-primary", "w-100", "mb-2")
+            logsButton.innerHTML = '<i class="bi bi-clock-history"></i><i class="bi bi-card-list me-1"></i>Логи плана обучения'
+            buttons.push(logsButton)
+        }
+
+        if (this.data.hasOwnProperty("actions") && this.data.actions.includes("edit")){
             const editButton = document.createElement("button")
             editButton.type = "button"
             editButton.classList.add("btn", "btn-primary", "w-100", "mb-2")
@@ -204,7 +223,7 @@ class lessonUtils{
             buttons.push(editButton)
         }
 
-        if (this.data.actions.includes("replace_teacher")){
+        if (this.data.hasOwnProperty("actions") && this.data.actions.includes("replace_teacher")){
             const replaceTeacherButton = document.createElement("button")
             replaceTeacherButton.type = "button"
             replaceTeacherButton.classList.add("btn", "btn-primary", "w-100", "mb-2")
@@ -222,7 +241,7 @@ class lessonUtils{
             })
         }
 
-        if (this.data.actions.includes("add_listeners")){
+        if (this.data.hasOwnProperty("actions") && this.data.actions.includes("add_listeners")){
             const addListenersButton = document.createElement("button")
             addListenersButton.type = "button"
             addListenersButton.classList.add("btn", "btn-primary", "w-100", "mb-2")
@@ -240,7 +259,7 @@ class lessonUtils{
             buttons.push(addListenersButton)
         }
 
-        if (this.data.actions.includes("set_not_held")){
+        if (this.data.hasOwnProperty("actions") && this.data.actions.includes("set_not_held")){
             const setNotHeldButton = document.createElement("button")
             setNotHeldButton.type = "button"
             setNotHeldButton.classList.add("btn", "btn-danger", "w-100", "mb-2")
@@ -251,7 +270,7 @@ class lessonUtils{
             buttons.push(setNotHeldButton)
         }
 
-        if (this.data.actions.includes("delete")){
+        if (this.data.hasOwnProperty("actions") && this.data.actions.includes("delete")){
             const deleteButton = document.createElement("button")
             deleteButton.type = "button"
             deleteButton.classList.add("btn", "btn-danger", "w-100", "mb-2")

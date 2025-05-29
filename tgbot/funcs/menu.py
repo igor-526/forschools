@@ -11,13 +11,11 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
     groups = await aget_user_groups(tg_note.user.id)
     materials = False
     homeworks = False
-    lessons = False
     messages = False
     settings = False
     if 'Listener' in groups:
         materials = False
         homeworks = True
-        lessons = True
         messages = True
         settings = True
     elif 'Curator' in groups:
@@ -28,19 +26,16 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
     elif 'Teacher' in groups:
         materials = False
         homeworks = True
-        lessons = True
         messages = True
         settings = True
     elif 'Metodist' in groups:
         materials = False
         homeworks = True
-        lessons = "select"
         messages = True
         settings = True
     elif 'Admin' in groups:
         materials = False
         homeworks = True
-        lessons = True
         messages = True
         settings = True
     multiuser = await tg_note.allowed_users.acount() > 1
@@ -48,5 +43,5 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
     await bot.send_message(chat_id=user_tg_id,
                            text=custom_text,
                            reply_markup=get_menu_keyboard(len(await aget_unread_messages(tg_note)),
-                                                          materials, homeworks, lessons, messages,
+                                                          materials, homeworks, messages,
                                                           settings, multiuser))

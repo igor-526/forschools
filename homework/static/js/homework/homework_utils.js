@@ -20,7 +20,7 @@ class homeworkUtils{
             this.offcanvas.addData("Действия", this._getActionsContent())
         }
         if (this.data.hasOwnProperty("materials") && this.data.hasOwnProperty("actions")){
-            this.offcanvas.addData("Матариалы", this._getMaterialsContent())
+            this.offcanvas.addData("Материалы", this._getMaterialsContent())
         }
         if (this.data.hasOwnProperty("logs") && this.data.hasOwnProperty("actions")){
             const logsContent = this._getLogsContent(true)
@@ -50,7 +50,7 @@ class homeworkUtils{
             this.page.addData("Действия", this._getActionsContent())
         }
         if (this.data.hasOwnProperty("materials") && this.data.hasOwnProperty("actions")){
-            this.page.addData("Матариалы", this._getMaterialsContent())
+            this.page.addData("Материалы", this._getMaterialsContent())
         }
         if (this.data.hasOwnProperty("logs") && this.data.hasOwnProperty("actions")){
             const logsContent = this._getLogsContent(true)

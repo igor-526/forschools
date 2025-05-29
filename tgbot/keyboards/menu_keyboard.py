@@ -5,22 +5,19 @@ from tgbot.keyboards.utils import WebPlatformUrl
 
 materials_button = KeyboardButton(text="Материалы")
 hw_button = KeyboardButton(text="Домашние задания")
-lessons_button = KeyboardButton(text="Расписание")
 settings_button = KeyboardButton(text="Настройки")
 multiuser_button = KeyboardButton(text="Сменить аккаунт")
 web_button = KeyboardButton(text="Платформа")
 
 
 def get_menu_keyboard(chats: int, materials=False, homeworks=False,
-                      lessons=False, messages=False, settings=False,
+                      messages=False, settings=False,
                       multiuser=False) -> ReplyKeyboardMarkup:
     keys = []
     if materials:
         keys.append([materials_button])
     if homeworks:
         keys.append([hw_button])
-    if lessons:
-        keys.append([lessons_button])
     if messages:
         keys.append([KeyboardButton(text=f'История сообщений ({chats})')])
     keys.append([web_button])
