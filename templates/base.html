@@ -90,6 +90,7 @@
     const isListener = {% if is_listener %}true{% else %}false{% endif %}
     const isMobile = false
     const tgID = {% if tg_id %} {{ tg_id }}{% else %}null{% endif %}
+    const supportedExtensions = {{ supported_extensions|safe }}
 </script>
 <script src="{% static 'js/apitostr.js' %}"></script>
 <script src="{% static 'js/collections/collections_api.js' %}"></script>

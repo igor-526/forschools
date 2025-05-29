@@ -118,7 +118,8 @@ class toastEngine{
     }
 
     addTGButton(){
-        const tgButton = document.createElement("button")
+        const tgButton = document.createElement("a")
+        tgButton.href = "https://t.me/kitai_school_study_bot"
         tgButton.classList.add("btn", "btn-sm", "btn-primary")
         tgButton.innerHTML = '<i class="bi bi-telegram me-2"></i>Перейти в бот'
         this.toastBodyButtons.insertAdjacentElement("beforeend", tgButton)
