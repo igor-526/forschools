@@ -114,6 +114,7 @@ def get_homework_item_buttons(hw_id: int,
                               tg_note: Telegram) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     hw_url = WebPlatformUrl(f"homeworks/{hw_id}")
+    hw_url.set_token_by_tg_note(tg_note=tg_note)
     builder.button(
         text="Просмотр ДЗ",
         url=hw_url.get_url(),

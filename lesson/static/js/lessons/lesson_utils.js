@@ -477,7 +477,7 @@ class lessonUtils{
             methodistP.insertAdjacentElement("beforeend", iconUtilsGetIcon(
                 "man_grey.svg", "Методист"
             ))
-            methodistP.innerHTML += `<span class="fw-bold">Местодист: </span> ${plan.methodist.first_name} ${plan.methodist.last_name}`
+            methodistP.innerHTML += `<span class="fw-bold">Методист: </span> ${plan.methodist.first_name} ${plan.methodist.last_name}`
             elements.push(methodistP)
         }
 
