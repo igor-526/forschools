@@ -229,7 +229,7 @@ function chatAdminMessageSend(){
     function getFD(){
         const fd = new FormData()
         fd.set("message", chatAdminMessagesNewText.value.trim())
-        fd.set("chat_type", "Admin")
+        fd.set("chat_type", "2")
         const files = chatAdminMessagesNewAttachmentInput.files
         for (const file of files){
             fd.append("attachments", file)
