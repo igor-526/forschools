@@ -331,7 +331,7 @@ function mobileInfoMaterialsGetBlock(materials=[], deleteFunc=null){
                 materialBlock.style.color = "#0d6efd"
                 materialBlock.style.fontSize = "40px"
                 materialBlock.classList.add("d-flex", "align-items-center", "justify-content-center")
-                materialBlock.style.width = "25%"
+                materialBlock.style.width = "100px"
                 materialBlock.style.cursor = "pointer"
                 setListeners(materialBlock, mat)
                 break
