@@ -106,7 +106,7 @@ function chatAdminShowUsers(userlist = []){
 }
 
 function chatAdminGetMessages(userID){
-    chatAPIGetMessages(userID, "Admin").then(request => {
+    chatAPIGetMessages(userID, "2").then(request => {
         switch (request.status){
             case 200:
                 chatAdminShowMessages(request.response.messages)
