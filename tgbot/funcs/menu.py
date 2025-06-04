@@ -10,6 +10,7 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
     tg_note = await Telegram.objects.select_related("user").aget(tg_id=user_tg_id)
     groups = await aget_user_groups(tg_note.user.id)
     materials = False
+    lessons = False
     homeworks = False
     messages = False
     settings = False
@@ -17,6 +18,7 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
         materials = False
         homeworks = True
         messages = True
+        lessons = True
         settings = True
     elif 'Curator' in groups:
         materials = False
@@ -27,16 +29,19 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
         materials = False
         homeworks = True
         messages = True
+        lessons = True
         settings = True
     elif 'Metodist' in groups:
         materials = False
         homeworks = True
         messages = True
+        lessons = "select"
         settings = True
     elif 'Admin' in groups:
         materials = False
         homeworks = True
         messages = True
+        lessons = True
         settings = True
     multiuser = await tg_note.allowed_users.acount() > 1
     await state.clear()
@@ -44,4 +49,4 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
                            text=custom_text,
                            reply_markup=get_menu_keyboard(len(await aget_unread_messages(tg_note)),
                                                           materials, homeworks, messages,
-                                                          settings, multiuser))
+                                                          settings, multiuser, lessons))

@@ -5,6 +5,18 @@ from tgbot.keyboards.callbacks.lessons import LessonScheduleListCallback, Lesson
 from tgbot.keyboards.utils import WebPlatformUrl
 
 
+def get_schedule_ma_button(self=True) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    url = "/ma/lessons/schedule/0/" if self \
+        else "/ma/lessons/schedule/"
+    builder.button(
+        text="Открыть расписание",
+        web_app=WebAppInfo(url=keyboard_anti_cache_url(url))
+    )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
 def lessons_get_users_buttons(users: list) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for user in users:

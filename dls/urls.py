@@ -13,7 +13,8 @@ from material.urls import (urlpatterns as
 from lesson.urls import (urlpatterns as
                          lesson_urlpatterns,
                          apiv1patterns as
-                         lesson_apiv1patterns)
+                         lesson_apiv1patterns,
+                         ma_patterns as lesson_ma_patterns)
 from homework.urls import (urlpatterns as
                            homework_urlpatterns,
                            apiv1patterns as
@@ -73,6 +74,7 @@ urlpatterns = [
 
     path('lessons/', include(lesson_urlpatterns)),
     path('api/v1/lessons/', include(lesson_apiv1patterns)),
+    path('ma/lessons/', include(lesson_ma_patterns)),
 
     path('homeworks/', include(homework_urlpatterns)),
     path('api/v1/homeworks/', include(homework_apiv1patterns)),

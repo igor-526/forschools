@@ -8,11 +8,12 @@ hw_button = KeyboardButton(text="Домашние задания")
 settings_button = KeyboardButton(text="Настройки")
 multiuser_button = KeyboardButton(text="Сменить аккаунт")
 web_button = KeyboardButton(text="Платформа")
+lessons_button = KeyboardButton(text="Расписание")
 
 
 def get_menu_keyboard(chats: int, materials=False, homeworks=False,
                       messages=False, settings=False,
-                      multiuser=False) -> ReplyKeyboardMarkup:
+                      multiuser=False, lessons=False) -> ReplyKeyboardMarkup:
     keys = []
     if materials:
         keys.append([materials_button])
@@ -20,6 +21,8 @@ def get_menu_keyboard(chats: int, materials=False, homeworks=False,
         keys.append([hw_button])
     if messages:
         keys.append([KeyboardButton(text=f'История сообщений ({chats})')])
+    if lessons:
+        keys.append([lessons_button])
     keys.append([web_button])
     if settings:
         keys.append([settings_button])
