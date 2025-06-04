@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardBut
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from profile_management.models import Telegram
 from tgbot.keyboards.callbacks.lessons import LessonScheduleListCallback, LessonPlaceCallback
-from tgbot.keyboards.utils import WebPlatformUrl
+from tgbot.keyboards.utils import WebPlatformUrl, keyboard_anti_cache_url
 
 
 def get_schedule_ma_button(self=True) -> InlineKeyboardMarkup:
