@@ -21,7 +21,7 @@ class LessonsListPage(LoginRequiredMixin, TemplateView):
             'title': 'Занятия',
         }
         if self.request.user_agent.is_mobile:
-            context['menu'] = 'lesson'
+            context['menu_m'] = 'lesson'
         return render(request, self.get_template_names(), context)
 
 

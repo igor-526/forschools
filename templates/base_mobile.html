@@ -23,15 +23,15 @@
         <div id="mobileNavbarDropdown" class="mobile-nav-dropdown-element mobile-nav-dropdown-content d-none"></div>
         <nav id="mobileNavbar" class="mobile-nav">
             <div id="mobileNavbarChatButton" class="bloc-icon{% if menu == "msg" %} active{% endif %}">
-                <img {% if menu == "msg" %}id="mobileNavbarActiveButton"{% endif %} src="{% static 'icons/chats.svg' %}" alt="Диалоги">
+                <img {% if menu_m == "msg" %}id="mobileNavbarActiveButton"{% endif %} src="{% static 'icons/chats.svg' %}" alt="Диалоги">
                 <span>Диалоги</span>
             </div>
             <div id="mobileNavbarLessonsButton" class="bloc-icon{% if menu == "lesson" %} active{% endif %}">
-                <img {% if menu == "lesson" %}id="mobileNavbarActiveButton"{% endif %} src="{% static 'icons/lesson.svg' %}" alt="Занятия">
+                <img {% if menu_m == "lesson" %}id="mobileNavbarActiveButton"{% endif %} src="{% static 'icons/lesson.svg' %}" alt="Занятия">
                 <span>Занятия</span>
             </div>
             <div id="mobileNavbarHomeworkButton" class="bloc-icon{% if menu == "hw" %} active{% endif %}">
-                <img{% if menu == "hw" %} id="mobileNavbarActiveButton"{% endif %} src="{% static 'icons/homework.svg' %}" alt="ДЗ">
+                <img{% if menu_m == "hw" %} id="mobileNavbarActiveButton"{% endif %} src="{% static 'icons/homework.svg' %}" alt="ДЗ">
                 <span>ДЗ</span>
             </div>
             <div id="mobileNavbarMenuButton" class="mobile-nav-dropdown-element bloc-icon">

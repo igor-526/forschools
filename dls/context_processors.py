@@ -25,8 +25,7 @@ def get_telegram_context(request) -> dict:
 def get_menu_context(request) -> dict:
     if not request.user.is_authenticated:
         return {}
-    return ({} if request.user_agent.is_mobile
-            else {"menu": get_menu(request.user)})
+    return {"menu": get_menu(request.user)}
 
 
 def get_supported_extensions_context(request) -> dict:

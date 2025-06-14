@@ -20,7 +20,7 @@ class ChatPageTemplateView(LoginRequiredMixin, TemplateView):
             'can_add_group_chat': True
         }
         if self.request.user_agent.is_mobile:
-            context['menu'] = "msg"
+            context['menu_m'] = "msg"
         return render(request, self.get_template_names(), context)
 
 

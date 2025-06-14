@@ -27,7 +27,7 @@ class HomeworksListPage(LoginRequiredMixin, TemplateView):
             'material_formats': MATERIAL_FORMATS
         }
         if self.request.user_agent.is_mobile:
-            context['menu'] = "hw"
+            context['menu_m'] = "hw"
         return render(request, self.get_template_names(), context)
 
 
