@@ -286,18 +286,21 @@ async def chats_notify(chat_message_id: int):
         msg_text += chat_message.message if chat_message.message else ""
         msg_text = msg_text.replace("<br>", "\n")
         for tg_id in tg_ids:
-            msg_result = await bot.send_message(
-                chat_id=tg_id,
-                text=msg_text,
-                reply_markup=chats_get_answer_message_button(
-                    chat_message.id,
-                    chat_message.sender_type
+            try:
+                msg_result = await bot.send_message(
+                    chat_id=tg_id,
+                    text=msg_text,
+                    reply_markup=chats_get_answer_message_button(
+                        chat_message.id,
+                        chat_message.sender_type
+                    )
                 )
-            )
-            attachments = [f async for f in chat_message.files.all()]
-            for attachment in attachments:
-                await send_file(tg_id, attachment)
-            await journal_note(msg_result, chat_message)
+                attachments = [f async for f in chat_message.files.all()]
+                for attachment in attachments:
+                    await send_file(tg_id, attachment)
+                await journal_note(msg_result, chat_message)
+            except Exception as ex:
+                pass
 
     chat_message = await Message.objects.select_related(
         "sender", "receiver").aget(pk=chat_message_id)
