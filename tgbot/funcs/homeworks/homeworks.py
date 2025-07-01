@@ -817,12 +817,11 @@ async def hw_send(tg_id: int, state: FSMContext):
     if lesson:
         lp = await lesson.aget_learning_plan()
     is_listener = hw.listener == user
-    if lp:
-        is_teacher = (lp.teacher == hw.teacher == user) or (lp.default_hw_teacher == hw.teacher == user)
+    is_teacher = hw.teacher == user
+    if lesson and lp:
         is_curator = await lp.curators.filter(pk=user.id).aexists()
         is_methodist = lp.metodist == user
     else:
-        is_teacher = hw.teacher == user
         is_curator = False
         is_methodist = False
     hwlog_status = None
