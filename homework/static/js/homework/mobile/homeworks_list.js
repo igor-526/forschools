@@ -73,7 +73,7 @@ function homeworkMobileGet(more=false){
     }
     homeworkAPIGet(homeworksMobileCurrentOffset, homeworksMobileFilterCurrentLesson,
         homeworksMobileFilterCurrentStatus, homeworksMobileFilterSelectedTeachers,
-        homeworksMobileFilterSelectedListeners, homeworksMobileFilterDateFrom,
+        homeworksMobileFilterSelectedListeners, [], homeworksMobileFilterDateFrom,
         homeworksMobileFilterDateTo, homeworksMobileFilterDateChangedFrom,
         homeworksMobileFilterDateChangedTo, homeworksMobileFilterName,
         homeworksMobileFilterCurrentAgreement).then(request => {

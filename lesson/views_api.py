@@ -51,6 +51,7 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         de = self.request.query_params.get("date_end")
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")
+        methodists = self.request.query_params.getlist("methodist")
         has_hw = self.request.query_params.get("has_hw")
         name = self.request.query_params.get("name")
         has_comment = self.request.query_params.get("comment")
@@ -62,17 +63,19 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         if ds:
             query['date__gte'] = ds
         else:
-            if not (teachers or listeners or has_hw or name or has_comment or
-                    hw_agreement or hw_statuses or lesson_places):
+            if not (teachers or listeners or methodists or has_hw or name or
+                    has_comment or hw_agreement or hw_statuses or lesson_places):
                 query['date__gte'] = date.today() - timedelta(days=2)
         if de:
             query['date__lte'] = de
         else:
-            if not (teachers or listeners or has_hw or name or has_comment or
-                    hw_agreement or hw_statuses or lesson_places):
+            if not (teachers or listeners or methodists or has_hw or name or
+                    has_comment or hw_agreement or hw_statuses or lesson_places):
                 query['date__lte'] = date.today() + timedelta(days=6)
         if listeners:
             query['learningphases__learningplan__listeners__in'] = listeners
+        if methodists:
+            query['learningphases__learningplan__metodist__in'] = methodists
         if has_hw == "false":
             query['hw_count'] = 0
         elif has_hw == "true":

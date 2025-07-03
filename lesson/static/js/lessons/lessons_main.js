@@ -1,8 +1,10 @@
 function lessonsMain(){
     const teacher = getHashValue("teacher")
     const listener = getHashValue("listener")
+    const methodist = getHashValue("methodist")
     lessonsTableFilterTeachersSelected = teacher ? [teacher] : []
     lessonsTableFilterListenersSelected = listener ? [listener] : []
+    lessonsTableFilterMethodistsSelected = methodist ? [methodist] : []
     lessonsSetUpcoming()
     lessonsOpenHomeworksButtonListeners()
     lessonsTabUpcoming.addEventListener("click", lessonsSetUpcoming)
@@ -71,7 +73,7 @@ function lessonsGet(more=false){
         lessonsCurrentOffset = 0
     }
     lessonsAPIGetAll(lessonsCurrentOffset, lessonsCurrentStatus, lessonsTableFilterTeachersSelected,
-        lessonsTableFilterListenersSelected, lessonsTableFilterDateStart, lessonsTableFilterDateEnd,
+        lessonsTableFilterListenersSelected, lessonsTableFilterMethodistsSelected, lessonsTableFilterDateStart, lessonsTableFilterDateEnd,
         lessonsTableFilterHW, lessonsTableFilterName, lessonsTableFilterComment, lessonsTableFilterHWStatuses,
         lessonsTableFilterHWAgreementStatus, lessonsTableFilterPlaces).then(request => {
         switch (request.status){
@@ -368,6 +370,7 @@ let lessonsTableFilterName = null
 let lessonsTableFilterComment = null
 let lessonsTableFilterTeachersSelected
 let lessonsTableFilterListenersSelected
+let lessonsTableFilterMethodistsSelected
 let lessonsTableFilterDateStart = null
 let lessonsTableFilterDateEnd = null
 let lessonsTableFilterPlaces = []

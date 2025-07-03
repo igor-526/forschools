@@ -48,7 +48,7 @@ function homeworksGet(more=false){
     }
     homeworkAPIGet(homeworksCurrentOffset, homeworksFilterCurrentLesson,
         homeworksFilterCurrentStatus, homeworksFilterSelectedTeachers,
-        homeworksFilterSelectedListeners, homeworksFilterDateFrom,
+        homeworksFilterSelectedListeners, homeworksFilterSelectedMethodists, homeworksFilterDateFrom,
         homeworksFilterDateTo, homeworksFilterDateChangedFrom,
         homeworksFilterDateChangedTo, homeworksFilterName,
         homeworksFilterCurrentAgreement).then(request => {
@@ -115,6 +115,7 @@ let homeworksFilterCurrentLesson
 let homeworksFilterName = null
 let homeworksFilterCurrentStatus = []
 let homeworksFilterCurrentAgreement = []
+let homeworksFilterSelectedMethodists = []
 let homeworksFilterSelectedTeachers = []
 let homeworksFilterSelectedListeners = []
 let homeworksFilterDateFrom = null

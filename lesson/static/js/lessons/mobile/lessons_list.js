@@ -51,7 +51,7 @@ function lessonsMobileGet(more=false){
         lessonsMobileList.innerHTML = ""
     }
     lessonsAPIGetAll(lessonsMobileFilterOffset, lessonsMobileFilterStatus,
-        lessonsMobileFilterTeachersSelected, lessonsMobileFilterListenersSelected,
+        lessonsMobileFilterTeachersSelected, lessonsMobileFilterListenersSelected, [],
         lessonsMobileFilterDateStart, lessonsMobileFilterDateEnd,
         lessonsMobileFilterHW, lessonsMobileFilterName,
         lessonsMobileFilterComment, [], false,

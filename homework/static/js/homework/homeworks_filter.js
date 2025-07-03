@@ -3,6 +3,81 @@ function homeworksFilterMain(){
     homeworksFilterEraseListeners()
     homeworksFilterListeners()
     homeworksFilterSearchListeners()
+    if (isAdmin){
+        homeworksFilterInitMethodistFilter()
+    }
+}
+
+function homeworksFilterInitMethodistFilter(){
+    function clickListener(element, methodistID){
+        const index = homeworksFilterSelectedMethodists.indexOf(methodistID)
+        switch (index){
+            case -1:
+                element.classList.add("active")
+                homeworksFilterSelectedMethodists.push(methodistID)
+                break
+            default:
+                element.classList.remove("active")
+                homeworksFilterSelectedMethodists.splice(index, 1)
+                break
+        }
+        homeworksGet()
+    }
+
+    function getElement(methodist){
+        const a = document.createElement("a")
+        a.classList.add("dropdown-item")
+        a.innerHTML = `${methodist.first_name} ${methodist.last_name}`
+        a.href = "#"
+        a.addEventListener("click", () => {
+            clickListener(a, methodist.id)
+        })
+        return a
+    }
+
+    homeworksTableFilterMethodistList = document.querySelector("#homeworksTableFilterMethodistList")
+    homeworksTableFilterMethodistSearchField = document.querySelector("#homeworksTableFilterMethodistSearchField")
+    homeworksTableFilterMethodistSearchErase = document.querySelector("#homeworksTableFilterMethodistSearchErase")
+
+    usersAPIGetAll(null, null, null, null, null,
+        ["Metodist"], null, null, null,
+        false).then(request => {
+        switch (request.status){
+            case 200:
+                request.response.forEach(methodist => {
+                    homeworksTableFilterMethodistList.insertAdjacentElement("beforeend", getElement(methodist))
+                })
+                break
+            default:
+                const toast = new toastEngine()
+                toast.setError("Не удалось загрузить список методистов для фильтрации")
+                toast.show()
+                break
+        }
+    })
+
+    homeworksTableFilterMethodistSearchField.addEventListener("input", () => {
+        let query = homeworksTableFilterMethodistSearchField.value.trim().toLowerCase()
+        if (query){
+            query = new RegExp(query)
+            homeworksTableFilterMethodistList.querySelectorAll("a").forEach(element => {
+                query.test(element.innerHTML) ?
+                    element.classList.remove("d-none") :
+                    element.classList.add("d-none")
+            })
+        } else {
+            homeworksTableFilterMethodistList.querySelectorAll("a").forEach(element => {
+                element.classList.remove("d-none")
+            })
+        }
+    })
+
+    homeworksTableFilterMethodistSearchErase.addEventListener("click", () => {
+        homeworksTableFilterMethodistList.querySelectorAll("a").forEach(element => {
+            element.classList.remove("d-none")
+        })
+        homeworksTableFilterMethodistSearchField.value = ""
+    })
 }
 
 function homeworksFilterSetTeachersListeners(){
@@ -259,6 +334,9 @@ const homeworksTableFilterResetAll = document.querySelector("#homeworksTableFilt
 const homeworksTableFilterTeacherSearchFieldReset = document.querySelector("#homeworksTableFilterTeacherSearchFieldReset")
 const homeworksTableFilterTeacherSearchFieldErase = document.querySelector("#homeworksTableFilterTeacherSearchFieldErase")
 const homeworksTableFilterListenerSearchFieldErase = document.querySelector("#homeworksTableFilterListenerSearchFieldErase")
+let homeworksTableFilterMethodistList
+let homeworksTableFilterMethodistSearchField
+let homeworksTableFilterMethodistSearchErase
 const homeworksTableFilterDateStartFieldErase = document.querySelector("#homeworksTableFilterDateStartFieldErase")
 const homeworksTableFilterDateEndFieldErase = document.querySelector("#homeworksTableFilterDateEndFieldErase")
 const homeworksTableFilterListenerSearchFieldReset = document.querySelector("#homeworksTableFilterListenerSearchFieldReset")

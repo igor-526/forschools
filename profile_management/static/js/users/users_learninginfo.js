@@ -165,7 +165,7 @@ function usersLearnInfoSetLessons(){
     changeElements()
     switch (usersLearningInfoModalCurrentUserRole){
         case "Teacher":
-            lessonsAPIGetAll(0, 0, [usersLearningInfoModalCurrentUserID], [], null, null).then(request => {
+            lessonsAPIGetAll(0, 0, [usersLearningInfoModalCurrentUserID], [], [], null, null).then(request => {
                 switch (request.status){
                     case 200:
                         show(request.response)
@@ -176,7 +176,7 @@ function usersLearnInfoSetLessons(){
             })
             break
         case "Listener":
-            lessonsAPIGetAll(0, 0, [], [usersLearningInfoModalCurrentUserID], null, null).then(request => {
+            lessonsAPIGetAll(0, 0, [], [usersLearningInfoModalCurrentUserID], [], null, null).then(request => {
                 switch (request.status){
                     case 200:
                         show(request.response)
@@ -240,7 +240,7 @@ function usersLearnInfoSetHomeworks(){
     switch (usersLearningInfoModalCurrentUserRole){
         case "Teacher":
             homeworkAPIGet(null, null, null, [usersLearningInfoModalCurrentUserID],
-                [], null, null).then(request => {
+                [], [], null, null).then(request => {
                 switch (request.status){
                     case 200:
                         show(request.response)
@@ -252,7 +252,7 @@ function usersLearnInfoSetHomeworks(){
             break
         case "Listener":
             homeworkAPIGet(null, null, null, [], [usersLearningInfoModalCurrentUserID],
-                null, null).then(request => {
+                [], null, null).then(request => {
                 switch (request.status){
                     case 200:
                         show(request.response)

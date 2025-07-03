@@ -6,18 +6,27 @@
             <div class="col-auto">
                 <h1>Домашние задания</h1>
             </div>
-            <div class="col-auto">
-                {% if is_admin or id_methodist or is_teacher %}
-                    <button id="homeworksAddOffcanvasButton" type="button" class="btn btn-primary mt-1"><i class="bi bi-plus-lg"></i></button>
-                    {% include "homework_add_offcanvas.html" %}
-                    {% include "materials_embed_modal.html" %}
-                {% endif %}
-            </div>
         </div>
     </div>
 
     <div class="container-xxl">
-        <ul class="nav nav-pills mb-3" id="homeworkTabs" role="tablist"></ul>
+        <ul class="nav nav-pills mb-3" id="homeworkTabs" role="tablist">
+            <li class="nav-item">
+                {#                    <button id="homeworksTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill me-1"></i>Сбросить</button>#}
+                {% if is_admin %}
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <i class="bi bi-funnel-fill me-1"></i>Методист</button>
+                        <ul id="homeworksTableFilterMethodistList" class="dropdown-menu" style="min-width: 250px;">
+                            <li class="input-group px-1">
+                                <input id="homeworksTableFilterMethodistSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                                <button id="homeworksTableFilterMethodistSearchErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
+            </li>
+        </ul>
         <div class="container-xxl">
             <table class="table table-hover">
                 <thead>

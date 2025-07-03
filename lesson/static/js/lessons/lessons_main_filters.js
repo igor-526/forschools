@@ -1,6 +1,7 @@
 function lessonsFiltersMain(){
     if (isAdmin){
         lessonsFilterSetCommentListeners()
+        lessonsFilterInitMethodistFilter()
     }
     lessonsFilterResetListeners()
     lessonsFilterSearchListeners()
@@ -36,6 +37,78 @@ function lessonsFiltersMain(){
                 showErrorToast("Не удалось загрузить места проведения занятий для фильтрации")
                 break
         }
+    })
+}
+
+function lessonsFilterInitMethodistFilter(){
+    function clickListener(element, methodistID){
+        const index = lessonsTableFilterMethodistsSelected.indexOf(methodistID)
+        switch (index){
+            case -1:
+                element.classList.add("active")
+                lessonsTableFilterMethodistsSelected.push(methodistID)
+                break
+            default:
+                element.classList.remove("active")
+                lessonsTableFilterMethodistsSelected.splice(index, 1)
+                break
+        }
+        lessonsGet()
+    }
+
+    function getElement(methodist){
+        const a = document.createElement("a")
+        a.classList.add("dropdown-item")
+        a.innerHTML = `${methodist.first_name} ${methodist.last_name}`
+        a.href = "#"
+        a.addEventListener("click", () => {
+            clickListener(a, methodist.id)
+        })
+        return a
+    }
+
+    lessonsTableFilterMethodistList = document.querySelector("#lessonsTableFilterMethodistList")
+    lessonsTableFilterMethodistSearchField = document.querySelector("#lessonsTableFilterMethodistSearchField")
+    lessonsTableFilterMethodistSearchErase = document.querySelector("#lessonsTableFilterMethodistSearchErase")
+
+    usersAPIGetAll(null, null, null, null, null,
+        ["Metodist"], null, null, null,
+        false).then(request => {
+        switch (request.status){
+            case 200:
+                request.response.forEach(methodist => {
+                    lessonsTableFilterMethodistList.insertAdjacentElement("beforeend", getElement(methodist))
+                })
+                break
+            default:
+                const toast = new toastEngine()
+                toast.setError("Не удалось загрузить список методистов для фильтрации")
+                toast.show()
+                break
+        }
+    })
+
+    lessonsTableFilterMethodistSearchField.addEventListener("input", () => {
+        let query = lessonsTableFilterMethodistSearchField.value.trim().toLowerCase()
+        if (query){
+            query = new RegExp(query)
+            lessonsTableFilterMethodistList.querySelectorAll("a").forEach(element => {
+                query.test(element.innerHTML) ?
+                    element.classList.remove("d-none") :
+                    element.classList.add("d-none")
+            })
+        } else {
+            lessonsTableFilterMethodistList.querySelectorAll("a").forEach(element => {
+                element.classList.remove("d-none")
+            })
+        }
+    })
+
+    lessonsTableFilterMethodistSearchErase.addEventListener("click", () => {
+        lessonsTableFilterMethodistList.querySelectorAll("a").forEach(element => {
+            element.classList.remove("d-none")
+        })
+        lessonsTableFilterMethodistSearchField.value = ""
     })
 }
 
@@ -322,6 +395,15 @@ function lessonsFilterResetListeners(){
         }
     }
 
+    function resetMethodists(){
+        lessonsTableFilterMethodistSearchField.value = ""
+        lessonsTableFilterMethodistList.querySelectorAll("a").forEach(element => {
+            element.classList.remove("d-none")
+            element.classList.remove("active")
+        })
+        lessonsTableFilterMethodistsSelected.length = 0
+    }
+
     function resetPlaceSearch(resActive = false){
         lessonsTableFilterPlaceField.value = ""
         const places = lessonsTableFilterDatePlacesList.querySelectorAll("a")
@@ -405,6 +487,7 @@ function lessonsFilterResetListeners(){
         resetPlaceSearch(true)
         if (isAdmin){
             resetComment()
+            resetMethodists()
         }
         lessonsGet()
     })
@@ -430,6 +513,9 @@ const lessonsTableFilterTeacherSearchFieldErase = document.querySelector("#lesso
 const lessonsTableFilterListenerList = document.querySelector("#lessonsTableFilterListenerList")
 const lessonsTableFilterListenerSearchField = document.querySelector("#lessonsTableFilterListenerSearchField")
 const lessonsTableFilterListenerSearchFieldErase = document.querySelector("#lessonsTableFilterListenerSearchFieldErase")
+let lessonsTableFilterMethodistList
+let lessonsTableFilterMethodistSearchField
+let lessonsTableFilterMethodistSearchErase
 const lessonsTableFilterDateStartField = document.querySelector("#lessonsTableFilterDateStartField")
 const lessonsTableFilterDateStartFieldErase = document.querySelector("#lessonsTableFilterDateStartFieldErase")
 const lessonsTableFilterDateEndField = document.querySelector("#lessonsTableFilterDateEndField")

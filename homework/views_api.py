@@ -169,12 +169,15 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         query = {}
         teachers = self.request.query_params.getlist("teacher")
         listeners = self.request.query_params.getlist("listener")
+        methodists = self.request.query_params.getlist("methodist")
         lesson = self.request.query_params.get("lesson")
         name = self.request.query_params.get("hw_name")
         if teachers:
             query['teacher__id__in'] = teachers
         if listeners:
             query['listener__id__in'] = listeners
+        if methodists:
+            query['lesson__learningphases__learningplan__metodist__in'] = methodists
         if lesson:
             query['lesson'] = lesson
         if name:

@@ -16,6 +16,7 @@ import async_to_sync as sync
 from tgbot.finite_states.homework import HomeworkNewFSM
 from tgbot.funcs.fileutils import send_file
 from tgbot.funcs.lessons import f_lessons_show_place_access_info
+from tgbot.keyboards.default import get_chat_typing_keyboard
 from tgbot.keyboards.lessons import get_lesson_web_button
 from tgbot.keyboards.materials import get_materials_keyboard_query
 from tgbot.keyboards.homework import get_homeworks_buttons, get_homework_editing_buttons
@@ -67,7 +68,8 @@ class AsyncClass:
                     if minutes_ago > 5:
                         await bot.send_message(chat_id=user.get("tg_id"),
                                                text="Ваше сообщение не отправлено!\nДля отправки необходимо "
-                                                    "нажать кнопку <b>ОТПРАВИТЬ</b>")
+                                                    "нажать кнопку <b>ОТПРАВИТЬ</b>",
+                                               reply_markup=get_chat_typing_keyboard(False))
         return unsent_messages
 
     async def notify_unsent_data(self):
@@ -92,7 +94,8 @@ class AsyncClass:
                     if minutes_ago > 5:
                         await bot.send_message(chat_id=user.get("tg_id"),
                                                text="Ваше сообщение не отправлено!\nДля отправки необходимо "
-                                                    "нажать кнопку <b>ОТПРАВИТЬ</b>")
+                                                    "нажать кнопку <b>ОТПРАВИТЬ</b>",
+                                               reply_markup=get_chat_typing_keyboard(False))
             elif state == "HomeworkFSM:send_hw_files":
                 data = await state_with.get_data()
                 if data.get("start_time"):

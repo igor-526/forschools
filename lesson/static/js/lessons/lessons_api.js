@@ -54,7 +54,7 @@ async function lessonsAPIReplaceTeacher(teacherID, lessonID){
 }
 
 async function lessonsAPIGetAll(offset=0, status=null, teachers=[], listeners=[],
-                                ds= null, de= null, has_hw=null, name=null, comment=null,
+                                methodists=[], ds= null, de= null, has_hw=null, name=null, comment=null,
                                 hwStatuses=[], hwAgreement=false, places=[]){
     let url = '/api/v1/lessons/'
     const searchParams=[]
@@ -75,6 +75,9 @@ async function lessonsAPIGetAll(offset=0, status=null, teachers=[], listeners=[]
     })
     listeners.forEach(listener => {
         searchParams.push(`listener=${listener}`)
+    })
+    methodists.forEach(methodist => {
+        searchParams.push(`methodist=${methodist}`)
     })
     if (ds){
         searchParams.push(`date_start=${ds}`)

@@ -26,8 +26,20 @@
                 <a class="nav-link" href="#" id="LessonsTabPassed">Проведённые</a>
             </li>
             <li class="nav-item">
-                <button id="lessonsTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill"></i>Сбросить</button>
-                <button id="lessonsTableOpenHomeworksButton" data-opened="false" type="button" class="btn btn-sm btn-outline-primary mx-1" role="button"><i class="bi bi-eye"></i> ДЗ</button>
+                <button id="lessonsTableFilterResetAll" type="button" class="btn btn-sm btn-outline-danger mx-1" role="button"><i class="bi bi-funnel-fill me-1"></i>Сбросить</button>
+                {% if is_admin %}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                        <i class="bi bi-funnel-fill me-1"></i>Методист</button>
+                    <ul id="lessonsTableFilterMethodistList" class="dropdown-menu" style="min-width: 250px;">
+                        <li class="input-group px-1">
+                            <input id="lessonsTableFilterMethodistSearchField" type="text" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                            <button id="lessonsTableFilterMethodistSearchErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+                <button id="lessonsTableOpenHomeworksButton" data-opened="false" type="button" class="btn btn-sm btn-outline-primary mx-1" role="button"><i class="bi bi-eye me-1"></i>ДЗ</button>
             </li>
         </ul>
 
