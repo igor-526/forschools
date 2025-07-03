@@ -177,7 +177,7 @@ MATERIAL_FORMATS = {
     'voice_formats': ['ogg', 'oga'],
     'audio_formats': ['mp3', 'm4a', 'wma', 'wav'],
     'text_formats': ['txt'],
-    'presentation_formats': ['pptx'],
+    'presentation_formats': ['pptx', 'ppt'],
 }
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
