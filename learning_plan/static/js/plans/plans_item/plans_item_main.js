@@ -116,72 +116,18 @@ function planItemGetPhaseCollapse(phase){
                 <th scope="col">Наименование</th>
                 <th scope="col">Дата</th>
                 <th scope="col">Время</th>
-                <th scope="col">Действие</th>
             </tr>`
     const collapseTableTBody = document.createElement("tbody")
     collapseTable.insertAdjacentElement("beforeend", collapseTableTHead)
     collapseTable.insertAdjacentElement("beforeend", collapseTableTBody)
     phase.lessons.forEach(lesson => {
-        collapseTableTBody.insertAdjacentElement("beforeend", planItemGetLessonElement(lesson))
+        const lsnUtils = new lessonUtils(lesson)
+        collapseTableTBody.insertAdjacentElement("beforeend", lsnUtils.getPhaseTableElement())
     })
     return tr
 }
 
-function planItemGetLessonElement(lesson){
-    let date = "-"
-    let time = "-"
-    if (lesson.date !== null){
-        const dateObj = new Date(lesson.date)
-        date = `${dateObj.toLocaleDateString()}`
-    }
-    if (lesson.start_time !== null){
-        const st = new Date(Date.parse(`${lesson.date}T${lesson.start_time}`))
-        const et = new Date(Date.parse(`${lesson.date}T${lesson.end_time}`))
-        const stH = st.getHours().toString().padStart(2, "0")
-        const stM = st.getMinutes().toString().padStart(2, "0")
-        const etH = et.getHours().toString().padStart(2, "0")
-        const etM = et.getMinutes().toString().padStart(2, "0")
-        time = `${stH}:${stM} - ${etH}:${etM}`
-    }
-    const tr = document.createElement("tr")
-    const tdName = document.createElement("td")
-    const tdDate = document.createElement("td")
-    const tdTime = document.createElement("td")
-    const tdActions = document.createElement("td")
-    tr.insertAdjacentElement("beforeend", tdName)
-    tr.insertAdjacentElement("beforeend", tdDate)
-    tr.insertAdjacentElement("beforeend", tdTime)
-    tr.insertAdjacentElement("beforeend", tdActions)
-    tr.setAttribute("data-lesson-id", lesson.id)
-    switch (lesson.status){
-        case 1:
-            tr.classList.add("table-success")
-            break
-        case 2:
-            tr.classList.add("table-danger")
-            break
-    }
-    tdName.innerHTML = lesson.name
-    tdDate.innerHTML = date
-    tdTime.innerHTML = time
-
-    if (lesson.status === 0 && canEditPlan){
-        const tdActionsReschedule = document.createElement("button")
-        tdActionsReschedule.type = "button"
-        tdActionsReschedule.classList.add("btn", "btn-warning", "mx-1")
-        tdActionsReschedule.setAttribute("data-lesson-reschedule-id", lesson.id)
-        tdActionsReschedule.innerHTML = '<i class="bi bi-calendar3-range"></i>'
-        tdActions.insertAdjacentElement("beforeend", tdActionsReschedule)
-        tdActionsReschedule.addEventListener("click", plansItemReschedulingSetModal)
-    }
-    tr.addEventListener("click", (e) => {
-        if (!e.target.matches('button')){
-            const lsnUtils = new lessonUtils(lesson)
-            lsnUtils.showOffcanvas(true)
-        }
-    })
-    return tr
-}
+function planItemGetLessonElement(lesson){}
 
 function planItemShowPhases(list, clear = true) {
     function getAddPhaseButton(){

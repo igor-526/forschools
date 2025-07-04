@@ -90,13 +90,6 @@ function lessonsGet(more=false){
 }
 
 function lessonsShow(lessons, clear=true, replace_element=null){
-    function getLessonName(lesson){
-        if (lesson.name_fact){
-            return `${lesson.name_fact} (${lesson.name})`
-        }
-        return lesson.name
-    }
-
     function getCollapseElement(lessonID){
         const tr = document.createElement("tr")
         const td = document.createElement("td")

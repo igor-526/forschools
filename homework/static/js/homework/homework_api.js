@@ -84,7 +84,7 @@ async function homeworkAPISend(homeworkID, fd){
 async function homeworkAPIGet(offset=null, lesson=null, status=[],
                               teachers=[], listeners=[], methodists=[], dateFrom=null,
                               dateTo=null, dateChangedFrom=null, dateChangedTo=null,
-                              name=null, agreement=[]){
+                              name=null, agreement=[], comment=null){
     let url = "/api/v1/homeworks/"
     let queryArray = []
     if (offset){
@@ -113,6 +113,9 @@ async function homeworkAPIGet(offset=null, lesson=null, status=[],
     }
     if (dateChangedTo){
         queryArray.push(`date_changed_to=${dateChangedTo}`)
+    }
+    if (comment){
+        queryArray.push(`admin_comment=${comment}`)
     }
     teachers.forEach(teacher => {
         queryArray.push(`teacher=${teacher}`)
@@ -210,4 +213,20 @@ async function homeworkAPIAgreement(homeworkID, action, fd){
         body: fd
     })
     return APIPostPatchToObject(request)
+}
+
+async function homeworkAPISetAdminComment(homeworkID, fd){
+    const url = `/api/v1/homeworks/${homeworkID}/set_admin_comment/`
+    const init = {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+    }
+    if (fd){
+        init.body = fd
+    }
+    const request = await fetch(url, init)
+    return await APIPostPatchToObject(request)
 }

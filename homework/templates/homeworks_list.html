@@ -105,6 +105,28 @@
                             </ul>
                         </div>
                     </th>
+                    {% if is_admin %}
+                        <th scope="col">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                                    <b><i class="bi bi-chat-left-text-fill"></i></b></button>
+                                <ul class="dropdown-menu" style="min-width: 320px;">
+                                    <li class="mx-1">
+                                        <div class="btn-group" role="group" aria-label="">
+                                            <input type="radio" class="btn-check" name="comment_filter" id="homeworksTableFilterCommentAll" autocomplete="off" checked>
+                                            <label class="btn btn-outline-primary btn-sm" for="homeworksTableFilterCommentAll">Все</label>
+
+                                            <input type="radio" class="btn-check" name="comment_filter" id="homeworksTableFilterCommentTrue" autocomplete="off">
+                                            <label class="btn btn-outline-primary btn-sm" for="homeworksTableFilterCommentTrue">С комментарием</label>
+
+                                            <input type="radio" class="btn-check" name="comment_filter" id="homeworksTableFilterCommentFalse" autocomplete="off">
+                                            <label class="btn btn-outline-primary btn-sm" for="homeworksTableFilterCommentFalse">Без комментария</label>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </th>
+                    {% endif %}
                 </tr>
                 </thead>
                 <tbody id="homeworksTableBody"></tbody>

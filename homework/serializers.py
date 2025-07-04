@@ -24,6 +24,9 @@ class HomeworkSerializer(serializers.ModelSerializer):
     actions = serializers.SerializerMethodField(read_only=True)
     send_tg = serializers.SerializerMethodField(read_only=True)
     logs = serializers.SerializerMethodField(read_only=True)
+    status = serializers.SerializerMethodField(read_only=True)
+    admin_comment = serializers.SerializerMethodField(read_only=True)
+    color = serializers.SerializerMethodField(read_only=True)
 
     hw_lesson: Lesson = None
     hw_learning_plan: LearningPlan = None
@@ -35,7 +38,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
-        hw = args[0]
+        hw = args[0] if args else kwargs.get("instance")
         super(HomeworkSerializer, self).__init__(*args, **kwargs)
         self.request = self.context.get('request')
         self.hw_lesson = hw.get_lesson()
@@ -161,6 +164,49 @@ class HomeworkSerializer(serializers.ModelSerializer):
             obj.log.all(), many=True,
             context={"request": self.request}).data
 
+    def get_color(self, obj):
+        if isinstance(obj, dict):
+            return None
+        color = None
+        hw_status = obj.get_status(
+            accepted_only=obj.listener == self.context.get("request").user
+        )
+        if hw_status.status == 6:
+            color = "danger"
+        elif hw_status.status == 4:
+            color = "success"
+        user_groups = [g.name for g in
+                       self.context.get("request").user.groups.all()]
+        if "Admin" in user_groups or "Metodist" in user_groups:
+            status_agreement = hw_status.agreement
+            if (status_agreement.get("accepted") is not None and
+                    not status_agreement.get("accepted")):
+                color = "warning"
+            elif status_agreement.get("accepted"):
+                color = "info"
+        if "Teacher" in user_groups or "Curator" in user_groups:
+            if hw_status.status == 3:
+                color = "warning"
+        if "Listener" in user_groups and hw_status.status in [1, 2, 5]:
+            color = "warning"
+        return color
+
+    def get_status(self, obj: Homework):
+        if isinstance(obj, dict):
+            return None
+        status = obj.get_status(
+            accepted_only=obj.listener == self.context.get("request").user
+        )
+        if status:
+            return {"status": status.status,
+                    "dt": status.dt}
+        return None
+
+    def get_admin_comment(self, obj: Homework):
+        if self.request.user.groups.filter(name="Admin").exists():
+            return obj.admin_comment
+        return None
+
 
 class HomeworkListSerializer(serializers.ModelSerializer):
     teacher = NewUserNameOnlyListSerializer(many=False, read_only=True)
@@ -169,6 +215,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
     lesson_info = serializers.SerializerMethodField(read_only=True)
     assigned = serializers.SerializerMethodField(read_only=True)
     color = serializers.SerializerMethodField(read_only=True)
+    admin_comment = serializers.SerializerMethodField(read_only=True)
     last_status: HomeworkLog | None
     lesson: Lesson | None
     plan: LearningPlan | None
@@ -176,7 +223,7 @@ class HomeworkListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Homework
         fields = ["id", "name", "description", "teacher", "for_curator",
-                  "listener", "status", "lesson_info", "assigned", "color"]
+                  "listener", "status", "lesson_info", "assigned", "color", "admin_comment"]
 
     def get_status(self, obj):
         if isinstance(obj, dict):
@@ -235,6 +282,11 @@ class HomeworkListSerializer(serializers.ModelSerializer):
         if "Listener" in user_groups and hw_status.status in [1, 2, 5]:
             color = "warning"
         return color
+
+    def get_admin_comment(self, obj: Homework):
+        if self.context.get("request").user.groups.filter(name="Admin").exists():
+            return obj.admin_comment
+        return None
 
     def create(self, validated_data):
         request = self.context.get("request")

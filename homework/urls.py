@@ -10,7 +10,7 @@ from .views_api import (HomeworkListCreateAPIView,
                         HomeworkRetrieveUpdateDestroyAPIView,
                         HomeworkItemDeleteMaterialAPIView,
                         HomeworkItemAgreementAPIView,
-                        HomeworkItemPageSendTelegramAPIView)
+                        HomeworkItemPageSendTelegramAPIView, HomeworkAdminCommentAPIView)
 
 urlpatterns = [
     path('', HomeworksListPage.as_view(), name='homeworks'),
@@ -29,6 +29,7 @@ apiv1patterns = [
     path('<int:pk>/agreement/<str:action>/',
          HomeworkItemAgreementAPIView.as_view()),
     path('logs/<int:pk>/', HomeworkLogAPIView.as_view()),
+    path('<int:pk>/set_admin_comment/', HomeworkAdminCommentAPIView.as_view()),
     path('<int:hw_id>/mat/<int:mat_id>/',
          HomeworkItemDeleteMaterialAPIView.as_view()),
 ]

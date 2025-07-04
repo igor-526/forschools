@@ -85,7 +85,12 @@ async def send_material_item(tg_id: int, material: Material, protect=False, meta
                                        caption=caption,
                                        reply_markup=get_keyboard_material_item(material, delete_settings),
                                        protect_content=protect)
-        file_id = message.audio.file_id if message.audio else message.document.file_id
+        if message.audio and message.audio.file_id:
+            file_id = message.audio.file_id
+        elif message.document and message.document.file_id:
+            file_id = message.document.file_id
+        else:
+            file_id = None
     elif mat_type == "voice_formats":
         message = await bot.send_voice(chat_id=tg_id,
                                        voice=file,

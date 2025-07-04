@@ -22,7 +22,7 @@ from .models import Homework, HomeworkLog
 from .utils import status_code_to_string
 from .permissions import (get_delete_log_permission,
                           get_can_accept_log_permission,
-                          get_can_edit_hw_permission)
+                          get_can_edit_hw_permission, CanEditHomeworkAdminComment)
 from .serializers import (HomeworkListSerializer, HomeworkLogListSerializer,
                           HomeworkLogSerializer, HomeworkSerializer)
 from rest_framework.request import Request
@@ -172,6 +172,7 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
         methodists = self.request.query_params.getlist("methodist")
         lesson = self.request.query_params.get("lesson")
         name = self.request.query_params.get("hw_name")
+        admin_comment = self.request.query_params.get("admin_comment")
         if teachers:
             query['teacher__id__in'] = teachers
         if listeners:
@@ -182,6 +183,10 @@ class HomeworkListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
             query['lesson'] = lesson
         if name:
             query['name__icontains'] = name
+        if admin_comment == "true":
+            query['admin_comment__isnull'] = False
+        elif admin_comment == "false":
+            query['admin_comment__isnull'] = True
         queryset = queryset.filter(**query)
         queryset = self.filter_queryset_date_assigned(queryset)
         queryset = self.filter_queryset_date_changed(queryset)
@@ -848,4 +853,68 @@ class HomeworkItemAgreementAPIView(LoginRequiredMixin, APIView):
                 homework,
                 context={'request': request}).data,
             status=status.HTTP_200_OK
+        )
+
+
+class HomeworkAdminCommentAPIView(CanEditHomeworkAdminComment, APIView):
+    def get_object(self, homework_id) -> Homework | None:
+        try:
+            return Homework.objects.get(pk=homework_id)
+        except Homework.DoesNotExist:
+            return None
+
+    def post(self, request, *args, **kwargs):
+        homework = self.get_object(self.kwargs.get('pk'))
+        if homework is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        comment = request.POST.get('comment')
+        plan = homework.lesson_set.first().get_learning_plan()
+        if not comment:
+            UserLog.objects.create(
+                log_type=5,
+                learning_plan=plan,
+                title="Администратор удалил комментарий по ДЗ",
+                content={
+                    "list": [],
+                    "text": [homework.admin_comment]
+                },
+                buttons=[{"inner": f'ДЗ: {homework.name}',
+                          "href": f"/homeworks/{homework.id}/"}],
+                color="danger",
+                user=request.user
+            )
+            homework.admin_comment = None
+            homework.save()
+            return Response(
+                data=HomeworkSerializer(instance=homework,
+                                        many=False,
+                                        context={'request': request}).data,
+                status=status.HTTP_200_OK
+            )
+        comment = comment.strip()
+        if len(comment) > 2000:
+            return Response(
+                data={'comment': 'Длина комментария не может превышать '
+                                 '2000 символов'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        homework.admin_comment = comment
+        homework.save()
+        UserLog.objects.create(
+            log_type=5,
+            learning_plan=plan,
+            title="Администратор прокомментировал ДЗ",
+            content={
+                "list": [],
+                "text": [homework.admin_comment]
+            },
+            buttons=[{"inner": f'ДЗ: {homework.name}',
+                      "href": f"/homeworks/{homework.id}/"}],
+            user=request.user
+        )
+        return Response(
+            data=HomeworkSerializer(instance=homework,
+                                    many=False,
+                                    context={'request': request}).data,
+            status=status.HTTP_201_CREATED
         )

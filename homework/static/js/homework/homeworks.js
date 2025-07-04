@@ -51,7 +51,7 @@ function homeworksGet(more=false){
         homeworksFilterSelectedListeners, homeworksFilterSelectedMethodists, homeworksFilterDateFrom,
         homeworksFilterDateTo, homeworksFilterDateChangedFrom,
         homeworksFilterDateChangedTo, homeworksFilterName,
-        homeworksFilterCurrentAgreement).then(request => {
+        homeworksFilterCurrentAgreement, homeworksFilterComment).then(request => {
         switch (request.status){
             case 200:
                 homeworksShow(request.response, !more)
@@ -67,38 +67,8 @@ function homeworksGet(more=false){
 
 function homeworksShow(homeworks, clear=true){
     function getElement(hw){
-        const tr = document.createElement("tr")
-        if (hw.color){
-            tr.classList.add(`table-${hw.color}`)
-        }
-        const tdName = document.createElement("td")
-        const tdTeacher = document.createElement("td")
-        const tdListener = document.createElement("td")
-        const tdAssigned = document.createElement("td")
-        const tdLastChanged = document.createElement("td")
-        tr.insertAdjacentElement("beforeend", tdName)
-        tr.insertAdjacentElement("beforeend", tdTeacher)
-        tr.insertAdjacentElement("beforeend", tdListener)
-        tr.insertAdjacentElement("beforeend", tdAssigned)
-        tr.insertAdjacentElement("beforeend", tdLastChanged)
-        if (hw.lesson_info){
-            tdName.setAttribute("data-bs-toggle", "tooltip")
-            tdName.setAttribute("data-bs-placement", "top")
-            tdName.setAttribute("title", `Занятие "${hw.lesson_info.name}" от ${new Date(hw.lesson_info.date).toLocaleDateString()}`)
-            new bootstrap.Tooltip(tdName)
-        }
-        tdName.innerHTML += hw.name
-        tdTeacher.innerHTML = getUsersString([hw.teacher])
-        tdListener.innerHTML = getUsersString([hw.listener])
-        if (hw.assigned){
-            tdAssigned.innerHTML = timeUtilsDateTimeToStr(hw.assigned)
-        }
-        tdLastChanged.innerHTML = `${homeworkItemShowLogsStrStatus(hw.status.status)} (${new Date(hw.status.dt).toLocaleDateString()})`
-        tr.addEventListener("click", (e) => {
-            const hwUtils = new homeworkUtils(hw)
-            hwUtils.showOffcanvas(true)
-        })
-        return tr
+        const hwUtils = new homeworkUtils(hw)
+        return hwUtils.getDesktopTableElement()
     }
 
     if (clear){
@@ -122,6 +92,7 @@ let homeworksFilterDateFrom = null
 let homeworksFilterDateTo = null
 let homeworksFilterDateChangedFrom = null
 let homeworksFilterDateChangedTo = null
+let homeworksFilterComment = null
 
 const homeworkTabs = document.querySelector("#homeworkTabs")
 

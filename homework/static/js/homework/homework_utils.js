@@ -2,19 +2,19 @@ class homeworkUtils{
     data = null
     offcanvas = null
     page = null
+    desktopTableElement = null
 
     constructor(data){
         this.data = data
     }
 
-    showOffcanvas(resetData = false){
+    showOffcanvas(resetData = false, show=true){
         if (!this.offcanvas){
             this.offcanvas = new offcanvasEngine()
         }
         this.offcanvas.header = `<a target="_blank" href="/homeworks/${this.data.id}/" 
         class="btn btn-sm btn-primary me-2">
         <i class="bi bi-globe"></i></a>${this.data.name}`
-
         this.offcanvas.addData("Основные данные", this._getMainInfoContent())
         if (this.data.hasOwnProperty("actions") && this.data.actions.length){
             this.offcanvas.addData("Действия", this._getActionsContent())
@@ -34,7 +34,7 @@ class homeworkUtils{
             this.offcanvas.addData("Последний ответ", [logsContent, allHistoryButton])
         }
 
-        if (!this.offcanvas.offcanvasElement.classList.contains("showing")){
+        if (!this.offcanvas.offcanvasElement.classList.contains("showing") && show){
             this.offcanvas.show()
         }
         if (resetData){
@@ -65,16 +65,74 @@ class homeworkUtils{
         }
     }
 
+    getDesktopTableElement(){
+        const tr = document.createElement("tr")
+        if (this.data && this.data.hasOwnProperty("color") && this.data.color){
+            tr.classList.add(`table-${this.data.color}`)
+        }
+        const tdName = document.createElement("td")
+        const tdTeacher = document.createElement("td")
+        const tdListener = document.createElement("td")
+        const tdAssigned = document.createElement("td")
+        const tdLastChanged = document.createElement("td")
+        tr.insertAdjacentElement("beforeend", tdName)
+        tr.insertAdjacentElement("beforeend", tdTeacher)
+        tr.insertAdjacentElement("beforeend", tdListener)
+        tr.insertAdjacentElement("beforeend", tdAssigned)
+        tr.insertAdjacentElement("beforeend", tdLastChanged)
+        if (this.data.lesson_info){
+            tdName.setAttribute("data-bs-toggle", "tooltip")
+            tdName.setAttribute("data-bs-placement", "top")
+            tdName.setAttribute("title", `Занятие "${this.data.lesson_info.name}" от ${new Date(this.data.lesson_info.date).toLocaleDateString()}`)
+            new bootstrap.Tooltip(tdName)
+        }
+        tdName.innerHTML += this.data.name
+        tdTeacher.innerHTML = getUsersString([this.data.teacher])
+        tdListener.innerHTML = getUsersString([this.data.listener])
+        if (this.data.assigned){
+            tdAssigned.innerHTML = timeUtilsDateTimeToStr(this.data.assigned)
+        }
+        tdLastChanged.innerHTML = `${homeworkItemShowLogsStrStatus(this.data.status.status)} (${new Date(this.data.status.dt).toLocaleDateString()})`
+        tr.addEventListener("click", (e) => {
+            if (!e.target.matches('button') && !e.target.matches('i')){
+                this.showOffcanvas(true)
+            }
+        })
+        if (isAdmin){
+            const tdAdminComment = document.createElement("td")
+            tr.insertAdjacentElement("beforeend", tdAdminComment)
+            const commentButton = document.createElement("button")
+            commentButton.classList.add("btn", "btn-sm")
+            commentButton.innerHTML = '<i class="bi bi-chat-left-text-fill"></i>'
+            if (this.data.admin_comment){
+                commentButton.classList.add("btn-outline-primary")
+                tdAdminComment.setAttribute("data-bs-toggle", "tooltip")
+                tdAdminComment.setAttribute("data-bs-placement", "top")
+                tdAdminComment.setAttribute("title", this.data.admin_comment)
+                new bootstrap.Tooltip(tdAdminComment)
+            } else {
+                commentButton.classList.add("btn-outline-secondary")
+            }
+            tdAdminComment.insertAdjacentElement("beforeend", commentButton)
+            commentButton.addEventListener("click", () => {this._adminCommentModalSet()})
+        }
+        this.desktopTableElement = tr
+        return tr
+    }
+
     resetContent(newData=null){
         if (newData){
             this.data = newData
             if (this.offcanvas){
                 this.offcanvas.resetContent()
-                this.showOffcanvas()
+                this.showOffcanvas(false)
             }
             if (this.page){
                 this.page.resetContent()
                 this.generateOnPage(this.contentBody)
+            }
+            if (this.desktopTableElement){
+                this.desktopTableElement.replaceWith(this.getDesktopTableElement())
             }
         } else {
             homeworkAPIGetItem(this.data.id).then(request => {
@@ -88,6 +146,9 @@ class homeworkUtils{
                         if (this.page){
                             this.page.resetContent()
                             this.generateOnPage(this.contentBody)
+                        }
+                        if (this.desktopTableElement){
+                            this.desktopTableElement.replaceWith(this.getDesktopTableElement())
                         }
                         break
                     default:
@@ -144,6 +205,19 @@ class homeworkUtils{
             })
             elements.push(lessonP)
         }
+
+        if (isAdmin){
+            const adminCommentP = document.createElement("p")
+            adminCommentP.classList.add("mb-1")
+            adminCommentP.insertAdjacentElement("beforeend", iconUtilsGetIcon(
+                "comment_grey.svg", "Комментарий"
+            ))
+            adminCommentP.innerHTML += `<span class="fw-bold" style="color: #0d6dfb;">${this.data.admin_comment ?
+                this.data.admin_comment : "Комментарий отсутствует"}</span>`
+            elements.push(adminCommentP)
+            adminCommentP.addEventListener("click", () => {this._adminCommentModalSet()})
+        }
+
         return elements
     }
 
@@ -1052,6 +1126,131 @@ class homeworkUtils{
             }
             toast.show()
         })
+    }
+
+    _adminCommentModalSet(){
+        const m = new modalEngine()
+        m.title = `Комментарий к ДЗ "${this.data.name}"`
+
+        const textAreaDiv = document.createElement("div")
+        textAreaDiv.classList.add("mb-3")
+
+        const textAreaLabel = document.createElement("label")
+        textAreaLabel.classList.add("form-label")
+        textAreaLabel.innerHTML = "Комментарий"
+        textAreaLabel.for = "hwItemAdminCommentTextArea"
+
+        const textAreaInput = document.createElement("textarea")
+        textAreaInput.rows = 10
+        textAreaInput.classList.add("form-control")
+        textAreaInput.id = "hwItemAdminCommentTextArea"
+        if (this.data.admin_comment){
+            textAreaInput.value = this.data.admin_comment
+        }
+
+        const textAreaInvalidFeedback = document.createElement("div")
+        textAreaInvalidFeedback.classList.add("invalid-feedback")
+
+        textAreaDiv.insertAdjacentElement("beforeend", textAreaLabel)
+        textAreaDiv.insertAdjacentElement("beforeend", textAreaInput)
+        textAreaDiv.insertAdjacentElement("beforeend", textAreaInvalidFeedback)
+
+        m.addContent(textAreaDiv)
+
+        const deleteButton = document.createElement("button")
+        deleteButton.type = "button"
+        deleteButton.classList.add("btn", "btn-danger")
+        deleteButton.addEventListener("click", () => {
+            this._adminCommentDestroy(m)
+        })
+        deleteButton.innerHTML = '<i class="bi bi-trash3"></i>'
+
+        const saveButton = document.createElement("button")
+        saveButton.type = "button"
+        saveButton.classList.add("btn", "btn-success")
+        saveButton.addEventListener("click", () => {
+            this._adminCommentUpdate(m, textAreaInput, textAreaInvalidFeedback)
+        })
+        saveButton.innerHTML = '<i class="bi bi-floppy"></i> Сохранить'
+
+        m.addButtons([deleteButton, saveButton])
+        m.show()
+    }
+
+    _adminCommentDestroy(modal){
+        homeworkAPISetAdminComment(this.data.id, null).then(request => {
+            modal.close()
+            const toast = new toastEngine()
+            switch (request.status){
+                case 200:
+                    toast.setSuccess("Комментарий успешно удалён")
+                    this.resetContent(request.response)
+                    break
+                case 403:
+                    toast.setError("Нет доступа")
+                    break
+                default:
+                    toast.setError("Не удалось удалить комментарий")
+                    break
+            }
+            toast.show()
+        })
+    }
+
+    _adminCommentUpdate(modal, field, error){
+        function validate(errors){
+            if (errors && errors.comment){
+                field.classList.add("is-invalid")
+                error.innerHTML = errors.comment
+                return false
+            }
+
+            let validationStatus = true
+            field.classList.remove("is-invalid")
+            error.innerHTML = ""
+            const comment = field.value.trim()
+            if (comment.length === 0){
+                field.classList.add("is-invalid")
+                error.innerHTML = "Комментарий не должен быть пустым<br>Для удаления комментария воспользуйтесь красной кнопкой"
+                validationStatus = false
+            } else if (comment.length > 2000){
+                field.classList.add("is-invalid")
+                error.innerHTML = "Комментарий не может содержать больше 2000 символов"
+                validationStatus = false
+            }
+            return validationStatus
+        }
+
+        function getFormData(){
+            const fd = new FormData()
+            fd.set("comment", field.value.trim())
+            return fd
+        }
+
+        if (validate()){
+            homeworkAPISetAdminComment(this.data.id, getFormData()).then(request => {
+                const toast = new toastEngine()
+                switch (request.status){
+                    case 201:
+                        modal.close()
+                        toast.setSuccess("Комментарий успешно изменён")
+                        toast.show()
+                        this.resetContent(request.response)
+                        break
+                    case 400:
+                        validate(request.response)
+                        break
+                    case 403:
+                        modal.close()
+                        toast.setError("Нет доступа")
+                        break
+                    default:
+                        modal.close()
+                        toast.setError("Не удалось добавить комментарий")
+                        break
+                }
+            })
+        }
     }
 }
 

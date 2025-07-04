@@ -528,14 +528,14 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
         if not req_date:
             return {"status": "ok", "errors": "", "warnings": ""}
         if req_date == "":
-            errors += ("<li>Необходимо указать дату занятия, либо "
-                       "выключить ручной выбор даты и времени</li>")
+            errors += ("Необходимо указать дату занятия, либо "
+                       "выключить ручной выбор даты и времени")
         if req_start is not None and req_start == "":
-            errors += ("<li>Необходимо указать время начала занятия, "
-                       "либо выключить ручной выбор даты и времени</li>")
+            errors += ("Необходимо указать время начала занятия, "
+                       "либо выключить ручной выбор даты и времени")
         if req_end is not None and req_end == "":
-            errors += ("<li>Необходимо указать время окончания занятия, "
-                       "либо выключить ручной выбор даты и времени</li>")
+            errors += ("Необходимо указать время окончания занятия, "
+                       "либо выключить ручной выбор даты и времени")
         if (req_start is not None and req_end is not None and
                 req_start != "" and req_end != ""):
             req_start = datetime.strptime(req_start,
@@ -543,8 +543,8 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
             req_end = datetime.strptime(req_end,
                                         "%H:%M").time()
             if req_end <= req_start:
-                errors += ("<li>Время окончания занятия не может быть "
-                           "раньше или равным времени началу занятия</li>")
+                errors += ("Время окончания занятия не может быть "
+                           "раньше или равным времени началу занятия")
         if errors:
             return {"status": "error", "errors": errors, "warnings": ""}
         warns = ""
@@ -554,10 +554,10 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
                 lesson_et = datetime.combine(req_date, req_end)
                 next_lesson_st = datetime.combine(next_lesson.date, lesson.start_time)
                 if lesson_et > next_lesson_st:
-                    warns += (f'<li>Вы устанавливаете дату и время занятия '
+                    warns += (f'Вы устанавливаете дату и время занятия '
                               f'во время либо после '
                               f'<a href="/lessons/{next_lesson.id}">'
-                              f'следующего занятия</a></li>')
+                              f'следующего занятия</a>')
             place = request.data.get("place")
             if place != "None":
                 place = Place.objects.get(pk=place)

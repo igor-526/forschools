@@ -1,4 +1,13 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 from .models import HomeworkLog, Homework
+
+
+class CanEditHomeworkAdminComment(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Admin').exists():
+            return super().dispatch(request, *args, **kwargs)
+        return self.handle_no_permission()
 
 
 def get_delete_log_permission(log: HomeworkLog, request):

@@ -91,6 +91,40 @@ class lessonUtils{
         }
     }
 
+    getPhaseTableElement(){
+        let date = "-"
+        if (this.data.hasOwnProperty("date") && this.data.date){
+            const dateObj = new Date(this.data.date)
+            date = `${dateObj.toLocaleDateString()}`
+        }
+        const tr = document.createElement("tr")
+        const tdName = document.createElement("td")
+        const tdDate = document.createElement("td")
+        const tdTime = document.createElement("td")
+        tr.insertAdjacentElement("beforeend", tdName)
+        tr.insertAdjacentElement("beforeend", tdDate)
+        tr.insertAdjacentElement("beforeend", tdTime)
+        tr.setAttribute("data-lesson-id", this.data.id)
+        switch (this.data.status){
+            case 1:
+                tr.classList.add("table-success")
+                break
+            case 2:
+                tr.classList.add("table-danger")
+                break
+        }
+        tdName.innerHTML = this.lessonName
+        tdDate.innerHTML = date
+        tdTime.innerHTML = lessonTimeRangeToStr(this.data.start_time, this.data.end_time)
+        tr.addEventListener("click", (e) => {
+            if (!e.target.matches('button')){
+                this.showOffcanvas(true)
+            }
+        })
+        this.phaseTableElement = tr
+        return tr
+    }
+
     _getMainInfoContent(){
         const elements = []
         const dateTimeP = document.createElement("p")
@@ -221,6 +255,15 @@ class lessonUtils{
                 this._editOffcanvasSet()
             })
             buttons.push(editButton)
+
+            const reschedulingButton = document.createElement("button")
+            reschedulingButton.type = "button"
+            reschedulingButton.classList.add("btn", "btn-primary", "w-100", "mb-2")
+            reschedulingButton.innerHTML = '<i class="bi bi-calendar3-range me-1"></i>Изменить расписание'
+            reschedulingButton.addEventListener("click", () => {
+                this._reschedulingModalSet()
+            })
+            buttons.push(reschedulingButton)
         }
 
         if (this.data.hasOwnProperty("actions") && this.data.actions.includes("replace_teacher")){
@@ -1049,8 +1092,6 @@ class lessonUtils{
         const editOffcanvas = new offcanvasEngine()
         editOffcanvas.header = `Изменение "${this.lessonName}"`
         let selectedPlace = this.data.place ? this.data.place.id : null
-        console.log(this.data)
-
         const nameFieldDiv = document.createElement("div")
         nameFieldDiv.classList.add("mb-4")
         const nameFieldLabel = document.createElement("label")
@@ -1275,6 +1316,9 @@ class lessonUtils{
                 case 204:
                     toast.setSuccess("Занятие удалено")
                     this.offcanvas.close()
+                    if (this.phaseTableElement){
+                        this.phaseTableElement.remove()
+                    }
                     break
                 case 403:
                     toast.setError("Нет доступа для удаления занятия")
@@ -1288,6 +1332,292 @@ class lessonUtils{
                     break
             }
             toast.show()
+        })
+    }
+
+    _reschedulingModalSet(){
+        function getDaySettingElement(dayName="", dayNameRU=""){
+            const daySettingBlock = document.createElement("div")
+            daySettingBlock.classList.add("input-group", "flex-nowrap", "mb-2")
+
+            const daySettingCheckbox = document.createElement("input")
+            daySettingCheckbox.type = "checkbox"
+            daySettingCheckbox.classList.add("btn-check")
+            daySettingCheckbox.name = dayName
+            daySettingCheckbox.id = `rescheduling${dayName}`
+            daySettingCheckbox.autocomplete = "off"
+
+            const daySettingLabel = document.createElement("label")
+            daySettingLabel.classList.add("btn", "btn-outline-primary")
+            daySettingLabel.innerHTML = dayNameRU
+            daySettingLabel.setAttribute("for", `rescheduling${dayName}`)
+
+            const daySettingStartInput = document.createElement("input")
+            daySettingStartInput.name = `${dayName}_start`
+            daySettingStartInput.classList.add("form-control")
+            daySettingStartInput.ariaLabel = ""
+            daySettingStartInput.type = "time"
+            daySettingStartInput.autocomplete = "off"
+            daySettingStartInput.disabled = true
+
+            const daySettingDivider = document.createElement("span")
+            daySettingDivider.classList.add("input-group-text")
+            daySettingDivider.innerHTML = "-"
+
+            const daySettingEndInput = document.createElement("input")
+            daySettingEndInput.name = `${dayName}_end`
+            daySettingEndInput.classList.add("form-control")
+            daySettingEndInput.ariaLabel = ""
+            daySettingEndInput.type = "time"
+            daySettingEndInput.autocomplete = "off"
+            daySettingEndInput.disabled = true
+
+            const daySettingPlace = document.createElement("select")
+            daySettingPlace.name = `${dayName}_place`
+            daySettingPlace.classList.add("form-select")
+            daySettingPlace.disabled = true
+            daySettingPlace.innerHTML = '<option selected value="None">Место</option>'
+
+            daySettingBlock.insertAdjacentElement("beforeend", daySettingCheckbox)
+            daySettingBlock.insertAdjacentElement("beforeend", daySettingLabel)
+            daySettingBlock.insertAdjacentElement("beforeend", daySettingStartInput)
+            daySettingBlock.insertAdjacentElement("beforeend", daySettingDivider)
+            daySettingBlock.insertAdjacentElement("beforeend", daySettingEndInput)
+            daySettingBlock.insertAdjacentElement("beforeend", daySettingPlace)
+
+            daySettingCheckbox.addEventListener("click", () => {
+                daySettingStartInput.disabled = !daySettingCheckbox.checked
+                daySettingEndInput.disabled = !daySettingCheckbox.checked
+                daySettingPlace.disabled = !daySettingCheckbox.checked
+                setActionButton("calculate")
+            })
+            daySettingStartInput.addEventListener("input", () => {
+                setActionButton("calculate")
+                if (!daySettingEndInput.value){
+                    daySettingEndInput.value = getPlus1HourTime(daySettingStartInput)
+                }
+            })
+            daySettingEndInput.addEventListener("input", () => {
+                setActionButton("calculate")
+            })
+            daySettingPlace.addEventListener("change", () => {
+                setActionButton("calculate")
+            })
+
+
+            return {
+                element: daySettingBlock,
+                checkbox: daySettingCheckbox,
+                start: daySettingStartInput,
+                end: daySettingEndInput,
+                place: daySettingPlace,
+                nameRU: dayNameRU
+            }
+        }
+
+        function setActionButton(action="calculate"){
+            switch (action){
+                case "calculate":
+                    actionButton.classList.remove("btn-warning")
+                    actionButton.classList.add("btn-primary")
+                    actionButton.innerHTML = "Расссчитать"
+                    actionButton.setAttribute("data-action", "calculate")
+                    break
+                case "rescheduling":
+                    actionButton.classList.add("btn-warning")
+                    actionButton.classList.remove("btn-primary")
+                    actionButton.innerHTML = "Изменить расписание"
+                    actionButton.setAttribute("data-action", "reschedule")
+                    break
+            }
+        }
+
+        function validate(errors=[]){
+            let dayCounter = 0
+
+            infoUl.innerHTML = ""
+            Object.keys(week).forEach(day => {
+                week[day].start.classList.remove("is-invalid")
+                week[day].end.classList.remove("is-invalid")
+
+                if (week[day].checkbox.checked){
+                    dayCounter++
+                    if (!week[day].start.value){
+                        week[day].start.classList.add("is-invalid")
+                        errors.push(`${week[day].nameRU}: необходимо указать время начала занятия`)
+                    }
+
+                    if (!week[day].end.value){
+                        week[day].end.classList.add("is-invalid")
+                        errors.push(`${week[day].nameRU}: необходимо указать время окончания занятия`)
+                    }
+
+                    if (week[day].start.value && week[day].end.value && !timeUtilsValidateTime(week[day].start, week[day].end)){
+                        week[day].start.classList.add("is-invalid")
+                        week[day].end.classList.add("is-invalid")
+                        errors.push(`${week[day].nameRU}: время начала занятия не может быть больше времени окончания`)
+                    }
+                }
+            })
+            if (!dayCounter){
+                errors.push("Необходимо выбрать хотя бы один день недели")
+            }
+            errors.forEach(error => {
+                const li = document.createElement("li")
+                li.innerHTML = error
+                li.classList.add("list-group-item", "list-group-item-danger")
+                infoUl.insertAdjacentElement("beforeend", li)
+            })
+
+            return !errors.length
+        }
+
+        function getFormData(){
+                const fd = new FormData(reschedulingForm)
+                if (fd.has("monday_place") && fd.get("monday_place") === "None"){
+                    fd.delete("monday_place")
+                }
+                if (fd.has("tuesday_place") && fd.get("tuesday_place") === "None"){
+                    fd.delete("tuesday_place")
+                }
+                if (fd.has("wednesday_place") && fd.get("wednesday_place") === "None"){
+                    fd.delete("wednesday_place")
+                }
+                if (fd.has("thursday_place") && fd.get("thursday_place") === "None"){
+                    fd.delete("thursday_place")
+                }
+                if (fd.has("friday_place") && fd.get("friday_place") === "None"){
+                    fd.delete("friday_place")
+                }
+                if (fd.has("saturday_place") && fd.get("saturday_place") === "None"){
+                    fd.delete("saturday_place")
+                }
+                if (fd.has("sunday_place") && fd.get("sunday_place") === "None"){
+                    fd.delete("sunday_place")
+                }
+                return fd
+            }
+
+        const reschedulingModal = new modalEngine()
+        reschedulingModal.title = "Изменение расписания"
+        reschedulingModal.show()
+
+        const reschedulingForm = document.createElement("form")
+
+        const dateStartBlock = document.createElement("div")
+        dateStartBlock.classList.add("input-group", "flex-nowrap", "mb-2")
+        const dateStartSpan = document.createElement("span")
+        dateStartSpan.classList.add("input-group-text")
+        dateStartSpan.innerHTML = "Начальная дата"
+        const dateStartInput = document.createElement("input")
+        dateStartInput.type = "date"
+        dateStartInput.name = "date_start"
+        dateStartInput.classList.add("form-control")
+        if (this.data && this.data.hasOwnProperty("date") && this.data.date){
+            dateStartInput.value = this.data.date
+        }
+        dateStartBlock.insertAdjacentElement("beforeend", dateStartSpan)
+        dateStartBlock.insertAdjacentElement("beforeend", dateStartInput)
+        reschedulingForm.insertAdjacentElement("beforeend", dateStartBlock)
+
+        let week = {
+            monday: getDaySettingElement("monday", "ПН"),
+            tuesday: getDaySettingElement("tuesday", "ВТ"),
+            wednesday: getDaySettingElement("wednesday", "СР"),
+            thursday: getDaySettingElement("thursday", "ЧТ"),
+            friday: getDaySettingElement("friday", "ПТ"),
+            saturday: getDaySettingElement("saturday", "СБ"),
+            sunday: getDaySettingElement("sunday", "ВС"),
+        }
+
+        reschedulingForm.insertAdjacentElement("beforeend", week.monday.element)
+        reschedulingForm.insertAdjacentElement("beforeend", week.tuesday.element)
+        reschedulingForm.insertAdjacentElement("beforeend", week.wednesday.element)
+        reschedulingForm.insertAdjacentElement("beforeend", week.thursday.element)
+        reschedulingForm.insertAdjacentElement("beforeend", week.friday.element)
+        reschedulingForm.insertAdjacentElement("beforeend", week.saturday.element)
+        reschedulingForm.insertAdjacentElement("beforeend", week.sunday.element)
+        reschedulingModal.addContent(reschedulingForm)
+
+        const infoUl = document.createElement("ul")
+        infoUl.classList.add("list-group", "list-group-flush")
+        reschedulingModal.addContent(infoUl)
+
+        const actionButton = document.createElement("button")
+        actionButton.classList.add("btn", "btn-primary")
+        actionButton.type = "button"
+        actionButton.innerHTML = "Рассчитать"
+        actionButton.setAttribute("data-action", "calculate")
+        actionButton.addEventListener("click", () => {
+            if (validate()){
+                switch (actionButton.getAttribute("data-action")){
+                    case "calculate":
+                        lessonsAPIReschedulingCalculate(this.data.id, getFormData()).then(request => {
+                            switch (request.status){
+                                case 200:
+                                    infoUl.innerHTML = `
+                                    <li class="list-group-item">Будет перенесено ${request.response.count} уроков</li>
+                                    <li class="list-group-item">Осталось ${request.response.total_hours} часов обучения</li>
+                                    <li class="list-group-item">Плановая дата окончания: ${new Date(request.response.last_date).toLocaleDateString()}</li>
+                                    `
+                                    setActionButton("rescheduling")
+                                    break
+                                default:
+                                    const toast = new toastEngine()
+                                    toast.setError("Не удалось рассчитать")
+                                    toast.show()
+                                    break
+                            }
+                        })
+                        break
+                    case "reschedule":
+                        lessonsAPIReschedulingSet(this.data.id, getFormData()).then(request => {
+                            const toast = new toastEngine()
+                            switch (request.status){
+                                case 201:
+                                    toast.setSuccess("Расписание успешно изменено")
+                                    break
+                                case 400:
+                                    toast.setError("Не удалось сменить расписание")
+                                    break
+                                case 403:
+                                    toast.setError("Нет доступа для изменения расписания")
+                                    break
+                                case 404:
+                                    toast.setError("Занятие не найдено")
+                                    break
+                                default:
+                                    toast.setError()
+                                    break
+                            }
+                            reschedulingModal.close()
+                            this.offcanvas.close()
+                            toast.show()
+                            setTimeout(() => {
+                                window.location.reload()
+                            }, 500)
+                        })
+                        break
+                }
+            }
+        })
+        reschedulingModal.addButtons(actionButton)
+
+        collectionsAPIGetLessonPlaces().then(request => {
+            switch (request.status){
+                case 200:
+                    Object.keys(week).forEach(day => {
+                        request.response.forEach(lessonPlace => {
+                            week[day].place.insertAdjacentHTML("beforeend", `<option value="${lessonPlace.id}">${lessonPlace.name}</option>`)
+                        })
+                    })
+                    break
+                default:
+                    const toast = new toastEngine()
+                    toast.setError("Не удалось загрузить места проведения занятий")
+                    toast.show()
+                    break
+            }
         })
     }
 }

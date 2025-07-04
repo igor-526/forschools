@@ -4,8 +4,28 @@ function homeworksFilterMain(){
     homeworksFilterListeners()
     homeworksFilterSearchListeners()
     if (isAdmin){
+        homeworksFilterSetCommentListeners()
         homeworksFilterInitMethodistFilter()
     }
+}
+
+function homeworksFilterSetCommentListeners(){
+    homeworksTableFilterCommentAll = document.querySelector("#homeworksTableFilterCommentAll")
+    homeworksTableFilterCommentTrue = document.querySelector("#homeworksTableFilterCommentTrue")
+    homeworksTableFilterCommentFalse = document.querySelector("#homeworksTableFilterCommentFalse")
+
+    homeworksTableFilterCommentAll.addEventListener("change", function () {
+        homeworksFilterComment = null
+        homeworksGet()
+    })
+    homeworksTableFilterCommentTrue.addEventListener("change", function () {
+        homeworksFilterComment = "true"
+        homeworksGet()
+    })
+    homeworksTableFilterCommentFalse.addEventListener("change", function () {
+        homeworksFilterComment = "false"
+        homeworksGet()
+    })
 }
 
 function homeworksFilterInitMethodistFilter(){
@@ -343,6 +363,9 @@ const homeworksTableFilterListenerSearchFieldReset = document.querySelector("#ho
 const homeworksTableFilterLastChangeDateStartFieldErase = document.querySelector("#homeworksTableFilterLastChangeDateStartFieldErase")
 const homeworksTableFilterLastChangeDateEndFieldErase = document.querySelector("#homeworksTableFilterLastChangeDateEndFieldErase")
 const homeworksTableFilterNameErase = document.querySelector("#homeworksTableFilterNameErase")
+let homeworksTableFilterCommentAll
+let homeworksTableFilterCommentTrue
+let homeworksTableFilterCommentFalse
 
 //Fields
 const homeworksTableFilterNameField = document.querySelector("#homeworksTableFilterNameField")
