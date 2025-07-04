@@ -111,7 +111,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
             if (obj.teacher == self.context.get("request").user or
                     (plan_ and plan_.metodist == self.context.get("request").user) or
                     (obj.for_curator and
-                     plan.curators.filter(id=self.context.get("request").user.id).exists())):
+                     plan_.curators.filter(id=self.context.get("request").user.id).exists())):
                 return ["edit"]
             return []
 
