@@ -110,6 +110,11 @@ class LearningPlan(models.Model):
         blank=False,
         default=False
     )
+    admin_comment = models.TextField(
+        verbose_name="комментарий администратора",
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'План обучения'

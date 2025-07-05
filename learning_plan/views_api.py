@@ -13,7 +13,7 @@ from user_logs.models import UserLog
 from .permissions import (can_edit_plan,
                           can_generate_from_program,
                           CanDownloadPlan,
-                          get_can_edit_pre_hw_comment)
+                          get_can_edit_pre_hw_comment, CanEditPlanItemAdminComment)
 from .models import LearningPlan, LearningPhases
 from .serializers import (LearningPlanListSerializer,
                           LearningPhasesListSerializer,
@@ -338,3 +338,66 @@ class PlansDownloadAPIView(CanDownloadPlan, APIView):
         )
         plans_download(request.data, note.id)
         return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
+class PlanItemAdminCommentAPIView(CanEditPlanItemAdminComment, APIView):
+    def get_object(self, plan_id) -> LearningPlan | None:
+        try:
+            return LearningPlan.objects.get(pk=plan_id)
+        except LearningPlan.DoesNotExist:
+            return None
+
+    def post(self, request, *args, **kwargs):
+        plan = self.get_object(self.kwargs.get('pk'))
+        if plan is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        comment = request.POST.get('comment')
+        if not comment:
+            UserLog.objects.create(
+                log_type=5,
+                learning_plan=plan,
+                title="Администратор удалил комментарий по плану обучения",
+                content={
+                    "list": [],
+                    "text": [plan.admin_comment]
+                },
+                buttons=[{"inner": f'План: {plan.name}',
+                          "href": f"/learning_plans/{plan.id}/"}],
+                color="danger",
+                user=request.user
+            )
+            plan.admin_comment = None
+            plan.save()
+            return Response(
+                data=LearningPlanListSerializer(instance=plan,
+                                                many=False,
+                                                context={'request': request}).data,
+                status=status.HTTP_200_OK
+            )
+        comment = comment.strip()
+        if len(comment) > 2000:
+            return Response(
+                data={'comment': 'Длина комментария не может превышать '
+                                 '2000 символов'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        plan.admin_comment = comment
+        plan.save()
+        UserLog.objects.create(
+            log_type=5,
+            learning_plan=plan,
+            title="Администратор прокомментировал план обучения",
+            content={
+                "list": [],
+                "text": [plan.admin_comment]
+            },
+            buttons=[{"inner": f'План: {plan.name}',
+                      "href": f"/learning_plans/{plan.id}/"}],
+            user=request.user
+        )
+        return Response(
+            data=LearningPlanListSerializer(instance=plan,
+                                            many=False,
+                                            context={'request': request}).data,
+            status=status.HTTP_201_CREATED
+        )

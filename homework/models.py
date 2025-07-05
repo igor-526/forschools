@@ -103,7 +103,7 @@ class Homework(models.Model):
         on_delete=models.SET_NULL
     )
     admin_comment = models.TextField(
-        verbose_name="комментарий администратора",
+        verbose_name="Комментарий администратора",
         null=True,
         blank=True
     )

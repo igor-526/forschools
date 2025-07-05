@@ -16,8 +16,9 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
     listeners = NewUserNameOnlyListSerializer(many=True, read_only=True)
     curators = NewUserNameOnlyListSerializer(many=True, read_only=True)
     metodist = NewUserNameOnlyListSerializer(many=False, read_only=True)
-    deletable = serializers.SerializerMethodField(read_only=False)
-    color = serializers.SerializerMethodField(read_only=False)
+    deletable = serializers.SerializerMethodField(read_only=True)
+    color = serializers.SerializerMethodField(read_only=True)
+    admin_comment = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = LearningPlan
@@ -26,7 +27,7 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
                   'show_lessons', 'show_materials',
                   'default_hw_teacher', 'deletable',
                   'metodist', 'curators', 'color',
-                  'pre_hw_comment']
+                  'pre_hw_comment', 'admin_comment']
 
     def get_deletable(self, obj):
         if obj.phases.count() == 0:
@@ -40,6 +41,11 @@ class LearningPlanListSerializer(serializers.ModelSerializer):
             return "warning"
         if obj.get_is_closed():
             return "success"
+        return None
+
+    def get_admin_comment(self, obj):
+        if self.context.get('request').user.groups.filter(name="Admin").exists():
+            return obj.admin_comment
         return None
 
     def validate_deadline(self, value):

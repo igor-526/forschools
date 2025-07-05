@@ -17,6 +17,13 @@ class CanDownloadPlan(LoginRequiredMixin):
         return self.handle_no_permission()
 
 
+class CanEditPlanItemAdminComment(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='Admin').exists():
+            return super().dispatch(request, *args, **kwargs)
+        return self.handle_no_permission()
+
+
 def can_edit_plan(request, plan=None, phase=None):
     usergroups = [group.name for group in request.user.groups.all()]
     if ("Admin" in usergroups) or ("Metodist" in usergroups):

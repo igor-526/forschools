@@ -210,3 +210,19 @@ async function planItemAPIPreHWComment(planID, fd=null){
     }
 
 }
+
+async function planItemAPISetAdminComment(planID, fd=null){
+    const url = `/api/v1/learning_plans/${planID}/set_admin_comment/`
+    const init = {
+        method: "POST",
+        credentials: 'same-origin',
+        headers:{
+            "X-CSRFToken": csrftoken,
+        },
+    }
+    if (fd){
+        init.body = fd
+    }
+    const request = await fetch(url, init)
+    return await APIPostPatchToObject(request)
+}

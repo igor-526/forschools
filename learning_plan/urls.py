@@ -9,7 +9,8 @@ from .views_api import (PlansListCreateAPIView,
                         PlanItemAddLessonsAPIView,
                         PlansItemStatusAPIView,
                         PlansDownloadAPIView,
-                        PlansItemPreHWCommentAPIView)
+                        PlansItemPreHWCommentAPIView,
+                        PlanItemAdminCommentAPIView)
 
 urlpatterns = [
     path('', PlansPageView.as_view(), name='learning_plans'),
@@ -27,4 +28,5 @@ apiv1patterns = [
     path('phases/<int:phase_pk>/add/', LessonListCreateAPIView.as_view()),
     path('<int:plan_pk>/setprogram/', PlansItemSetProgramAPIView.as_view()),
     path('<int:plan_pk>/add_lessons/', PlanItemAddLessonsAPIView.as_view()),
+    path('<int:pk>/set_admin_comment/', PlanItemAdminCommentAPIView.as_view()),
 ]
