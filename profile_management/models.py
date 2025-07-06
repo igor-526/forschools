@@ -22,6 +22,12 @@ LESSON_REVIEW_FORM_MODE_CHOICES = (
     (1, 'Telegram Chat'),
 )
 
+PROFILE_LAST_ACTIVITY_TYPE_CHOICES = (
+    (0, 'Telegram бот'),
+    (1, 'Web-браузер'),
+    (2, 'Регистрация'),
+)
+
 
 class Level(models.Model):
     name = models.CharField(verbose_name='Наименование',
@@ -78,6 +84,10 @@ class NewUser(AbstractUser):
     last_activity = models.DateTimeField(verbose_name='Последняя активность',
                                          null=False,
                                          auto_now_add=True)
+    last_activity_type = models.IntegerField(verbose_name="Тип последней активности",
+                                             choices=PROFILE_LAST_ACTIVITY_TYPE_CHOICES,
+                                             null=False,
+                                             default=2)
     tg_code = models.IntegerField(verbose_name='Код для присоединения Telegram',
                                   null=True,
                                   blank=True)
@@ -138,10 +148,12 @@ class NewUser(AbstractUser):
 
     def update_last_activity(self):
         self.last_activity = timezone.localtime(timezone.now())
+        self.last_activity_type = 1
         self.save()
 
     async def aupdate_last_activity(self):
         self.last_activity = timezone.localtime(timezone.now())
+        self.last_activity_type = 0
         await self.asave()
 
     def set_groups(self, groups: list):

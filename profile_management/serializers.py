@@ -107,7 +107,7 @@ class NewUserListSerializer(serializers.ModelSerializer):
         model = NewUser
         fields = ['id', 'first_name', 'last_name', 'patronymic',
                   'username', 'groups', 'is_active',
-                  'can_edit', 'tg']
+                  'can_edit', 'tg', 'last_activity', 'last_activity_type']
 
     def get_can_edit(self, obj):
         request = self.context.get('request')

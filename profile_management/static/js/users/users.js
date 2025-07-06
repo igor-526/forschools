@@ -74,6 +74,20 @@ function usersAdminShow(users = [], updateTD=null){
         tdRole.innerHTML = roles.str
         const tdActions = document.createElement("td")
 
+        const tdActivity = document.createElement("td")
+        switch (user.last_activity_type){
+            case 0:
+                tdActivity.innerHTML = '<i class="bi bi-telegram me-1"></i>'
+                break
+            case 1:
+                tdActivity.innerHTML = '<i class="bi bi-globe2 me-1"></i>'
+                break
+            case 2:
+                tdActivity.innerHTML = '<i class="bi bi-person-plus me-1"></i>'
+                break
+        }
+        tdActivity.insertAdjacentHTML("beforeend", timeUtilsDateTimeToStr(user.last_activity))
+
         const tdActionsInfo = document.createElement("button")
         const tdActionsChat = document.createElement("button")
         const tdActionsChatA = document.createElement("a")
@@ -118,6 +132,7 @@ function usersAdminShow(users = [], updateTD=null){
         tr.insertAdjacentElement("beforeend", tdUsername)
         tr.insertAdjacentElement("beforeend", tdName)
         tr.insertAdjacentElement("beforeend", tdRole)
+        tr.insertAdjacentElement("beforeend", tdActivity)
         tr.insertAdjacentElement("beforeend", tdActions)
         return tr
     }
