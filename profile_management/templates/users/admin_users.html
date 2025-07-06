@@ -114,12 +114,9 @@
                             <input id="usersAdminActivityFilterDateEnd" type="date" class="form-control form-control-sm" aria-label="date end">
                             <button id="usersAdminActivityFilterDateEndErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
                         </li>
-
-
                     </ul>
                 </div>
             </th>
-            <th scope="col">Действие</th>
         </tr>
         </thead>
         <tbody id="UsersTableBody">
@@ -127,7 +124,6 @@
     </table>
     {% include 'users/offcanvas_user.html' %}
     {% include 'users/users_modal_learninginfo.html' %}
-    {% include 'users/modal_telegram.html' %}
     {% include 'users/users_edit_functions_modals.html' %}
 {% endblock %}
 {% block static_js %}

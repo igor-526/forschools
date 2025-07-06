@@ -23,7 +23,7 @@ class NewUserDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NewUser
-        exclude = ['password', 'is_superuser', 'is_staff', 'tg_code',
+        exclude = ['password', 'is_superuser', 'is_staff',
                    'user_permissions']
 
     def get_can_edit(self, obj):

@@ -674,7 +674,7 @@ async def hw_send(tg_id: int, state: FSMContext):
         listener_tgs = await get_tg_id(hw.listener.id)
         for listener_tg in listener_tgs:
             try:
-                msg_object = await bot.send_message(chat_id=listener_tg.get("tg_id"),
+                msg_object = await bot.send_message(chat_id=listener_tg,
                                                     text=msg,
                                                     reply_markup=get_homeworks_buttons([{
                                                         'name': await hw.aget_tg_name(["Listener"]),
