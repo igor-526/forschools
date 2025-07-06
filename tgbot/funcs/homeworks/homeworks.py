@@ -1,8 +1,12 @@
 import datetime
+import traceback
+
 from aiogram import types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from django.db.models import Q
+
+from dls.utils import get_traceback
 from lesson.models import Lesson
 from tgbot.funcs.lessons import get_lesson_can_be_passed
 from tgbot.keyboards.callbacks.homework import HomeworkCallback, HomeworkCuratorCallback
@@ -150,9 +154,9 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} отправлено на согласование"
                 await hw.aset_assigned()
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=None,
-                                                          for_curator_status=True if curators_ids else None)
+                                                    hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          methodist.id,
                                          [hw],
@@ -161,9 +165,9 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=None,
-                                                          for_curator_status=True if curators_ids else None)
+                                                    hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          listener.id,
                                          [hw],
@@ -177,33 +181,33 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет отправлено на "
                             f"согласование методисту после заполнения формы занятия")
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=lesson.id,
-                                                          for_curator_status=True if curators_ids else None,
-                                                          form_review_mode=tg_note.setting_lesson_review_form_mode)
+                                                    hw_id=hw.id,
+                                                    lesson_id=lesson.id,
+                                                    for_curator_status=True if curators_ids else None,
+                                                    form_review_mode=tg_note.setting_lesson_review_form_mode)
             elif lesson.status == 0 and lesson_can_be_passed and methodist is None:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет задано после "
                             f"заполнения формы занятия")
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=lesson.id,
-                                                          for_curator_status=True if curators_ids else None,
-                                                          form_review_mode=tg_note.setting_lesson_review_form_mode)
+                                                    hw_id=hw.id,
+                                                    lesson_id=lesson.id,
+                                                    for_curator_status=True if curators_ids else None,
+                                                    form_review_mode=tg_note.setting_lesson_review_form_mode)
             elif lesson.status == 0 and not lesson_can_be_passed:
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} сохранено и будет задано после "
                             f"проведения занятия")
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=None,
-                                                          for_curator_status=True if curators_ids else None)
+                                                    hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
         elif is_curator:
             if lesson.status == 1 and methodist:
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} отправлено на согласование"
                 await hw.aset_assigned()
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=None,
-                                                          for_curator_status=None)
+                                                    hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=None)
                 await homework_tg_notify(user,
                                          methodist.id,
                                          [hw],
@@ -212,9 +216,9 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=None,
-                                                          for_curator_status=True if curators_ids else None)
+                                                    hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          listener.id,
                                          [hw],
@@ -233,9 +237,9 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 msg_text = f"ДЗ для {listener.first_name} {listener.last_name} задано"
                 await hw.aset_assigned()
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=None,
-                                                          for_curator_status=True if curators_ids else None)
+                                                    hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
                 await homework_tg_notify(user,
                                          listener.id,
                                          [hw],
@@ -249,9 +253,9 @@ async def add_homework_set_homework_ready(state: FSMContext,
                 msg_text = (f"ДЗ для {listener.first_name} {listener.last_name} создано и будет задано после "
                             f"проведения занятия")
                 rm = get_homework_add_ready_buttons(tg_note=tg_note,
-                                                          hw_id=hw.id,
-                                                          lesson_id=None,
-                                                          for_curator_status=True if curators_ids else None)
+                                                    hw_id=hw.id,
+                                                    lesson_id=None,
+                                                    for_curator_status=True if curators_ids else None)
         else:
             msg_text = "Вы не можете задать ДЗ к этому занятию"
         if message:
@@ -647,7 +651,8 @@ async def hw_send(tg_id: int, state: FSMContext):
                         "text": None,
                         "msg_id": None,
                         "errors": [str(e)],
-                        "attachments": []
+                        "attachments": [],
+                        "traceback": get_traceback(e)
                     }
                 )
 
@@ -697,7 +702,8 @@ async def hw_send(tg_id: int, state: FSMContext):
                         "text": None,
                         "msg_id": None,
                         "errors": [str(e)],
-                        "attachments": []
+                        "attachments": [],
+                        "traceback": get_traceback(e)
                     }
                 )
 
@@ -733,7 +739,8 @@ async def hw_send(tg_id: int, state: FSMContext):
                         "text": None,
                         "msg_id": None,
                         "errors": [str(e)],
-                        "attachments": []
+                        "attachments": [],
+                        "traceback": get_traceback(e)
                     }
                 )
 
@@ -786,7 +793,8 @@ async def hw_send(tg_id: int, state: FSMContext):
                             "text": None,
                             "msg_id": None,
                             "errors": [str(e)],
-                            "attachments": []
+                            "attachments": [],
+                            "traceback": get_traceback(e)
                         }
                     )
             else:
@@ -936,7 +944,8 @@ async def homework_tg_notify(initiator: NewUser, recipient_user_id: int,
                     "text": None,
                     "msg_id": None,
                     "errors": [str(e)],
-                    "attachments": []
+                    "attachments": [],
+                    "traceback": get_traceback(e)
                 }
             )
     if not recipients_tgs:
