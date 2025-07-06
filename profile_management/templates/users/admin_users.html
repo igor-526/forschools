@@ -5,12 +5,12 @@
         <div class="row justify-content-between">
             <div class="col-auto">
                 <h1>
-                    {{ title }} <button id="usersAdminFilterEraseAll" type="button" class="btn btn-danger ms-1"><i class="bi bi-funnel-fill"></i> Сбросить</button>
+                    {{ title }} <button id="usersAdminFilterEraseAll" type="button" class="btn btn-outline-danger ms-1"><i class="bi bi-funnel-fill me-1"></i>Сбросить</button>
                 </h1>
             </div>
             <div class="col-auto">
                 {% if "auth.register_users" in perms %}
-                    <button id="usersAdminRegisterButton" type="button" class="btn btn-primary mt-1" role="button"><i class="bi bi-plus-lg"></i></button>
+                    <button id="usersAdminRegisterButton" type="button" class="btn btn-outline-primary mt-1" role="button"><i class="bi bi-person-plus me-1"></i>Регистрация</button>
                     {% include 'users/offcanvas_register.html' %}
                 {% endif %}
             </div>
@@ -23,31 +23,24 @@
             <th scope="col">
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                        ID|TG</button>
+                        <b>ID|TG</b></button>
                     <button id="usersAdminFilterIDSort" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-bar-expand"></i></button>
-                    <ul class="dropdown-menu" style="min-width: 250px;">
+                    <ul class="dropdown-menu" style="min-width: 180px;">
                         <li class="input-group px-1 mb-2">
-                            <input id="usersAdminFilterIDField" type="number" class="form-control form-control-sm" placeholder="Поиск: " aria-label="">
+                            <input id="usersAdminFilterIDField" type="number" class="form-control form-control-sm" placeholder="Поиск по ID: " aria-label="">
                             <button id="usersAdminFilterIDErase" type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-eraser"></i></button>
                         </li>
-                        <li class="px-1">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="tg_status" id="usersAdminFilterTGAll" checked>
-                                <label class="form-check-label" for="usersAdminFilterTGAll">
-                                    Все пользователи
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="tg_status" id="usersAdminFilterTGConnected">
-                                <label class="form-check-label" for="usersAdminFilterTGConnected">
-                                    Только с TG
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="tg_status" id="usersAdminFilterTGDisconnected">
-                                <label class="form-check-label" for="usersAdminFilterTGDisconnected">
-                                    Только без TG
-                                </label>
+
+                        <li class="mx-1 mb-2">
+                            <div class="btn-group" role="group" aria-label="">
+                                <input type="radio" class="btn-check" name="tg_status" id="usersAdminFilterTGAll" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary btn-sm" for="usersAdminFilterTGAll">Все</label>
+
+                                <input type="radio" class="btn-check" name="tg_status" id="usersAdminFilterTGConnected" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="usersAdminFilterTGConnected">С TG</label>
+
+                                <input type="radio" class="btn-check" name="tg_status" id="usersAdminFilterTGDisconnected" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="usersAdminFilterTGDisconnected">Без TG</label>
                             </div>
                         </li>
                     </ul>
@@ -56,7 +49,7 @@
             <th scope="col">
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                        Username|Login
+                        <b>Username | Login</b>
                         <span class="visually-hidden"></span></button>
                     <button id="usersAdminFilterUsernameSort" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-bar-expand"></i></button>
                     <ul class="dropdown-menu" style="min-width: 250px;">
@@ -70,7 +63,7 @@
             <th scope="col">
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                        ФИО
+                        <b>ФИО</b>
                         <span class="visually-hidden"></span></button>
                     <button id="usersAdminFilterNameSort" type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-bar-expand"></i></button>
                     <ul class="dropdown-menu" style="min-width: 250px;">
@@ -106,6 +99,9 @@
 
                                 <input type="radio" class="btn-check" name="type_filter" id="usersAdminActivityFilterTypeTelegram" autocomplete="off">
                                 <label class="btn btn-outline-primary btn-sm" for="usersAdminActivityFilterTypeTelegram">Telegram</label>
+
+                                <input type="radio" class="btn-check" name="type_filter" id="usersAdminActivityFilterTypeReg" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="usersAdminActivityFilterTypeReg">Регистрация</label>
                             </div>
                         </li>
                         <li class="input-group px-1 mb-1">

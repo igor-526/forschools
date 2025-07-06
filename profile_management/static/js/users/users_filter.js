@@ -1,11 +1,122 @@
 function adminUsersFilterMain(){
-    adminUsersFilterSetRoles()
-    adminUsersFilterSetFilterListeners()
-    adminUsersFilterSetSortListeners()
+    adminUsersFilterInitIDTG()
+    adminUsersFilterInitUsername()
+    adminUsersFilterInitFullName()
+    adminUsersFilterInitRoles()
+    adminUsersFilterInitLastActivity()
     adminUsersFilterSetEraseListeners()
 }
 
-function adminUsersFilterSetRoles(){
+function adminUsersFilterInitIDTG(){
+    function searchListener(){
+        usersAdminFilterIDField.addEventListener("input", () => {
+            const query = usersAdminFilterIDField.value.trim().toLowerCase()
+            usersAdminFilteringID = query.value ? query.value : null
+            usersAdminGetAll()
+        })
+    }
+
+    function eraseIDListener(){
+        usersAdminFilterIDErase.addEventListener("click", () => {
+            usersAdminFilterIDField.value = ""
+            usersAdminFilteringID = null
+            usersAdminGetAll()
+        })
+    }
+
+    function tgListener(){
+        usersAdminFilterTGAll.addEventListener("click", () =>{
+            usersAdminFilteringTG = null
+            usersAdminGetAll()
+        })
+        usersAdminFilterTGConnected.addEventListener("click", () =>{
+            usersAdminFilteringTG = "connected"
+            usersAdminGetAll()
+        })
+        usersAdminFilterTGDisconnected.addEventListener("click", () =>{
+            usersAdminFilteringTG = "disconnected"
+            usersAdminGetAll()
+        })
+    }
+
+    function sortListener(){
+        usersAdminFilterIDSort.addEventListener("click", () => {
+            usersAdminFilteringIDSort = sortButtonListener(
+                usersAdminFilterIDSort, usersAdminFilteringIDSort
+            )
+            usersAdminGetAll()
+        })
+    }
+
+    searchListener()
+    eraseIDListener()
+    tgListener()
+    sortListener()
+}
+
+function adminUsersFilterInitUsername(){
+    function searchListener(){
+        usersAdminFilterUsernameField.addEventListener("input", () => {
+            const query = usersAdminFilterIDField.value.trim().toLowerCase()
+            usersAdminFilteringUsername = query ? query : null
+            usersAdminGetAll()
+        })
+    }
+
+    function searchEraseListener(){
+        usersAdminFilterUsernameErase.addEventListener("click", () => {
+            usersAdminFilterUsernameField.value = ""
+            usersAdminFilteringUsername = null
+            usersAdminGetAll()
+        })
+    }
+
+    function sortListener(){
+        usersAdminFilterUsernameSort.addEventListener("click", () => {
+            usersAdminFilteringUsernameSort = sortButtonListener(
+                usersAdminFilterUsernameSort, usersAdminFilteringUsernameSort
+            )
+            usersAdminGetAll()
+        })
+    }
+
+    searchListener()
+    searchEraseListener()
+    sortListener()
+}
+
+function adminUsersFilterInitFullName(){
+    function searchListener(){
+        usersAdminFilterNameField.addEventListener("input", () => {
+            const query = usersAdminFilterNameField.value.trim().toLowerCase()
+            usersAdminFilteringFullName = query ? query : null
+            usersAdminGetAll()
+        })
+    }
+
+    function searchEraseListener(){
+        usersAdminFilterNameErase.addEventListener("click", () => {
+            usersAdminFilterNameField.value = ""
+            usersAdminFilteringFullName = null
+            usersAdminGetAll()
+        })
+    }
+
+    function sortListener(){
+        usersAdminFilterNameSort.addEventListener("click", () => {
+            usersAdminFilteringFullNameSort = sortButtonListener(
+                usersAdminFilterNameSort, usersAdminFilteringFullNameSort
+            )
+            usersAdminGetAll()
+        })
+    }
+
+    searchListener()
+    searchEraseListener()
+    sortListener()
+}
+
+function adminUsersFilterInitRoles(){
     function getListener(element, q_name){
         const index = usersAdminFilteringRole.indexOf(q_name)
         switch (index){
@@ -26,7 +137,7 @@ function adminUsersFilterSetRoles(){
         a.href = "#"
         a.innerHTML = name
         a.classList.add("dropdown-item")
-        a.addEventListener("click", function (){
+        a.addEventListener("click", () =>{
             getListener(a, q_name)
         })
         return a
@@ -39,188 +150,163 @@ function adminUsersFilterSetRoles(){
     usersAdminFilterRoleList.insertAdjacentElement("beforeend", getElement("Listener", "Ученик"))
 }
 
-function adminUsersFilterSetFilterListeners(){
-    usersAdminFilterIDField.addEventListener("input", function () {
-        usersAdminFilteringID = usersAdminFilterIDField.value
-        usersAdminGetAll()
-    })
-    usersAdminFilterUsernameField.addEventListener("input", function () {
-        usersAdminFilteringUsername = usersAdminFilterUsernameField.value.trim().toLowerCase()
-        usersAdminGetAll()
-    })
-    usersAdminFilterNameField.addEventListener("input", function () {
-        usersAdminFilteringFullName = usersAdminFilterNameField.value.trim().toLowerCase()
-        usersAdminGetAll()
-    })
-    usersAdminFilterTGAll.addEventListener("click", function (){
-        usersAdminFilteringTG = null
-        usersAdminGetAll()
-    })
-    usersAdminFilterTGConnected.addEventListener("click", function (){
-        usersAdminFilteringTG = "connected"
-        usersAdminGetAll()
-    })
-    usersAdminFilterTGDisconnected.addEventListener("click", function (){
-        usersAdminFilteringTG = "disconnected"
-        usersAdminGetAll()
-    })
-
-}
-
-function adminUsersFilterSetSortListeners(){
-    usersAdminFilterUsernameSort.addEventListener("click", function () {
-        switch (usersAdminFilteringUsernameSort) {
-            case null:
-                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary", "btn-warning")
-                usersAdminFilterUsernameSort.classList.add("btn-success")
-                usersAdminFilteringUsernameSort = "asc"
-                break
-            case "asc":
-                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary", "btn-success")
-                usersAdminFilterUsernameSort.classList.add("btn-warning")
-                usersAdminFilteringUsernameSort = "desc"
-                break
-            case "desc":
-                usersAdminFilterUsernameSort.classList.remove("btn-outline-secondary", "btn-warning")
-                usersAdminFilterUsernameSort.classList.add("btn-success")
-                usersAdminFilteringUsernameSort = "asc"
-                break
+function adminUsersFilterInitLastActivity(){
+    function validateDates(){
+        usersAdminActivityFilterDateStart.classList.remove("is-invalid")
+        usersAdminActivityFilterDateEnd.classList.remove("is-invalid")
+        if (timeUtilsValidateDate(usersAdminActivityFilterDateStart.value,
+            usersAdminActivityFilterDateEnd.value)){
+            return true
+        } else {
+            usersAdminActivityFilterDateStart.classList.add("is-invalid")
+            usersAdminActivityFilterDateEnd.classList.add("is-invalid")
+            return false
         }
-        usersAdminGetAll()
-    })
-    usersAdminFilterNameSort.addEventListener("click", function () {
-        switch (usersAdminFilteringFullNameSort) {
-            case null:
-                usersAdminFilterNameSort.classList.remove("btn-outline-secondary", "btn-warning")
-                usersAdminFilterNameSort.classList.add("btn-success")
-                usersAdminFilteringFullNameSort = "asc"
-                break
-            case "asc":
-                usersAdminFilterNameSort.classList.remove("btn-outline-secondary", "btn-success")
-                usersAdminFilterNameSort.classList.add("btn-warning")
-                usersAdminFilteringFullNameSort = "desc"
-                break
-            case "desc":
-                usersAdminFilterNameSort.classList.remove("btn-outline-secondary", "btn-warning")
-                usersAdminFilterNameSort.classList.add("btn-success")
-                usersAdminFilteringFullNameSort = "asc"
-                break
-        }
-        usersAdminGetAll()
-    })
-    usersAdminFilterIDSort.addEventListener("click", function () {
-        switch (usersAdminFilteringIDSort) {
-            case null:
-                usersAdminFilterIDSort.classList.remove("btn-outline-secondary", "btn-warning")
-                usersAdminFilterIDSort.classList.add("btn-success")
-                usersAdminFilteringIDSort = "asc"
-                break
-            case "asc":
-                usersAdminFilterIDSort.classList.remove("btn-outline-secondary", "btn-success")
-                usersAdminFilterIDSort.classList.add("btn-warning")
-                usersAdminFilteringIDSort = "desc"
-                break
-            case "desc":
-                usersAdminFilterIDSort.classList.remove("btn-outline-secondary", "btn-warning")
-                usersAdminFilterIDSort.classList.add("btn-success")
-                usersAdminFilteringIDSort = "asc"
-                break
-        }
-        usersAdminGetAll()
-    })
-}
-
-function adminUsersFilterSetEraseListeners() {
-    function eraseIDField() {
-        usersAdminFilterIDField.value = ""
-        usersAdminFilteringID = null
     }
 
-    function eraseIDSort() {
-        usersAdminFilterIDSort.classList.add("btn-outline-secondary")
-        usersAdminFilterIDSort.classList.remove("btn-warning", "btn-success")
-        usersAdminFilteringIDSort = null
-    }
-
-    function eraseTGField() {
-        usersAdminFilterTGAll.checked = true
-        usersAdminFilterTGConnected.checked = false
-        usersAdminFilterTGDisconnected.checked = false
-        usersAdminFilteringTG = null
-    }
-
-    function eraseUsernameField() {
-        usersAdminFilterUsernameField.value = ""
-        usersAdminFilteringUsername = null
-    }
-
-    function eraseUsernameSort() {
-        usersAdminFilterUsernameSort.classList.add("btn-outline-secondary")
-        usersAdminFilterUsernameSort.classList.remove("btn-warning", "btn-success")
-        usersAdminFilteringUsernameSort = null
-    }
-
-    function eraseFullNameField() {
-        usersAdminFilterNameField.value = ""
-        usersAdminFilteringFullName = null
-    }
-
-    function eraseFullNameSort() {
-        usersAdminFilterNameSort.classList.add("btn-outline-secondary")
-        usersAdminFilterNameSort.classList.remove("btn-warning", "btn-success")
-        usersAdminFilteringFullNameSort = null
-    }
-
-    function eraseRoles() {
-        usersAdminFilterRoleList.querySelectorAll("a").forEach(role => {
-            role.classList.remove("active")
+    function typeListeners(){
+        usersAdminActivityFilterTypeAll.addEventListener("click", () => {
+            usersAdminFilteringLastActivityType = null
+            usersAdminGetAll()
+        })
+        usersAdminActivityFilterTypeWeb.addEventListener("click", () => {
+            usersAdminFilteringLastActivityType = "web"
+            usersAdminGetAll()
+        })
+        usersAdminActivityFilterTypeTelegram.addEventListener("click", () => {
+            usersAdminFilteringLastActivityType = "tg"
+            usersAdminGetAll()
+        })
+        usersAdminActivityFilterTypeReg.addEventListener("click", () => {
+            usersAdminFilteringLastActivityType = "reg"
+            usersAdminGetAll()
         })
     }
 
-    usersAdminFilterEraseAll.addEventListener("click", function () {
-        eraseIDField()
-        eraseIDSort()
-        eraseTGField()
-        eraseUsernameField()
-        eraseUsernameSort()
-        eraseFullNameField()
-        eraseFullNameSort()
-        eraseRoles()
-        usersAdminGetAll()
-    })
-    usersAdminFilterIDErase.addEventListener("click", function () {
-        eraseIDField()
-        usersAdminGetAll()
-    })
-    usersAdminFilterUsernameErase.addEventListener("click", function () {
-        eraseUsernameField()
-        usersAdminGetAll()
-    })
-    usersAdminFilterNameErase.addEventListener("click", function () {
-        eraseFullNameField()
+    function dateListeners(){
+        usersAdminActivityFilterDateStart.addEventListener("input", () => {
+            if (validateDates()){
+                usersAdminFilteringLastActivityDateStart = usersAdminActivityFilterDateStart.value
+                usersAdminGetAll()
+            }
+        })
+        usersAdminActivityFilterDateEnd.addEventListener("input", () => {
+            if (validateDates()){
+                usersAdminFilteringLastActivityDateEnd = usersAdminActivityFilterDateEnd.value
+                usersAdminGetAll()
+            }
+        })
+    }
+
+    function dateEraseListeners(){
+        usersAdminActivityFilterDateStartErase.addEventListener("click", () => {
+            usersAdminActivityFilterDateStart.value = ""
+            usersAdminFilteringLastActivityDateStart = null
+            usersAdminGetAll()
+        })
+        usersAdminActivityFilterDateEndErase.addEventListener("click", () => {
+            usersAdminActivityFilterDateEnd.value = ""
+            usersAdminFilteringLastActivityDateEnd = null
+            usersAdminGetAll()
+        })
+    }
+
+    function sortListeners(){
+        usersAdminActivityFilterSort.addEventListener("click", () => {
+            usersAdminFilteringIDSort = sortButtonListener(
+                usersAdminActivityFilterSort, usersAdminFilteringIDSort
+            )
+            usersAdminGetAll()
+        })
+    }
+
+    typeListeners()
+    dateListeners()
+    dateEraseListeners()
+    sortListeners()
+}
+
+function adminUsersFilterSetEraseListeners() {
+    usersAdminFilterEraseAll.addEventListener("click", () => {
+        usersAdminFilterIDField.value = ""
+        usersAdminFilterIDSort.classList.remove("btn-primary")
+        usersAdminFilterIDSort.classList.add("btn-outline-secondary")
+        usersAdminFilterIDSort.innerHTML = '<i class="bi bi-chevron-bar-expand"></i>'
+        usersAdminFilterTGAll.checked = true
+        usersAdminFilterTGConnected.checked = false
+        usersAdminFilterTGDisconnected.checked = false
+        usersAdminFilterUsernameField.value = ""
+        usersAdminFilterUsernameSort.classList.remove("btn-primary")
+        usersAdminFilterUsernameSort.classList.add("btn-outline-secondary")
+        usersAdminFilterUsernameSort.innerHTML = '<i class="bi bi-chevron-bar-expand"></i>'
+        usersAdminFilterNameField.value = ""
+        usersAdminFilterNameSort.classList.remove("btn-primary")
+        usersAdminFilterNameSort.classList.add("btn-outline-secondary")
+        usersAdminFilterNameSort.innerHTML = '<i class="bi bi-chevron-bar-expand"></i>'
+        usersAdminFilterRoleList.querySelectorAll("a").forEach(role => {
+            role.classList.remove("active")
+        })
+        usersAdminActivityFilterTypeAll.checked = true
+        usersAdminActivityFilterTypeWeb.checked = false
+        usersAdminActivityFilterTypeTelegram.checked = false
+        usersAdminActivityFilterTypeReg.checked = false
+        usersAdminActivityFilterDateStart.value = ""
+        usersAdminActivityFilterDateEnd.value = ""
+        usersAdminActivityFilterDateStart.classList.remove("is-invalid")
+        usersAdminActivityFilterDateEnd.classList.remove("is-invalid")
+        usersAdminActivityFilterSort.classList.remove("btn-primary")
+        usersAdminActivityFilterSort.classList.add("btn-outline-secondary")
+        usersAdminActivityFilterSort.innerHTML = '<i class="bi bi-chevron-bar-expand"></i>'
+        usersAdminFilteringID = null
+        usersAdminFilteringIDSort = null
+        usersAdminFilteringTG = null
+        usersAdminFilteringUsername = null
+        usersAdminFilteringUsernameSort = null
+        usersAdminFilteringFullName = null
+        usersAdminFilteringFullNameSort = null
+        usersAdminFilteringRole.length = 0
+        usersAdminFilteringLastActivityType = null
+        usersAdminFilteringLastActivityDateStart = null
+        usersAdminFilteringLastActivityDateEnd = null
+        usersAdminFilteringLastActivityDateSort = null
+
         usersAdminGetAll()
     })
 }
 
-//Fields
+//ID | TG
 const usersAdminFilterIDField = document.querySelector("#usersAdminFilterIDField")
 const usersAdminFilterTGAll = document.querySelector("#usersAdminFilterTGAll")
 const usersAdminFilterTGConnected = document.querySelector("#usersAdminFilterTGConnected")
 const usersAdminFilterTGDisconnected = document.querySelector("#usersAdminFilterTGDisconnected")
+const usersAdminFilterIDErase = document.querySelector("#usersAdminFilterIDErase")
+const usersAdminFilterIDSort = document.querySelector("#usersAdminFilterIDSort")
+
+//Username | Login
 const usersAdminFilterUsernameField = document.querySelector("#usersAdminFilterUsernameField")
+const usersAdminFilterUsernameErase = document.querySelector("#usersAdminFilterUsernameErase")
+const usersAdminFilterUsernameSort = document.querySelector("#usersAdminFilterUsernameSort")
+
+//Fullname
 const usersAdminFilterNameField = document.querySelector("#usersAdminFilterNameField")
+const usersAdminFilterNameErase = document.querySelector("#usersAdminFilterNameErase")
+const usersAdminFilterNameSort = document.querySelector("#usersAdminFilterNameSort")
+
+//Role
 const usersAdminFilterRoleList = document.querySelector("#usersAdminFilterRoleList")
+
+//Last Activity
+const usersAdminActivityFilterSort = document.querySelector("#usersAdminActivityFilterSort")
+const usersAdminActivityFilterTypeAll = document.querySelector("#usersAdminActivityFilterTypeAll")
+const usersAdminActivityFilterTypeWeb = document.querySelector("#usersAdminActivityFilterTypeWeb")
+const usersAdminActivityFilterTypeTelegram = document.querySelector("#usersAdminActivityFilterTypeTelegram")
+const usersAdminActivityFilterTypeReg = document.querySelector("#usersAdminActivityFilterTypeReg")
+const usersAdminActivityFilterDateStart = document.querySelector("#usersAdminActivityFilterDateStart")
+const usersAdminActivityFilterDateStartErase = document.querySelector("#usersAdminActivityFilterDateStartErase")
+const usersAdminActivityFilterDateEnd = document.querySelector("#usersAdminActivityFilterDateEnd")
+const usersAdminActivityFilterDateEndErase = document.querySelector("#usersAdminActivityFilterDateEndErase")
 
 //Erase
 const usersAdminFilterEraseAll = document.querySelector("#usersAdminFilterEraseAll")
-const usersAdminFilterIDErase = document.querySelector("#usersAdminFilterIDErase")
-const usersAdminFilterUsernameErase = document.querySelector("#usersAdminFilterUsernameErase")
-const usersAdminFilterNameErase = document.querySelector("#usersAdminFilterNameErase")
-
-//Sort
-const usersAdminFilterUsernameSort = document.querySelector("#usersAdminFilterUsernameSort")
-const usersAdminFilterNameSort = document.querySelector("#usersAdminFilterNameSort")
-const usersAdminFilterIDSort = document.querySelector("#usersAdminFilterIDSort")
-
 
 adminUsersFilterMain()

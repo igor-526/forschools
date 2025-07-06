@@ -8,6 +8,15 @@ function timeUtilsCompareTime(start, end){
     return te <= ts
 }
 
+function timeUtilsValidateDate(start, end){
+    if (!start || !end){
+        return true
+    }
+    const s = new Date(start).setHours(0, 0, 0, 0)
+    const e = new Date(end).setHours(0, 0, 0, 0)
+    return e >= s
+}
+
 function timeUtilsValidateTime(start, end){
     const tsH = start.value.split(":")[0]
     const tsM = start.value.split(":")[1]

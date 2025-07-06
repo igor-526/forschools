@@ -133,31 +133,44 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
 
     def filter_queryset_fields(self, queryset):
         query = dict()
+
         q_id = self.request.query_params.get('id')
         q_username = self.request.query_params.get('username')
         q_roles = self.request.query_params.getlist('role')
+        la_date_start = self.request.query_params.get('la_date_start')
+        la_date_end = self.request.query_params.get('la_date_end')
+        la_type = self.request.query_params.get('la_type')
         if q_id:
             query['id'] = q_id
         if q_username:
             query['username__icontains'] = q_username
         if q_roles:
             query['groups__name__in'] = q_roles
-        exclude_me = self.request.query_params.get('exclude_me')
-        if query:
-            if exclude_me == "True":
-                return queryset.filter(**query).exclude(
-                    id=self.request.user.id
-                )
-            else:
-                return queryset.filter(**query)
-        else:
-            return queryset
+        if la_date_start:
+            date_start = datetime.strptime(la_date_start,
+                                           "%Y-%m-%d")
+            query['last_activity__date__gte'] = date_start
+        if la_date_end:
+            date_end = datetime.strptime(la_date_end,
+                                         "%Y-%m-%d")
+            query['last_activity__date__lte'] = date_end
+        if la_type == 'tg':
+            query['last_activity_type'] = 0
+        if la_type == 'web':
+            query['last_activity_type'] = 1
+        if la_type == 'reg':
+            query['last_activity_type'] = 2
 
-    def sort_queryset_all(self, queryset):
+        exclude_query = dict()
+        exclude_me = self.request.query_params.get('exclude_me')
+        if exclude_me == "True":
+            exclude_query['id'] = self.request.user.id
+
         order_query = ["-is_active"]
         sort_username = self.request.query_params.get('sort_username')
         sort_full_name = self.request.query_params.get('sort_full_name')
         sort_id = self.request.query_params.get('sort_id')
+        sort_la_date = self.request.query_params.get('sort_la_date')
         if sort_id == "asc":
             order_query.append('id')
         elif sort_id == "desc":
@@ -166,13 +179,18 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
             order_query.append('username')
         elif sort_username == "desc":
             order_query.append('-username')
+        if sort_la_date == "asc":
+            order_query.append('last_activity')
+        elif sort_la_date == "desc":
+            order_query.append('-last_activity')
         if sort_full_name == "asc":
             order_query.append('last_name')
         elif sort_full_name == "desc":
             order_query.append('-last_name')
         else:
             order_query.append('first_name')
-        return queryset.order_by(*order_query)
+
+        return queryset.filter(**query).exclude(**exclude_query).order_by(*order_query)
 
     def get_queryset_read_all_messages(self):
         user_groups = [group.name for group in
@@ -244,7 +262,6 @@ class UserListAPIView(LoginRequiredMixin, ListAPIView):
                 queryset = self.filter_queryset_fields(queryset)
                 queryset = self.filter_tg(queryset)
                 queryset = self.filter_fullname(queryset)
-                queryset = self.sort_queryset_all(queryset)
             return queryset.distinct() if queryset else None
 
 

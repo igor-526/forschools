@@ -7,7 +7,9 @@ function usersAdminGetAll(){
     usersAPIGetAll(
         null, usersAdminFilteringID, usersAdminFilteringTG, usersAdminFilteringUsername,
         usersAdminFilteringFullName, usersAdminFilteringRole, usersAdminFilteringUsernameSort,
-        usersAdminFilteringFullNameSort, usersAdminFilteringIDSort, true
+        usersAdminFilteringFullNameSort, usersAdminFilteringIDSort, true,
+        usersAdminFilteringLastActivityDateStart, usersAdminFilteringLastActivityDateEnd,
+        usersAdminFilteringLastActivityDateSort, usersAdminFilteringLastActivityType
     ).then(request => {
         switch (request.status){
             case 200:
@@ -158,5 +160,9 @@ const usersAdminFilteringRole = []
 let usersAdminFilteringUsernameSort = null
 let usersAdminFilteringFullNameSort = null
 let usersAdminFilteringIDSort = null
+let usersAdminFilteringLastActivityDateStart = null
+let usersAdminFilteringLastActivityDateEnd = null
+let usersAdminFilteringLastActivityType = null
+let usersAdminFilteringLastActivityDateSort = null
 
 usersAdminMain()

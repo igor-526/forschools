@@ -43,7 +43,9 @@ async function usersAPIGetForSchedule(name=null, role=null){
 
 async function usersAPIGetAll(setting=null, id=null, tg=null, username=null,
                               fullName=null, roles=[], sortUsername=null,
-                              sortFullName=null, sortID=null, excludeMe=false){
+                              sortFullName=null, sortID=null, excludeMe=false,
+                              lastActivityDateStart=null, lastActivityDateEnd=null,
+                              lastActivityDateSort=null, lastActivityType=null){
     let url = "/api/v1/users/"
     const query = []
     if (id){
@@ -71,7 +73,19 @@ async function usersAPIGetAll(setting=null, id=null, tg=null, username=null,
         query.push(`sort_id=${sortID}`)
     }
     if (excludeMe){
-        query.push(`exclude_me=True}`)
+        query.push(`exclude_me=True`)
+    }
+    if (lastActivityDateStart){
+        query.push(`la_date_start=${lastActivityDateStart}`)
+    }
+    if (lastActivityDateEnd){
+        query.push(`la_date_end=${lastActivityDateEnd}`)
+    }
+    if (lastActivityDateSort){
+        query.push(`sort_la_date=${lastActivityDateSort}`)
+    }
+    if (lastActivityType){
+        query.push(`la_type=${lastActivityType}`)
     }
     roles.forEach(role => {
         query.push(`role=${role}`)
