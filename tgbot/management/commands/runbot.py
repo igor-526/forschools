@@ -13,9 +13,9 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 
 async def start_polling() -> None:
     dp.include_routers(main_router)
-    if not DEBUG:
-        dp.message.middleware.register(LastMessageMiddleware())
-        dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
+    # if not DEBUG:
+    dp.message.middleware.register(LastMessageMiddleware())
+    dp.callback_query.middleware.register(LastMessageCallbackMiddleware())
     dp.message.middleware.register(MediaMiddleware())
     await dp.start_polling(bot)
 

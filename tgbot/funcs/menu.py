@@ -43,7 +43,7 @@ async def send_menu(user_tg_id: int, state: FSMContext, custom_text="Выбер�
         messages = True
         lessons = True
         settings = True
-    multiuser = await tg_note.allowed_users.acount() > 1
+    multiuser = await tg_note.allowed_users.acount() + await tg_note.allowed_parents.acount() > 1
     await state.clear()
     await bot.send_message(chat_id=user_tg_id,
                            text=custom_text,

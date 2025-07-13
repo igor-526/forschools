@@ -28,7 +28,7 @@ async def f_multiuser_change_user(callback: types.CallbackQuery,
         tg_id=callback.from_user.id
     )
     try:
-        if not Telegram.objects.filter(
+        if not await Telegram.objects.filter(
                 Q(allowed_users=new_user_id) |
                 Q(allowed_parents=new_user_id)
         ).aexists():
