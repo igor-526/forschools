@@ -4,3 +4,4 @@ exclude =
     __pycache__,
     venv,
     */migrations
+    src/dls/settings.py
