@@ -75,14 +75,17 @@ def get_can_cancel_hw_permission(hw: Homework, request):
 
 
 def get_can_accept_log_permission(hw: Homework, request):
+    if request.user.groups.filter(name="Admin").exists():
+        return True
     lesson = hw.get_lesson()
     lp = lesson.get_learning_plan() if lesson else None
-    return (request.user.groups.filter(name="Admin").exists() or
-            (lp and lp.metodist == request.user))
+    return lp and lp.metodist == request.user
 
 
 def get_can_edit_hw_permission(hw: Homework, request):
     if hw.teacher == request.user:
+        return True
+    if request.user.groups.filter(name="Admin").exists():
         return True
     lesson = hw.get_lesson()
     if lesson:

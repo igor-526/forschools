@@ -41,26 +41,26 @@ class Command(BaseCommand):
     help = 'This command starts up the Telegram bot'
 
     def handle(self, *args, **kwargs):
-        # try:
-        logging.getLogger().setLevel(logging.DEBUG)
-        if TG_WEBHOOKS_MODE:
-            dp.include_routers(main_router)
-            if not DEBUG:
-                dp.message.middleware.register(LastMessageMiddleware())
-                dp.callback_query.middleware.register(
-                    LastMessageCallbackMiddleware())
-            dp.message.middleware.register(MediaMiddleware())
-            dp.startup.register(on_startup)
-            app = web.Application()
-            webhook_requests_handler = SimpleRequestHandler(
-                dispatcher=dp,
-                bot=bot,
-                secret_token=TG_WEBHOOK_SECRET,
-            )
-            webhook_requests_handler.register(app, path=TG_WEBHOOK_PATH)
-            setup_application(app, dp, bot=bot)
-            web.run_app(app, host=TG_WEB_SERVER_HOST, port=8080)
-        else:
-            asyncio.run(start_polling())
-        # except Exception as ex:
-        #     raise CommandError(ex)
+        try:
+            logging.getLogger().setLevel(logging.DEBUG)
+            if TG_WEBHOOKS_MODE:
+                dp.include_routers(main_router)
+                if not DEBUG:
+                    dp.message.middleware.register(LastMessageMiddleware())
+                    dp.callback_query.middleware.register(
+                        LastMessageCallbackMiddleware())
+                dp.message.middleware.register(MediaMiddleware())
+                dp.startup.register(on_startup)
+                app = web.Application()
+                webhook_requests_handler = SimpleRequestHandler(
+                    dispatcher=dp,
+                    bot=bot,
+                    secret_token=TG_WEBHOOK_SECRET,
+                )
+                webhook_requests_handler.register(app, path=TG_WEBHOOK_PATH)
+                setup_application(app, dp, bot=bot)
+                web.run_app(app, host=TG_WEB_SERVER_HOST, port=8080)
+            else:
+                asyncio.run(start_polling())
+        except Exception as ex:
+            raise CommandError(ex)

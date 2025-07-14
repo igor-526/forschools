@@ -27,18 +27,6 @@
 
 *Многофункциональная платформа для дистанционного обучения с интеграцией Telegram*
 
-![python](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-[![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
-[![Aiogram](https://img.shields.io/badge/Aiogram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://docs.aiogram.dev/)
-[![REST API](https://img.shields.io/badge/REST_API-FF6C37?style=for-the-badge&logo=fastapi&logoColor=white)](https://www.django-rest-framework.org/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
-[![Celery](https://img.shields.io/badge/Celery-37814A?style=for-the-badge&logo=celery&logoColor=white)](https://docs.celeryq.dev/)
-![postgresql](https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-![html5](https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
-![js](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white)
-
 ## О проекте
 
 Forschools – это современная платформа для дистанционного обучения с глубокой интеграцией Telegram. Система предоставляет комплексное решение для организации учебного процесса, включая проведение занятий, выдачу и проверку домашних заданий, коммуникацию между участниками и аналитику.
@@ -83,7 +71,19 @@ Forschools – это современная платформа для дист�
 
 ## Технологический стек
 
+| Тип       | Технологии                                             |
+|-----------|--------------------------------------------------------|
+| **Языки** | ![python](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![js](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white) |
+| **Backend** | [![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/) [![REST API](https://img.shields.io/badge/REST_API-FF6C37?style=for-the-badge&logo=fastapi&logoColor=white)](https://www.django-rest-framework.org/) |
+| **База данных** | ![postgresql](https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white) |
+| **Telegram бот** | [![Aiogram](https://img.shields.io/badge/Aiogram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://docs.aiogram.dev/) |
+| **Асинхронные задачи** | [![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/) [![Celery](https://img.shields.io/badge/Celery-37814A?style=for-the-badge&logo=celery&logoColor=white)](https://docs.celeryq.dev/) |
+| **Фронтенд** | ![html5](https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white) [![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/) |
+| **Инфраструктура** | [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/) [![Docker Compose](https://img.shields.io/badge/Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/) |
+| **Стиль кода** | [![PEP8](https://img.shields.io/badge/PEP8-794013?style=for-the-badge)](https://www.docker.com/) |
+
 - **Backend**: Django, Django REST Framework
+- **База данных**: PostgreSQL
 - **Telegram бот**: Aiogram, Telethon
 - **Асинхронные задачи**: Celery, Redis
 - **Фронтенд**: JavaScript, Bootstrap
@@ -98,15 +98,6 @@ Forschools – это современная платформа для дист�
 - Автоматические уведомления о событиях
 - Выгрузка данных в Excel
 - Подробные журналы активности и ошибок
-
-## Установка и запуск
-
-1. Клонируйте репозиторий:
-```bash
-git clone https://github.com/your_username/forschools.git
-cd forschools
-
-```
 
 
 
