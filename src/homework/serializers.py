@@ -53,8 +53,8 @@ class HomeworkSerializer(serializers.ModelSerializer):
         self.hw_lesson = hw.get_lesson()
         self.hw_learning_plan = self.hw_lesson.get_learning_plan() if (
             self.hw_lesson) else None
-        self.hw_curators = self.hw_learning_plan.curators.all() if (
-            self.hw_learning_plan) else None
+        self.hw_curators = self.hw_learning_plan.curators.all() \
+            if self.hw_learning_plan else None
 
     def get_lesson_info(self, obj: Homework):
         if self.hw_lesson:
@@ -133,13 +133,12 @@ class HomeworkSerializer(serializers.ModelSerializer):
                              plan_: LearningPlan) -> List[str]:
             if last_log_.status in [4, 6]:
                 return []
-            if (obj.teacher == self.context.get("request").user or
-                    (plan_ and plan_.metodist == self.context.get(
-                        "request").user) or
-                    (obj.for_curator and
-                     plan_.curators.filter(
-                         id=self.context.get("request").user.id
-                     ).exists())):
+            if (obj.teacher == self.request.user or
+                    (plan_ and plan_.metodist == self.request.user) or
+                    (obj.for_curator and plan_.curators.filter(
+                        id=self.request.user.id
+                    ).exists()) or
+                    self.request.user.groups.filter(name="Admin").exists()):
                 return ["edit"]
             return []
 
