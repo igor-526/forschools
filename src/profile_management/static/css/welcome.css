@@ -1,0 +1,22 @@
+:root {
+    --background-color: #003366;
+  }
+
+body {
+    background-color: var(--background-color);
+}
+
+.main_block{
+    background-color: #fff;
+    width: 800px;
+    margin: auto auto;
+    margin-top: 70px;
+    border-radius: 20px;
+    padding: 40px;
+}
+
+@media (max-width: 800px) {
+    .main_block {
+        width: 96%;
+    }
+}

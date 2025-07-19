@@ -18,6 +18,13 @@ class CanSeeEventJournalMixin(LoginRequiredMixin):
         return self.handle_no_permission()
 
 
+class CanGetWelcomeURLMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.groups.filter(name="Admin").exists():
+            return super().dispatch(request, *args, **kwargs)
+        return self.handle_no_permission()
+
+
 def get_editable_perm(user, obj) -> bool:
     usergroups = [group.name for group in user.groups.all()]
     if "Admin" in usergroups:

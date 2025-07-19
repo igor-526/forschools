@@ -1,3 +1,19 @@
+class UsersAPI extends BaseAPI{
+    constructor(userID = null) {
+        super("users", userID);
+    }
+
+    async getWelcomeUrl(){
+        this.objMethod = "welcome"
+        return await this.get()
+    }
+
+    async setupWelcome(formData){
+        this.objMethod = "welcome"
+        return await this.get()
+    }
+}
+
 async function usersAPIGetTeachers(){
     const request = await fetch("/api/v1/users/?role=Teacher")
     return await APIGetToObject(request)

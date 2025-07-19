@@ -203,6 +203,54 @@ class userUtils {
         })
         buttons.push(editButton)
 
+        const welcomeUrlButton = document.createElement("button")
+        welcomeUrlButton.classList.add("btn", "btn-primary", "w-100", "mb-2")
+        welcomeUrlButton.innerHTML = 'Пригласительная ссылка'
+        welcomeUrlButton.addEventListener("click", () => {
+            this._setWelcomeUrlModal()
+        })
+        buttons.push(welcomeUrlButton)
+
         return buttons
+    }
+
+    _getWelcomeUrlModalContent(welcomeUrlData){
+        const urlDiv = document.createElement("div")
+        urlDiv.innerHTML = `<b>Ссылка:</b> <a href="${location.host}${welcomeUrlData.url}">${location.host}${welcomeUrlData.url}</a>`
+        const expiresDiv = document.createElement("div")
+        expiresDiv.innerHTML = `<b>Действует до:</b> ${timeUtilsDateTimeToStr(welcomeUrlData.expires)}`
+        return {content: [urlDiv, expiresDiv], buttons: []}
+    }
+
+    _setWelcomeUrlModal(){
+        console.log("a")
+        const usersAPI = new UsersAPI(this.data.id)
+        usersAPI.getWelcomeUrl().then(request => {
+            const toast = new toastEngine()
+            switch (request.status){
+                case 200:
+                    const welcomeUrlModal = new modalEngine()
+                    welcomeUrlModal.title = "Пригласительная ссылка"
+                    welcomeUrlModal.setClasses(["modal-lg"])
+                    const content = this._getWelcomeUrlModalContent(request.response)
+                    welcomeUrlModal.addContent(content.content)
+                    welcomeUrlModal.addButtons(content.buttons)
+                    welcomeUrlModal.show()
+                    break
+                case 403:
+                    toast.setError("Нет прав для приглашения пользователя")
+                    toast.show()
+                    break
+                case 404:
+                    toast.setError("Пользователь не найден")
+                    toast.show()
+                    break
+                default:
+                    toast.setError()
+                    toast.show()
+            }
+        })
+
+
     }
 }

@@ -23,11 +23,14 @@ from .views_login import (AdminLoginAPIView,
                           TelegramLoginPageView,
                           UserLoginAPIView,
                           UserTelegramLoginAPIView,
+                          WelcomePageTemplateView,
+                          WelcomeURLAPIView,
                           register_view,
                           user_logout)
 
 urlpatterns = [
     path('', RedirectView.as_view(url='dashboard')),
+    path('welcome/<str:welcome_url>/', WelcomePageTemplateView.as_view()),
     path('login/', LoginPageTemplateView.as_view(), name='login'),
     path('login_tg/', TelegramLoginPageView.as_view(), name='login_tg'),
     path('auth/', UserLoginAPIView.as_view()),
@@ -58,4 +61,5 @@ apiv1patterns = [
     path('<int:pk>/reset_password/', ChangePasswordAPIView.as_view()),
     path('<int:pk>/hw/', UserHWListAPIView.as_view()),
     path('<int:pk>/lessons/', UserLessonListAPIView.as_view()),
+    path('<int:pk>/welcome/', WelcomeURLAPIView.as_view()),
 ]

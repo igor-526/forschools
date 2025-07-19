@@ -1,4 +1,6 @@
-from random import randint
+import string
+from datetime import timedelta
+from random import randint, choice
 
 from chat.models import Message
 from chat.utils import chat_users_remove_duplicates, chat_users_sort
@@ -142,6 +144,17 @@ class NewUser(AbstractUser):
                              null=False,
                              blank=False,
                              default=3)
+    registration_url = models.CharField(
+        verbose_name="Ссылка для регистрации",
+        null=True,
+        blank=True
+    )
+    registration_url_access = models.DateTimeField(
+        verbose_name="Действует до",
+        null=True,
+        blank=True
+    )
+
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -165,6 +178,17 @@ class NewUser(AbstractUser):
         self.last_activity = timezone.localtime(timezone.now())
         self.last_activity_type = 0
         await self.asave()
+
+    def get_welcome_url(self):
+        if not self.registration_url or (self.registration_url_access and
+                                         self.registration_url_access +
+                                         timedelta(days=7) <= timezone.now()):
+            characters = string.ascii_letters + string.digits
+            self.registration_url = ''.join(choice(characters) for _ in range(18))
+        self.registration_url_access = timezone.now() + timedelta(days=7)
+        self.save()
+        return {"url": f'/welcome/{self.registration_url}/',
+                "expires": self.registration_url_access.isoformat()}
 
     def set_groups(self, groups: list):
         try:

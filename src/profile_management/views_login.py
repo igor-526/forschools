@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import TemplateView
 
 from rest_framework import status
@@ -14,6 +15,7 @@ from rest_framework.views import APIView
 
 from .forms import SignUpForm
 from .models import NewUser, Telegram
+from .permissions import CanGetWelcomeURLMixin
 
 
 class LoginPageTemplateView(TemplateView):
@@ -142,3 +144,33 @@ class TelegramLoginPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         context = {'title': 'Авторизация'}
         return render(request, self.template_name, context)
+
+
+class WelcomeURLAPIView(CanGetWelcomeURLMixin, APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            user = NewUser.objects.get(pk=kwargs.get('pk'))
+        except NewUser.DoesNotExist:
+            return Response(data={"error": "Пользователь не найден"},
+                            status=status.HTTP_404_NOT_FOUND)
+        return Response(data=user.get_welcome_url(),
+                        status=status.HTTP_200_OK)
+
+
+class WelcomePageTemplateView(TemplateView):
+    def get_template_names(self, success=True):
+        if success:
+            return "welcome/welcome_success.html"
+        return "welcome/welcome_error.html"
+
+    def get(self, request, *args, **kwargs):
+        user = NewUser.objects.filter(registration_url=kwargs.get("welcome_url"),
+                                      registration_url_access__gte=timezone.now()).first()
+        if user:
+            context = {'title': 'Добро пожаловать!',
+                       'user': user}
+            template = self.get_template_names()
+        else:
+            context = {'title': 'Ошибка'}
+            template = self.get_template_names(False)
+        return render(request, template, context)

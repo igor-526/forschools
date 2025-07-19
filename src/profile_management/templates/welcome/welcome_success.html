@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/welcome.css'%}">
+</head>
+<body>
+<div class="container-xxl">
+    <div class="row main_block px-3">
+        <div class="mb-4">
+            <h2 class="mb-3">Добро пожаловать!</h2>
+            <span>Подключитесь в нашу платформу-бот для оптимальной организации образовательного процесса и отслеживания прогресса ученика</span>
+            <ul class="list-group mt-2">
+                <li class="list-group-item"><i class="bi bi-check-circle-fill me-1"></i>Получение уведомлений о занятиях</li>
+                <li class="list-group-item"><i class="bi bi-check-circle-fill me-1"></i>Возможность получать домашние задания и материалы для изучения</li>
+                <li class="list-group-item"><i class="bi bi-check-circle-fill me-1"></i>Возможность с педагогом напрямую, в случае если у вас возникнут вопросы</li>
+            </ul>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="mb-3">Проверьте Ваши данные:</h5>
+            <div class="mb-2">
+                <label for="usersWelcomeLastNameField" class="form-label mb-0">Фамилия</label>
+                <input name="last_name" type="text" class="form-control" id="usersWelcomeLastNameField" value="{% if user.last_name %}{{ user.last_name }}{% endif %}">
+                <div class="invalid-feedback" id="usersWelcomeLastNameError"></div>
+            </div>
+
+            <div class="mb-2">
+                <label for="usersWelcomeFirstNameField" class="form-label mb-0">Имя</label>
+                <input name="first_name" type="text" class="form-control" id="usersWelcomeFirstNameField" value="{% if user.first_name %}{{ user.first_name }}{% endif %}">
+                <div class="invalid-feedback" id="usersWelcomeFirstNameError"></div>
+            </div>
+
+            <div class="mb-2">
+                <label for="usersWelcomePatronymicField" class="form-label mb-0">Отчество</label>
+                <input name="patronymic" type="text" class="form-control" id="usersWelcomePatronymicField" value="{% if user.patronymic %}{{ user.patronymic }}{% endif %}">
+                <div class="invalid-feedback" id="usersWelcomePatronymicError"></div>
+            </div>
+
+            <div class="mb-2">
+                <label for="usersWelcomeEmailField" class="form-label mb-0">Email</label>
+                <input name="email" type="email" class="form-control" id="usersWelcomeEmailField" value="{% if user.email %}{{ user.email }}{% endif %}">
+                <div class="invalid-feedback" id="usersWelcomeEmailError"></div>
+            </div>
+
+            <div class="mb-2">
+                <label for="usersWelcomeBDateField" class="form-label mb-0">Дата рождения</label>
+                <input name="bdate" type="date" class="form-control" id="usersWelcomeBDateField" value="{% if user.bdate %}{{ user.bdate }}{% endif %}">
+                <div class="invalid-feedback" id="usersWelcomeBDateError"></div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="mb-3">Работа с ботом Telegram:</h5>
+            <p>Для автоматической привязки необходимо с устройства, <b>на котором установлен Telegram</b> перейти по <b><a href="https://t.me/kitai_school_study_bot?start={{ user.tg_code }}" target="_blank">ссылке</a></b></p>
+            <p><b>ИЛИ</b></p>
+            <p>Для ручной привязки необходимо найти в Telegram бота <b><a href="https://t.me/kitai_school_study_bot" target="_blank">@kitai_school_study_bot</a></b>, после чего написать команду <b>"/start {{ user.tg_code }}"</b> (без кавычек)</p>
+            <p><i>Если родитель контролирует учёбу ребёнка, то <u>ПОСЛЕ привязки ребёнка</u> мы пришлём ссылку для привязки родителя.</i></p>
+            <p>С текстовой инструкцией для Учеников можно ознакомиться <b><a href="https://forschools.ru/instructions/" target="_blank">здесь</a></b></p>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="mb-3">Работа с платформой:</h5>
+            <p>Доступ к платформе для работы на компьютере (если вы предпочитаете работать на компьютере):</p>
+            <ul class="list-group mb-3">
+                <li class="list-group-item"><b>Ссылка</b>:<br><a id="usersWelcomePlatformURL"></a></li>
+                <li class="list-group-item"><b>Логин</b>:<br>{{ user.username }}</li>
+                <li class="list-group-item">
+                    <b>Пароль</b>:
+                    <div class="mb-2">
+                        <input type="text" class="form-control" id="usersWelcomePasswordField" aria-label="">
+                        <div class="invalid-feedback" id="usersWelcomePasswordError"></div>
+                    </div>
+                </li>
+            </ul>
+            <p>Также попасть на платформу без ввода логина и пароля можно из бота Telegram, нажав в главном меню кнопку "<b>Платформа</b>" и перейдя по отправленной в ответ ботом ссылке</p>
+            <p>Пожалуйста, ознакомьтесь с видеоинструкциями по работе с веб-версией платформы <a href="https://drive.google.com/drive/folders/1XfW5u7n8gYwilemZVZIUWJfyuF0XnG4Y?usp=sharing"><b>здесь</b></a></p>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <button id="usersWelcomeGoButton" class="btn btn-success me-2" type="button">Приступить к работе<i class="bi bi-chevron-double-right ms-1"></i></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+<script src="{% static 'js/apitostr.js' %}"></script>
+<script src="{% static 'js/transliteration.js' %}"></script>
+<script src="{% static 'js/welcome/welcome.js' %}"></script>
+</body>
+</html>
