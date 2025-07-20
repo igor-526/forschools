@@ -7,11 +7,6 @@ class UsersAPI extends BaseAPI{
         this.objMethod = "welcome"
         return await this.get()
     }
-
-    async setupWelcome(formData){
-        this.objMethod = "welcome"
-        return await this.get()
-    }
 }
 
 async function usersAPIGetTeachers(){
@@ -193,7 +188,7 @@ async function usersAPIAdminLogin(userID){
 
 async function usersAPIRegistration(fd){
     const request = await fetch("/register/", {
-        method: 'post',
+        method: 'POST',
         credentials: 'same-origin',
         headers:{
             "X-CSRFToken": csrftoken,

@@ -215,11 +215,43 @@ class userUtils {
     }
 
     _getWelcomeUrlModalContent(welcomeUrlData){
+        function copyButtonEffect(button){
+            button.classList.remove("btn-primary")
+            button.classList.add("btn-success")
+            setTimeout(() => {
+                button.classList.add("btn-primary")
+                button.classList.remove("btn-success")
+            }, 500)
+        }
+
         const urlDiv = document.createElement("div")
-        urlDiv.innerHTML = `<b>Ссылка:</b> <a href="${location.host}${welcomeUrlData.url}">${location.host}${welcomeUrlData.url}</a>`
+        urlDiv.innerHTML = `<b>Ссылка:</b> <a href="/${location.host}${welcomeUrlData.url}">https://${location.host}${welcomeUrlData.url}</a>`
         const expiresDiv = document.createElement("div")
         expiresDiv.innerHTML = `<b>Действует до:</b> ${timeUtilsDateTimeToStr(welcomeUrlData.expires)}`
-        return {content: [urlDiv, expiresDiv], buttons: []}
+
+        const buttonsDiv = document.createElement("div")
+        const copyUrlButton = document.createElement("button")
+        copyUrlButton.classList.add("btn", "btn-primary", "mb-2", "w-100")
+        copyUrlButton.innerHTML = "<i class='bi bi-copy me-1'></i>Скопировать ссылку"
+        copyUrlButton.type = "button"
+        copyUrlButton.addEventListener("click", () => {
+            navigator.clipboard.writeText(`https://${location.host}${welcomeUrlData.url}`)
+            copyButtonEffect(copyUrlButton)
+        })
+        const copyInviteButton = document.createElement("button")
+        copyInviteButton.classList.add("btn", "btn-primary", "mb-2", "w-100")
+        copyInviteButton.innerHTML = "<i class='bi bi-copy me-1'></i>Скопировать приглашение"
+        copyInviteButton.type = "button"
+        copyInviteButton.addEventListener("click", () => {
+            navigator.clipboard.writeText(`Приглашаем вас подключиться в нашу платформу-бот для оптимальной организации образовательного процесса и отслеживания прогресса ученика. Перейдите по ссылке и прочитайте инструкцию:
+https://${location.host}${welcomeUrlData.url}`)
+            copyButtonEffect(copyInviteButton)
+        })
+        buttonsDiv.insertAdjacentElement("beforeend", copyUrlButton)
+        buttonsDiv.insertAdjacentElement("beforeend", copyInviteButton)
+
+
+        return {content: [urlDiv, expiresDiv, buttonsDiv], buttons: []}
     }
 
     _setWelcomeUrlModal(){
@@ -250,7 +282,5 @@ class userUtils {
                     toast.show()
             }
         })
-
-
     }
 }

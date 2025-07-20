@@ -1,7 +1,10 @@
+from cv2 import data
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -157,6 +160,67 @@ class WelcomeURLAPIView(CanGetWelcomeURLMixin, APIView):
                         status=status.HTTP_200_OK)
 
 
+class WelcomeURLPatchAPIView(APIView):
+    def validate_data(self):
+        data = self.request.data
+        errors = {"count": 0, "first_name": [], "last_name": [], "email": [], "password": [], "patronymic": []}
+        if data.get('first_name') is None or not len(data.get('first_name')):
+            errors["first_name"].append("Поле обязательно к заполнению")
+            errors["count"] += 1
+        else:
+            if len(data.get('first_name')) > 50:
+                errors["first_name"].append("Поле не может превышать 50 символов")
+                errors["count"] += 1
+        if data.get('last_name') is None or not len(data.get('last_name')):
+            errors["last_name"].append("Поле обязательно к заполнению")
+            errors["count"] += 1
+        else:
+            if len(data.get('last_name')) > 50:
+                errors["last_name"].append("Поле не может превышать 50 символов")
+                errors["count"] += 1
+        if data.get('patronymic') and len(data.get('patronymic')) > 50:
+            errors["patronymic"].append("Поле не может превышать 50 символов")
+            errors["count"] += 1
+        if data.get('email'):
+            try:
+                validate_email(data.get('email'))
+            except ValidationError:
+                errors["email"].append("Некорректный email")
+                errors["count"] += 1
+        if data.get('password') is None or not len(data.get('password')):
+            errors["password"].append("Поле обязательно к заполнению")
+            errors["count"] += 1
+        else:
+            try:
+                validate_password(data.get('password'))
+            except ValidationError as ex:
+                errors["password"] = ex.messages
+                errors["count"] += 1
+        return errors
+
+    def patch(self, request, *args, **kwargs):
+        user = NewUser.objects.filter(registration_url=kwargs.get("welcome_url"),
+                                      registration_url_access__gte=timezone.now()).first()
+        if user is None:
+            return Response(data={"error": "Пользователь не найден"},
+                            status=status.HTTP_404_NOT_FOUND)
+        validation = self.validate_data()
+        if validation["count"]:
+            return Response(data={"errors": validation},
+                            status=status.HTTP_400_BAD_REQUEST)
+        user.first_name = request.data.get('first_name')
+        user.last_name = request.data.get('last_name')
+        user.patronymic = request.data.get('patronymic')
+        user.bdate = request.data.get('bdate')
+        user.set_password(request.data.get('password'))
+        user.registration_url = None
+        user.registration_url_access = None
+        user.save()
+        login(request, user)
+        return Response(data={"status": "ok"},
+                        status=status.HTTP_200_OK)
+
+
 class WelcomePageTemplateView(TemplateView):
     def get_template_names(self, success=True):
         if success:
@@ -168,6 +232,7 @@ class WelcomePageTemplateView(TemplateView):
                                       registration_url_access__gte=timezone.now()).first()
         if user:
             context = {'title': 'Добро пожаловать!',
+                       'tg_nickname': 'kitai_school_study_bot',
                        'user': user}
             template = self.get_template_names()
         else:

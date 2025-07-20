@@ -25,6 +25,7 @@ from .views_login import (AdminLoginAPIView,
                           UserTelegramLoginAPIView,
                           WelcomePageTemplateView,
                           WelcomeURLAPIView,
+                          WelcomeURLPatchAPIView,
                           register_view,
                           user_logout)
 
@@ -53,6 +54,7 @@ apiv1patterns = [
     path('events_journal/', ProfileEventsJournalListAPIView.as_view()),
     path('forjournals/', UsersForJournalListAPIView.as_view()),
     path('schedule/', UsersForScheduleListAPIView.as_view()),
+    path('welcome/<str:welcome_url>/set/', WelcomeURLPatchAPIView.as_view()),
     path('<int:pk>/', UserDetailAPIView.as_view()),
     path('<int:pk>/photo/', UserPhotoAPIView.as_view()),
     path('<int:pk>/deactivate/', DeactivateUserAPIView.as_view()),
@@ -62,4 +64,8 @@ apiv1patterns = [
     path('<int:pk>/hw/', UserHWListAPIView.as_view()),
     path('<int:pk>/lessons/', UserLessonListAPIView.as_view()),
     path('<int:pk>/welcome/', WelcomeURLAPIView.as_view()),
+]
+
+welcome_api_v1_patterns = [
+    path('<str:welcome_url>/set/', WelcomeURLPatchAPIView.as_view()),
 ]

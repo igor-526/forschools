@@ -1,6 +1,7 @@
 function welcomeMain(){
-    usersWelcomePlatformURL.innerHTML = location.host
+    usersWelcomePlatformURL.innerHTML = `https://${location.host}`
     welcomeSetPassword()
+    welcomeSetCopyListeners()
     usersWelcomeGoButton.addEventListener("click", welcomeGoNext)
 }
 
@@ -8,90 +9,150 @@ function welcomeSetPassword(){
     usersWelcomePasswordField.value = generatePassword(8)
 }
 
-function welcomeValidateGetFD(errors=null){
-    usersWelcomeLastNameField.classList.remove("is-invalid")
-    usersWelcomeFirstNameField.classList.remove("is-invalid")
-    usersWelcomePatronymicField.classList.remove("is-invalid")
-    usersWelcomeEmailField.classList.remove("is-invalid")
-    usersWelcomeBDateField.classList.remove("is-invalid")
-    usersWelcomePasswordField.classList.remove("is-invalid")
-    usersWelcomeLastNameError.innerHTML = ""
-    usersWelcomeFirstNameError.innerHTML = ""
-    usersWelcomePatronymicError.innerHTML = ""
-    usersWelcomeEmailError.innerHTML = ""
-    usersWelcomeBDateError.innerHTML = ""
-    usersWelcomePasswordError.innerHTML = ""
-
-    let validationStatus = true
-    let goTo = null
-
-    const lastNameValue = usersWelcomeLastNameField.value.trim()
-    const firstNameValue = usersWelcomeFirstNameField.value.trim()
-    const patronymicValue = usersWelcomePatronymicField.value.trim()
-    const emailValue = usersWelcomeEmailField.value.trim()
-
-    if (lastNameValue.length === 0){
-        usersWelcomeLastNameField.classList.add("is-invalid")
-        usersWelcomeLastNameError.innerHTML = "Поле не может быть пустым"
-        validationStatus = false
-        goTo = usersWelcomeLastNameField
+function welcomeSetCopyListeners(){
+    function buttonEffect(button){
+        button.classList.remove("btn-primary")
+        button.classList.add("btn-success")
+        setTimeout(() => {
+            button.classList.add("btn-primary")
+            button.classList.remove("btn-success")
+        }, 500)
     }
 
-    if (lastNameValue.length > 50){
-        usersWelcomeLastNameField.classList.add("is-invalid")
-        usersWelcomeLastNameError.innerHTML = `Длина не может превышать 50 символов. У вас ${lastNameValue.length}`
-        validationStatus = false
-        if (!goTo){
-            goTo = usersWelcomeLastNameField
+    usersWelcomeCopyTGStartButton.addEventListener("click", () => {
+        navigator.clipboard.writeText(`https://t.me/${tgNickname}?start=${tgCode}`)
+        buttonEffect(usersWelcomeCopyTGStartButton)
+    })
+    usersWelcomeCopyTGNicButton.addEventListener("click", () => {
+        navigator.clipboard.writeText(tgNickname)
+        buttonEffect(usersWelcomeCopyTGNicButton)
+    })
+    usersWelcomeCopyTGCommandButton.addEventListener("click", () => {
+        navigator.clipboard.writeText(`/start ${tgCode}`)
+        buttonEffect(usersWelcomeCopyTGCommandButton)
+    })
+    usersWelcomeCopyWebButton.addEventListener("click", () => {
+        const text = `Ссылка: https://${location.host}
+Логин: ${userLogin}
+Пароль: ${usersWelcomePasswordField.value}`
+        navigator.clipboard.writeText(text)
+        buttonEffect(usersWelcomeCopyWebButton)
+    })
+}
+
+function welcomeValidate(errors=null){
+    const validateInfo = []
+
+    if (errors){
+        if (errors.last_name.length){
+            validateInfo.push({
+                inputElement: usersWelcomeLastNameField,
+                errorElement: usersWelcomeLastNameError,
+                error: errors.last_name.join("<br>"),
+            })
         }
-    }
-
-    if (firstNameValue.length === 0){
-        usersWelcomeFirstNameField.classList.add("is-invalid")
-        usersWelcomeFirstNameError.innerHTML = "Поле не может быть пустым"
-        validationStatus = false
-        if (!goTo){
-            goTo = usersWelcomeFirstNameField
+        if (errors.first_name.length){
+            validateInfo.push({
+                inputElement: usersWelcomeFirstNameField,
+                errorElement: usersWelcomeFirstNameError,
+                error: errors.first_name.join("<br>"),
+            })
         }
-    }
-
-    if (firstNameValue.length > 50){
-        usersWelcomeFirstNameField.classList.add("is-invalid")
-        usersWelcomeFirstNameError.innerHTML = `Длина не может превышать 50 символов. У вас ${firstNameValue.length}`
-        validationStatus = false
-        if (!goTo){
-            goTo = usersWelcomeFirstNameField
+        if (errors.patronymic.length){
+            validateInfo.push({
+                inputElement: usersWelcomePatronymicField,
+                errorElement: usersWelcomePatronymicError,
+                error: errors.patronymic.join("<br>"),
+            })
         }
-    }
-
-    if (patronymicValue.length > 50){
-        usersWelcomePatronymicField.classList.add("is-invalid")
-        usersWelcomePatronymicError.innerHTML = `Длина не может превышать 50 символов. У вас ${firstNameValue.length}`
-        validationStatus = false
-        if (!goTo){
-            goTo = usersWelcomePatronymicField
+        if (errors.email.length){
+            validateInfo.push({
+                inputElement: usersWelcomeEmailField,
+                errorElement: usersWelcomeEmailError,
+                error: errors.email.join("<br>"),
+            })
         }
-    }
-
-    if (usersWelcomePasswordField.value.length === 0){
-        usersWelcomePasswordField.classList.add("is-invalid")
-        usersWelcomePasswordError.innerHTML = "Поле не может быть пустым"
-        validationStatus = false
-        if (!goTo){
-            goTo = usersWelcomePasswordField
+        if (errors.password.length){
+            validateInfo.push({
+                inputElement: usersWelcomePasswordField,
+                errorElement: usersWelcomePasswordError,
+                error: errors.password.join("<br>"),
+            })
         }
+    } else {
+        validateInfo.push({
+            inputElement: usersWelcomeLastNameField,
+            errorElement: usersWelcomeLastNameError,
+            error: null,
+            min_length: 1,
+            max_length: 50,
+        })
+        validateInfo.push({
+            inputElement: usersWelcomeFirstNameField,
+            errorElement: usersWelcomeFirstNameError,
+            error: null,
+            min_length: 1,
+            max_length: 50,
+        })
+        validateInfo.push({
+            inputElement: usersWelcomePatronymicField,
+            errorElement: usersWelcomePatronymicError,
+            error: null,
+            min_length: 0,
+            max_length: 50,
+        })
+        validateInfo.push({
+            inputElement: usersWelcomePasswordField,
+            errorElement: usersWelcomePasswordError,
+            error: null,
+            min_length: 1,
+            max_length: 100,
+        })
+        validateInfo.push({
+            inputElement: usersWelcomeEmailField,
+            errorElement: usersWelcomeEmailError,
+            error: null,
+            min_length: 0,
+            max_length: 50,
+        })
     }
-
-    if (goTo){
-        goTo.scrollIntoView({block: "start", behavior: "smooth"})
-    }
-
-    return validationStatus
-
+    return universalFieldValidator(validateInfo)
 }
 
 function welcomeGoNext(){
-    welcomeValidateGetFD()
+    function getFormData(){
+        const fd = new FormData()
+        fd.set("last_name", usersWelcomeLastNameField.value.trim())
+        fd.set("first_name", usersWelcomeFirstNameField.value.trim())
+        fd.set("password", usersWelcomePasswordField.value)
+        if (usersWelcomePatronymicField.value.trim().length){
+            fd.set("patronymic", usersWelcomePatronymicField.value.trim())
+        }
+        if (usersWelcomeEmailField.value.trim().length){
+            fd.set("email", usersWelcomeEmailField.value.trim())
+        }
+        if (usersWelcomeBDateField.value !== ""){
+            fd.set("bdate", usersWelcomeBDateField.value.trim())
+        }
+        return fd
+    }
+
+    if (welcomeValidate()){
+        const welcomeAPI = new WelcomeAPI(welcomeUrlCode)
+        welcomeAPI.setupWelcome(getFormData()).then(request => {
+            switch (request.status){
+                case 200:
+                    window.location.assign("/dashboard")
+                    break
+                case 400:
+                    welcomeValidate(request.response.errors)
+                    break
+                default:
+                    alert("Что то пошло не так. Пожалуйста, обновите страницу или попробуйте позже")
+                    break
+            }
+        })
+    }
 }
 
 const usersWelcomeLastNameField = document.querySelector("#usersWelcomeLastNameField")
@@ -108,5 +169,10 @@ const usersWelcomePlatformURL = document.querySelector("#usersWelcomePlatformURL
 const usersWelcomePasswordField = document.querySelector("#usersWelcomePasswordField")
 const usersWelcomePasswordError = document.querySelector("#usersWelcomePasswordError")
 const usersWelcomeGoButton = document.querySelector("#usersWelcomeGoButton")
+
+const usersWelcomeCopyTGStartButton = document.querySelector("#usersWelcomeCopyTGStartButton")
+const usersWelcomeCopyTGNicButton = document.querySelector("#usersWelcomeCopyTGNicButton")
+const usersWelcomeCopyTGCommandButton = document.querySelector("#usersWelcomeCopyTGCommandButton")
+const usersWelcomeCopyWebButton = document.querySelector("#usersWelcomeCopyWebButton")
 
 welcomeMain()

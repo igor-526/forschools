@@ -12,7 +12,7 @@ function universalFieldValidator(validateInfo = []){
 
     resetValidation()
     let validationStatus = true
-
+    let scrollTo
     validateInfo.forEach(field => {
         if (field.error){
             if (field.inputElement){
@@ -20,6 +20,9 @@ function universalFieldValidator(validateInfo = []){
             }
             if (field.errorElement){
                 field.errorElement.innerHTML = field.error
+            }
+            if (!scrollTo){
+                scrollTo = field.inputElement
             }
             return null
         }
@@ -31,6 +34,9 @@ function universalFieldValidator(validateInfo = []){
                 field.errorElement.innerHTML = currentLength === 0 ? "Поле не может быть пустым" :
                     `Длина поля не может быть менее ${field.min_length} символов<br>У вас ${currentLength}`
             }
+            if (!scrollTo){
+                scrollTo = field.inputElement
+            }
             return null
         }
         if (field.max_length && field.max_length < currentLength){
@@ -39,9 +45,16 @@ function universalFieldValidator(validateInfo = []){
             if (field.errorElement){
                 field.errorElement.innerHTML = `Длина поля не может превышать ${field.max_length} символов<br>У вас ${currentLength}`
             }
+            if (!scrollTo){
+                scrollTo = field.inputElement
+            }
             return null
         }
     })
+
+    if (scrollTo){
+        scrollTo.scrollIntoView({block: "center", behavior: "smooth"})
+    }
 
     return validationStatus
 }

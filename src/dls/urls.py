@@ -35,7 +35,8 @@ from material.urls import (apiv1patterns as material_apiv1patterns,
                            urlpatterns as material_urlpatterns)
 
 from profile_management.urls import (apiv1patterns as profile_apiv1patterns,
-                                     urlpatterns as profile_urlpatterns)
+                                     urlpatterns as profile_urlpatterns,
+                                     welcome_api_v1_patterns as welcome_api_v1_patterns)
 
 from support.urls import (apiv1patterns as support_apiv1patterns,
                           urlpatterns as support_urlpatterns)
@@ -93,6 +94,8 @@ urlpatterns = [
 
     path('support/', include(support_urlpatterns)),
     path('api/v1/support/', include(support_apiv1patterns)),
+
+    path('api/v1/welcome/', include(welcome_api_v1_patterns)),
 
     path('', include(data_collections_urlpatterns)),
     path('api/v1/', include(data_collections_apiv1patterns)),
