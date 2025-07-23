@@ -35,7 +35,7 @@ async def send_material_item(tg_id: int, material: Material,
     file_id = None
     all_text = generate_material_message()
     caption = all_text[:1024]
-    other_text = all_text[1024:5120]
+    other_text = all_text[4096:8192]
     if mat_type == "image_formats":
         try:
             message = await bot.send_photo(
