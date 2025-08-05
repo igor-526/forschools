@@ -61,3 +61,30 @@ class LessonItemPage(CanSeeLessonMixin, TemplateView):
                 hwdeadline = hwdeadline.strftime('%Y-%m-%d')
             context["hwdeadline"] = hwdeadline
         return render(request, self.template_name, context)
+
+
+class LessonScheduleTemplateView(TemplateView):
+    def get_template_names(self, select=False):
+        if select:
+            return 'mobile/schedule_select.html'
+        return 'mobile/schedule.html'
+
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get('pk')
+        if user_id == self.request.user.id:
+            template_name = self.get_template_names(False)
+        else:
+            is_admin_or_methodist = self.request.user.groups.filter(name__in=["Admin", "Metodist"]).exists()
+            if user_id is None and is_admin_or_methodist:
+                template_name = self.get_template_names(True)
+            elif user_id and is_admin_or_methodist:
+                template_name = self.get_template_names(False)
+            else:
+                user_id = request.user.id
+                template_name = self.get_template_names(False)
+
+        context = {
+            "title": "Расписание",
+            "user_id": user_id,
+        }
+        return render(request, template_name, context)

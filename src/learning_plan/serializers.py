@@ -3,7 +3,7 @@ from django.utils import timezone
 from homework.models import Homework, HomeworkLog
 
 from lesson.models import Lesson
-from lesson.serializers import LessonListSerializer
+from lesson.serializers import LessonListSerializer, LessonListForPhaseSerializer
 
 from profile_management.models import NewUser
 from profile_management.serializers import NewUserNameOnlyListSerializer
@@ -199,7 +199,7 @@ class LearningPlanParticipantsOnlyListSerializer(serializers.ModelSerializer):
 
 
 class LearningPhasesListSerializer(serializers.ModelSerializer):
-    lessons = LessonListSerializer(required=False, many=True)
+    lessons = serializers.SerializerMethodField()
     deletable = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -214,6 +214,9 @@ class LearningPhasesListSerializer(serializers.ModelSerializer):
         if non_unique and non_unique != self.instance:
             raise serializers.ValidationError("Данный этап уже существует")
         return value
+
+    def get_lessons(self, obj):
+        return LessonListForPhaseSerializer(obj.lessons.all(), many=True).data
 
     def create(self, validated_data):
         phase = LearningPhases.objects.create(**validated_data)

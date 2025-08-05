@@ -43,11 +43,26 @@ function maScheduleResetSchedule(){
 
 function maScheduleSetSchedule(schedule){
     function getListElement(lesson){
-        const a = document.createElement("a")
-        a.href = `/ma/lessons/${lesson.id}/`
-        a.classList.add("list-group-item", "list-group-item-action")
-        a.innerHTML = `<b>${lesson.time}:</b> ${lesson.participants.join(", ")}`
-        return a
+        const li = document.createElement("li")
+        li.href = `/ma/lessons/${lesson.id}/`
+        li.classList.add("list-group-item", "list-group-item-action")
+        li.innerHTML = `<b>${lesson.time}:</b> ${lesson.participants.join(", ")}`
+        li.addEventListener("click", () => {
+            lessonsAPIGetItem(lesson.id).then(request => {
+                switch (request.status){
+                    case 200:
+                        const lsn_utils = new lessonUtils(request.response)
+                        lsn_utils.showOffcanvas(false)
+                        break
+                    default:
+                        const toast = new toastEngine()
+                        toast.setError("Не удалось открыть занятие")
+                        toast.show()
+                        break
+                }
+            })
+        })
+        return li
     }
 
     maScheduleResetSchedule()

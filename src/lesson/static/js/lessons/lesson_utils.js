@@ -1473,30 +1473,40 @@ class lessonUtils{
         }
 
         function getFormData(){
-                const fd = new FormData(reschedulingForm)
-                if (fd.has("monday_place") && fd.get("monday_place") === "None"){
-                    fd.delete("monday_place")
-                }
-                if (fd.has("tuesday_place") && fd.get("tuesday_place") === "None"){
-                    fd.delete("tuesday_place")
-                }
-                if (fd.has("wednesday_place") && fd.get("wednesday_place") === "None"){
-                    fd.delete("wednesday_place")
-                }
-                if (fd.has("thursday_place") && fd.get("thursday_place") === "None"){
-                    fd.delete("thursday_place")
-                }
-                if (fd.has("friday_place") && fd.get("friday_place") === "None"){
-                    fd.delete("friday_place")
-                }
-                if (fd.has("saturday_place") && fd.get("saturday_place") === "None"){
-                    fd.delete("saturday_place")
-                }
-                if (fd.has("sunday_place") && fd.get("sunday_place") === "None"){
-                    fd.delete("sunday_place")
-                }
-                return fd
+            const fd = new FormData(reschedulingForm)
+            if (fd.has("monday_place") && fd.get("monday_place") === "None"){
+                fd.delete("monday_place")
             }
+            if (fd.has("tuesday_place") && fd.get("tuesday_place") === "None"){
+                fd.delete("tuesday_place")
+            }
+            if (fd.has("wednesday_place") && fd.get("wednesday_place") === "None"){
+                fd.delete("wednesday_place")
+            }
+            if (fd.has("thursday_place") && fd.get("thursday_place") === "None"){
+                fd.delete("thursday_place")
+            }
+            if (fd.has("friday_place") && fd.get("friday_place") === "None"){
+                fd.delete("friday_place")
+            }
+            if (fd.has("saturday_place") && fd.get("saturday_place") === "None"){
+                fd.delete("saturday_place")
+            }
+            if (fd.has("sunday_place") && fd.get("sunday_place") === "None"){
+                fd.delete("sunday_place")
+            }
+            return fd
+        }
+
+        function setSchedule(data, check, start, end, place){
+            check.checked = true
+            start.value = data.start
+            end.value = data.end
+            place.value = data.place ? data.place : "None"
+            start.disabled = false
+            end.disabled = false
+            place.disabled = false
+        }
 
         const reschedulingModal = new modalEngine()
         reschedulingModal.title = "Изменение расписания"
@@ -1618,6 +1628,59 @@ class lessonUtils{
                     toast.show()
                     break
             }
+            plansAPIGetSchedule(this.data.learning_plan.id).then(s_request => {
+                if (s_request.status === 200){
+                    if (s_request.response.item.hasOwnProperty(0)){
+                        setSchedule(s_request.response.item[0],
+                            week.monday.checkbox,
+                            week.monday.start,
+                            week.monday.end,
+                            week.monday.place)
+                    }
+                    if (s_request.response.item.hasOwnProperty(1)){
+                        setSchedule(s_request.response.item[1],
+                            week.tuesday.checkbox,
+                            week.tuesday.start,
+                            week.tuesday.end,
+                            week.tuesday.place)
+                    }
+                    if (s_request.response.item.hasOwnProperty(2)){
+                        setSchedule(s_request.response.item[2],
+                            week.wednesday.checkbox,
+                            week.wednesday.start,
+                            week.wednesday.end,
+                            week.wednesday.place)
+                    }
+                    if (s_request.response.item.hasOwnProperty(3)){
+                        setSchedule(s_request.response.item[3],
+                            week.thursday.checkbox,
+                            week.thursday.start,
+                            week.thursday.end,
+                            week.thursday.place)
+                    }
+                    if (s_request.response.item.hasOwnProperty(4)){
+                        setSchedule(s_request.response.item[4],
+                            week.friday.checkbox,
+                            week.friday.start,
+                            week.friday.end,
+                            week.friday.place)
+                    }
+                    if (s_request.response.item.hasOwnProperty(5)){
+                        setSchedule(s_request.response.item[5],
+                            week.saturday.checkbox,
+                            week.saturday.start,
+                            week.saturday.end,
+                            week.saturday.place)
+                    }
+                    if (s_request.response.item.hasOwnProperty(6)){
+                        setSchedule(s_request.response.item[6],
+                            week.sunday.checkbox,
+                            week.sunday.start,
+                            week.sunday.end,
+                            week.sunday.place)
+                    }
+                }
+            })
         })
     }
 }

@@ -9,7 +9,7 @@
             <div class="col-auto">
                 <button id="plansItemAddLessonsButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#plansItemAddLessonsModal">Добавить занятия</button>
                 {% include 'plans_item_modal_addlessons.html' %}
-                {% if can_generate_from_program %}
+                {% if can_edit_plan %}
                     <button id="PlansItemGenerateButton" type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#plansItemFromProgramModal">Сгенерировать из программы</button>
                     {% include 'modals_program.html' %}
                 {% endif %}
@@ -28,7 +28,7 @@
                             {% if plan.purpose %}
                                 <li class="list-group-item">Цель: {{ plan.purpose }}</li>
                             {% else %}
-                                <li class="list-group-item">Цель: отсутсвует</li>
+                                <li class="list-group-item">Цель: отсутствует</li>
                             {% endif %}
                             {% if plan.deadline %}
                                 <li class="list-group-item">Срок: {{ plan.deadline }}</li>
@@ -180,7 +180,6 @@
         <script>
             const canEditPlan = true
         </script>
-        <script src="{% static 'js/automaticAPI.js' %}"></script>
         <script src="{% static 'js/collections/collections_api.js' %}"></script>
         <script src="{% static 'js/lessons/lessons_api.js' %}"></script>
         <script src="{% static 'js/plans/plans_item/plans_item_listeners.js' %}"></script>
@@ -188,11 +187,8 @@
         <script src="{% static 'js/plans/plans_item/plans_item_rescheduling.js' %}"></script>
         <script src="{% static 'js/plans/plans_item/plans_item_add_lessons.js' %}"></script>
         <script src="{% static 'js/lessons/lessons_edit_modal.js' %}"></script>
-
-        {% if can_generate_from_program %}
-            <script src="{% static 'js/programs/programsAPI.js' %}"></script>
-            <script src="{% static 'js/plans/plans_item/plans_item_from_program.js' %}"></script>
-        {% endif %}
+        <script src="{% static 'js/programs/programsAPI.js' %}"></script>
+        <script src="{% static 'js/plans/plans_item/plans_item_from_program.js' %}"></script>
     {% else %}
         <script>
             const canEditPlan = false

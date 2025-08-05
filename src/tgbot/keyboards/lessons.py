@@ -12,13 +12,13 @@ from tgbot.keyboards.callbacks.lessons import (LessonPlaceCallback,
 from tgbot.keyboards.utils import WebPlatformUrl, keyboard_anti_cache_url
 
 
-def get_schedule_ma_button(self=True) -> InlineKeyboardMarkup:
+async def get_schedule_ma_button(tg_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    url = "/ma/lessons/schedule/0/" if self \
-        else "/ma/lessons/schedule/"
+    url = WebPlatformUrl("lessons/schedule")
+    await url.set_token_by_tg_id(tg_id=tg_id)
     builder.button(
         text="Открыть расписание",
-        web_app=WebAppInfo(url=keyboard_anti_cache_url(url))
+        url=url.get_url()
     )
     builder.adjust(1)
     return builder.as_markup()

@@ -17,13 +17,7 @@ from tgbot.tg_user_utils import get_user
 
 
 async def lessons_get_schedule(message: types.Message):
-    user = await get_user(message.from_user.id)
-    self_schedule = await user.groups.filter(
-        name__in=["Admin", "Metodist"]).aexists()
-    if self_schedule:
-        rm = get_schedule_ma_button(False)
-    else:
-        rm = get_schedule_ma_button()
+    rm = await get_schedule_ma_button(message.from_user.id)
     await message.answer(text="Нажмите на кнопку ниже для открытия расписания",
                          reply_markup=rm)
 

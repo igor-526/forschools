@@ -38,6 +38,11 @@ async function plansAPIGetItem(planID){
     return APIGetToObject(request)
 }
 
+async function plansAPIGetSchedule(planID){
+    const request = await fetch(`/api/v1/learning_plans/${planID}/schedule/`)
+    return APIGetToObject(request)
+}
+
 async function planItemAPIGetInfo() {
     const request = await fetch(`/api/v1/learning_plans/${planID}/status/`)
     return APIGetToObject(request)

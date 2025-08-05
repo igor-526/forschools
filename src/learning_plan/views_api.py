@@ -14,7 +14,7 @@ from lesson.models import Lesson
 
 from rest_framework import status
 from rest_framework.generics import (ListCreateAPIView,
-                                     RetrieveUpdateDestroyAPIView)
+                                     RetrieveUpdateDestroyAPIView, RetrieveAPIView)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -24,7 +24,6 @@ from .models import LearningPhases, LearningPlan
 from .permissions import (CanDownloadPlan,
                           CanEditPlanItemAdminComment,
                           can_edit_plan,
-                          can_generate_from_program,
                           get_can_edit_pre_hw_comment)
 from .serializers import (LearningPhasesListSerializer,
                           LearningPlanListSerializer,
@@ -268,15 +267,18 @@ class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
             pk=request.POST.get("programID")
         )
         plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
-        if can_generate_from_program(request, plan):
+        schedule = get_schedule(request.POST)
+        if can_edit_plan(request, plan):
             setter = ProgramSetter(
                 datetime.strptime(request.POST.get("date_start"),
                                   "%Y-%m-%d"),
-                get_schedule(request.POST),
+                schedule,
                 program,
                 plan
             )
             setter.set_program()
+            plan.schedule = schedule
+            plan.save()
             return Response(data={"status": "ok"},
                             status=status.HTTP_201_CREATED)
         else:
@@ -288,10 +290,11 @@ class PlansItemSetProgramAPIView(LoginRequiredMixin, APIView):
 class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
     def post(self, request, *args, **kwargs):
         plan = LearningPlan.objects.get(pk=kwargs.get("plan_pk"))
+        schedule = get_schedule(request.POST)
         generator_query = {
             "first_date": datetime.strptime(request.POST.get("date_start"),
                                             "%Y-%m-%d"),
-            "schedule": get_schedule(request.POST),
+            "schedule": schedule,
             "plan": plan,
         }
         end_type = request.POST.get("end_type")
@@ -314,6 +317,8 @@ class PlanItemAddLessonsAPIView(LoginRequiredMixin, APIView):
                                },
                                buttons=[],
                                user=request.user)
+        plan.schedule = schedule
+        plan.save()
         return Response(data={"status": "ok"}, status=status.HTTP_201_CREATED)
 
 
@@ -414,3 +419,14 @@ class PlanItemAdminCommentAPIView(CanEditPlanItemAdminComment, APIView):
                                             context={'request': request}).data,
             status=status.HTTP_201_CREATED
         )
+
+
+class PlanItemScheduleAPIView(LoginRequiredMixin, RetrieveAPIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            plan = LearningPlan.objects.get(pk=kwargs.get("pk"))
+        except LearningPlan.DoesNotExist:
+            return Response(data={"detail": "План обучения не найден"},
+                            status=status.HTTP_404_NOT_FOUND)
+        return Response(data={"item": plan.schedule},
+                        status=status.HTTP_200_OK)

@@ -38,12 +38,6 @@ def can_edit_plan(request, plan=None, phase=None):
     return False
 
 
-def can_generate_from_program(request, plan):
-    if plan.phases.count() > 0:
-        return False
-    return can_edit_plan(request, plan)
-
-
 def get_can_see_plan(request, plan: LearningPlan, lesson: Lesson = None):
     return (request.user.groups.filter(name="Admin").exists() or
             plan.metodist == request.user or plan.teacher == request.user or

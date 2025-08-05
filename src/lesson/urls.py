@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import LessonItemPage, LessonsListPage
+from .views import LessonItemPage, LessonsListPage, LessonScheduleTemplateView
 from .views_api import (LessonAPIView,
                         LessonAdminCommentAPIView,
                         LessonListAPIView,
@@ -13,11 +13,12 @@ from .views_api import (LessonAPIView,
                         LessonSetPassedAPIView,
                         PlansItemRescheduling,
                         ScheduleAPIView)
-from .views_ma import ScheduleMAPage, ScheduleSelectMAPage
 
 urlpatterns = [
     path('', LessonsListPage.as_view(), name='lessons'),
     path('<int:pk>/', LessonItemPage.as_view()),
+    path('schedule/<int:pk>/', LessonScheduleTemplateView.as_view()),
+    path('schedule/', LessonScheduleTemplateView.as_view(), name='schedule'),
 ]
 
 apiv1patterns = [
@@ -33,9 +34,4 @@ apiv1patterns = [
     path('schedule/<int:pk>/', ScheduleAPIView.as_view()),
     path('<int:pk>/set_admin_comment/', LessonAdminCommentAPIView.as_view()),
     path('<int:pk>/send_tg_place/', LessonSendPlaceTGAPIVIew.as_view()),
-]
-
-ma_patterns = [
-    path('schedule/', ScheduleSelectMAPage.as_view()),
-    path('schedule/<int:pk>/', ScheduleMAPage.as_view()),
 ]

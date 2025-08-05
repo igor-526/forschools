@@ -19,13 +19,8 @@ function maScheduleSelectShowUsers(users){
     function getListElement(user){
         const a = document.createElement("a")
         a.classList.add("list-group-item", "list-group-item-action")
-        if (user === "me"){
-            a.href = "/ma/lessons/schedule/0/"
-            a.innerHTML = `Моё расписание`
-        } else {
-            a.href = `/ma/lessons/schedule/${user.id}/`
-            a.innerHTML = `${user.first_name} ${user.last_name}`
-        }
+        a.href = `/lessons/schedule/${user.id}/`
+        a.innerHTML = `${user.first_name} ${user.last_name}`
         return a
     }
 

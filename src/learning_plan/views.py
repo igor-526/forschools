@@ -5,7 +5,6 @@ from .models import LearningPlan
 from .permissions import (CanSeePlansPageMixin,
                           can_download_plan,
                           can_edit_plan,
-                          can_generate_from_program,
                           get_can_edit_pre_hw_comment)
 
 
@@ -34,8 +33,6 @@ class PlansItemPageView(CanSeePlansPageMixin, TemplateView):
             'title': plan.name,
             'plan': plan,
             'can_edit_plan': can_edit_plan(request, plan),
-            'can_generate_from_program':
-                can_generate_from_program(request, plan),
             'can_edit_pre_hw_comment':
                 get_can_edit_pre_hw_comment(request, plan)
         }

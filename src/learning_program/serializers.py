@@ -122,7 +122,8 @@ class LearningProgramSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get("request")
         validated_data.pop("visibility")
-        validated_data.pop("phases_order")
+        if validated_data.get('phases_order'):
+            validated_data.pop("phases_order")
         phases = request.POST.getlist('phases_order')
         program = LearningProgram.objects.create(**validated_data,
                                                  owner=request.user,

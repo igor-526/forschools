@@ -14,6 +14,7 @@ function plansItemAddLessonsMain(){
                 break
         }
     })
+
     plansItemAddLessonsModalMondayCheck.addEventListener("click", function () {
         plansItemAddLessonsModalMondayTimeStart.disabled = !plansItemAddLessonsModalMondayCheck.checked
         plansItemAddLessonsModalMondayTimeEnd.disabled = !plansItemAddLessonsModalMondayCheck.checked
@@ -121,60 +122,83 @@ function plansItemAddLessonsResetModal(validationOnly = false){
         return result
     }
 
+    function setDay(data, check, start, end, place){
+        if (data){
+            check.checked = true
+            start.value = data.start
+            end.value = data.end
+            place.value = data.place ? data.place : "None"
+            start.disabled = false
+            end.disabled = false
+            place.disabled = false
+        } else {
+            check.checked = false
+            start.value = ""
+            end.value = ""
+            place.value = "None"
+            start.disabled = true
+            end.disabled = true
+            place.disabled = true
+        }
+    }
+
     resetValidation()
+
     if (!validationOnly){
+        plansAPIGetSchedule(planID).then(request => {
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(0) ? request.response.item[0] : null,
+                plansItemAddLessonsModalMondayCheck,
+                plansItemAddLessonsModalMondayTimeStart,
+                plansItemAddLessonsModalMondayTimeEnd,
+                plansItemAddLessonsModalMondayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(1) ? request.response.item[1] : null,
+                plansItemAddLessonsModalTuesdayCheck,
+                plansItemAddLessonsModalTuesdayTimeStart,
+                plansItemAddLessonsModalTuesdayTimeEnd,
+                plansItemAddLessonsModalTuesdayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(2) ? request.response.item[2] : null,
+                plansItemAddLessonsModalWednesdayCheck,
+                plansItemAddLessonsModalWednesdayTimeStart,
+                plansItemAddLessonsModalWednesdayTimeEnd,
+                plansItemAddLessonsModalWednesdayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(3) ? request.response.item[3] : null,
+                plansItemAddLessonsModalThursdayCheck,
+                plansItemAddLessonsModalThursdayTimeStart,
+                plansItemAddLessonsModalThursdayTimeEnd,
+                plansItemAddLessonsModalThursdayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(4) ? request.response.item[4] : null,
+                plansItemAddLessonsModalFridayCheck,
+                plansItemAddLessonsModalFridayTimeStart,
+                plansItemAddLessonsModalFridayTimeEnd,
+                plansItemAddLessonsModalFridayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(5) ? request.response.item[5] : null,
+                plansItemAddLessonsModalSaturdayCheck,
+                plansItemAddLessonsModalSaturdayTimeStart,
+                plansItemAddLessonsModalSaturdayTimeEnd,
+                plansItemAddLessonsModalSaturdayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(6) ? request.response.item[6] : null,
+                plansItemAddLessonsModalSundayCheck,
+                plansItemAddLessonsModalSundayTimeStart,
+                plansItemAddLessonsModalSundayTimeEnd,
+                plansItemAddLessonsModalSundayPlace
+            )
+        })
+
         const dates = getDates()
         plansItemAddLessonsModalDate.value = dates.start
-        plansItemAddLessonsModalMondayCheck.checked = false
-        plansItemAddLessonsModalTuesdayCheck.checked = false
-        plansItemAddLessonsModalWednesdayCheck.checked = false
-        plansItemAddLessonsModalThursdayCheck.checked = false
-        plansItemAddLessonsModalFridayCheck.checked = false
-        plansItemAddLessonsModalSaturdayCheck.checked = false
-        plansItemAddLessonsModalSundayCheck.checked = false
-        plansItemAddLessonsModalMondayTimeStart.value = ""
-        plansItemAddLessonsModalMondayTimeEnd.value = ""
-        plansItemAddLessonsModalMondayPlace.value = "None"
-        plansItemAddLessonsModalTuesdayTimeStart.value = ""
-        plansItemAddLessonsModalTuesdayTimeEnd.value = ""
-        plansItemAddLessonsModalTuesdayPlace.value = "None"
-        plansItemAddLessonsModalWednesdayTimeStart.value = ""
-        plansItemAddLessonsModalWednesdayTimeEnd.value = ""
-        plansItemAddLessonsModalWednesdayPlace.value = "None"
-        plansItemAddLessonsModalThursdayTimeStart.value = ""
-        plansItemAddLessonsModalThursdayTimeEnd.value = ""
-        plansItemAddLessonsModalThursdayPlace.value = "None"
-        plansItemAddLessonsModalFridayTimeStart.value = ""
-        plansItemAddLessonsModalFridayTimeEnd.value = ""
-        plansItemAddLessonsModalFridayPlace.value = "None"
-        plansItemAddLessonsModalSaturdayTimeStart.value = ""
-        plansItemAddLessonsModalSaturdayTimeEnd.value = ""
-        plansItemAddLessonsModalSaturdayPlace.value = "None"
-        plansItemAddLessonsModalSundayTimeStart.value = ""
-        plansItemAddLessonsModalSundayTimeEnd.value = ""
-        plansItemAddLessonsModalSundayPlace.value = "None"
-        plansItemAddLessonsModalMondayTimeStart.disabled = true
-        plansItemAddLessonsModalMondayTimeEnd.disabled = true
-        plansItemAddLessonsModalMondayPlace.disabled = true
-        plansItemAddLessonsModalTuesdayTimeStart.disabled = true
-        plansItemAddLessonsModalTuesdayTimeEnd.disabled = true
-        plansItemAddLessonsModalTuesdayPlace.disabled = true
-        plansItemAddLessonsModalWednesdayTimeStart.disabled = true
-        plansItemAddLessonsModalWednesdayTimeEnd.disabled = true
-        plansItemAddLessonsModalWednesdayPlace.disabled = true
-        plansItemAddLessonsModalThursdayTimeStart.disabled = true
-        plansItemAddLessonsModalThursdayTimeEnd.disabled = true
-        plansItemAddLessonsModalThursdayPlace.disabled = true
-        plansItemAddLessonsModalFridayTimeStart.disabled = true
-        plansItemAddLessonsModalFridayTimeEnd.disabled = true
-        plansItemAddLessonsModalFridayPlace.disabled = true
-        plansItemAddLessonsModalSaturdayTimeStart.disabled = true
-        plansItemAddLessonsModalSaturdayTimeEnd.disabled = true
-        plansItemAddLessonsModalSaturdayPlace.disabled = true
-        plansItemAddLessonsModalSundayTimeStart.disabled = true
-        plansItemAddLessonsModalSundayTimeEnd.disabled = true
-        plansItemAddLessonsModalSundayPlace.disabled = true
-
         plansItemAddLessonsModalEndTypeDate.checked = true
         plansItemAddLessonsModalEndTypeCount.checked = false
         plansItemAddLessonsModalEndCount.classList.add("d-none")

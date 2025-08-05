@@ -188,22 +188,80 @@ function plansItemFromProgramResetValidation(){
 }
 
 function plansItemFromProgramReset(){
+    function setDay(data, check, start, end, place){
+        if (data){
+            check.checked = true
+            start.value = data.start
+            end.value = data.end
+            place.value = data.place ? data.place : "None"
+            start.disabled = false
+            end.disabled = false
+            place.disabled = false
+        } else {
+            check.checked = false
+            start.value = ""
+            end.value = ""
+            place.value = "None"
+            start.disabled = true
+            end.disabled = true
+            place.disabled = true
+        }
+    }
+
     plansItemFromProgramResetValidation()
-    pFromProgramModalDForm.reset()
-    pFromProgramModalDMondayTimeStart.disabled = true
-    pFromProgramModalDMondayTimeEnd.disabled = true
-    pFromProgramModalDTuesdayTimeStart.disabled = true
-    pFromProgramModalDTuesdayTimeEnd.disabled = true
-    pFromProgramModalDWednesdayTimeStart.disabled = true
-    pFromProgramModalDWednesdayTimeEnd.disabled = true
-    pFromProgramModalDThursdayTimeStart.disabled = true
-    pFromProgramModalDThursdayTimeEnd.disabled = true
-    pFromProgramModalDFridayTimeStart.disabled = true
-    pFromProgramModalDFridayTimeEnd.disabled = true
-    pFromProgramModalDSaturdayTimeStart.disabled = true
-    pFromProgramModalDSaturdayTimeEnd.disabled = true
-    pFromProgramModalDSundayTimeStart.disabled = true
-    pFromProgramModalDSundayTimeEnd.disabled = true
+
+    plansAPIGetSchedule(planID).then(request => {
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(0) ? request.response.item[0] : null,
+                pFromProgramModalDMondayCheck,
+                pFromProgramModalDMondayTimeStart,
+                pFromProgramModalDMondayTimeEnd,
+                pFromProgramModalDMondayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(1) ? request.response.item[1] : null,
+                pFromProgramModalDTuesdayCheck,
+                pFromProgramModalDTuesdayTimeStart,
+                pFromProgramModalDTuesdayTimeEnd,
+                pFromProgramModalDTuesdayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(2) ? request.response.item[2] : null,
+                pFromProgramModalDWednesdayCheck,
+                pFromProgramModalDWednesdayTimeStart,
+                pFromProgramModalDWednesdayTimeEnd,
+                pFromProgramModalDWednesdayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(3) ? request.response.item[3] : null,
+                pFromProgramModalDThursdayCheck,
+                pFromProgramModalDThursdayTimeStart,
+                pFromProgramModalDThursdayTimeEnd,
+                pFromProgramModalDThursdayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(4) ? request.response.item[4] : null,
+                pFromProgramModalDFridayCheck,
+                pFromProgramModalDFridayTimeStart,
+                pFromProgramModalDFridayTimeEnd,
+                pFromProgramModalDFridayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(5) ? request.response.item[5] : null,
+                pFromProgramModalDSaturdayCheck,
+                pFromProgramModalDSaturdayTimeStart,
+                pFromProgramModalDSaturdayTimeEnd,
+                pFromProgramModalDSaturdayPlace
+            )
+            setDay(
+                request.status === 200 && request.response.item.hasOwnProperty(6) ? request.response.item[6] : null,
+                pFromProgramModalDSundayCheck,
+                pFromProgramModalDSundayTimeStart,
+                pFromProgramModalDSundayTimeEnd,
+                pFromProgramModalDSundayPlace
+            )
+    })
+
     const activeProgram = pFromProgramModalProgList.querySelector(".active")
     if (activeProgram){
         activeProgram.classList.remove("active")

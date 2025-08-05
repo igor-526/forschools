@@ -47,6 +47,10 @@ function mobileTemplateEngineSetDropdownMenu(){
         location.assign("/logout")
     }
 
+    function schedule(){
+        location.assign("/lessons/schedule/")
+    }
+
     function setDropdownElement(name="", listenerFunction = null){
         const a = document.createElement("a")
         a.innerHTML = name
@@ -80,13 +84,14 @@ function mobileTemplateEngineSetDropdownMenu(){
     })
 
     setDropdownElement('<i class="bi bi-box-arrow-left me-2"></i>Выход', logout)
+    setDropdownElement('<i class="bi bi-border-width"></i>Расписание', schedule)
 }
 
 const mobileTitleBlock = document.querySelector("#mobileTitle")
 const mobileContent = document.querySelector("#mobileContent")
 const mobileNavbar = document.querySelector("#mobileNavbar")
 const mobileNavbarActiveButton = document.querySelector("#mobileNavbarActiveButton")
-const mobileNavbarActiveButtonSrc = mobileNavbarActiveButton.src
+const mobileNavbarActiveButtonSrc = mobileNavbarActiveButton ? mobileNavbarActiveButton.src : null
 const startMobileTitleBlockHeight = mobileTitleBlock.clientHeight
 const mobileNavbarLessonsButton = document.querySelector("#mobileNavbarLessonsButton")
 const mobileNavbarHomeworkButton = document.querySelector("#mobileNavbarHomeworkButton")

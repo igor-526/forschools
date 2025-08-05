@@ -18,7 +18,7 @@
 </div>
 
 <div id="view_counter" align="center">
-  <img src="https://komarev.com/ghpvc/?username=igor-526&color=blue&style=for-the-badge&label=Просмотры профиля"/>
+  <img src="https://komarev.com/ghpvc/?username=igor-526&color=blue&style=for-the-badge&label=Просмотры"/>
 </div>
 
 ---

@@ -74,17 +74,11 @@ class LessonListAPIView(LoginRequiredMixin, ListAPIView):
         if ds:
             query['date__gte'] = ds
         else:
-            if not (teachers or listeners or methodists or
-                    has_hw or name or has_comment or hw_agreement or
-                    hw_statuses or lesson_places):
-                query['date__gte'] = date.today() - timedelta(days=2)
+            query['date__gte'] = date.today() - timedelta(days=2)
         if de:
             query['date__lte'] = de
         else:
-            if not (teachers or listeners or methodists or
-                    has_hw or name or has_comment or hw_agreement or
-                    hw_statuses or lesson_places):
-                query['date__lte'] = date.today() + timedelta(days=6)
+            query['date__lte'] = date.today() + timedelta(days=6)
         if listeners:
             query['learningphases__learningplan__listeners__in'] = listeners
         if methodists:
@@ -685,6 +679,7 @@ class PlansItemRescheduling(LoginRequiredMixin, APIView):
             pass
         return Response(data={'errors': 'Функция в разработке'},
                         status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class LessonRestoreAPIView(LoginRequiredMixin, APIView):

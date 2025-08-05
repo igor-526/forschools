@@ -25,7 +25,6 @@ from learning_program.urls import (apiv1patterns as
                                    urlpatterns as learning_program_urlpatterns)
 
 from lesson.urls import (apiv1patterns as lesson_apiv1patterns,
-                         ma_patterns as lesson_ma_patterns,
                          urlpatterns as lesson_urlpatterns)
 
 from mailing.urls import (api_v1_patterns as mailing_api_v1_patterns,
@@ -62,7 +61,6 @@ urlpatterns = [
 
     path('lessons/', include(lesson_urlpatterns)),
     path('api/v1/lessons/', include(lesson_apiv1patterns)),
-    path('ma/lessons/', include(lesson_ma_patterns)),
 
     path('homeworks/', include(homework_urlpatterns)),
     path('api/v1/homeworks/', include(homework_apiv1patterns)),
