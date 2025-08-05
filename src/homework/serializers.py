@@ -2,6 +2,7 @@ from typing import List
 
 from django.db.models import QuerySet
 
+from chat.models import Message
 from learning_plan.models import LearningPlan
 from learning_plan.permissions import get_can_see_plan
 
@@ -36,6 +37,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField(read_only=True)
     admin_comment = serializers.SerializerMethodField(read_only=True)
     color = serializers.SerializerMethodField(read_only=True)
+    messages = serializers.SerializerMethodField(read_only=True)
 
     hw_lesson: Lesson = None
     hw_learning_plan: LearningPlan = None
@@ -142,6 +144,8 @@ class HomeworkSerializer(serializers.ModelSerializer):
                 return ["edit"]
             return []
 
+
+
         actions = []
         last_log = obj.get_status(
             accepted_only=self.context.get('request').user == obj.listener
@@ -236,6 +240,19 @@ class HomeworkSerializer(serializers.ModelSerializer):
         if self.request.user.groups.filter(name="Admin").exists():
             return obj.admin_comment
         return None
+
+    def get_messages(self, obj: Homework):
+        if (obj.teacher == self.request.user or
+                (self.hw_learning_plan and self.hw_learning_plan.metodist == self.request.user) or
+                self.request.user in self.hw_curators or
+                self.request.user.groups.filter(name="Admin").exists()):
+            messages = Message.objects.filter(
+                tags__contains=f"hw{obj.id}"
+            ).select_related("sender").order_by("date").values(
+                "sender__first_name", "sender__last_name", "message"
+            )
+            return messages
+        return []
 
 
 class HomeworkListSerializer(serializers.ModelSerializer):

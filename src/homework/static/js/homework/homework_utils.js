@@ -235,6 +235,17 @@ class homeworkUtils{
             actionsElements.push(agreementBtn)
         }
 
+        if (this.data.messages.length){
+            const messagesBtn = document.createElement("button")
+            messagesBtn.type = "button"
+            messagesBtn.classList.add("my-2", "w-100", "btn", "btn-primary")
+            messagesBtn.innerHTML = '<i class="bi bi-chat-dots"></i> Сообщения'
+            messagesBtn.addEventListener("click", () => {
+                this._setMessagesOffcanvas()
+            })
+            actionsElements.push(messagesBtn)
+        }
+
         if (this.data.actions.includes("cancel")){
             const cancelBtn = document.createElement("button")
             cancelBtn.type = "button"
@@ -1251,6 +1262,32 @@ class homeworkUtils{
                 }
             })
         }
+    }
+
+    _setMessagesOffcanvas(){
+        const getMessageBody = (message) => {
+            const div = document.createElement("div")
+            div.classList.add("mb-3", "p-2")
+            div.style.backgroundColor = "#dfdfdf"
+            div.style.borderRadius = "10px"
+            const span = document.createElement("span")
+            span.style.fontWeight = "600"
+            span.innerHTML = `${message.sender__first_name} ${message.sender__last_name}`
+            const p = document.createElement("p")
+            p.innerHTML = message.message
+            div.insertAdjacentElement("beforeend", span)
+            div.insertAdjacentElement("beforeend", p)
+            return div
+        }
+
+        const o = new offcanvasEngine()
+        o.header = `Сообщения по "${this.data.name}"`
+        const messages = []
+        this.data.messages.forEach(msg => {
+            messages.push(getMessageBody(msg))
+        })
+        o.addData("", messages)
+        o.show()
     }
 }
 

@@ -5,6 +5,7 @@ import async_to_sync as sync
 
 from django.db.models import Q
 
+from chat.models import Message
 from homework.models import Homework, HomeworkLog
 from homework.utils import status_code_to_string
 
@@ -55,6 +56,7 @@ class TGHomework:
             "is_listener": self.homework.listener == self.user,
             "is_teacher": self.homework.teacher == self.user,
             "is_methodist": self.plan and self.plan.metodist == self.user,
+            "is_admin": await self.user.groups.filter(name="Admin").aexists(),
             "is_curator": (self.homework.for_curator and
                            self.plan and
                            (await self.plan.curators.filter(
@@ -228,6 +230,21 @@ class TGHomework:
         )
         await state.set_state(HomeworkNewFSM.change_menu)
 
+    async def send_messages(self) -> None:
+        messages = [(f'<b>{msg["sender__first_name"]} '
+                     f'{msg["sender__last_name"]}</b>\n{msg["message"]}') async for msg in
+                    Message.objects.filter(tags__contains=f"hw{self.homework_id}")
+                    .select_related("sender")
+                    .order_by("date")
+                    .values("sender__first_name", "sender__last_name", "message")]
+        if not messages:
+            return None
+        text = "Сообщения по ДЗ:\n"
+        text += "\n\n".join(messages)
+        await bot.send_message(chat_id=self.telegram_id,
+                               text=text)
+        return None
+
     async def show_homework(self, mat_send=None):
         msgtext = f"ДЗ <b>{self.homework.name}</b>\n"
         if self.homework.description:
@@ -241,6 +258,10 @@ class TGHomework:
                                    text="Материалы к ДЗ:")
             await self.send_materials()
         await self.send_last_log()
+
+        if self.user_roles.get("is_teacher") or self.user_roles.get("is_methodist") or self.user_roles.get("is_admin"):
+            await self.send_messages()
+
         await self.send_actions(not mat_send and mat_exists)
 
     async def send_link(self, message: str = "Вам направлено ДЗ"):
