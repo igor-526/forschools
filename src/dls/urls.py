@@ -1,3 +1,5 @@
+from debug_toolbar.toolbar import debug_toolbar_urls
+
 from chat.urls import (apiv1patterns as chat_apiv1patterns,
                        ma_patterns as chat_ma_patterns,
                        urlpatterns as chat_urlpatterns)
@@ -50,8 +52,18 @@ from user_logs.urls import (api_v1_patterns as user_logs_api_v1_patterns,
 
 from . import settings
 
+api_v2_patterns = [
+    path('auth/', include('profile_management.urls_v2_auth')),
+    path('users/', include('profile_management.api_v2.urls')),
+    path('dashboard/', include('dashboard.api_v2.urls')),
+    path('homeworks/', include('homework.api_v2.urls')),
+    path('lessons/', include('lesson.api_v2.urls'))
+]
+
 
 urlpatterns = [
+    path('api/v2/', include(api_v2_patterns)),
+
     path('admin/', admin.site.urls),
     path('', include(profile_urlpatterns)),
     path('api/v1/users/', include(profile_apiv1patterns)),
@@ -97,7 +109,7 @@ urlpatterns = [
 
     path('', include(data_collections_urlpatterns)),
     path('api/v1/', include(data_collections_apiv1patterns)),
-]
+] + debug_toolbar_urls()
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

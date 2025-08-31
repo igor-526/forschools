@@ -119,6 +119,20 @@ class Homework(models.Model):
     def __str__(self):
         return f'{self.name}'
 
+    @property
+    def last_status_agreed(self):
+        last_status_agreed = self.log.filter(
+            Q(agreement__accepted=True) |
+            Q(agreement={})
+        )
+
+    @property
+    def agreed_main_statuses(self):
+        pass
+
+
+
+
     def get_tg_name(self, groups: list):
         lesson = self.get_lesson()
         name_str = self.name

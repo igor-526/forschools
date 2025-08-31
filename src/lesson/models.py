@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import List
 
+from django.core.cache import cache
 from django.db import models
 from django.db.models import QuerySet
 from django.utils import timezone
@@ -171,6 +173,52 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f'{self.name} - {self.date}'
+
+    @property
+    def start_dt(self):
+        if self.date and self.start_time:
+            return datetime.combine(self.date, self.start_time)
+        return None
+
+    @property
+    def end_dt(self):
+        if self.date and self.end_time:
+            return datetime.combine(self.date, self.end_time)
+        return None
+
+    @property
+    def learning_plan(self):
+        cache_key = f'lesson_{self.id}_learning_plan'
+        plan = cache.get(cache_key)
+        if not plan:
+            plan = self.learningphases_set.first().learningplan_set.first()
+            cache.set(cache_key, plan, timeout=60*60*24)
+        return plan
+
+
+    @property
+    def teacher(self):
+        cache_key = f'lesson_{self.id}_teacher'
+        teacher = cache.get(cache_key)
+        if not teacher:
+            if self.replace_teacher:
+                teacher = self.replace_teacher
+            else:
+                teacher = self.learning_plan.teacher
+            cache.set(cache_key, teacher, timeout=60*60*24)
+        return teacher
+
+    @property
+    def listeners(self):
+        cache_key = f'lesson_{self.id}_listeners'
+        listeners = cache.get(cache_key)
+        if not listeners:
+            listeners = (
+                self.additional_listeners.all().only('id', 'first_name', 'last_name')
+                .union(self.learning_plan.listeners.all().only('id', 'first_name', 'last_name'))
+            )
+            cache.set(cache_key, listeners, timeout=60 * 60 * 24)
+        return listeners
 
     def get_teacher(self) -> NewUser:
         if self.replace_teacher:

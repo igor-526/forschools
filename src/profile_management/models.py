@@ -2,6 +2,8 @@ import string
 from datetime import timedelta
 from random import randint, choice
 
+from django.core.cache import cache
+
 from chat.models import Message
 from chat.utils import chat_users_remove_duplicates, chat_users_sort
 
@@ -163,6 +165,15 @@ class NewUser(AbstractUser):
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
+
+    @property
+    def roles(self):
+        cache_key = f'user_{self.id}_roles'
+        roles = cache.get(cache_key)
+        if not roles:
+            roles = self.groups.all().only("name").values_list("name", flat=True)
+            cache.set(cache_key, roles, timeout=60 * 60 * 24)
+        return roles
 
     def update_tg_code(self):
         self.tg_code = randint(10000, 99999)

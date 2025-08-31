@@ -57,13 +57,13 @@
         </div>
 
         <div class="mb-4">
-            <h5 class="mb-3">Получение уведомлений через Telegram бот:</h5>
+            <h5 class="mb-3">Работа через Telegram бот:</h5>
             <p class="mb-1">Для автоматической привязки необходимо с устройства, <b>на котором установлен Telegram</b> перейти по <b><a href="https://t.me/{{ tg_nickname }}?start={{ user.tg_code }}" target="_blank">ссылке</a></b></p>
-            <p><button id="usersWelcomeCopyTGStartButton" class="btn btn-sm btn-primary"><i class="bi bi-copy me-1"></i>Скопировать ссылку</button></p>
+            <p><button id="usersWelcomeCopyTGStartButton" class="btn btn-sm btn-outline-primary"><i class="bi bi-copy me-1"></i>Скопировать ссылку</button></p>
             <p><b>ИЛИ</b></p>
             <p class="mb-1">Для ручной привязки необходимо найти в Telegram бота <b><a href="https://t.me/{{ tg_nickname }}" target="_blank">@{{ tg_nickname }}</a></b>, после чего написать команду <b>"/start {{ user.tg_code }}"</b> (без кавычек)</p>
-            <p><button id="usersWelcomeCopyTGNicButton" class="btn btn-sm btn-primary me-2"><i class="bi bi-copy me-1"></i>Скопировать никнейм</button>
-            <button id="usersWelcomeCopyTGCommandButton" class="btn btn-sm btn-primary"><i class="bi bi-copy me-1"></i>Скопировать команду</button></p>
+            <p><button id="usersWelcomeCopyTGNicButton" class="btn btn-sm btn-outline-primary me-2"><i class="bi bi-copy me-1"></i>Скопировать никнейм</button>
+            <button id="usersWelcomeCopyTGCommandButton" class="btn btn-sm btn-outline-primary"><i class="bi bi-copy me-1"></i>Скопировать команду</button></p>
             <p><i>Если родитель контролирует учёбу ребёнка, то <u>ПОСЛЕ привязки ребёнка</u> мы пришлём ссылку для привязки родителя.</i></p>
             <p>С текстовой инструкцией для Учеников можно ознакомиться <b><a href="https://forschools.ru/instructions/" target="_blank">здесь</a></b></p>
         </div>
@@ -81,7 +81,7 @@
                         <div class="invalid-feedback" id="usersWelcomePasswordError"></div>
                     </div>
                 </li>
-                <li class="list-group-item"><button id="usersWelcomeCopyWebButton" class="btn btn-sm btn-primary"><i class="bi bi-copy me-1"></i>Скопировать доступы</button></li>
+                <li class="list-group-item"><button id="usersWelcomeCopyWebButton" class="btn btn-sm btn-outline-primary"><i class="bi bi-copy me-1"></i>Скопировать доступы</button></li>
             </ul>
             <p>Также попасть на платформу без ввода логина и пароля можно из бота Telegram, нажав в главном меню кнопку "<b>Платформа</b>" и перейдя по отправленной в ответ ботом ссылке</p>
             <p>Пожалуйста, ознакомьтесь с видеоинструкциями по работе с веб-версией платформы <a href="https://drive.google.com/drive/folders/1XfW5u7n8gYwilemZVZIUWJfyuF0XnG4Y?usp=sharing"><b>здесь</b></a></p>

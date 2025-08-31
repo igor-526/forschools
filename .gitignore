@@ -6,3 +6,4 @@ src/media/*
 src/logs/*
 src/tgparser/sessions/*
 src/tgparser/logs/*
+frontend/node_modules

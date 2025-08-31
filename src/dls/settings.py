@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -6,6 +7,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 DEBUG = os.environ.get('DJANGO_DEBUG')
 ALLOWED_HOSTS = [os.environ.get('DJANGO_ALLOWED_HOST')]
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+    "localhost",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 if not DEBUG:
     CSRF_TRUSTED_ORIGINS = [
@@ -24,11 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'django_filters',
     'celery',
     'django_celery_results',
     'corsheaders',
     'django_user_agents',
+    "debug_toolbar",
 
     'learning_plan',
     'learning_program',
@@ -44,10 +64,14 @@ INSTALLED_APPS = [
     'download_data',
     'chat',
     'mailing',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -117,7 +141,29 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+
+SIMPLE_JWT = {
+    'AUTH_COOKIE': 'access_token',  # Название куки для access token
+    'AUTH_COOKIE_DOMAIN': None,  # Не устанавливать домен для localhost
+    'AUTH_COOKIE_SECURE': False,  # True для HTTPS
+    'AUTH_COOKIE_HTTP_ONLY': True,  # Запретить доступ из JS
+    'AUTH_COOKIE_PATH': '/',  # Путь куки
+    'AUTH_COOKIE_SAMESITE': 'Lax',  # Защита от CSRF
+
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'REFRESH_COOKIE_NAME': 'refresh_token',
+    'REFRESH_COOKIE_PATH': '/api/v2/auth/',
 }
 
 LANGUAGE_CODE = 'ru-ru'
