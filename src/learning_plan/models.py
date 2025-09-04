@@ -17,6 +17,21 @@ PHASE_STATUS_CHOICES = (
     (1, "Этап пройден"),
 )
 
+class LearningPlanFeedback(models.Model):
+    text = models.TextField(verbose_name="Обратная связь",
+                            null=False,
+                            blank=False)
+    created = models.DateTimeField(auto_now_add=True,
+                                   null=False,
+                                   blank=False)
+    owner = models.ForeignKey("profile_management.NewUser",
+                              verbose_name="Создатель",
+                              blank=False,
+                              null=True,
+                              related_name="plan_feedbacks",
+                              on_delete=models.SET_NULL)
+
+
 
 class LearningPhases(models.Model):
     name = models.CharField(verbose_name="Наименование",
@@ -117,6 +132,13 @@ class LearningPlan(models.Model):
         null=True,
         blank=True
     )
+    admin_comment_last_change = models.DateTimeField(
+        verbose_name="Последнее изменение комментария администратора",
+        null=True,
+        blank=True
+    )
+    feedbacks = models.ManyToManyField(LearningPlanFeedback,
+                                       verbose_name="Обратные связи")
 
     class Meta:
         verbose_name = 'План обучения'

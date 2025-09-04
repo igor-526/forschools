@@ -57,7 +57,8 @@ api_v2_patterns = [
     path('users/', include('profile_management.api_v2.urls')),
     path('dashboard/', include('dashboard.api_v2.urls')),
     path('homeworks/', include('homework.api_v2.urls')),
-    path('lessons/', include('lesson.api_v2.urls'))
+    path('lessons/', include('lesson.api_v2.urls')),
+    path('learning_plans/', include('learning_plan.api_v2.urls'))
 ]
 
 
