@@ -26,9 +26,12 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 if not DEBUG:
-    CSRF_TRUSTED_ORIGINS = [
-        f"https://{os.environ.get('DJANGO_ALLOWED_HOST')}",
-    ]
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('DJANGO_ALLOWED_HOST')}")
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('FRONTEND_HOST')}")
+    CORS_ALLOWED_ORIGINS.append(f"https://{os.environ.get('DJANGO_ALLOWED_HOST')}")
+    CORS_ALLOWED_ORIGINS.append(f"https://{os.environ.get('FRONTEND_HOST')}")
+    ALLOWED_HOSTS.append(os.environ.get('FRONTEND_HOST'))
+
     CORS_ORIGIN_ALLOW_ALL = True
     X_FRAME_OPTIONS = 'SAMEORIGIN'
     XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE']
@@ -69,9 +72,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -153,7 +154,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'AUTH_COOKIE': 'access_token',  # Название куки для access token
     'AUTH_COOKIE_DOMAIN': None,  # Не устанавливать домен для localhost
-    'AUTH_COOKIE_SECURE': False,  # True для HTTPS
+    'AUTH_COOKIE_SECURE': not DEBUG,  # True для HTTPS
     'AUTH_COOKIE_HTTP_ONLY': True,  # Запретить доступ из JS
     'AUTH_COOKIE_PATH': '/',  # Путь куки
     'AUTH_COOKIE_SAMESITE': 'Lax',  # Защита от CSRF

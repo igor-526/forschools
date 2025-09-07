@@ -2,13 +2,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from learning_plan.api_v2.serializers import LearningPlanSerializer
 from learning_plan.models import LearningPlan
 
 
-class PlansListCreateAPIView(LoginRequiredMixin, ListCreateAPIView):
+class PlansListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = LearningPlanSerializer
 
     @staticmethod
